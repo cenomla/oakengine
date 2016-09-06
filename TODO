@@ -1,0 +1,3 @@
+-finish the task scheduler 
+	-add support for multithreaded task excecution
+	-ensure thread safety
