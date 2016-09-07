@@ -1,33 +1,42 @@
 #pragma once
 
+#include <algorithm>
 #include <functional>
-#include <unordered_map>
+#include <vector>
 
 namespace oak {
 
-	template<typename TEvent>
-	class EventChannel {
+	class EventChannelBase {
 	public:
-		EventChannel() {};
+		virtual ~EventChannelBase() {}
+	};
+
+	template<typename TEvent>
+	class EventChannel : public EventChannelBase {
+	public:
 
 		template<typename TListener>
 		void add(TListener *listener) {
-			listeners_.insert({ listener, [listener](const TEvent& evt) { (*listener)(evt); } });
+			listeners_.push_back( { listener, [listener](const TEvent &evt){ (*listener)(evt); } });
 		}
 
 		template<typename TListener>
 		void remove(TListener *listener) {
-			listeners_.erase(listener);
+			listeners_.erase(std::remove_if(std::begin(listeners_), std::end(listeners_), [listener](const Listener &elem){ return elem.id == listener; }), std::end(listeners_));
 		}
 		
 		void emitEvent(const TEvent& event) const {
-			for (const auto &it : listeners_) {
-				it.second(event);
+			for (const auto &listener : listeners_) {
+				listener.func(event);
 			}
 		}
 
 	private:
-		std::unordered_map<void*, std::function<void (const TEvent&)>> listeners_;
+		struct Listener {
+			void *id;
+			std::function<void (const TEvent&)> func;
+		};
+		std::vector<Listener> listeners_;
 	};
 
 }

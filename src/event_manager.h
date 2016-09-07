@@ -40,7 +40,7 @@ namespace oak {
 		struct BaseEvt {};
 
 		std::mutex channelsMutex_;
-		std::unordered_map<size_t, void*> channels_;
+		std::unordered_map<size_t, EventChannelBase*> channels_;
 	};
 
 }

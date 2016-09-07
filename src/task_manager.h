@@ -1,18 +1,18 @@
 #pragma once
 
 #include <queue>
+#include <vector>
+#include <thread>
+#include <mutex>
 #include <atomic>
+#include <array>
 
 #include "event_queue.h"
+#include "events.h"
+#include "worker.h"
 #include "task.h"
 
 namespace oak {
-
-	struct TaskExitEvent {};
-
-	struct TaskCompletedEvent {
-		Task *task;
-	};
 
 	class Engine;
 
@@ -27,17 +27,18 @@ namespace oak {
 
 		void addTask(Task *task);
 
-		void handleCompletedTask(const TaskCompletedEvent &evt);
 		void quit();
+
+		void operator()(const TaskExitEvent&);
 
 
 	private:
-		std::queue<Task*> tasks_;
+		std::mutex tasksMutex_;
+		std::array<std::queue<Task*>, 2> tasks_;
+
+		std::vector<Worker> workers_;
 
 		std::atomic<bool> running_;
-
-		EventQueue<TaskExitEvent> exitQueue_;
-		EventQueue<TaskCompletedEvent> completedQueue_;
 
 	};
 
