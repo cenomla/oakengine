@@ -25,7 +25,7 @@ flags = ['-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D _DEBUG']
 #lists
 sources = []
 #libs = ['lua', 'GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm']
-libs = ['pthread', 'dl', 'm']
+libs = ['GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm']
 
 get_sources_recursive(sources, src_path, intermediate_path, '*.cpp')
 

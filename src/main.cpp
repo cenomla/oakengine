@@ -3,11 +3,13 @@
 #include <chrono>
 #include <memory>
 
+#include <glad/glad.h>
+
 #include "event_queue.h"
 #include "events.h"
 #include "engine.h"
 #include "task.h"
-
+#include "window.h"
 
 using namespace std::chrono_literals;
 
@@ -20,39 +22,27 @@ int main(int argc, char** argv) {
 
 	engine.init();
 
+	
+
 	oak::TaskManager &tm = engine.getTaskManager();
 
 	tm.addTask(oak::Task{ [](){
-		{
-			std::lock_guard<std::mutex> lock{ coutMutex };
-			std::cout << "test task 1" << std::endl;
-		}
-		std::this_thread::sleep_for(1s);
+		glViewport(0, 0, 1280, 720);
+		glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
 	}, oak::Task::LOOP_BIT });
 
-	tm.addTask(oak::Task{ [](){
-		for (size_t i = 0; i < 4; i++) {
-			{
-				std::lock_guard<std::mutex> lock{ coutMutex };
-				std::cout << "multi task: " << std::this_thread::get_id() << " | " << i << std::endl;
-			}
-			std::this_thread::sleep_for(200ms);
-		}
-	}, oak::Task::MULTI_THREAD_BIT | oak::Task::LOOP_BIT });
+	oak::Window window{ engine };
+	window.init();
 
-	tm.addTask(oak::Task{ [](){
-		for (size_t i = 0; i < 200; i++) {
-			{
-				std::lock_guard<std::mutex> lock{ coutMutex };
-				std::cout << "background task: " << std::this_thread::get_id() << " | " << i << std::endl;
-			}
-			std::this_thread::sleep_for(100ms);
-		}
-	}, oak::Task::BACKGROUND_BIT });
+	tm.addTask(oak::Task{ [&window](){
+		window.update();
+	}, oak::Task::LOOP_BIT });
 
 	tm.addTask({ [&engine](){
+		std::this_thread::sleep_for(5s);
 		engine.getEventManager().emitEvent(oak::TaskExitEvent{});
-	}, 0});
+	}, oak::Task::BACKGROUND_BIT});
 
 	engine.start();
 
