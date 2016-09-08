@@ -15,12 +15,12 @@ namespace oak {
 		}
 	}
 
-	void Worker::addTask(Task *task) {
+	void Worker::addTask(Task &&task) {
 		{
 			std::lock(tasksMutex_, doneMutex_);
 			std::lock_guard<std::mutex> lock1{ tasksMutex_, std::adopt_lock };
 			std::lock_guard<std::mutex> lock2{ doneMutex_, std::adopt_lock };
-			tasks_.push_back(task);
+			tasks_.push_back(std::move(task));
 			flags_[0] = true;
 		}
 
@@ -42,7 +42,7 @@ namespace oak {
 			Task *task;
 			{
 				std::lock_guard<std::mutex> lock{ tasksMutex_ };
-				task = tasks_.front();
+				task = &tasks_.front();
 			}
 			task->run();
 			{

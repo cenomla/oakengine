@@ -25,7 +25,7 @@ namespace oak {
 
 		void run();
 
-		void addTask(Task *task);
+		void addTask(Task &&task);
 
 		void quit();
 
@@ -34,7 +34,7 @@ namespace oak {
 
 	private:
 		std::mutex tasksMutex_;
-		std::array<std::queue<Task*>, 2> tasks_;
+		std::array<std::queue<Task>, 2> tasks_;
 
 		std::vector<Worker> workers_;
 

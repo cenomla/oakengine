@@ -18,15 +18,19 @@ int main(int argc, char** argv) {
 
 	oak::Engine engine;
 
-	oak::Task task{ [](){
+	engine.init();
+
+	oak::TaskManager &tm = engine.getTaskManager();
+
+	tm.addTask(oak::Task{ [](){
 		{
 			std::lock_guard<std::mutex> lock{ coutMutex };
 			std::cout << "test task 1" << std::endl;
 		}
 		std::this_thread::sleep_for(1s);
-	}, oak::Task::LOOP_BIT };
+	}, oak::Task::LOOP_BIT });
 
-	oak::Task multiTask{ [](){
+	tm.addTask(oak::Task{ [](){
 		for (size_t i = 0; i < 4; i++) {
 			{
 				std::lock_guard<std::mutex> lock{ coutMutex };
@@ -34,28 +38,21 @@ int main(int argc, char** argv) {
 			}
 			std::this_thread::sleep_for(200ms);
 		}
-	}, oak::Task::MULTI_THREAD_BIT | oak::Task::LOOP_BIT };
+	}, oak::Task::MULTI_THREAD_BIT | oak::Task::LOOP_BIT });
 
-	oak::Task backgroundTask{ [](){
+	tm.addTask(oak::Task{ [](){
 		for (size_t i = 0; i < 200; i++) {
 			{
 				std::lock_guard<std::mutex> lock{ coutMutex };
 				std::cout << "background task: " << std::this_thread::get_id() << " | " << i << std::endl;
 			}
-			std::this_thread::sleep_for(1200ms);
+			std::this_thread::sleep_for(100ms);
 		}
-	}, oak::Task::BACKGROUND_BIT };
+	}, oak::Task::BACKGROUND_BIT });
 
-	oak::Task exitTask{ [&engine](){
+	tm.addTask({ [&engine](){
 		engine.getEventManager().emitEvent(oak::TaskExitEvent{});
-		
-	}, 0 };
-
-	engine.init();
-
-	engine.getTaskManager().addTask(&task);
-	engine.getTaskManager().addTask(&multiTask);
-	engine.getTaskManager().addTask(&backgroundTask);
+	}, 0});
 
 	engine.start();
 

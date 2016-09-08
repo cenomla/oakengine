@@ -5,12 +5,10 @@ namespace oak {
 	class System {
 	public:
 		System();
+		virtual ~System();
 
-		void init();
-		void update();
-		void destroy();
-	private:
-		
+		virtual void init();
+		virtual void destroy();
 	};
 
 

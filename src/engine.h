@@ -1,9 +1,13 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "event_manager.h"
 #include "task_manager.h"
 
 namespace oak {
+
+	class System;
 
 	class Engine {
 	public:
@@ -17,6 +21,9 @@ namespace oak {
 
 		void start();
 
+		void addSystem(const std::string &name, System *system);
+		void removeSystem(const std::string &name);
+
 		EventManager& getEventManager() { return eventManager_; }
 		const EventManager& getEventManager() const { return eventManager_; }
 
@@ -27,6 +34,8 @@ namespace oak {
 		static Engine *INST;
 		EventManager eventManager_;
 		TaskManager taskManager_;
+		
+		std::unordered_map<std::string, System*> systems_;
 	};
 
 }

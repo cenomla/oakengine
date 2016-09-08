@@ -18,7 +18,7 @@ namespace oak {
 		Worker(const Worker &) = delete;
 		void operator=(const Worker &) = delete;
 
-		void addTask(Task *task);
+		void addTask(Task &&task);
 		void wait();
 
 		void run();
@@ -30,7 +30,7 @@ namespace oak {
 	private:
 		std::mutex tasksMutex_;
 		std::condition_variable taskCv_;
-		std::deque<Task*> tasks_;
+		std::deque<Task> tasks_;
 		std::thread thread_;
 
 		std::mutex doneMutex_;

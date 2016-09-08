@@ -30,30 +30,30 @@ namespace oak {
 		running_.store(true);
 		while (running_.load()) {
 			//pop a task from the front of the queue
-			Task *task = tasks_[0].front();
+			Task task = tasks_[0].front();
 			tasks_[0].pop();
 			//if the task is supposed to loop add it to the next queue
-			if (task->flags[Task::LOOP]) {
+			if (task.flags[Task::LOOP]) {
 				std::lock_guard<std::mutex> lock{ tasksMutex_ };
 				tasks_[1].push(task);
 			}
 			//if the task is allowed to execute concurrently find the least busy worker thread and add the task to the worker
-			if (task->flags[Task::MULTI_THREAD]) {
+			if (task.flags[Task::MULTI_THREAD]) {
 				size_t leastTaskCount = 99;
 				int index = -1;
 				for (size_t i = 0; i < workers_.size(); i++) {
 					Worker &worker = workers_[i];
-					if (worker.inBackground() == task->flags[Task::BACKGROUND] && worker.taskCount() < leastTaskCount) {
+					if (worker.inBackground() == task.flags[Task::BACKGROUND] && worker.taskCount() < leastTaskCount) {
 						leastTaskCount = worker.taskCount();
 						index = static_cast<int>(i);
 					}
 				}
 
 				if (index != -1) {
-					workers_[index].addTask(task);	
+					workers_[index].addTask(std::move(task));	
 				}
 			} else {
-				task->run();
+				task.run();
 			}
 
 			//if we have run out of tasks then wait till all tasks are completed and then swap the read/write task queues
@@ -72,9 +72,9 @@ namespace oak {
 		}
 	}
 
-	void TaskManager::addTask(Task *task) {
+	void TaskManager::addTask(Task &&task) {
 		std::lock_guard<std::mutex> lock{ tasksMutex_ };
-		tasks_[1].push(task);
+		tasks_[1].push(std::move(task));
 	}
 
 	void TaskManager::quit() {

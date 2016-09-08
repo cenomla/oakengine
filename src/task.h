@@ -13,6 +13,10 @@ namespace oak {
 		static constexpr size_t MULTI_THREAD_BIT = 2;
 		static constexpr size_t BACKGROUND_BIT = 6;
 
+		Task(const std::function<void ()> &r, const std::bitset<3> f) : run{ r }, flags{ f } {}
+		Task(const Task &other) : run{ other.run }, flags{ other.flags } {}
+		Task(Task &&other) : run{ std::move(other.run) }, flags{ std::move(other.flags) } {}
+
 		std::function<void ()> run;
 		std::bitset<3> flags;
 	};
