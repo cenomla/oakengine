@@ -2,9 +2,11 @@
 
 #include <iostream>
 
+#include "task_manager.h"
+
 namespace oak {
 
-	Window::Window(Engine &engine) : System{ engine }, window_{ nullptr } {
+	Window::Window(Engine *engine) : System{ engine }, window_{ nullptr } {
 	}
 
 	Window::~Window() {
@@ -35,6 +37,20 @@ namespace oak {
 			std::cout << "cannot load gl" << std::endl;
 			std::exit(-1);
 		}
+
+		std::cout << "opengl version; 3.3" << std::endl;
+
+		TaskManager &tm = engine_->getTaskManager();
+
+		tm.addTask(Task{ [](){
+			glViewport(0, 0, 1280, 720);
+			glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}, Task::LOOP_BIT });
+
+		tm.addTask(oak::Task{ [this](){
+			this->update();
+		}, Task::LOOP_BIT });
 	}
 
 	void Window::destroy() {

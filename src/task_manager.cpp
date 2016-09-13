@@ -11,10 +11,7 @@ namespace oak {
 	}
 
 	TaskManager::~TaskManager() {
-		//wait for all workers to complete their tasks
-		for (auto &worker : workers_) {
-			worker.wait();
-		}
+		
 	}
 
 	void TaskManager::init(Engine *engine) {
@@ -22,7 +19,14 @@ namespace oak {
 		for (size_t i = 0; i < workers_.size(); i++) {
 			workers_[i].setBackground(i < workers_.size()/2 ? false : true);
 		}
-		engine->getEventManager().add<TaskExitEvent>(this);
+		engine->getEventManager().add<QuitEvent>(this);
+	}
+
+	void TaskManager::destroy() {
+		//wait for all workers to complete their tasks
+		for (auto &worker : workers_) {
+			worker.wait();
+		}
 	}
 
 	void TaskManager::run() {
@@ -81,7 +85,7 @@ namespace oak {
 		running_.store(false);
 	}
 
-	void TaskManager::operator()(const TaskExitEvent&) {
+	void TaskManager::operator()(const QuitEvent&) {
 		quit();
 	}
 

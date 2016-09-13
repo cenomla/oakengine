@@ -22,6 +22,7 @@ namespace oak {
 		~TaskManager();
 
 		void init(Engine *engine);
+		void destroy();
 
 		void run();
 
@@ -29,7 +30,7 @@ namespace oak {
 
 		void quit();
 
-		void operator()(const TaskExitEvent&);
+		void operator()(const QuitEvent&);
 
 
 	private:

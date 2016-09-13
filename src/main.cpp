@@ -20,28 +20,20 @@ int main(int argc, char** argv) {
 
 	oak::Engine engine;
 
+	oak::Window window{ &engine };
+	engine.addSystem("window", &window);
+
 	engine.init();
 
 	
 
 	oak::TaskManager &tm = engine.getTaskManager();
 
-	tm.addTask(oak::Task{ [](){
-		glViewport(0, 0, 1280, 720);
-		glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-	}, oak::Task::LOOP_BIT });
-
-	oak::Window window{ engine };
-	window.init();
-
-	tm.addTask(oak::Task{ [&window](){
-		window.update();
-	}, oak::Task::LOOP_BIT });
+	
 
 	tm.addTask({ [&engine](){
 		std::this_thread::sleep_for(5s);
-		engine.getEventManager().emitEvent(oak::TaskExitEvent{});
+		engine.getEventManager().emitEvent(oak::QuitEvent{});
 	}, oak::Task::BACKGROUND_BIT});
 
 	engine.start();

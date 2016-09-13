@@ -2,7 +2,7 @@
 
 namespace oak {
 
-	System::System(Engine &engine) : engine_{ engine } {
+	System::System(Engine *engine) : engine_{ engine } {
 
 	}
 

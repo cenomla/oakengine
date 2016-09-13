@@ -15,10 +15,18 @@ namespace oak {
 	}
 
 	void Engine::init() {
+		for (auto &system : systems_) {
+			system.second->init();
+		}
+
 		taskManager_.init(this);
 	}
 
 	void Engine::destroy() {
+		//wait for all tasks to finish
+		taskManager_.destroy();
+
+
 		//shutdown all systems
 		for (auto &system : systems_) {
 			system.second->destroy();
@@ -33,7 +41,7 @@ namespace oak {
 
 	void Engine::addSystem(const std::string &name, System *system) {
 		auto it = systems_.find(name);
-		if (it != std::end(systems_)) {
+		if (it == std::end(systems_)) {
 			systems_.insert({ name, system });
 		}
 	}
