@@ -15,10 +15,6 @@ namespace oak {
 	}
 
 	void Engine::init() {
-		for (auto &system : systems_) {
-			system.second->init();
-		}
-
 		taskManager_.init(this);
 	}
 
@@ -42,12 +38,26 @@ namespace oak {
 	void Engine::addSystem(const std::string &name, System *system) {
 		auto it = systems_.find(name);
 		if (it == std::end(systems_)) {
+			system->init();
 			systems_.insert({ name, system });
 		}
 	}
 
 	void Engine::removeSystem(const std::string &name) {
-		systems_.erase(name);
+		auto it = systems_.find(name);
+		if (it != std::end(systems_)) {
+			it->second->destroy();
+			systems_.erase(name);
+		}
+	}
+
+	System* Engine::getSystem(const std::string &name) {
+		auto it = systems_.find(name);
+		if (it != std::end(systems_)) {
+			return it->second;
+		} else {
+			return nullptr;
+		}
 	}
 
 }

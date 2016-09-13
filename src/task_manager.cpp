@@ -64,12 +64,14 @@ namespace oak {
 			if (tasks_[0].empty()) {
 				for (auto &worker : workers_) {
 					if (!worker.inBackground()) {
-						worker.wait();
+						worker.wait();//wait for the worker if it is not in the background
 					}
 				}
+				//swap tasks
 				std::lock_guard<std::mutex> lock{ tasksMutex_ };
 				std::swap(tasks_[0], tasks_[1]);
 				if (tasks_[0].empty()) {
+					//if there are no tasks then quit
 					quit();
 				}
 			}

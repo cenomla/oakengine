@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 
+#include "oak_assert.h"
+#include "memory/memory_manager.h"
 #include "event_manager.h"
 #include "task_manager.h"
 
@@ -11,7 +13,7 @@ namespace oak {
 
 	class Engine {
 	public:
-		inline static const Engine& inst() { return *INST; }
+		inline static const Engine& inst() { oak_assert(INST != nullptr); return *INST; }
 
 		Engine();
 		~Engine();
@@ -24,6 +26,8 @@ namespace oak {
 		void addSystem(const std::string &name, System *system);
 		void removeSystem(const std::string &name);
 
+		System* getSystem(const std::string &name);
+
 		EventManager& getEventManager() { return eventManager_; }
 		const EventManager& getEventManager() const { return eventManager_; }
 
@@ -32,6 +36,7 @@ namespace oak {
 
 	private:
 		static Engine *INST;
+		MemoryManager memoryManager_;
 		EventManager eventManager_;
 		TaskManager taskManager_;
 		
