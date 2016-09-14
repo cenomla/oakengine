@@ -1,11 +1,7 @@
 #include <iostream>
-#include <thread>
 #include <chrono>
-#include <memory>
+#include <mutex>
 
-#include <glad/glad.h>
-
-#include "event_queue.h"
 #include "events.h"
 #include "engine.h"
 #include "task.h"

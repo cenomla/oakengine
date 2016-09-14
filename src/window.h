@@ -1,13 +1,12 @@
 #pragma once
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include "engine.h"
 #include "system.h"
 
+struct GLFWwindow;
 
 namespace oak {
+
 
 	class Window : public System {
 	public:

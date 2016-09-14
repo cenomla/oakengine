@@ -1,6 +1,8 @@
 #include "window.h"
 
 #include <iostream>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include "task_manager.h"
 
@@ -38,7 +40,7 @@ namespace oak {
 			std::exit(-1);
 		}
 
-		std::cout << "opengl version; 3.3" << std::endl;
+		std::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
 
 		TaskManager &tm = engine_->getTaskManager();
 

@@ -28,7 +28,7 @@ namespace oak {
 
 	MemoryManager::MemoryManager() {
 		INST = this;
-		pools_.emplace(std::pair<uint32_t, MemoryPool>{ 0, MemoryPool{ 512_mb } });
+		pools_.emplace(std::pair<uint32_t, MemoryPool>{ 0, MemoryPool{ 16_mb } });
 	}
 
 	MemoryManager::~MemoryManager() {
@@ -72,8 +72,8 @@ namespace oak {
 			}
 		}
 		//if no pool has enough space allocate a new pool
-		pool.blocks_.emplace_back(FreelistAllocator{ malloc(pool.blockSize_ * 1000000), pool.blockSize_ * 1000000 });
-		pool.allocatedMemory_ += pool.blockSize_ * 1000000;
+		pool.blocks_.emplace_back(FreelistAllocator{ malloc(pool.blockSize_), pool.blockSize_ });
+		pool.allocatedMemory_ += pool.blockSize_;
 		pool.usedMemory_ += size;
 		return { pool.blocks_.back().allocate(size), size };
 	}

@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include "util/typeid.h"
+#include "memory/memory_manager.h"
 #include "event_channel.h"
 
 namespace oak {
@@ -13,34 +14,36 @@ namespace oak {
 
 		~EventManager() {
 			for (auto &it : channels_) {
-				delete it.second;
+				static_cast<EventChannelBase*>(it.second.ptr)->~EventChannelBase();
+				MemoryManager::inst().deallocate(it.second);
 			}
 		}
 
 		template <typename TEvent, typename TListener>
 		void add(TListener *listener) {
-			auto channel = new EventChannel<TEvent>{};
+			const Block &block = MemoryManager::inst().allocate(sizeof(EventChannel<TEvent>));
+			auto *channel = new (block.ptr) EventChannel<TEvent>();
 			channel->add(listener);
 			std::lock_guard<std::mutex> guard{ channelsMutex_ };
-			channels_.insert({ util::TypeId<BaseEvt>::id<TEvent>(), channel });
+			channels_.insert({ util::TypeId<BaseEvt>::id<TEvent>(), block });
 		}
 
 		template <typename TEvent, typename TListener>
 		void remove(TListener *listener) {
 			std::lock_guard<std::mutex> guard{ channelsMutex_ };
-			static_cast<EventChannel<TEvent>*>(channels_.at(util::TypeId<BaseEvt>::id<TEvent>()))->remove(listener);
+			static_cast<EventChannel<TEvent>*>(channels_.at(util::TypeId<BaseEvt>::id<TEvent>()).ptr)->remove(listener);
 		}
 
 		template <typename TEvent>
 		void emitEvent(const TEvent &event) const {
-			static_cast<EventChannel<TEvent>*>(channels_.at(util::TypeId<BaseEvt>::id<TEvent>()))->emitEvent(event);
+			static_cast<EventChannel<TEvent>*>(channels_.at(util::TypeId<BaseEvt>::id<TEvent>()).ptr)->emitEvent(event);
 		}
 
 	private:
 		struct BaseEvt {};
 
 		std::mutex channelsMutex_;
-		std::unordered_map<size_t, EventChannelBase*> channels_;
+		std::unordered_map<size_t, Block> channels_;
 	};
 
 }

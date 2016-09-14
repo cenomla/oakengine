@@ -12,7 +12,7 @@ namespace oak {
 
 	class MemoryManager {
 	public:
-		inline static MemoryManager& getInst() { oak_assert(INST != nullptr); return *INST; }
+		inline static MemoryManager& inst() { oak_assert(INST != nullptr); return *INST; }
 		static std::string memoryString(size_t byte);
 	private:
 		static MemoryManager* INST;
