@@ -16,7 +16,7 @@ lib_path = 'lib'
 src_path = 'src'
 intermediate_path = 'bin/oak.d'
 target_path = 'bin/oak'
-flags = ['-std=c++1z', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG']
+flags = ['-std=c++14', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG']
 
 #x11 libs
 #'Xinerama', 'Xxf86vm', 'X11', 'Xcursor', 'Xrandr'
@@ -25,7 +25,7 @@ flags = ['-std=c++1z', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D
 #lists
 sources = []
 #libs = ['lua', 'GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm']
-libs = ['GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm', 'stdc++fs']
+libs = ['vulkan', 'GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm']
 
 get_sources_recursive(sources, src_path, intermediate_path, '*.cpp')
 

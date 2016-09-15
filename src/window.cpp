@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "task_manager.h"
+#include "log.h"
 
 namespace oak {
 
@@ -17,7 +18,7 @@ namespace oak {
 
 	void Window::init() {
 		if (!glfwInit()) {
-			std::cout << "cannot init glfw" << std::endl;
+			log::cout << "cannot init glfw" << std::endl;
 			std::exit(-1);
 		}
 
@@ -28,7 +29,7 @@ namespace oak {
 
 		window_ = glfwCreateWindow(1280, 720, "Oak Engine", 0, 0);
 		if (window_ == nullptr) {
-			std::cout << "cannot create window" << std::endl;
+			log::cout << "cannot create window" << std::endl;
 			std::exit(-1);
 		}
 
@@ -36,11 +37,11 @@ namespace oak {
 		glfwSwapInterval(1);
 
 		if (!gladLoadGL()) {
-			std::cout << "cannot load gl" << std::endl;
+			log::cout << "cannot load gl" << std::endl;
 			std::exit(-1);
 		}
 
-		std::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
+		log::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
 
 		TaskManager &tm = engine_->getTaskManager();
 

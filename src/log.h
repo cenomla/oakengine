@@ -5,29 +5,28 @@
 #include <iostream>
 #include <vector>
 
-namespace oak {
+namespace oak::log {
 
-	namespace debug {
+	class Logger : public std::streambuf {
+	public:
+		Logger(size_t buffSize);
 
-		class Logger : public std::streambuf {
-		public:
-			inline void addStream(std::ostream& stream) {
-				ostreams_.push_back(stream.rdbuf());
-			}
+		inline void addStream(std::ostream& stream) {
+			stream.clear();
+			ostreams_.push_back(&stream);
+		}
 
-		protected:
-			int sync();
-			std::streamsize xsputn(const char_type* s, std::streamsize count);
-			int_type overflow( int_type ch = 0 );
-		private:
-			std::vector<std::streambuf*> ostreams_;
-		};
+	protected:
+		bool writeAndFlush();
 
+		int sync();
+		int_type overflow( int_type ch = traits_type::eof() );
+	private:
+		std::vector<char> buff_;
+		std::vector<std::ostream*> ostreams_;
+	};
 
-
-	}
-
-	extern debug::Logger log_stream;
-	extern std::ostream log;
+	extern Logger cout_stream;
+	extern std::ostream cout;
 
 }
