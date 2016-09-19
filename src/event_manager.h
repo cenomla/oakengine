@@ -36,7 +36,11 @@ namespace oak {
 
 		template <typename TEvent>
 		void emitEvent(const TEvent &event) const {
-			static_cast<EventChannel<TEvent>*>(channels_.at(util::TypeId<BaseEvt>::id<TEvent>()).ptr)->emitEvent(event);
+			size_t tid = util::TypeId<BaseEvt>::id<TEvent>();
+			auto it = channels_.find(tid);
+			if (it != std::end(channels_)) {
+				static_cast<EventChannel<TEvent>*>(channels_.at(tid).ptr)->emitEvent(event);
+			}
 		}
 
 	private:

@@ -1,9 +1,0 @@
-oak engine version: 0.1.0
-opengl version: 3.3 (Core Profile) Mesa 12.0.2
-VK_KHR_surface
-VK_KHR_wayland_surface
-VK_KHR_surface
-VK_KHR_xcb_surface
-VK_KHR_wayland_surface
-VK_KHR_xlib_surface
-VK_EXT_debug_report

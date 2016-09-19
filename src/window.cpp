@@ -4,12 +4,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "task_manager.h"
+#include "engine.h"
+#include "events.h"
 #include "log.h"
 
 namespace oak {
 
-	Window::Window(Engine *engine) : System{ engine }, window_{ nullptr } {
+	Window::Window(Engine *engine, uint32_t flags) : System{ engine }, window_{ nullptr }, flags_{ flags } {
+		
 	}
 
 	Window::~Window() {
@@ -17,31 +19,8 @@ namespace oak {
 	}
 
 	void Window::init() {
-		if (!glfwInit()) {
-			log::cout << "cannot init glfw" << std::endl;
-			std::exit(-1);
-		}
-
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-		window_ = glfwCreateWindow(1280, 720, "Oak Engine", 0, 0);
-		if (window_ == nullptr) {
-			log::cout << "cannot create window" << std::endl;
-			std::exit(-1);
-		}
-
-		glfwMakeContextCurrent(window_);
-		glfwSwapInterval(1);
-
-		if (!gladLoadGL()) {
-			log::cout << "cannot load gl" << std::endl;
-			std::exit(-1);
-		}
-
-		log::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
+		createWindow();
+		setCallbacks();
 
 		TaskManager &tm = engine_->getTaskManager();
 
@@ -64,6 +43,48 @@ namespace oak {
 	void Window::update() {
 		glfwSwapBuffers(window_);
 		glfwPollEvents();
+	}
+
+	void Window::createWindow() {
+		if (!glfwInit()) {
+			log::cout << "cannot init glfw" << std::endl;
+			std::exit(-1);
+		}
+
+		if (flags_ & USE_VULKAN) {
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		} else {
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		}
+
+		window_ = glfwCreateWindow(1280, 720, "Oak Engine", 0, 0);
+		if (window_ == nullptr) {
+			log::cout << "cannot create window" << std::endl;
+			std::exit(-1);
+		}
+
+		glfwSetWindowUserPointer(window_, this);
+
+	}
+
+	void Window::setCallbacks() {
+		glfwSetWindowCloseCallback(window_, closeCallback);
+		glfwSetKeyCallback(window_, keyCallback);
+	}
+
+	void Window::closeCallback(GLFWwindow *window) {
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(QuitEvent{});
+	}
+
+	void Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });  
+	}
+
+	void Window::buttonCallback(GLFWwindow *window, int button, int action, int mods) {
+
 	}
 
 }

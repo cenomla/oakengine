@@ -18,14 +18,11 @@ intermediate_path = 'bin/oak.d'
 target_path = 'bin/oak'
 flags = ['-std=c++14', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG']
 
-#x11 libs
-#'Xinerama', 'Xxf86vm', 'X11', 'Xcursor', 'Xrandr'
-#wayland libs
-#'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon'
 #lists
 sources = []
-#libs = ['lua', 'GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm']
-libs = ['vulkan', 'GL', 'glad', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'pthread', 'dl', 'm']
+wayland_libs = ['glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon']
+xlibs = ['glfw3x', 'X11', 'Xxf86vm', 'Xinerama', 'Xrandr', 'Xcursor']
+libs = ['vulkan', 'GL', 'glad'] + xlibs + ['xkbcommon', 'pthread', 'dl', 'm']
 
 get_sources_recursive(sources, src_path, intermediate_path, '*.cpp')
 
@@ -33,4 +30,5 @@ get_sources_recursive(sources, src_path, intermediate_path, '*.cpp')
 env = Environment(CXXFLAGS = flags, CPPPATH = include_path, LIBPATH = lib_path, LIBS = libs)
 
 env.VariantDir(intermediate_path, src_path, duplicate=0)
+env.Library(target = target_path, source = sources)
 env.Program(target = target_path, source = sources)
