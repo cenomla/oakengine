@@ -16,6 +16,7 @@ namespace oak::graphics {
 		inline void init(GLFWwindow *window) { api_.init(window); }
 		inline void destroy() { api_.destroy(); }
 
+		inline void update() { api_.update(); }
 
 	private:
 		TApi api_;

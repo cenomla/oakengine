@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include "system.h"
+#include "log.h"
 
 namespace oak {
 
@@ -15,6 +16,7 @@ namespace oak {
 	}
 
 	void Engine::init() {
+		log::cout << "oak engine version: 0.1.0" << std::endl;
 		taskManager_.init(this);
 	}
 

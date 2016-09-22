@@ -7,7 +7,6 @@
 
 #include <GLFW/glfw3.h>
 
-#define OAK_USE_GL
 #define OAK_USE_VULKAN
 #include "graphics/renderer.h"
 
@@ -27,24 +26,29 @@ struct KeyListener {
 };
 
 int main(int argc, char** argv) {
+	//setup log
 	std::ofstream file{ "log" };
 	std::ostream log{ std::cout.rdbuf(&oak::log::cout_stream) };
 	oak::log::cout_stream.addStream(file);
 	oak::log::cout_stream.addStream(log);
 
-	oak::log::cout << "oak engine version: 0.1.0" << std::endl;
-
+	//create the engine
 	oak::Engine engine;
 	engine.init();
 
-	oak::Window window{ &engine, oak::Window::USE_VULKAN };
+	//create and add the window system
+	oak::Window window{ &engine, 0 };
 	engine.addSystem("window", &window);
-
+	
 	KeyListener listener;
 	engine.getEventManager().add<oak::KeyEvent>(&listener);
 
 	oak::graphics::Renderer<oak::graphics::VulkanApi> renderer;
 	renderer.init(window.getWindowHandle());
+
+	engine.getTaskManager().addTask(oak::Task{ [&renderer](){
+		renderer.update();
+	}, oak::Task::LOOP_BIT});
 
 	engine.start();
 

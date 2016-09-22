@@ -11,7 +11,7 @@ namespace oak {
 
 	class Window : public System {
 	public:
-		static constexpr uint32_t USE_VULKAN = 0x00000001;
+		static constexpr uint32_t GL_CONTEXT = 0x00000001;
 
 		Window(Engine *engine, uint32_t flags = 0);
 		~Window();

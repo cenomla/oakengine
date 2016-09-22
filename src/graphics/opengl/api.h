@@ -10,8 +10,10 @@ namespace oak::graphics {
 		void init(GLFWwindow *window);
 		void destroy();
 
-	private:
+		void update();
 
+	private:
+		GLFWwindow *window_;
 
 	};
 

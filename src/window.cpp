@@ -24,12 +24,6 @@ namespace oak {
 
 		TaskManager &tm = engine_->getTaskManager();
 
-		tm.addTask(Task{ [](){
-			glViewport(0, 0, 1280, 720);
-			glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-		}, Task::LOOP_BIT });
-
 		tm.addTask(oak::Task{ [this](){
 			this->update();
 		}, Task::LOOP_BIT });
@@ -41,7 +35,6 @@ namespace oak {
 	}
 
 	void Window::update() {
-		glfwSwapBuffers(window_);
 		glfwPollEvents();
 	}
 
@@ -51,13 +44,13 @@ namespace oak {
 			std::exit(-1);
 		}
 
-		if (flags_ & USE_VULKAN) {
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		} else {
+		if (flags_ & GL_CONTEXT) {
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		} else {
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 
 		window_ = glfwCreateWindow(1280, 720, "Oak Engine", 0, 0);

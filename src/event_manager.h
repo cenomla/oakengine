@@ -21,11 +21,18 @@ namespace oak {
 
 		template <typename TEvent, typename TListener>
 		void add(TListener *listener) {
-			const Block &block = MemoryManager::inst().allocate(sizeof(EventChannel<TEvent>));
-			auto *channel = new (block.ptr) EventChannel<TEvent>();
-			channel->add(listener);
-			std::lock_guard<std::mutex> guard{ channelsMutex_ };
-			channels_.insert({ util::TypeId<BaseEvt>::id<TEvent>(), block });
+			size_t tid = util::TypeId<BaseEvt>::id<TEvent>();
+			auto it = channels_.find(tid);
+			if (it == std::end(channels_)) {
+				const Block &block = MemoryManager::inst().allocate(sizeof(EventChannel<TEvent>));
+				auto *channel = new (block.ptr) EventChannel<TEvent>();
+				channel->add(listener);
+				std::lock_guard<std::mutex> guard{ channelsMutex_ };
+				channels_.insert({ tid, block });
+			} else {
+				static_cast<EventChannel<TEvent>*>(it->second.ptr)->add(listener);
+			}
+			
 		}
 
 		template <typename TEvent, typename TListener>

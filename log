@@ -1,0 +1,88 @@
+oak engine version: 0.1.0
+hardware supported threads: 8
+avaliable layers: 
+VK_LAYER_LUNARG_swapchain
+VK_LAYER_GOOGLE_unique_objects
+VK_LAYER_LUNARG_core_validation
+VK_LAYER_LUNARG_object_tracker
+VK_LAYER_GOOGLE_threading
+VK_LAYER_LUNARG_parameter_validation
+VK_LAYER_LUNARG_image
+VK_LAYER_LUNARG_swapchain
+VK_LAYER_GOOGLE_unique_objects
+VK_LAYER_LUNARG_core_validation
+VK_LAYER_LUNARG_object_tracker
+VK_LAYER_GOOGLE_threading
+VK_LAYER_LUNARG_parameter_validation
+VK_LAYER_LUNARG_image
+VK_LAYER_LUNARG_standard_validation
+glfw required extensions: 
+VK_KHR_surface
+VK_KHR_xcb_surface
+avaliable extensions: 
+VK_KHR_surface
+VK_KHR_xcb_surface
+VK_KHR_wayland_surface
+VK_KHR_xlib_surface
+VK_EXT_debug_report
+device count: 2
+queue family count: 1
+queue family count: 1
+queue family count: 1
+recieved key: UNKNOWN
+recieved key: UNKNOWN
+recieved key: f
+recieved key: f
+recieved key: w
+recieved key: e
+recieved key: w
+recieved key: e
+recieved key: r
+recieved key: f
+recieved key: r
+recieved key: f
+recieved key: w
+recieved key: e
+recieved key: f
+recieved key: w
+recieved key: e
+recieved key: w
+recieved key: a
+recieved key: f
+recieved key: e
+recieved key: f
+recieved key: a
+recieved key: w
+recieved key: e
+recieved key: a
+recieved key: f
+recieved key: w
+recieved key: f
+recieved key: a
+recieved key: w
+recieved key: a
+recieved key: w
+recieved key: f
+recieved key: e
+recieved key: f
+recieved key: a
+recieved key: w
+recieved key: e
+recieved key: a
+recieved key: f
+recieved key: w
+recieved key: e
+recieved key: f
+recieved key: a
+recieved key: w
+recieved key: e
+recieved key: f
+recieved key: w
+recieved key: f
+recieved key: w
+recieved key: e
+recieved key: w
+recieved key: f
+recieved key: e
+recieved key: w
+recieved key: UNKNOWN
