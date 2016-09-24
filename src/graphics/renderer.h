@@ -7,6 +7,8 @@
 	#include "graphics/opengl/api.h"
 #endif
 
+#include "events.h"
+
 
 namespace oak::graphics {
 
@@ -17,6 +19,10 @@ namespace oak::graphics {
 		inline void destroy() { api_.destroy(); }
 
 		inline void update() { api_.update(); }
+
+		inline void onWindowResize(int width, int height) { api_.onWindowResize(width, height); }
+
+		inline void operator()(const ResizeEvent &evt) { onWindowResize(evt.width, evt.height); }
 
 	private:
 		TApi api_;

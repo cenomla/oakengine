@@ -5,10 +5,11 @@
 #include <mutex>
 #include <cstring>
 
-#include <GLFW/glfw3.h>
-
+#define OAK_USE_GL
 #define OAK_USE_VULKAN
 #include "graphics/renderer.h"
+
+#include <GLFW/glfw3.h>
 
 #include "log.h"
 #include "events.h"
@@ -37,19 +38,26 @@ int main(int argc, char** argv) {
 	engine.init();
 
 	//create and add the window system
-	oak::Window window{ &engine, 0 };
-	engine.addSystem("window", &window);
+	oak::Window window{ &engine, oak::Window::GL_CONTEXT };
 	
+	//add a test key listener
 	KeyListener listener;
 	engine.getEventManager().add<oak::KeyEvent>(&listener);
 
-	oak::graphics::Renderer<oak::graphics::VulkanApi> renderer;
-	renderer.init(window.getWindowHandle());
+	//create the renderer object on the stack
+	oak::graphics::Renderer<oak::graphics::OpenglApi> renderer;
 
+	//create the task to update the renderer
 	engine.getTaskManager().addTask(oak::Task{ [&renderer](){
 		renderer.update();
 	}, oak::Task::LOOP_BIT});
-
+	//add the window to the engine and therefore initilize it
+	engine.addSystem("window", &window);
+	//add the resize event to the window
+	engine.getEventManager().add<oak::ResizeEvent>(&renderer);
+	//init the renderer
+	renderer.init(window.getWindowHandle());
+	//start ur engines
 	engine.start();
 
 	renderer.destroy();

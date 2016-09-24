@@ -17,4 +17,9 @@ namespace oak {
 		int mods;
 	};
 
+	struct ResizeEvent {
+		int width;
+		int height;
+	};
+
 }

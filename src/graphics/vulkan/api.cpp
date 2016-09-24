@@ -1,8 +1,11 @@
 #include "api.h"
 
+#include <cstring>
 #include <limits>
 #include <set>
 #include <GLFW/glfw3.h>
+
+#include "graphics/vertex.h"
 
 #include "log.h"
 
@@ -19,12 +22,18 @@ namespace oak::graphics {
 		renderPass_{ [this](VkRenderPass pass) { vkDestroyRenderPass(this->device_, pass, nullptr); } },
 		pipelineLayout_{ [this](VkPipelineLayout layout) { vkDestroyPipelineLayout(this->device_, layout, nullptr); } },
 		graphicsPipeline_{ [this](VkPipeline pipeline) { vkDestroyPipeline(this->device_, pipeline, nullptr); } },
+		vertexBuffer_{ [this](VkBuffer buffer) { vkDestroyBuffer(this->device_, buffer, nullptr); } },
+		vertexBufferMemory_{ [this](VkDeviceMemory mem) { vkFreeMemory(this->device_, mem, nullptr); } },
+		indexBuffer_{ [this](VkBuffer buffer) { vkDestroyBuffer(this->device_, buffer, nullptr); } },
+		indexBufferMemory_{ [this](VkDeviceMemory mem) { vkFreeMemory(this->device_, mem, nullptr); } },
 		commandPool_{ [this](VkCommandPool pool) { vkDestroyCommandPool(this->device_, pool, nullptr); } },
 		imageAvaliableSemaphore_{ [this](VkSemaphore semaphore) { vkDestroySemaphore(this->device_, semaphore, nullptr); } },
 		renderFinishedSemaphore_{ [this](VkSemaphore semaphore) { vkDestroySemaphore(this->device_, semaphore, nullptr); } }
 		{}
 
 	void VulkanApi::init(GLFWwindow *window) {
+		glfwGetWindowSize(window, &windowWidth_, &windowHeight_);
+
 		initInstance();
 		initDebugReport();
 		initSurface(window);
@@ -35,6 +44,8 @@ namespace oak::graphics {
 		initGraphicsPipeline();
 		initFramebuffers();
 		initCommandPool();
+		initVertexBuffer();
+		initIndexBuffer();
 		initCommandBuffers();
 		initSemaphores();
 	}
@@ -45,7 +56,16 @@ namespace oak::graphics {
 
 	void VulkanApi::update() {
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(device_, swapchain_, std::numeric_limits<uint64_t>::max(), imageAvaliableSemaphore_, VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(device_, swapchain_, std::numeric_limits<uint64_t>::max(), imageAvaliableSemaphore_, VK_NULL_HANDLE, &imageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			recreateSwapchain();
+			return;
+		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			log::cout << "failed to get the next swapchain image" << std::endl;
+			std::exit(-1);
+		}
+
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -63,7 +83,7 @@ namespace oak::graphics {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphore;
 
-		VkResult result = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+		result = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to do queue thing" << std::endl;
 			std::exit(-1);
@@ -81,7 +101,30 @@ namespace oak::graphics {
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr;
 
-		vkQueuePresentKHR(presentQueue_, &presentInfo);
+		result = vkQueuePresentKHR(presentQueue_, &presentInfo);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			recreateSwapchain();
+		} else if (result != VK_SUCCESS) {
+			log::cout << "failed to present swapchain" << std::endl;
+			std::exit(-1);
+		}
+	}
+
+	void VulkanApi::onWindowResize(int width, int height) {
+		windowWidth_ = width;
+		windowHeight_ = height;
+		recreateSwapchain();
+	} 
+
+	void VulkanApi::recreateSwapchain() {
+		vkDeviceWaitIdle(device_);
+
+		initSwapchain();
+		initImageViews();
+		initRenderPass();
+		initGraphicsPipeline();
+		initFramebuffers();
+		initCommandBuffers();
 	}
 
 	void VulkanApi::initInstance() {
@@ -267,8 +310,11 @@ namespace oak::graphics {
 			vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
 
-			physicalDevice = device;
+			log::cout << "device name: " << deviceProperties.deviceName << std::endl;
+			//physicalDevice = device;
 		}
+
+		physicalDevice = devices[0];
 
 		return physicalDevice;
 	}
@@ -296,11 +342,11 @@ namespace oak::graphics {
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
-	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, int width, int height) {
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
 			return capabilities.currentExtent;
 		} else {
-			VkExtent2D extent = {1280, 720};
+			VkExtent2D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
 			extent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, extent.width));
 			extent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, extent.height));
@@ -385,7 +431,7 @@ namespace oak::graphics {
 
 		VkSurfaceFormatKHR format = chooseSurfaceFormat(details.formats);
 		VkPresentModeKHR mode = choosePresentMode(details.modes);
-		VkExtent2D extent = chooseSwapExtent(details.capabilities);
+		VkExtent2D extent = chooseSwapExtent(details.capabilities, windowWidth_, windowHeight_);
 
 		//get image count for swap images
 		uint32_t imageCount = details.capabilities.minImageCount + 1;
@@ -421,12 +467,18 @@ namespace oak::graphics {
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		createInfo.presentMode = mode;
 		createInfo.clipped = VK_TRUE;
-		createInfo.oldSwapchain = VK_NULL_HANDLE;
+		//set the old swapchain 
+		VkSwapchainKHR oldSwapchain = swapchain_;
+		createInfo.oldSwapchain = oldSwapchain;
 
-		VkResult result = vkCreateSwapchainKHR(device_, &createInfo, nullptr, swapchain_.replace());
+		VkSwapchainKHR newSwapchain;
+
+		VkResult result = vkCreateSwapchainKHR(device_, &createInfo, nullptr, &newSwapchain);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create swapchain" << std::endl;
 		}
+
+		swapchain_ = newSwapchain;
 
 		//get the swapchain images
 		vkGetSwapchainImagesKHR(device_, swapchain_, &imageCount, nullptr);
@@ -495,6 +547,32 @@ namespace oak::graphics {
 		}
 	}
 
+	VkVertexInputBindingDescription getBindingDescription() {
+		VkVertexInputBindingDescription bindingDescription = {};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+
+		return bindingDescription;
+	}
+
+	std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex, Vertex::position);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex, Vertex::color);
+
+		return attributeDescriptions;
+	}
+
 	void VulkanApi::initGraphicsPipeline() {
 		auto vertShaderCode = readFile("src/graphics/shaders/basic/vert.spv");
 		auto fragShaderCode = readFile("src/graphics/shaders/basic/frag.spv");
@@ -519,12 +597,15 @@ namespace oak::graphics {
 
 		VkPipelineShaderStageCreateInfo shaderStages[] = { vertStageInfo, fragStageInfo };
 
+		auto bindingDescription = getBindingDescription();
+		auto attributeDescriptions = getAttributeDescriptions();
+
 		VkPipelineVertexInputStateCreateInfo vertInputInfo = {};
 		vertInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertInputInfo.vertexBindingDescriptionCount = 0;
-		vertInputInfo.pVertexBindingDescriptions = nullptr;
-		vertInputInfo.vertexAttributeDescriptionCount = 0;
-		vertInputInfo.pVertexAttributeDescriptions = nullptr;
+		vertInputInfo.vertexBindingDescriptionCount = 1;
+		vertInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
+		vertInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		//fixed function
 
@@ -719,6 +800,118 @@ namespace oak::graphics {
 		}
 	}
 
+	uint32_t VulkanApi::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memProperties);
+
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+		
+		log::cout << "failed to find suitable memory type" << std::endl;
+		std::exit(-1);
+	}
+
+	void VulkanApi::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkBuffer> &buffer, VHandle<VkDeviceMemory> &memory) {
+		VkBufferCreateInfo bufferInfo = {};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = usage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VkResult result = vkCreateBuffer(device_, &bufferInfo, nullptr, buffer.replace());
+		if (result != VK_SUCCESS) {
+			log::cout << "failed to create vertex buffer" << std::endl;
+			std::exit(-1);
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(device_, buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+		result = vkAllocateMemory(device_, &allocInfo, nullptr, memory.replace());
+		if (result != VK_SUCCESS) {
+			log::cout << "failed to allocate memory for the vertex buffer" << std::endl;
+			std::exit(-1);
+		}
+
+		vkBindBufferMemory(device_, buffer, memory, 0);
+	}
+
+	void VulkanApi::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
+		VkCommandBufferAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandPool = commandPool_;
+		allocInfo.commandBufferCount = 1;
+
+		VkCommandBuffer commandBuffer;
+		vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
+
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+		VkBufferCopy copyRegion = {};
+		copyRegion.srcOffset = 0;
+		copyRegion.dstOffset = 0;
+		copyRegion.size = size;
+		vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
+		vkEndCommandBuffer(commandBuffer);
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(graphicsQueue_);
+
+		vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
+	}
+
+	void VulkanApi::initVertexBuffer() {
+		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+		
+		//create a staging buffer
+		VHandle<VkBuffer> stagingBuffer{ [this](VkBuffer buffer){ vkDestroyBuffer(this->device_, buffer, nullptr); } };
+		VHandle<VkDeviceMemory> stagingBufferMemory{ [this](VkDeviceMemory memory){ vkFreeMemory(this->device_, memory, nullptr); } };
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		//copy vertices to the buffer
+		void *data;
+		vkMapMemory(device_, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, vertices.data(), bufferSize);
+		vkUnmapMemory(device_, stagingBufferMemory);
+		//create the actual buffer and copy the info over
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer_, vertexBufferMemory_);		
+		copyBuffer(stagingBuffer, vertexBuffer_, bufferSize);
+	}
+
+	void VulkanApi::initIndexBuffer() {
+		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+		
+		//create a staging buffer
+		VHandle<VkBuffer> stagingBuffer{ [this](VkBuffer buffer){ vkDestroyBuffer(this->device_, buffer, nullptr); } };
+		VHandle<VkDeviceMemory> stagingBufferMemory{ [this](VkDeviceMemory memory){ vkFreeMemory(this->device_, memory, nullptr); } };
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		//copy vertices to the buffer
+		void *data;
+		vkMapMemory(device_, stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, indices.data(), bufferSize);
+		vkUnmapMemory(device_, stagingBufferMemory);
+		//create the actual buffer and copy the info over
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer_, indexBufferMemory_);		
+		copyBuffer(stagingBuffer, indexBuffer_, bufferSize);
+	}
+
 	void VulkanApi::initCommandPool() {
 		QueueFamilyIndices indices = findQueueFamilyIndices(physicalDevice_);
 
@@ -736,6 +929,11 @@ namespace oak::graphics {
 	}
 
 	void VulkanApi::initCommandBuffers() {
+
+		if (commandBuffers_.size() > 0) {
+			vkFreeCommandBuffers(device_, commandPool_, commandBuffers_.size(), commandBuffers_.data());
+		}
+
 		commandBuffers_.resize(swapchainFramebuffers_.size());
 
 		VkCommandBufferAllocateInfo allocInfo = {};
@@ -765,13 +963,21 @@ namespace oak::graphics {
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = swapchainExtent_;
 
-			VkClearValue clearColor = { 0.3f, 0.2f, 0.7f, 1.0f };
+			VkClearValue clearColor = { 0.0f, 0.2f, 0.65f, 1.0f };
 			renderPassInfo.clearValueCount = 1;
 			renderPassInfo.pClearValues = &clearColor;
 
 			vkCmdBeginRenderPass(commandBuffers_.at(i), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			vkCmdBindPipeline(commandBuffers_.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-			vkCmdDraw(commandBuffers_.at(i), 3, 1, 0, 0);
+
+			VkBuffer vertexBuffers[] = { vertexBuffer_ };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffers_.at(i), 0, 1, vertexBuffers, offsets);
+
+			vkCmdBindIndexBuffer(commandBuffers_.at(i), indexBuffer_, 0, VK_INDEX_TYPE_UINT16);
+
+			vkCmdDrawIndexed(commandBuffers_.at(i), indices.size(), 1, 0, 0, 0);
+			
 			vkCmdEndRenderPass(commandBuffers_.at(i));
 
 			VkResult result = vkEndCommandBuffer(commandBuffers_.at(i));

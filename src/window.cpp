@@ -66,6 +66,7 @@ namespace oak {
 	void Window::setCallbacks() {
 		glfwSetWindowCloseCallback(window_, closeCallback);
 		glfwSetKeyCallback(window_, keyCallback);
+		glfwSetWindowSizeCallback(window_, resizeCallback);
 	}
 
 	void Window::closeCallback(GLFWwindow *window) {
@@ -78,6 +79,10 @@ namespace oak {
 
 	void Window::buttonCallback(GLFWwindow *window, int button, int action, int mods) {
 
+	}
+
+	void Window::resizeCallback(GLFWwindow *window, int width, int height) {
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(ResizeEvent{ width, height });
 	}
 
 }

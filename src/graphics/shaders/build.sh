@@ -1,2 +1,2 @@
-~/Downloads/VulkanSDK/1.0.26.0/x86_64/bin/glslangValidator -V -o src/graphics/shaders/basic/vert.spv src/graphics/shaders/basic/shader.vert
-~/Downloads/VulkanSDK/1.0.26.0/x86_64/bin/glslangValidator -V -o src/graphics/shaders/basic/frag.spv src/graphics/shaders/basic/shader.frag
+~/Downloads/VulkanSDK/1.0.26.0/x86_64/bin/glslangValidator -V -o src/graphics/shaders/basic/vert.spv src/graphics/shaders/basic/vulkan.vert
+~/Downloads/VulkanSDK/1.0.26.0/x86_64/bin/glslangValidator -V -o src/graphics/shaders/basic/frag.spv src/graphics/shaders/basic/vulkan.frag
