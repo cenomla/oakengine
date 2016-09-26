@@ -22,7 +22,7 @@ flags = ['-std=c++14', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D
 sources = []
 wayland_libs = ['glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon']
 xlibs = ['glfw3x', 'X11', 'Xxf86vm', 'Xinerama', 'Xrandr', 'Xcursor']
-libs = ['vulkan', 'GL', 'glad'] + xlibs + ['xkbcommon', 'pthread', 'dl', 'm']
+libs = ['vulkan', 'GL', 'glad'] + wayland_libs + ['xkbcommon', 'pthread', 'dl', 'm']
 
 get_sources_recursive(sources, src_path, intermediate_path, '*.cpp')
 

@@ -36,6 +36,9 @@ namespace oak {
 
 	void Window::update() {
 		glfwPollEvents();
+		if (glfwWindowShouldClose(window_)) {
+			engine_->getEventManager().emitEvent(QuitEvent{});
+		}
 	}
 
 	void Window::createWindow() {
@@ -74,7 +77,10 @@ namespace oak {
 	}
 
 	void Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });  
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
 	}
 
 	void Window::buttonCallback(GLFWwindow *window, int button, int action, int mods) {

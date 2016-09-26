@@ -22,6 +22,8 @@ namespace oak::graphics {
 		GLuint vbo_;
 		GLuint ibo_;
 		GLuint pid_;
+		GLuint tex_;
+		GLuint ubo_;
 
 		int windowWidth_, windowHeight_;
 
