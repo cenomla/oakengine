@@ -38,14 +38,14 @@ int main(int argc, char** argv) {
 	engine.init();
 
 	//create and add the window system
-	oak::Window window{ &engine, oak::Window::GL_CONTEXT };
+	oak::Window window{ &engine, 0 };
 	
 	//add a test key listener
 	KeyListener listener;
 	engine.getEventManager().add<oak::KeyEvent>(&listener);
 
 	//create the renderer object on the stack
-	oak::graphics::Renderer<oak::graphics::OpenglApi> renderer;
+	oak::graphics::Renderer<oak::graphics::VulkanApi> renderer;
 
 	//create the task to update the renderer
 	engine.getTaskManager().addTask(oak::Task{ [&renderer](){

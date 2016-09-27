@@ -9,6 +9,7 @@
 #include <stb_image.h>
 
 #include "graphics/vertex.h"
+#include "glshader.h"
 
 #include "log.h"
 
@@ -106,59 +107,13 @@ namespace oak::graphics {
 		windowHeight_ = height;
 	}
 
-	static std::string readFile(const std::string &path) {
-		std::ifstream file{ path, std::ios::ate };
-
-		if (!file.is_open()) {
-			log::cout << "failed to open file: " << path << std::endl;
-			std::exit(-1);
-		}
-
-		size_t len = file.tellg();
-		std::vector<char> buffer(len);
-		file.seekg(0);
-		file.read(buffer.data(), len);
-
-		file.close();
-
-		return std::string{ buffer.data(), len };
-
-	}
-
-	GLuint createShader(const std::string &code, GLenum type) {
-		GLuint shader = glCreateShader(type);
-
-		const char *cstr = code.c_str();
-		//compile shader
-		glShaderSource(shader, 1, &cstr, NULL);
-		glCompileShader(shader);
-		//get and print results of compiliation
-		GLint result;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-		//get log and print it
-		GLint length;
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-		std::vector<char> log(length + 1);
-		glGetShaderInfoLog(shader, length, &length, log.data());
-		if (length > 1) {
-			log::cout << log.data() << std::endl;
-		}
-		//exit of fail
-		if (result == GL_FALSE) {
-			log::cout << "failed to compile shader" << std::endl;
-			std::exit(-1);
-		}
-
-		return shader;		
-	}
-
 	void OpenglApi::setup() {
-		const auto vertCode = readFile("src/graphics/shaders/basic/opengl.vert");
-		const auto fragCode = readFile("src/graphics/shaders/basic/opengl.frag");
+		GLShader vert{ GL_VERTEX_SHADER };
+		GLShader frag{ GL_FRAGMENT_SHADER };
+		vert.load("src/graphics/shaders/basic/opengl.vert");
+		frag.load("src/graphics/shaders/basic/opengl.frag");
 
 		pid_ = glCreateProgram();
-		GLuint vert = createShader(vertCode, GL_VERTEX_SHADER);
-		GLuint frag = createShader(fragCode, GL_FRAGMENT_SHADER);
 		glAttachShader(pid_, vert);
 		glAttachShader(pid_, frag);
 		glLinkProgram(pid_);
@@ -217,6 +172,8 @@ namespace oak::graphics {
 
 		glGenBuffers(1, &ubo_);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo_);
+
+
 
 	}
 

@@ -5,13 +5,21 @@
 #include <vulkan/vulkan.h>
 
 #include "vhandle.h"
+#include "vpipeline.h"
 
 struct GLFWwindow;
 
 namespace oak::graphics {
 
+
 	class VulkanApi {
 	public:
+
+#ifdef _DEBUG
+		static constexpr uint32_t layerEnabledCount = 1;
+#else
+		static constexpr uint32_t layerEnabledCount = 0;
+#endif
 
 		VulkanApi();
 
@@ -52,8 +60,7 @@ namespace oak::graphics {
 		std::vector<VHandle<VkImageView>> swapchainImageViews_;
 		VHandle<VkRenderPass> renderPass_;
 		VHandle<VkDescriptorSetLayout> descriptorSetLayout_;
-		VHandle<VkPipelineLayout> pipelineLayout_;
-		VHandle<VkPipeline> graphicsPipeline_;
+		VPipeline graphicsPipeline_;
 		std::vector<VHandle<VkFramebuffer>> swapchainFramebuffers_;
 		VHandle<VkImage> depthImage_;
 		VHandle<VkDeviceMemory> depthImageMemory_;
@@ -84,7 +91,6 @@ namespace oak::graphics {
 		QueueFamilyIndices findQueueFamilyIndices(VkPhysicalDevice device);
 		SwapchainSupportDetails getSwapchainSupport(VkPhysicalDevice device);
 		VkPhysicalDevice getPhysicalDevice();
-		void createShaderModule(const std::vector<char> &code, VHandle<VkShaderModule> &module);
 		uint32_t findMemoryType(uint32_t filter, VkMemoryPropertyFlags properties);
 		void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkBuffer> &buffer, VHandle<VkDeviceMemory> &memory);
 		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkImage> &image, VHandle<VkDeviceMemory> &memory);
