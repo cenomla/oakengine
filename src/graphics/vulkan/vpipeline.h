@@ -1,8 +1,10 @@
 #pragma once
 
+#include <initializer_list>
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "graphics/attribute_data.h"
 #include "vshader.h"
 
 namespace oak::graphics {
@@ -12,8 +14,8 @@ namespace oak::graphics {
 		VPipeline(const VkDevice *device);
 		~VPipeline();
 
-		void addBindingDescription(VkVertexInputBindingDescription description);
-		void addAttributeDescription(VkVertexInputAttributeDescription description);
+		void addBindingDescription(BindingData &&description);
+		void addAttributeDescription(std::initializer_list<AttributeData> &&description);
 		void addShaderModule(VShader &&shader);
 		void create(VkDescriptorSetLayout descriptorSetLayout, VkExtent2D extent, VkRenderPass renderPass, uint32_t subpassIndex);
 		void destroy();
@@ -25,8 +27,8 @@ namespace oak::graphics {
 		const VkDevice *device_;
 		VkPipelineLayout layout_;
 		VkPipeline pipeline_;
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions_;
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions_;
+		std::vector<BindingData> bindingDescriptions_;
+		std::vector<AttributeData> attributeDescriptions_;
 		std::vector<VShader> modules_;
 	};
 

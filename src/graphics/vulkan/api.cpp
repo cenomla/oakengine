@@ -553,37 +553,6 @@ namespace oak::graphics {
 		for (uint32_t i = 0; i < swapchainImages_.size(); i++) {
 			createImageView(swapchainImages_.at(i), swapchainImageFormat_, VK_IMAGE_ASPECT_COLOR_BIT, swapchainImageViews_.at(i));
 		}
-	} 
-
-	VkVertexInputBindingDescription getBindingDescription() {
-		VkVertexInputBindingDescription bindingDescription = {};
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-
-		return bindingDescription;
-	}
-
-	std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, Vertex::position);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, Vertex::color);
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex, Vertex::texCoords);
-
-		return attributeDescriptions;
 	}
 
 	void VulkanApi::initDescriptorSetLayout() {
@@ -632,13 +601,12 @@ namespace oak::graphics {
 			vertModule.load("src/graphics/shaders/basic/vert.spv");
 			fragModule.load("src/graphics/shaders/basic/frag.spv");
 
-			auto bindingDescription = getBindingDescription();
-			auto attributeDescriptions = getAttributeDescriptions();
-
-			graphicsPipeline_.addBindingDescription(bindingDescription);
-			for (auto attr : attributeDescriptions) {
-				graphicsPipeline_.addAttributeDescription(attr);
-			}
+			graphicsPipeline_.addBindingDescription({ 0, 0, sizeof(Vertex) });
+			graphicsPipeline_.addAttributeDescription({ 
+				{ 0, 0, ATTRIB_FORMAT_3F, offsetof(Vertex, Vertex::position) },
+				{ 0, 1, ATTRIB_FORMAT_3F, offsetof(Vertex, Vertex::color) },
+				{ 0, 2, ATTRIB_FORMAT_2F, offsetof(Vertex, Vertex::texCoords) }
+			});
 
 			graphicsPipeline_.addShaderModule(std::move(vertModule));
 			graphicsPipeline_.addShaderModule(std::move(fragModule));

@@ -4,6 +4,13 @@
 
 namespace oak::graphics {
 
+	constexpr VkFormat formats[] = {
+		VK_FORMAT_R32_SFLOAT,
+		VK_FORMAT_R32G32_SFLOAT,
+		VK_FORMAT_R32G32B32_SFLOAT,
+		VK_FORMAT_R32G32B32A32_SFLOAT
+	};
+
 	VPipeline::VPipeline(const VkDevice *device) : device_{ device }, layout_{ VK_NULL_HANDLE }, pipeline_{ VK_NULL_HANDLE } {
 
 	}
@@ -12,12 +19,14 @@ namespace oak::graphics {
 		destroy();
 	}
 
-	void VPipeline::addBindingDescription(VkVertexInputBindingDescription description) {
+	void VPipeline::addBindingDescription(BindingData &&description) {
 		bindingDescriptions_.push_back(description);
 	}
 
-	void VPipeline::addAttributeDescription(VkVertexInputAttributeDescription description) {
-		attributeDescriptions_.push_back(description);
+	void VPipeline::addAttributeDescription(std::initializer_list<AttributeData> &&description) {
+		for (auto &&data : description) {
+			attributeDescriptions_.push_back(data);
+		}
 	}
 
 	void VPipeline::addShaderModule(VShader &&shader) {
@@ -53,12 +62,33 @@ namespace oak::graphics {
 			shaderStages.push_back(module);
 		}
 
+		std::vector<VkVertexInputBindingDescription> bindings;
+		bindings.reserve(bindingDescriptions_.size());
+		for (const auto &description : bindingDescriptions_) {
+			VkVertexInputBindingDescription binding;
+			binding.binding = description.binding;
+			binding.stride = description.stride;
+			binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			bindings.push_back(binding);
+		}
+
+		std::vector<VkVertexInputAttributeDescription> attribs;
+		attribs.reserve(attributeDescriptions_.size());
+		for (const auto &description : attributeDescriptions_) {
+			VkVertexInputAttributeDescription attrib;
+			attrib.binding = description.binding;
+			attrib.location = description.location;
+			attrib.format = formats[description.format];
+			attrib.offset = description.offset;
+			attribs.push_back(attrib);
+		}
+
 		VkPipelineVertexInputStateCreateInfo vertInputInfo = {};
 		vertInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertInputInfo.vertexBindingDescriptionCount = bindingDescriptions_.size();
-		vertInputInfo.pVertexBindingDescriptions = bindingDescriptions_.data();
-		vertInputInfo.vertexAttributeDescriptionCount = attributeDescriptions_.size();
-		vertInputInfo.pVertexAttributeDescriptions = attributeDescriptions_.data();
+		vertInputInfo.vertexBindingDescriptionCount = bindings.size();
+		vertInputInfo.pVertexBindingDescriptions = bindings.data();
+		vertInputInfo.vertexAttributeDescriptionCount = attribs.size();
+		vertInputInfo.pVertexAttributeDescriptions = attribs.data();
 
 		//fixed function
 

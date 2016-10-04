@@ -16,7 +16,7 @@ lib_path = 'lib'
 src_path = 'src'
 intermediate_path = 'bin/oak.d'
 target_path = 'bin/oak'
-flags = ['-std=c++14', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG']
+flags = ['-std=c++14', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas']
 
 #lists
 sources = []

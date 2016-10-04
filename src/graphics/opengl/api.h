@@ -2,12 +2,19 @@
 
 #include <glad/glad.h>
 
+#include "gltexture.h"
+#include "glshader.h"
+#include "glvertex_array.h"
+#include "glbuffer.h"
+
 struct GLFWwindow;
 
 namespace oak::graphics {
 
 	class OpenglApi {
 	public:
+		OpenglApi();
+
 		void init(GLFWwindow *window);
 		void destroy();
 
@@ -17,18 +24,7 @@ namespace oak::graphics {
 
 	private:
 		GLFWwindow *window_;
-
-		GLuint vao_;
-		GLuint vbo_;
-		GLuint ibo_;
-		GLuint pid_;
-		GLuint tex_;
-		GLuint ubo_;
-
 		int windowWidth_, windowHeight_;
-
-		void setup();
-
 	};
 
 }

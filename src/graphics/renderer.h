@@ -12,9 +12,11 @@
 
 namespace oak::graphics {
 
-	template<class TApi>
+	template<typename TApi>
 	class Renderer {
 	public:
+		typedef TApi type;
+
 		inline void init(GLFWwindow *window) { api_.init(window); }
 		inline void destroy() { api_.destroy(); }
 
