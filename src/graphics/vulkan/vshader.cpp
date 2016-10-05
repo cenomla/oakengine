@@ -7,7 +7,7 @@
 
 namespace oak::graphics {
 
-	VShader::VShader(VkDevice device, VkShaderStageFlagBits stage) : device_{ device }, module_{ VK_NULL_HANDLE }, stage_{ stage } {
+	VShader::VShader(const VDevice *device, VkShaderStageFlagBits stage) : device_{ device }, module_{ VK_NULL_HANDLE }, stage_{ stage } {
 
 	}
 
@@ -30,7 +30,7 @@ namespace oak::graphics {
 		createInfo.codeSize = code.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-		VkResult result = vkCreateShaderModule(device_, &createInfo, nullptr, &module_);
+		VkResult result = vkCreateShaderModule(*device_, &createInfo, nullptr, &module_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create shader module: " << path << std::endl;
 		}
@@ -38,7 +38,7 @@ namespace oak::graphics {
 
 	void VShader::destroy() {
 		if (module_ != VK_NULL_HANDLE) {
-			vkDestroyShaderModule(device_, module_, nullptr);
+			vkDestroyShaderModule(*device_, module_, nullptr);
 			module_ = VK_NULL_HANDLE;
 		}
 	}

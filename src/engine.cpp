@@ -58,6 +58,7 @@ namespace oak {
 		if (it != std::end(systems_)) {
 			return it->second;
 		} else {
+			log::cout << "system does not exist: " << name << std::endl;
 			return nullptr;
 		}
 	}

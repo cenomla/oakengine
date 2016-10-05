@@ -11,7 +11,7 @@ namespace oak::graphics {
 		VK_FORMAT_R32G32B32A32_SFLOAT
 	};
 
-	VPipeline::VPipeline(const VkDevice *device) : device_{ device }, layout_{ VK_NULL_HANDLE }, pipeline_{ VK_NULL_HANDLE } {
+	VPipeline::VPipeline(const VDevice *device) : device_{ device }, layout_{ VK_NULL_HANDLE }, pipeline_{ VK_NULL_HANDLE } {
 
 	}
 

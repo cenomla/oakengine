@@ -59,7 +59,7 @@ namespace oak {
 	}
 
 	void SpriteRenderer::addSprite(const glm::vec3 &position, int animFrameX, int animFrameY, float scale, float rot, const graphics::Sprite *sprite) {
-		sprites_.push_back({ (static_cast<uint64_t>(*reinterpret_cast<const uint32_t*>(&position.z)) << 32) | sprite->getMaterialId(), glm::vec2{ position }, animFrameX, animFrameY, scale, rot, sprite });
+		sprites_.push_back({ (static_cast<uint64_t>(static_cast<int>(position.z)) << 32) | sprite->getMaterialId(), glm::vec2{ position }, animFrameX, animFrameY, scale, rot, sprite });
 	}
 
 	struct UniformBufferObject {

@@ -64,6 +64,8 @@ namespace oak {
 
 		glfwSetWindowUserPointer(window_, this);
 
+		engine_->getEventManager().emitEvent(WindowCreateEvent{ window_ });
+
 	}
 
 	void Window::setCallbacks() {

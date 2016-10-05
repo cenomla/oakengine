@@ -5,13 +5,14 @@
 #include <vulkan/vulkan.h>
 
 #include "graphics/attribute_data.h"
+#include "vdevice.h"
 #include "vshader.h"
 
 namespace oak::graphics {
 
 	class VPipeline {
 	public:
-		VPipeline(const VkDevice *device);
+		VPipeline(const VDevice *device);
 		~VPipeline();
 
 		void addBindingDescription(BindingData &&description);
@@ -24,7 +25,7 @@ namespace oak::graphics {
 
 		inline const VkPipelineLayout getLayout() const { return layout_; }
 	private:
-		const VkDevice *device_;
+		const VDevice *device_;
 		VkPipelineLayout layout_;
 		VkPipeline pipeline_;
 		std::vector<BindingData> bindingDescriptions_;

@@ -24,28 +24,28 @@ namespace oak::graphics {
 			func(this->instance_, callback, nullptr);
 		} },
 		surface_{ [this](VkSurfaceKHR surface) { vkDestroySurfaceKHR(instance_, surface, nullptr); } },
-		device_{ [](VkDevice device) { vkDestroyDevice(device, nullptr); } },
+		device_{ &instance_ },
 		swapchain_{ [this](VkSwapchainKHR swapchain) { vkDestroySwapchainKHR(device_, swapchain, nullptr); } },
 		renderPass_{ [this](VkRenderPass pass) { vkDestroyRenderPass(device_, pass, nullptr); } },
 		descriptorSetLayout_{ [this](VkDescriptorSetLayout layout) { vkDestroyDescriptorSetLayout(device_, layout, nullptr); } },
 		graphicsPipeline_{ &device_ },
 		depthImage_{ [this](VkImage image) { vkDestroyImage(device_, image, nullptr); } },
-		depthImageMemory_{ [this](VkDeviceMemory memory) { vkFreeMemory(device_, memory, nullptr); } },
+		depthImageMemory_{ &device_ },
 		depthImageView_{ [this](VkImageView view) { vkDestroyImageView(device_, view, nullptr); } },
 		textureImage_{ [this](VkImage image) { vkDestroyImage(device_, image, nullptr); } },
-		textureImageMemory_{ [this](VkDeviceMemory memory) { vkFreeMemory(device_, memory, nullptr); } },
+		textureImageMemory_{ &device_ },
 		textureImageView_{ [this](VkImageView view) { vkDestroyImageView(device_, view, nullptr); } },
 		textureSampler_{ [this](VkSampler sampler) { vkDestroySampler(device_, sampler, nullptr); } },
-		vertexBuffer_{ [this](VkBuffer buffer) { vkDestroyBuffer(device_, buffer, nullptr); } },
-		vertexBufferMemory_{ [this](VkDeviceMemory mem) { vkFreeMemory(device_, mem, nullptr); } },
-		indexBuffer_{ [this](VkBuffer buffer) { vkDestroyBuffer(device_, buffer, nullptr); } },
-		indexBufferMemory_{ [this](VkDeviceMemory mem) { vkFreeMemory(device_, mem, nullptr); } },
-		uniformStagingBuffer_{ [this](VkBuffer buffer) { vkDestroyBuffer(device_, buffer, nullptr); } },
-		uniformStagingBufferMemory_{ [this](VkDeviceMemory mem) { vkFreeMemory(device_, mem, nullptr); } },
-		uniformBuffer_{ [this](VkBuffer buffer) { vkDestroyBuffer(device_, buffer, nullptr); } },
-		uniformBufferMemory_{ [this](VkDeviceMemory mem) { vkFreeMemory(device_, mem, nullptr); } },
+		vertexBuffer_{ &device_ },
+		vertexBufferMemory_{ &device_ },
+		indexBuffer_{ &device_ },
+		indexBufferMemory_{ &device_ },
+		uniformStagingBuffer_{ &device_ },
+		uniformStagingBufferMemory_{ &device_ },
+		uniformBuffer_{ &device_ },
+		uniformBufferMemory_{ &device_ },
 		descriptorPool_{ [this](VkDescriptorPool pool) { vkDestroyDescriptorPool(device_, pool, nullptr); } },
-		commandPool_{ [this](VkCommandPool pool) { vkDestroyCommandPool(device_, pool, nullptr); } },
+		commandPool_{ &device_ },
 		imageAvaliableSemaphore_{ [this](VkSemaphore semaphore) { vkDestroySemaphore(device_, semaphore, nullptr); } },
 		renderFinishedSemaphore_{ [this](VkSemaphore semaphore) { vkDestroySemaphore(device_, semaphore, nullptr); } }
 		{}
@@ -115,7 +115,7 @@ namespace oak::graphics {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphore;
 
-		result = vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
+		result = vkQueueSubmit(device_.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to do queue thing" << std::endl;
 			std::exit(-1);
@@ -133,7 +133,7 @@ namespace oak::graphics {
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr;
 
-		result = vkQueuePresentKHR(presentQueue_, &presentInfo);
+		result = vkQueuePresentKHR(device_.presentQueue(), &presentInfo);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 			recreateSwapchain();
 		} else if (result != VK_SUCCESS) {
@@ -177,9 +177,9 @@ namespace oak::graphics {
 		//TODO: device whether or not to flip the y coord ubo.proj[1][1] *= -1;
 
 		void *data;
-		vkMapMemory(device_, uniformStagingBufferMemory_, 0, sizeof(ubo), 0, &data);
+		uniformStagingBufferMemory_.map(0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
-		vkUnmapMemory(device_, uniformStagingBufferMemory_);
+		uniformStagingBufferMemory_.unmap();
 
 		copyBuffer(uniformStagingBuffer_, uniformBuffer_, sizeof(ubo));
 
@@ -292,91 +292,6 @@ namespace oak::graphics {
 		func(instance_, &debugInfo, nullptr, debugReport_.replace());
 	}
 
-
-	VulkanApi::QueueFamilyIndices VulkanApi::findQueueFamilyIndices(VkPhysicalDevice device) {
-		QueueFamilyIndices indices;
-		
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		log::cout << "queue family count: " << queueFamilyCount << std::endl;
-
-		int i = 0;
-		for (const auto &queueFamily : queueFamilies) {
-			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-				indices.graphicsFamily = i;
-			}
-
-			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface_, &presentSupport);
-
-			if (queueFamily.queueCount > 0 && presentSupport) {
-				indices.presentFamily = i;
-			}
-
-			if (indices.complete()) {
-				break;
-			}
-
-			i++;
-		}
-
-		return indices;
-	}
-
-	VulkanApi::SwapchainSupportDetails VulkanApi::getSwapchainSupport(VkPhysicalDevice device) {
-		SwapchainSupportDetails details;
-
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface_, &details.capabilities);
-
-		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_, &formatCount, nullptr);
-		if (formatCount != 0) {
-			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface_, &formatCount, details.formats.data());
-		}
-
-		uint32_t modesCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_, &modesCount, nullptr);
-		if (modesCount != 0) {
-			details.modes.resize(modesCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface_, &modesCount, details.modes.data());	
-		}
-
-		return details;
-	}
-
-	VkPhysicalDevice VulkanApi::getPhysicalDevice() {
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
-		//enumerate physical devices
-		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
-		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(instance_, &deviceCount, devices.data());
-
-		//drive amount of devies
-		log::cout << "device count: " << deviceCount << std::endl;
-
-		//check for a suitable device
-		for (const auto &device : devices) {
-			VkPhysicalDeviceProperties deviceProperties;
-			VkPhysicalDeviceFeatures deviceFeatures;
-			vkGetPhysicalDeviceProperties(device, &deviceProperties);
-			vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-
-			log::cout << "device name: " << deviceProperties.deviceName << std::endl;
-			//physicalDevice = device;
-		}
-
-		physicalDevice = devices[0];
-
-		return physicalDevice;
-	}
-
 	VkSurfaceFormatKHR chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &formats) {
 		//if the format doesnt matter then choose the optimal format
 		if (formats.size() == 1 && formats.at(0).format == VK_FORMAT_UNDEFINED) {
@@ -413,68 +328,6 @@ namespace oak::graphics {
 		}
 	}
 
-	void VulkanApi::initDevice() {
-		//pick a physical device
-		physicalDevice_ = getPhysicalDevice();
-
-		//check if the device meets requirements
-		QueueFamilyIndices queueFamilyIndices = findQueueFamilyIndices(physicalDevice_);
-		SwapchainSupportDetails swapChainSupportDetails = getSwapchainSupport(physicalDevice_);
-
-		if (!queueFamilyIndices.complete() || swapChainSupportDetails.formats.empty() || swapChainSupportDetails.modes.empty()) {
-			log::cout << "no supported devices found" << std::endl;
-			std::exit(-1);
-		}
-
-		//create queue family create infos
-		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-		std::set<int> uniqueQueueFamilies{ queueFamilyIndices.graphicsFamily, queueFamilyIndices.presentFamily };
-
-		float queuePriority = 1.0f;
-
-		for (int queueFamily : uniqueQueueFamilies) {
-			VkDeviceQueueCreateInfo queueInfo{};
-			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueInfo.queueFamilyIndex = queueFamily;
-			queueInfo.queueCount = 1;
-			queueInfo.pQueuePriorities = &queuePriority;
-			queueCreateInfos.push_back(queueInfo);
-		}
-		
-		//create a logical device
-		VkPhysicalDeviceFeatures deviceFeatures{};
-
-		VkDeviceCreateInfo deviceInfo{};
-		deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
-		deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		deviceInfo.pEnabledFeatures = &deviceFeatures;
-
-
-		//setup device extensions and layers
-		const char* layerNames[] = {
-			"VK_LAYER_LUNARG_standard_validation"
-		};
-
-		const char* deviceExtensions[] = {
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
-
-		deviceInfo.enabledLayerCount = layerEnabledCount;
-		deviceInfo.ppEnabledLayerNames = layerNames;
-		deviceInfo.enabledExtensionCount = 1;
-		deviceInfo.ppEnabledExtensionNames = deviceExtensions;
-
-		//create the device and make sure it was successful
-		VkResult result = vkCreateDevice(physicalDevice_, &deviceInfo, nullptr, device_.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "couldnt create device" << std::endl;
-			std::exit(-1);
-		}
-		//get the queues from the device;
-		vkGetDeviceQueue(device_, queueFamilyIndices.graphicsFamily, 0, &graphicsQueue_);
-		vkGetDeviceQueue(device_, queueFamilyIndices.presentFamily, 0, &presentQueue_);
-	}
 
 	void VulkanApi::initSurface(GLFWwindow *window) {
 		VkResult result = glfwCreateWindowSurface(instance_, window, nullptr, surface_.replace());
@@ -484,8 +337,12 @@ namespace oak::graphics {
 		}
 	}
 
+	void VulkanApi::initDevice() {
+		device_.create(surface_);
+	}
+
 	void VulkanApi::initSwapchain() {
-		SwapchainSupportDetails details = getSwapchainSupport(physicalDevice_);		
+		const VDevice::SwapchainSupportDetails &details = device_.getSwapchainSupportDetails();		
 
 		VkSurfaceFormatKHR format = chooseSurfaceFormat(details.formats);
 		VkPresentModeKHR mode = choosePresentMode(details.modes, VK_PRESENT_MODE_MAILBOX_KHR);
@@ -508,7 +365,7 @@ namespace oak::graphics {
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices indices = findQueueFamilyIndices(physicalDevice_);
+		VDevice::QueueFamilyIndices indices = device_.getQueueFamilyIndices();
 		uint32_t queueFamilyIndices[] = { static_cast<uint32_t>(indices.graphicsFamily), static_cast<uint32_t>(indices.presentFamily) };
 
 		if (indices.graphicsFamily != indices.presentFamily) {
@@ -595,8 +452,8 @@ namespace oak::graphics {
 
 
 		if (inited == false) {
-			VShader vertModule{ device_, VK_SHADER_STAGE_VERTEX_BIT };
-			VShader fragModule{ device_, VK_SHADER_STAGE_FRAGMENT_BIT };
+			VShader vertModule{ &device_, VK_SHADER_STAGE_VERTEX_BIT };
+			VShader fragModule{ &device_, VK_SHADER_STAGE_FRAGMENT_BIT };
 
 			vertModule.load("src/graphics/shaders/basic/vert.spv");
 			fragModule.load("src/graphics/shaders/basic/frag.spv");
@@ -707,21 +564,7 @@ namespace oak::graphics {
 		}
 	}
 
-	uint32_t VulkanApi::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memProperties);
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-				return i;
-			}
-		}
-		
-		log::cout << "failed to find suitable memory type" << std::endl;
-		std::exit(-1);
-	}
-
-	void VulkanApi::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkImage> &image, VHandle<VkDeviceMemory> &memory) {
+	void VulkanApi::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkImage> &image, VMemory &memory) {
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -747,59 +590,13 @@ namespace oak::graphics {
 		VkMemoryRequirements memRequirements = {};
 		vkGetImageMemoryRequirements(device_, image, &memRequirements);
 
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-		result = vkAllocateMemory(device_, &allocInfo, nullptr, memory.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to allocate image memory" << std::endl;
-			std::exit(-1);
-		}
-
-		vkBindImageMemory(device_, image, memory, 0);
-	}
-
-	void VulkanApi::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkBuffer> &buffer, VHandle<VkDeviceMemory> &memory) {
-		VkBufferCreateInfo bufferInfo = {};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VkResult result = vkCreateBuffer(device_, &bufferInfo, nullptr, buffer.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to create vertex buffer" << std::endl;
-			std::exit(-1);
-		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(device_, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-		result = vkAllocateMemory(device_, &allocInfo, nullptr, memory.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to allocate memory for the vertex buffer" << std::endl;
-			std::exit(-1);
-		}
-
-		vkBindBufferMemory(device_, buffer, memory, 0);
+		memory.allocate(memRequirements, properties);
+		memory.bindImage(image, 0);
 	}
 
 	void VulkanApi::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
-		VkCommandBufferAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.commandBufferCount = 1;
-
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
+		commandPool_.allocateBuffers(1, &commandBuffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -819,21 +616,15 @@ namespace oak::graphics {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue_);
+		vkQueueSubmit(device_.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(device_.graphicsQueue());
 
-		vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
+		commandPool_.freeBuffers(1, &commandBuffer);
 	}
 
 	void VulkanApi::transitionImageLayout(VkImage image, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout) {
-		VkCommandBufferAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.commandBufferCount = 1;
-
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
+		commandPool_.allocateBuffers(1, &commandBuffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -879,21 +670,15 @@ namespace oak::graphics {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue_);
+		vkQueueSubmit(device_.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(device_.graphicsQueue());
 
-		vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);
+		commandPool_.freeBuffers(1, &commandBuffer);
 	}
 
 	void VulkanApi::copyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height) {
-		VkCommandBufferAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.commandBufferCount = 1;
-
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device_, &allocInfo, &commandBuffer);
+		commandPool_.allocateBuffers(1, &commandBuffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -929,10 +714,10 @@ namespace oak::graphics {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(graphicsQueue_, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsQueue_);
+		vkQueueSubmit(device_.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(device_.graphicsQueue());
 
-		vkFreeCommandBuffers(device_, commandPool_, 1, &commandBuffer);		
+		commandPool_.freeBuffers(1, &commandBuffer);
 	}
 
 	void VulkanApi::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VHandle<VkImageView> &imageView) {
@@ -961,7 +746,7 @@ namespace oak::graphics {
 	VkFormat VulkanApi::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(physicalDevice_, format, &props);
+			vkGetPhysicalDeviceFormatProperties(device_, format, &props);
 
 			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
 				return format;
@@ -995,7 +780,7 @@ namespace oak::graphics {
 		}
 
 		VHandle<VkImage> stagingImage{ [this](VkImage image) { vkDestroyImage(device_, image, nullptr); } };
-		VHandle<VkDeviceMemory> stagingImageMemory{ [this](VkDeviceMemory memory) { vkFreeMemory(device_, memory, nullptr); } };
+		VMemory stagingImageMemory{ &device_ };
 
 		createImage(
 			texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_LINEAR, 
@@ -1006,9 +791,9 @@ namespace oak::graphics {
 
 
 		void *data;
-		vkMapMemory(device_, stagingImageMemory, 0, imageSize, 0, &data);
+		stagingImageMemory.map(0, imageSize, 0, &data);
 		memcpy(data, pixels, static_cast<size_t>(imageSize));
-		vkUnmapMemory(device_, stagingImageMemory);
+		stagingImageMemory.unmap();
 
 		stbi_image_free(pixels);
 
@@ -1061,16 +846,21 @@ namespace oak::graphics {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 		
 		//create a staging buffer
-		VHandle<VkBuffer> stagingBuffer{ [this](VkBuffer buffer){ vkDestroyBuffer(device_, buffer, nullptr); } };
-		VHandle<VkDeviceMemory> stagingBufferMemory{ [this](VkDeviceMemory memory){ vkFreeMemory(device_, memory, nullptr); } };
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		VBuffer stagingBuffer{ &device_ };
+		VMemory stagingBufferMemory{ &device_ };
+		stagingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+		stagingBufferMemory.allocate(stagingBuffer.getMemoryRequirements(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		stagingBufferMemory.bindBuffer(stagingBuffer, 0);
 		//copy vertices to the buffer
 		void *data;
-		vkMapMemory(device_, stagingBufferMemory, 0, bufferSize, 0, &data);
+		stagingBufferMemory.map(0, bufferSize, 0, &data);
 		memcpy(data, vertices.data(), bufferSize);
-		vkUnmapMemory(device_, stagingBufferMemory);
-		//create the actual buffer and copy the info over
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer_, vertexBufferMemory_);		
+		stagingBufferMemory.unmap();
+		//create the vertex buffer
+		vertexBuffer_.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+		vertexBufferMemory_.allocate(vertexBuffer_.getMemoryRequirements(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		vertexBufferMemory_.bindBuffer(vertexBuffer_, 0);
+		//copy the buffer		
 		copyBuffer(stagingBuffer, vertexBuffer_, bufferSize);
 	}
 
@@ -1078,25 +868,36 @@ namespace oak::graphics {
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 		
 		//create a staging buffer
-		VHandle<VkBuffer> stagingBuffer{ [this](VkBuffer buffer){ vkDestroyBuffer(device_, buffer, nullptr); } };
-		VHandle<VkDeviceMemory> stagingBufferMemory{ [this](VkDeviceMemory memory){ vkFreeMemory(device_, memory, nullptr); } };
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+		VBuffer stagingBuffer{ &device_ };
+		VMemory stagingBufferMemory{ &device_ };
+		stagingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+		stagingBufferMemory.allocate(stagingBuffer.getMemoryRequirements(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		stagingBufferMemory.bindBuffer(stagingBuffer, 0);
 		//copy vertices to the buffer
 		void *data;
-		vkMapMemory(device_, stagingBufferMemory, 0, bufferSize, 0, &data);
+		stagingBufferMemory.map(0, bufferSize, 0, &data);
 		memcpy(data, indices.data(), bufferSize);
-		vkUnmapMemory(device_, stagingBufferMemory);
-		//create the actual buffer and copy the info over
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer_, indexBufferMemory_);		
+		stagingBufferMemory.unmap();
+		//create the index buffer
+		indexBuffer_.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+		indexBufferMemory_.allocate(indexBuffer_.getMemoryRequirements(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		indexBufferMemory_.bindBuffer(indexBuffer_, 0);
+		//copy the buffer
 		copyBuffer(stagingBuffer, indexBuffer_, bufferSize);
 	}
 
 	void VulkanApi::initUniformBuffer() {
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformStagingBuffer_, uniformStagingBufferMemory_);
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, uniformBuffer_, uniformBufferMemory_);
+		//create the staging buffer
+		uniformStagingBuffer_.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+		uniformStagingBufferMemory_.allocate(uniformStagingBuffer_.getMemoryRequirements(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		uniformStagingBufferMemory_.bindBuffer(uniformStagingBuffer_, 0);
 
+		//create the uniform buffer
+		uniformBuffer_.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+		uniformBufferMemory_.allocate(uniformBuffer_.getMemoryRequirements(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		uniformBufferMemory_.bindBuffer(uniformBuffer_, 0);
 	}
 
 	void VulkanApi::initDescriptorPool() {
@@ -1168,40 +969,18 @@ namespace oak::graphics {
 	}
 
 	void VulkanApi::initCommandPool() {
-		QueueFamilyIndices indices = findQueueFamilyIndices(physicalDevice_);
-
-		VkCommandPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		poolInfo.queueFamilyIndex = indices.graphicsFamily;
-		poolInfo.flags = 0;
-
-
-		VkResult result = vkCreateCommandPool(device_, &poolInfo, nullptr, commandPool_.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "couldnt create commnad pool" << std::endl;
-			std::exit(-1);
-		}
+		VDevice::QueueFamilyIndices indices = device_.getQueueFamilyIndices();
+		commandPool_.create(indices.graphicsFamily);
 	}
 
 	void VulkanApi::initCommandBuffers() {
 
 		if (commandBuffers_.size() > 0) {
-			vkFreeCommandBuffers(device_, commandPool_, commandBuffers_.size(), commandBuffers_.data());
+			commandPool_.freeBuffers(commandBuffers_.size(), commandBuffers_.data());
 		}
 
 		commandBuffers_.resize(swapchainFramebuffers_.size());
-
-		VkCommandBufferAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = commandPool_;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers_.size());
-
-		VkResult result = vkAllocateCommandBuffers(device_, &allocInfo, commandBuffers_.data());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to create command buffers" << std::endl;
-			std::exit(-1);
-		}
+		commandPool_.allocateBuffers(commandBuffers_.size(), commandBuffers_.data(), VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		for (size_t i = 0; i < commandBuffers_.size(); i++) {
 			VkCommandBufferBeginInfo beginInfo = {};

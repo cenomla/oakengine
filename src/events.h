@@ -1,5 +1,7 @@
 #pragma once
 
+struct GLFWwindow;
+
 namespace oak {
 
 	struct Task;
@@ -15,6 +17,10 @@ namespace oak {
 		int scancode;
 		int action;
 		int mods;
+	};
+
+	struct WindowCreateEvent {
+		GLFWwindow *window;
 	};
 
 	struct ResizeEvent {

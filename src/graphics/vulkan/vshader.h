@@ -3,11 +3,13 @@
 #include <iostream>
 #include <vulkan/vulkan.h>
 
+#include "vdevice.h"
+
 namespace oak::graphics {
 
 	class VShader {
 	public:
-		VShader(VkDevice device, VkShaderStageFlagBits stage);
+		VShader(const VDevice *device, VkShaderStageFlagBits stage);
 		~VShader();
 
 		VShader(VShader &&other);
@@ -17,7 +19,7 @@ namespace oak::graphics {
 
 		operator const VkPipelineShaderStageCreateInfo() const;
 	private:
-		VkDevice device_;
+		const VDevice *device_;
 		VkShaderModule module_;
 		VkShaderStageFlagBits stage_;
 	};
