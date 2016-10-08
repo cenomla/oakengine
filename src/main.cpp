@@ -70,7 +70,7 @@ struct Timer : public oak::System {
 			[this](){
 				auto currentTime = std::chrono::high_resolution_clock::now();
 
-				dt = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime);
+				dt = std::chrono::duration_cast<decltype(dt)>(currentTime - lastTime);
 
 				lastTime = currentTime;
 
@@ -80,15 +80,15 @@ struct Timer : public oak::System {
 	}
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
-	std::chrono::milliseconds dt;
+	std::chrono::duration<float, std::milli> dt;
 };
 
 int main(int argc, char** argv) {
 	//setup log
 	std::ofstream file{ "log" };
-	std::ostream log{ std::cout.rdbuf(&oak::log::cout_stream) };
+	//std::ostream log{ std::cout.rdbuf(&oak::log::cout_stream) };
 	oak::log::cout_stream.addStream(file);
-	oak::log::cout_stream.addStream(log);
+	oak::log::cout_stream.addStream(std::cout);
 
 	//create the engine
 	oak::Engine engine;

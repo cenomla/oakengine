@@ -152,7 +152,7 @@ namespace oak::graphics {
 		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface, &modesCount, nullptr);
 		if (modesCount != 0) {
 			swapchainDetails_.modes.resize(modesCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface, &modesCount, swapchainDetails_.modes.data());	
+			vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface, &modesCount, swapchainDetails_.modes.data());
 		}
 	}
 

@@ -12,7 +12,7 @@ namespace oak::graphics {
 
 	class VPipeline {
 	public:
-		VPipeline(const VDevice *device);
+		VPipeline(const VDevice &device);
 		~VPipeline();
 
 		void addBindingDescription(BindingData &&description);
@@ -25,7 +25,7 @@ namespace oak::graphics {
 
 		inline const VkPipelineLayout getLayout() const { return layout_; }
 	private:
-		const VDevice *device_;
+		const VDevice &device_;
 		VkPipelineLayout layout_;
 		VkPipeline pipeline_;
 		std::vector<BindingData> bindingDescriptions_;

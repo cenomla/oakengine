@@ -8,6 +8,11 @@
 #include "vdevice.h"
 #include "vmemory.h"
 #include "vbuffer.h"
+#include "vimage.h"
+#include "vframebuffer.h"
+#include "vsemaphore.h"
+#include "vdescriptor_pool.h"
+#include "vrender_pass.h"
 #include "vcommand_pool.h"
 #include "vpipeline.h"
 
@@ -48,18 +53,16 @@ namespace oak::graphics {
 		VkFormat swapchainImageFormat_;
 		VkExtent2D swapchainExtent_;
 		std::vector<VHandle<VkImageView>> swapchainImageViews_;
-		VHandle<VkRenderPass> renderPass_;
+		VRenderPass renderPass_;
 		VHandle<VkDescriptorSetLayout> descriptorSetLayout_;
 		VPipeline graphicsPipeline_;
-		std::vector<VHandle<VkFramebuffer>> swapchainFramebuffers_;
+		std::vector<VFramebuffer> swapchainFramebuffers_;
 
-		VHandle<VkImage> depthImage_;
+		VImage depthImage_;
 		VMemory depthImageMemory_;
-		VHandle<VkImageView> depthImageView_;
 		
-		VHandle<VkImage> textureImage_;
+		VImage textureImage_;
 		VMemory textureImageMemory_;
-		VHandle<VkImageView> textureImageView_;
 		VHandle<VkSampler> textureSampler_;
 
 		VBuffer vertexBuffer_;
@@ -74,22 +77,20 @@ namespace oak::graphics {
 		VBuffer uniformBuffer_;
 		VMemory uniformBufferMemory_;
 
-		VHandle<VkDescriptorPool> descriptorPool_;
+		VDescriptorPool descriptorPool_;
 		VkDescriptorSet descriptorSet_;
 		VCommandPool commandPool_;
 		std::vector<VkCommandBuffer> commandBuffers_;
-		VHandle<VkSemaphore> imageAvaliableSemaphore_;
-		VHandle<VkSemaphore> renderFinishedSemaphore_;
+		VSemaphore imageAvaliableSemaphore_;
+		VSemaphore renderFinishedSemaphore_;
 
 		//api variables
 		int windowWidth_, windowHeight_;
 
 		uint32_t findMemoryType(uint32_t filter, VkMemoryPropertyFlags properties);
-		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkImage> &image, VMemory &memory);
 		void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
-		void transitionImageLayout(VkImage image, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
 		void copyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
-		void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VHandle<VkImageView> &imageView);
+		void transitionImageLayout(VkImage image, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
 		VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 		void initInstance();
@@ -105,7 +106,6 @@ namespace oak::graphics {
 		void initCommandPool();
 		void initDepthResource();
 		void initTextureImage();
-		void initTextureImageView();
 		void initTextureSampler();
 		void initVertexBuffer();
 		void initIndexBuffer();

@@ -15,6 +15,23 @@
 namespace oak {
 
 
+	struct SpritePos {
+		//ff ff ff ff ff ff ff ff
+		//32 bit layer, 32 bit material
+		uint64_t id;
+		glm::vec2 position;
+		int animFrameX, animFrameY;
+		float scale, rot;
+		const graphics::Sprite *sprite;
+
+		inline bool operator<(const SpritePos &other) const { return id < other.id; }
+	};
+
+	struct Batch {
+		size_t start;
+		size_t count;
+	};
+
 	class SpriteRenderer : public System {
 	public:
 		SpriteRenderer(Engine *engine);
@@ -28,24 +45,6 @@ namespace oak {
 		void render();
 
 	private:
-		struct SpritePos {
-
-			//ff ff ff ff ff ff ff ff
-			//32 bit layer, 32 bit material
-			uint64_t id;
-			glm::vec2 position;
-			int animFrameX, animFrameY;
-			float scale, rot;
-			const graphics::Sprite *sprite;
-
-			inline bool operator<(const SpritePos &other) const { return id < other.id; }
-		};
-
-		struct Batch {
-			size_t start;
-			size_t count;
-			graphics::Material<graphics::GLPipeline, graphics::GLTexture> *material;
-		};
 
 		std::vector<SpritePos> sprites_;
 		std::vector<Batch> batches_;

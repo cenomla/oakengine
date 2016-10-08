@@ -9,7 +9,7 @@ namespace oak::graphics {
 	class VCommandPool {
 	public:
 		
-		VCommandPool(const VDevice *device);
+		VCommandPool(const VDevice &device);
 		~VCommandPool();
 
 		void create(int queueIndex);
@@ -20,7 +20,7 @@ namespace oak::graphics {
 
 
 	private:
-		const VDevice *device_;
+		const VDevice &device_;
 		VkCommandPool pool_;
 	};
 

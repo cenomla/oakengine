@@ -8,7 +8,7 @@ namespace oak::graphics {
 
 	class VBuffer {
 	public:
-		VBuffer(const VDevice *device);
+		VBuffer(const VDevice &device);
 		~VBuffer();
 
 		void create(VkDeviceSize size, VkBufferUsageFlags usage);
@@ -18,7 +18,7 @@ namespace oak::graphics {
 
 		VkMemoryRequirements getMemoryRequirements() const;
 	private:
-		const VDevice *device_;
+		const VDevice &device_;
 		VkBuffer buffer_;
 	};
 

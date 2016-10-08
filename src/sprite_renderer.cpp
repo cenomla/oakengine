@@ -80,7 +80,7 @@ namespace oak {
 			void *buffer = vbo_.map(GL_WRITE_ONLY);
 			//a batch is a range of sprites with the same material
 			size_t index = 0;
-			Batch currentBatch{ index, 0, nullptr }; //first batch 
+			Batch currentBatch{ index, 0 }; //first batch 
 			graphics::MaterialId id = sprites_.at(0).sprite->getMaterialId();//first sprites material
 			//iterate through the sorted sprites
 			for (const auto& sp : sprites_) {
@@ -88,7 +88,7 @@ namespace oak {
 				if (id != sp.sprite->getMaterialId()) {
 					index += currentBatch.count;
 					batches_.push_back(currentBatch);
-					currentBatch = Batch{ index, 0, nullptr };
+					currentBatch = Batch{ index, 0 };
 					id = sp.sprite->getMaterialId();
 				}
 				//stream data

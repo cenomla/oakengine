@@ -6,7 +6,7 @@
 
 namespace oak::graphics {
 
-	VMemory::VMemory(const VDevice *device) : device_{ device }, mem_{ VK_NULL_HANDLE } {
+	VMemory::VMemory(const VDevice &device) : device_{ device }, mem_{ VK_NULL_HANDLE } {
 
 	}
 
@@ -22,7 +22,7 @@ namespace oak::graphics {
 		allocInfo.allocationSize = requirements.size;
 		allocInfo.memoryTypeIndex = findMemoryType(requirements.memoryTypeBits, properties);
 
-		VkResult result = vkAllocateMemory(*device_, &allocInfo, nullptr, &mem_);
+		VkResult result = vkAllocateMemory(device_, &allocInfo, nullptr, &mem_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to allocate image memory" << std::endl;
 			std::exit(-1);
@@ -31,30 +31,30 @@ namespace oak::graphics {
 
 	void VMemory::free() {
 		if (mem_ != VK_NULL_HANDLE) {
-			vkFreeMemory(*device_, mem_, nullptr);
+			vkFreeMemory(device_, mem_, nullptr);
 			mem_ = VK_NULL_HANDLE;
 		}
 	}
 
 	void VMemory::map(VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void **data) {
-		vkMapMemory(*device_, mem_, offset, size, flags, data);
+		vkMapMemory(device_, mem_, offset, size, flags, data);
 	}
 
 	void VMemory::unmap() {
-		vkUnmapMemory(*device_, mem_);
+		vkUnmapMemory(device_, mem_);
 	}
 
 	void VMemory::bindImage(VkImage image, VkDeviceSize offset) {
-		vkBindImageMemory(*device_, image, mem_, offset);
+		vkBindImageMemory(device_, image, mem_, offset);
 	}
 
 	void VMemory::bindBuffer(VkBuffer buffer, VkDeviceSize offset) {
-		vkBindBufferMemory(*device_, buffer, mem_, offset);
+		vkBindBufferMemory(device_, buffer, mem_, offset);
 	}
 
 	uint32_t VMemory::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(*device_, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(device_, &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {

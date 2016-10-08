@@ -11,7 +11,7 @@ namespace oak::graphics {
 		VK_FORMAT_R32G32B32A32_SFLOAT
 	};
 
-	VPipeline::VPipeline(const VDevice *device) : device_{ device }, layout_{ VK_NULL_HANDLE }, pipeline_{ VK_NULL_HANDLE } {
+	VPipeline::VPipeline(const VDevice &device) : device_{ device }, layout_{ VK_NULL_HANDLE }, pipeline_{ VK_NULL_HANDLE } {
 
 	}
 
@@ -43,7 +43,7 @@ namespace oak::graphics {
 			pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 			pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
-			VkResult result = vkCreatePipelineLayout(*device_, &pipelineLayoutCreateInfo, nullptr, &layout_);
+			VkResult result = vkCreatePipelineLayout(device_, &pipelineLayoutCreateInfo, nullptr, &layout_);
 			if (result != VK_SUCCESS) {
 				log::cout << "couldnt create a pipeline layout" << std::endl;
 				std::exit(-1);
@@ -52,7 +52,7 @@ namespace oak::graphics {
 
 		//if the pipeline already exists then destroy it so that we dont leak resources
 		if (pipeline_ != VK_NULL_HANDLE) {
-			vkDestroyPipeline(*device_, pipeline_, nullptr);
+			vkDestroyPipeline(device_, pipeline_, nullptr);
 			pipeline_ = VK_NULL_HANDLE;
 		}
 
@@ -199,7 +199,7 @@ namespace oak::graphics {
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 		pipelineInfo.basePipelineIndex = -1;
 
-		VkResult result = vkCreateGraphicsPipelines(*device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_);
+		VkResult result = vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_);
 		if (result != VK_SUCCESS) {
 			log::cout << "couldnt create the graphics pipeline" << std::endl;
 			std::exit(-1);
@@ -211,11 +211,11 @@ namespace oak::graphics {
 
 	void VPipeline::destroy() {
 		if (pipeline_ != VK_NULL_HANDLE) {
-			vkDestroyPipeline(*device_, pipeline_, nullptr);
+			vkDestroyPipeline(device_, pipeline_, nullptr);
 			pipeline_ = VK_NULL_HANDLE;
 		}
 		if (layout_ != VK_NULL_HANDLE) {
-			vkDestroyPipelineLayout(*device_, layout_, nullptr);
+			vkDestroyPipelineLayout(device_, layout_, nullptr);
 			layout_ = nullptr;
 		}
 

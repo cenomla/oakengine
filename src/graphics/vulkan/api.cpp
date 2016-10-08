@@ -26,28 +26,26 @@ namespace oak::graphics {
 		surface_{ [this](VkSurfaceKHR surface) { vkDestroySurfaceKHR(instance_, surface, nullptr); } },
 		device_{ &instance_ },
 		swapchain_{ [this](VkSwapchainKHR swapchain) { vkDestroySwapchainKHR(device_, swapchain, nullptr); } },
-		renderPass_{ [this](VkRenderPass pass) { vkDestroyRenderPass(device_, pass, nullptr); } },
+		renderPass_{ device_ },
 		descriptorSetLayout_{ [this](VkDescriptorSetLayout layout) { vkDestroyDescriptorSetLayout(device_, layout, nullptr); } },
-		graphicsPipeline_{ &device_ },
-		depthImage_{ [this](VkImage image) { vkDestroyImage(device_, image, nullptr); } },
-		depthImageMemory_{ &device_ },
-		depthImageView_{ [this](VkImageView view) { vkDestroyImageView(device_, view, nullptr); } },
-		textureImage_{ [this](VkImage image) { vkDestroyImage(device_, image, nullptr); } },
-		textureImageMemory_{ &device_ },
-		textureImageView_{ [this](VkImageView view) { vkDestroyImageView(device_, view, nullptr); } },
+		graphicsPipeline_{ device_ },
+		depthImage_{ device_ },
+		depthImageMemory_{ device_ },
+		textureImage_{ device_ },
+		textureImageMemory_{ device_ },
 		textureSampler_{ [this](VkSampler sampler) { vkDestroySampler(device_, sampler, nullptr); } },
-		vertexBuffer_{ &device_ },
-		vertexBufferMemory_{ &device_ },
-		indexBuffer_{ &device_ },
-		indexBufferMemory_{ &device_ },
-		uniformStagingBuffer_{ &device_ },
-		uniformStagingBufferMemory_{ &device_ },
-		uniformBuffer_{ &device_ },
-		uniformBufferMemory_{ &device_ },
-		descriptorPool_{ [this](VkDescriptorPool pool) { vkDestroyDescriptorPool(device_, pool, nullptr); } },
-		commandPool_{ &device_ },
-		imageAvaliableSemaphore_{ [this](VkSemaphore semaphore) { vkDestroySemaphore(device_, semaphore, nullptr); } },
-		renderFinishedSemaphore_{ [this](VkSemaphore semaphore) { vkDestroySemaphore(device_, semaphore, nullptr); } }
+		vertexBuffer_{ device_ },
+		vertexBufferMemory_{ device_ },
+		indexBuffer_{ device_ },
+		indexBufferMemory_{ device_ },
+		uniformStagingBuffer_{ device_ },
+		uniformStagingBufferMemory_{ device_ },
+		uniformBuffer_{ device_ },
+		uniformBufferMemory_{ device_ },
+		descriptorPool_{ device_ },
+		commandPool_{ device_ },
+		imageAvaliableSemaphore_{ device_ },
+		renderFinishedSemaphore_{ device_ }
 		{}
 
 	void VulkanApi::init(GLFWwindow *window) {
@@ -66,7 +64,6 @@ namespace oak::graphics {
 		initDepthResource();
 		initFramebuffers();
 		initTextureImage();
-		initTextureImageView();
 		initTextureSampler();
 		initVertexBuffer();
 		initIndexBuffer();
@@ -102,18 +99,18 @@ namespace oak::graphics {
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphore[] = { imageAvaliableSemaphore_ };
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphore;
-		submitInfo.pWaitDstStageMask = waitStages;
+		std::array<VkSemaphore, 1> waitSemaphores{ imageAvaliableSemaphore_ };
+		VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		submitInfo.waitSemaphoreCount = waitSemaphores.size();
+		submitInfo.pWaitSemaphores = waitSemaphores.data();
+		submitInfo.pWaitDstStageMask = &waitStage;
 
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffers_.at(imageIndex);
 
-		VkSemaphore signalSemaphore[] = { renderFinishedSemaphore_ };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphore;
+		std::array<VkSemaphore, 1> signalSemaphores{ renderFinishedSemaphore_ };
+		submitInfo.signalSemaphoreCount = signalSemaphores.size();
+		submitInfo.pSignalSemaphores = signalSemaphores.data();
 
 		result = vkQueueSubmit(device_.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		if (result != VK_SUCCESS) {
@@ -123,13 +120,11 @@ namespace oak::graphics {
 
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphore;
-
-		VkSwapchainKHR swapchains[] = { swapchain_ };
+		presentInfo.waitSemaphoreCount = signalSemaphores.size();
+		presentInfo.pWaitSemaphores = signalSemaphores.data();
 
 		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapchains;
+		presentInfo.pSwapchains = &swapchain_;
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr;
 
@@ -154,7 +149,7 @@ namespace oak::graphics {
 
 		initSwapchain();
 		initImageViews();
-		initRenderPass();
+		//initRenderPass();
 		initGraphicsPipeline();
 		initDepthResource();
 		initFramebuffers();
@@ -211,12 +206,10 @@ namespace oak::graphics {
 			log::cout << it.layerName << std::endl;
 		}
 
-		const char* layerNames[] = {
-			"VK_LAYER_LUNARG_standard_validation"
-		};
+		const char* layerName = "VK_LAYER_LUNARG_standard_validation";
 
 		instanceInfo.enabledLayerCount = layerEnabledCount;
-		instanceInfo.ppEnabledLayerNames = layerNames;
+		instanceInfo.ppEnabledLayerNames = &layerName;
 
 		//extensions
 		uint32_t glfwExtensionCount = 0;
@@ -261,7 +254,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateInstance(&instanceInfo, nullptr, instance_.replace());
 
 		if (result != VK_SUCCESS) {
-			log::cout << "couldnt create vulkan instance" << std::endl;
+			log::cout << "failed to create vulkan instance" << std::endl;
 			std::exit(-1);
 		}
 	}
@@ -366,12 +359,12 @@ namespace oak::graphics {
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		VDevice::QueueFamilyIndices indices = device_.getQueueFamilyIndices();
-		uint32_t queueFamilyIndices[] = { static_cast<uint32_t>(indices.graphicsFamily), static_cast<uint32_t>(indices.presentFamily) };
+		std::array<uint32_t, 2> queueFamilyIndices { static_cast<uint32_t>(indices.graphicsFamily), static_cast<uint32_t>(indices.presentFamily) };
 
 		if (indices.graphicsFamily != indices.presentFamily) {
 			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-			createInfo.queueFamilyIndexCount = 2;
-			createInfo.pQueueFamilyIndices = queueFamilyIndices;
+			createInfo.queueFamilyIndexCount = queueFamilyIndices.size();
+			createInfo.pQueueFamilyIndices = queueFamilyIndices.data();
 		} else {
 			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			createInfo.queueFamilyIndexCount = 0;
@@ -408,7 +401,26 @@ namespace oak::graphics {
 		swapchainImageViews_.resize(swapchainImages_.size(), VHandle<VkImageView>{ [this](VkImageView imageView){ vkDestroyImageView(device_, imageView, nullptr); } });
 
 		for (uint32_t i = 0; i < swapchainImages_.size(); i++) {
-			createImageView(swapchainImages_.at(i), swapchainImageFormat_, VK_IMAGE_ASPECT_COLOR_BIT, swapchainImageViews_.at(i));
+			VkImageViewCreateInfo viewInfo = {};
+			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			viewInfo.image = swapchainImages_.at(i);
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			viewInfo.format = swapchainImageFormat_;
+			viewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			viewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			viewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			viewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			viewInfo.subresourceRange.baseMipLevel = 0;
+			viewInfo.subresourceRange.levelCount = 1;
+			viewInfo.subresourceRange.baseArrayLayer = 0;
+			viewInfo.subresourceRange.layerCount = 1;
+
+			VkResult result = vkCreateImageView(device_, &viewInfo, nullptr, swapchainImageViews_.at(i).replace());
+			if (result != VK_SUCCESS) {
+				log::cout << "failed to create image view" << std::endl;
+				std::exit(-1);
+			}
 		}
 	}
 
@@ -427,15 +439,15 @@ namespace oak::graphics {
 		samplerLayoutBinding.pImmutableSamplers = nullptr;
 		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-		VkDescriptorSetLayoutBinding bindings[] = {
+		std::array<VkDescriptorSetLayoutBinding, 2> bindings {
 			uboLayoutBinding,
 			samplerLayoutBinding
 		};
 		
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 2;
-		layoutInfo.pBindings = bindings;
+		layoutInfo.bindingCount = bindings.size();
+		layoutInfo.pBindings = bindings.data();
 
 		VkResult result = vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, descriptorSetLayout_.replace());
 		if (result != VK_SUCCESS) {
@@ -449,7 +461,6 @@ namespace oak::graphics {
 
 	void VulkanApi::initGraphicsPipeline() {
 		static bool inited = false;
-
 
 		if (inited == false) {
 			VShader vertModule{ &device_, VK_SHADER_STAGE_VERTEX_BIT };
@@ -475,123 +486,17 @@ namespace oak::graphics {
 	}
 
 	void VulkanApi::initRenderPass() {
-		VkAttachmentDescription colorAttachment = {};
-		colorAttachment.format = swapchainImageFormat_;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentDescription depthAttachment = {};
-		depthAttachment.format = findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference colorAttachmentRef = {};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference depthAttachmentRef = {};
-		depthAttachmentRef.attachment = 1;
-		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subPass = {};
-		subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subPass.colorAttachmentCount = 1;
-		subPass.pColorAttachments = &colorAttachmentRef;
-		subPass.pDepthStencilAttachment = &depthAttachmentRef;
-
-		VkSubpassDependency dependency = {};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		dependency.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkAttachmentDescription attachments[] = { colorAttachment, depthAttachment };
-		VkRenderPassCreateInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 2;
-		renderPassInfo.pAttachments = attachments;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subPass;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
-
-		VkResult result = vkCreateRenderPass(device_, &renderPassInfo, nullptr, renderPass_.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "couldnt create render pass" << std::endl;
-			std::exit(-1);
-		}
-
+		renderPass_.create(swapchainImageFormat_, findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT));
 
 	}
 
 	void VulkanApi::initFramebuffers() {
-		swapchainFramebuffers_.resize(swapchainImageViews_.size(), VHandle<VkFramebuffer>{ 
-			[this](VkFramebuffer framebuffer) { vkDestroyFramebuffer(device_, framebuffer, nullptr); } });
+		swapchainFramebuffers_.clear();
+		swapchainFramebuffers_.resize(swapchainImageViews_.size(), { &device_ });
 
 		for (size_t i = 0; i < swapchainImageViews_.size(); i++) {
-			VkImageView attachments[] = {
-				swapchainImageViews_[i],
-				depthImageView_
-			};
-
-			VkFramebufferCreateInfo framebufferInfo = {};
-			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebufferInfo.renderPass = renderPass_;
-			framebufferInfo.attachmentCount = 2;
-			framebufferInfo.pAttachments = attachments;
-			framebufferInfo.width = swapchainExtent_.width;
-			framebufferInfo.height = swapchainExtent_.height;
-			framebufferInfo.layers = 1;
-
-			VkResult result = vkCreateFramebuffer(device_, &framebufferInfo, nullptr, swapchainFramebuffers_.at(i).replace());
-			if (result != VK_SUCCESS) {
-				log::cout << "counldnt create a framebuffer" << std::endl;
-				std::exit(-1);
-			}
-
+			swapchainFramebuffers_.at(i).create({ swapchainImageViews_.at(i), depthImage_ }, renderPass_, swapchainExtent_.width, swapchainExtent_.height);
 		}
-	}
-
-	void VulkanApi::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VHandle<VkImage> &image, VMemory &memory) {
-		VkImageCreateInfo imageInfo = {};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.extent.width = width;
-		imageInfo.extent.height = height;
-		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.format = format;
-		imageInfo.tiling = tiling;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-		imageInfo.usage = usage;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.flags = 0;
-
-		VkResult result = vkCreateImage(device_, &imageInfo, nullptr, image.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to create image" << std::endl;
-			std::exit(-1);
-		}
-
-		VkMemoryRequirements memRequirements = {};
-		vkGetImageMemoryRequirements(device_, image, &memRequirements);
-
-		memory.allocate(memRequirements, properties);
-		memory.bindImage(image, 0);
 	}
 
 	void VulkanApi::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
@@ -720,29 +625,6 @@ namespace oak::graphics {
 		commandPool_.freeBuffers(1, &commandBuffer);
 	}
 
-	void VulkanApi::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VHandle<VkImageView> &imageView) {
-		VkImageViewCreateInfo viewInfo = {};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = image;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = format;
-		viewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		viewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		viewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		viewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		viewInfo.subresourceRange.aspectMask = aspectFlags;
-		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
-
-		VkResult result = vkCreateImageView(device_, &viewInfo, nullptr, imageView.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to create image view" << std::endl;
-			std::exit(-1);
-		}
-	}
-
 	VkFormat VulkanApi::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
@@ -760,11 +642,21 @@ namespace oak::graphics {
 	}
 
 	void VulkanApi::initDepthResource() {
+		static bool inited = false;
+		
 		VkFormat depthFormat = findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-		createImage(swapchainExtent_.width, swapchainExtent_.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage_, depthImageMemory_);
-		createImageView(depthImage_, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView_);
+		if (inited == true) {
+			depthImage_.destroy();
+			depthImageMemory_.free();
+		}
 
+		depthImage_.create(swapchainExtent_.width, swapchainExtent_.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);		
+		depthImageMemory_.allocate(depthImage_.getMemoryRequirements(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		depthImageMemory_.bindImage(depthImage_, 0);
+		depthImage_.createView(VK_IMAGE_ASPECT_DEPTH_BIT);
+
+		inited = true;
 		transitionImageLayout(depthImage_, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	}
 
@@ -779,15 +671,12 @@ namespace oak::graphics {
 			std::exit(-1);
 		}
 
-		VHandle<VkImage> stagingImage{ [this](VkImage image) { vkDestroyImage(device_, image, nullptr); } };
-		VMemory stagingImageMemory{ &device_ };
+		VImage stagingImage{ device_ };
+		VMemory stagingImageMemory{ device_ };
 
-		createImage(
-			texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_LINEAR, 
-			VK_IMAGE_USAGE_TRANSFER_SRC_BIT, 
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-			stagingImage, stagingImageMemory);
-		
+		stagingImage.create(texWidth, texHeight, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_TILING_LINEAR, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+		stagingImageMemory.allocate(stagingImage.getMemoryRequirements(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		stagingImageMemory.bindImage(stagingImage, 0);
 
 
 		void *data;
@@ -797,11 +686,9 @@ namespace oak::graphics {
 
 		stbi_image_free(pixels);
 
-		createImage(
-			texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, 
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			textureImage_, textureImageMemory_);
+		textureImage_.create(texWidth, texHeight, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+		textureImageMemory_.allocate(textureImage_.getMemoryRequirements(), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		textureImageMemory_.bindImage(textureImage_, 0);
 		
 		transitionImageLayout(stagingImage, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 		transitionImageLayout(textureImage_, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -809,11 +696,8 @@ namespace oak::graphics {
 
 		transitionImageLayout(textureImage_, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+		textureImage_.createView(VK_IMAGE_ASPECT_COLOR_BIT);
 
-	}
-
-	void VulkanApi::initTextureImageView() {
-		createImageView(textureImage_, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, textureImageView_);
 	}
 
 	void VulkanApi::initTextureSampler() {
@@ -846,8 +730,8 @@ namespace oak::graphics {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 		
 		//create a staging buffer
-		VBuffer stagingBuffer{ &device_ };
-		VMemory stagingBufferMemory{ &device_ };
+		VBuffer stagingBuffer{ device_ };
+		VMemory stagingBufferMemory{ device_ };
 		stagingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 		stagingBufferMemory.allocate(stagingBuffer.getMemoryRequirements(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		stagingBufferMemory.bindBuffer(stagingBuffer, 0);
@@ -868,8 +752,8 @@ namespace oak::graphics {
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 		
 		//create a staging buffer
-		VBuffer stagingBuffer{ &device_ };
-		VMemory stagingBufferMemory{ &device_ };
+		VBuffer stagingBuffer{ device_ };
+		VMemory stagingBufferMemory{ device_ };
 		stagingBuffer.create(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 		stagingBufferMemory.allocate(stagingBuffer.getMemoryRequirements(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		stagingBufferMemory.bindBuffer(stagingBuffer, 0);
@@ -901,31 +785,15 @@ namespace oak::graphics {
 	}
 
 	void VulkanApi::initDescriptorPool() {
-		VkDescriptorPoolSize poolSizes[] = {
-			{.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, .descriptorCount = 1},
-			{.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, .descriptorCount = 1}
-		};
-
-		VkDescriptorPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = 2;
-		poolInfo.pPoolSizes = poolSizes;
-		poolInfo.maxSets = 1;
-
-		VkResult result = vkCreateDescriptorPool(device_, &poolInfo, nullptr, descriptorPool_.replace());
-		if (result != VK_SUCCESS) {
-			log::cout << "failed to create descriptor pool" << std::endl;
-			std::exit(-1);
-		}
+		descriptorPool_.create({ { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 }, { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } });
 	}
 
 	void VulkanApi::initDescriptorSet() {
-		VkDescriptorSetLayout layouts[] = { descriptorSetLayout_ };
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool_;
 		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = layouts;
+		allocInfo.pSetLayouts = &descriptorSetLayout_;
 
 		VkResult result = vkAllocateDescriptorSets(device_, &allocInfo, &descriptorSet_);
 		if (result != VK_SUCCESS) {
@@ -940,7 +808,7 @@ namespace oak::graphics {
 
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView_;
+		imageInfo.imageView = textureImage_;
 		imageInfo.sampler = textureSampler_;
 
 
@@ -954,6 +822,7 @@ namespace oak::graphics {
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
 		descriptorWrites[0].pImageInfo = nullptr;
 		descriptorWrites[0].pTexelBufferView = nullptr;
+		descriptorWrites[0].pNext = nullptr;
 
 		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[1].dstSet = descriptorSet_;
@@ -964,6 +833,7 @@ namespace oak::graphics {
 		descriptorWrites[1].pBufferInfo = nullptr;
 		descriptorWrites[1].pImageInfo = &imageInfo;
 		descriptorWrites[1].pTexelBufferView = nullptr;
+		descriptorWrites[1].pNext = nullptr;
 
 		vkUpdateDescriptorSets(device_, 2, descriptorWrites, 0, nullptr);
 	}
@@ -1015,9 +885,9 @@ namespace oak::graphics {
 			vkCmdSetLineWidth(commandBuffers_.at(i), 1.0f);
 
 			//draw
-			VkBuffer vertexBuffers[] = { vertexBuffer_ };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffers_.at(i), 0, 1, vertexBuffers, offsets);
+			VkBuffer vertexBuffer = vertexBuffer_;
+			VkDeviceSize ofst = 0;
+			vkCmdBindVertexBuffers(commandBuffers_.at(i), 0, 1, &vertexBuffer, &ofst);
 
 			vkCmdBindIndexBuffer(commandBuffers_.at(i), indexBuffer_, 0, VK_INDEX_TYPE_UINT16);
 
@@ -1034,15 +904,8 @@ namespace oak::graphics {
 	}
 
 	void VulkanApi::initSemaphores() {
-		VkSemaphoreCreateInfo semaphoreInfo = {};
-		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-		if (vkCreateSemaphore(device_, &semaphoreInfo, nullptr, imageAvaliableSemaphore_.replace()) != VK_SUCCESS ||
-			vkCreateSemaphore(device_, &semaphoreInfo, nullptr, renderFinishedSemaphore_.replace()) != VK_SUCCESS ) {
-			log::cout << "failed to create semaphores" << std::endl;
-			std::exit(-1);
-		}
-
+		imageAvaliableSemaphore_.create();
+		renderFinishedSemaphore_.create();
 	}
 
 }
