@@ -4,6 +4,8 @@
 #include <functional>
 #include <vector>
 
+#include "util/typeid.h"
+
 namespace oak {
 
 	class EventChannelBase {
@@ -15,25 +17,28 @@ namespace oak {
 	class EventChannel : public EventChannelBase {
 	public:
 
-		template<typename TListener>
-		void add(TListener *listener) {
-			listeners_.push_back( { listener, [listener](const TEvent &evt){ (*listener)(evt); } });
+		template<typename TListener> 
+		void add(TListener&& listener) {
+			listeners_.push_back({ util::type_id<BaseEvtListener, TListener>::id, listener });
 		}
 
 		template<typename TListener>
-		void remove(TListener *listener) {
-			listeners_.erase(std::remove_if(std::begin(listeners_), std::end(listeners_), [listener](const Listener &elem){ return elem.id == listener; }), std::end(listeners_));
+		void remove(TListener&& listener) {
+			size_t tid = util::type_id<BaseEvtListener, TListener>::id;
+			listeners_.erase(std::remove_if(std::begin(listeners_), std::end(listeners_), [tid](const Listener &elem){ return elem.id == tid; }), std::end(listeners_));
 		}
 		
-		void emitEvent(const TEvent& event) const {
+		inline void emitEvent(const TEvent& event) const {
 			for (const auto &listener : listeners_) {
 				listener.func(event);
 			}
 		}
 
 	private:
+		struct BaseEvtListener {};
+
 		struct Listener {
-			void *id;
+			size_t id;
 			std::function<void (const TEvent&)> func;
 		};
 		std::vector<Listener> listeners_;

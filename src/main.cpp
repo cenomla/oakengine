@@ -1,17 +1,11 @@
 #include <iostream>
-#include <streambuf>
 #include <fstream>
 #include <chrono>
-#include <mutex>
-#include <cstring>
 
-#define OAK_USE_GL
-#define OAK_USE_VULKAN
-#include "graphics/context.h"
-
+#include "graphics/opengl/gl_frame_renderer.h"
+#include "graphics/opengl/gl_sprite_renderer.h"
 #include <GLFW/glfw3.h>
 
-#include "sprite_renderer.h"
 #include "log.h"
 #include "events.h"
 #include "engine.h"
@@ -36,7 +30,7 @@ public:
 	}
 
 	void update() {
-		oak::SpriteRenderer *renderer = reinterpret_cast<oak::SpriteRenderer*>(engine_->getSystem("sprite_renderer"));
+		auto *renderer = reinterpret_cast<oak::graphics::GLSpriteRenderer*>(engine_->getSystem("sprite_renderer"));
 		//draw a bunch o sprites
 		float rot = 0;
 		for (int i = 1; i < 1280/32; i++) {
@@ -54,7 +48,7 @@ private:
 };
 
 struct KeyListener {
-	void operator()(const oak::KeyEvent &evt) {
+	void operator()(const oak::KeyEvent &evt) const {
 		const char* keyName = glfwGetKeyName(evt.key, evt.scancode);
 		std::cout << "recieved key: " << (keyName == NULL ? "UNKNOWN" : keyName) << std::endl;
 	}
@@ -96,25 +90,22 @@ int main(int argc, char** argv) {
 
 	//create and add the window system
 	Timer timer{ &engine };
-	oak::Window window{ &engine, 0 };
-	oak::graphics::Context<oak::graphics::VulkanApi> context{ &engine };
-	//TSDS tsds{ &engine };
-	//oak::SpriteRenderer spriteRenderer{ &engine };
+	oak::Window window{ &engine, oak::Window::GL_CONTEXT };
+	oak::graphics::GLFrameRenderer frameRenderer{ &engine };
+	TSDS tsds{ &engine };
+	oak::graphics::GLSpriteRenderer spriteRenderer{ &engine };
 	
 	//add a test key listener
 	KeyListener listener;
-	engine.getEventManager().add<oak::KeyEvent>(&listener);
-	engine.getEventManager().add<oak::WindowCreateEvent>(&context);
+	engine.getEventManager().add<oak::KeyEvent>(std::cref(listener));
 
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem("timer", &timer);
 	engine.addSystem("window", &window);
-	engine.addSystem("context", &context);
-	//engine.addSystem("tsds", &tsds);
-	//engine.addSystem("sprite_renderer", &spriteRenderer);
+	engine.addSystem("tsds", &tsds);
+	engine.addSystem("sprite_renderer", &spriteRenderer);
+	engine.addSystem("frame_renderer", &frameRenderer);
 
-	//add the resize event to the window
-	engine.getEventManager().add<oak::ResizeEvent>(&context);
 	//start ur engines
 	engine.start();
 

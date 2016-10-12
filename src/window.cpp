@@ -90,7 +90,7 @@ namespace oak {
 	}
 
 	void Window::resizeCallback(GLFWwindow *window, int width, int height) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(ResizeEvent{ width, height });
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(WindowResizeEvent{ width, height });
 	}
 
 }

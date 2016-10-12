@@ -23,7 +23,7 @@ namespace oak {
 		GLFWwindow *window;
 	};
 
-	struct ResizeEvent {
+	struct WindowResizeEvent {
 		int width;
 		int height;
 	};

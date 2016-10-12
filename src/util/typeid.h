@@ -3,21 +3,24 @@
 namespace oak {
 
 	namespace util {
-
+		
 		template<typename TBase>
-		class TypeId {
-		private:
+		struct type_id_base {
+
 			static size_t nextTypeId;
-		public:
-			template<typename T>
-			inline static size_t id() {
-				const static size_t id = nextTypeId++;
-				return id;
-			}
+		};
+
+		template<typename TBase, typename T>
+		struct type_id : public type_id_base<TBase> {
+			const static size_t id;
 		};
 
 		template<typename TBase>
-		size_t TypeId<TBase>::nextTypeId = 0;
+		size_t type_id_base<TBase>::nextTypeId = 0;
+
+		template<typename TBase, typename T>
+		const size_t type_id<TBase, T>::id = type_id_base<TBase>::nextTypeId++;
+
 	}
 
 }

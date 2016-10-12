@@ -20,8 +20,8 @@ namespace oak {
 		}
 
 		template <typename TEvent, typename TListener>
-		void add(TListener *listener) {
-			size_t tid = util::TypeId<BaseEvt>::id<TEvent>();
+		void add(TListener&& listener) {
+			size_t tid = util::type_id<BaseEvt, TEvent>::id;
 			auto it = channels_.find(tid);
 			if (it == std::end(channels_)) {
 				const Block &block = MemoryManager::inst().allocate(sizeof(EventChannel<TEvent>));
@@ -36,14 +36,14 @@ namespace oak {
 		}
 
 		template <typename TEvent, typename TListener>
-		void remove(TListener *listener) {
+		void remove(TListener &&listener) {
 			std::lock_guard<std::mutex> guard{ channelsMutex_ };
-			static_cast<EventChannel<TEvent>*>(channels_.at(util::TypeId<BaseEvt>::id<TEvent>()).ptr)->remove(listener);
+			static_cast<EventChannel<TEvent>*>(channels_.at(util::type_id<BaseEvt, TEvent>::id).ptr)->remove(listener);
 		}
 
 		template <typename TEvent>
 		void emitEvent(const TEvent &event) const {
-			size_t tid = util::TypeId<BaseEvt>::id<TEvent>();
+			size_t tid = util::type_id<BaseEvt, TEvent>::id;
 			auto it = channels_.find(tid);
 			if (it != std::end(channels_)) {
 				static_cast<EventChannel<TEvent>*>(channels_.at(tid).ptr)->emitEvent(event);

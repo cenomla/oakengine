@@ -29,6 +29,7 @@ namespace oak {
 
 	private:
 		std::mutex tasksMutex_;
+		std::future 
 		std::condition_variable taskCv_;
 		std::deque<Task> tasks_;
 		std::thread thread_;

@@ -19,7 +19,7 @@ namespace oak {
 		for (size_t i = 0; i < workers_.size(); i++) {
 			workers_[i].setBackground(i < workers_.size()/2 ? false : true);
 		}
-		engine->getEventManager().add<QuitEvent>(this);
+		engine->getEventManager().add<QuitEvent>(std::ref(*this));
 	}
 
 	void TaskManager::destroy() {
