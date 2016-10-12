@@ -6,7 +6,7 @@ namespace oak {
 
 	struct Task;
 	
-	struct QuitEvent {};
+	struct GameExitEvent {};
 
 	struct TaskCompletedEvent {
 		Task *task;

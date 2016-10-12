@@ -14,7 +14,7 @@ namespace oak::graphics {
 
 	class GLSpriteRenderer : public System {
 	public:
-		GLSpriteRenderer(Engine *engine);
+		GLSpriteRenderer(Engine &engine);
 
 		void init() override;
 

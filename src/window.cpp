@@ -10,7 +10,7 @@
 
 namespace oak {
 
-	Window::Window(Engine *engine, uint32_t flags) : System{ engine }, window_{ nullptr }, flags_{ flags } {
+	Window::Window(Engine &engine, uint32_t flags) : System{ engine }, window_{ nullptr }, flags_{ flags } {
 		
 	}
 
@@ -22,7 +22,7 @@ namespace oak {
 		createWindow();
 		setCallbacks();
 
-		TaskManager &tm = engine_->getTaskManager();
+		TaskManager &tm = engine_.getTaskManager();
 
 		tm.addTask(oak::Task{ [this](){
 			this->update();
@@ -37,7 +37,7 @@ namespace oak {
 	void Window::update() {
 		glfwPollEvents();
 		if (glfwWindowShouldClose(window_)) {
-			engine_->getEventManager().emitEvent(QuitEvent{});
+			engine_.getEventManager().emitEvent(GameExitEvent{});
 		}
 	}
 
@@ -64,7 +64,7 @@ namespace oak {
 
 		glfwSetWindowUserPointer(window_, this);
 
-		engine_->getEventManager().emitEvent(WindowCreateEvent{ window_ });
+		engine_.getEventManager().emitEvent(WindowCreateEvent{ window_ });
 
 	}
 
@@ -75,11 +75,11 @@ namespace oak {
 	}
 
 	void Window::closeCallback(GLFWwindow *window) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(QuitEvent{});
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(GameExitEvent{});
 	}
 
 	void Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
@@ -90,7 +90,7 @@ namespace oak {
 	}
 
 	void Window::resizeCallback(GLFWwindow *window, int width, int height) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_->getEventManager().emitEvent(WindowResizeEvent{ width, height });
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(WindowResizeEvent{ width, height });
 	}
 
 }

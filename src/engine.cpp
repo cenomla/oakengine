@@ -17,7 +17,7 @@ namespace oak {
 
 	void Engine::init() {
 		log::cout << "oak engine version: 0.1.0" << std::endl;
-		taskManager_.init(this);
+		taskManager_.init();
 	}
 
 	void Engine::destroy() {

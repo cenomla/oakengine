@@ -14,26 +14,21 @@
 
 namespace oak {
 
-	class Engine;
-
 	class TaskManager {
 	public:
 		TaskManager();
 		~TaskManager();
 
-		void init(Engine *engine);
+		void init();
 		void destroy();
 
 		void run();
 
-		void addTask(Task &&task);
-
-		void quit();
-
-		void operator()(const QuitEvent&);
-
+		void addTask(Task task);
+		void operator()(const GameExitEvent&);
 
 	private:
+
 		std::mutex tasksMutex_;
 		std::array<std::queue<Task>, 2> tasks_;
 

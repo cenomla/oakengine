@@ -8,14 +8,14 @@
 
 namespace oak::graphics {
 
-	GLFrameRenderer::GLFrameRenderer(Engine *engine) : System{ engine } {
-		engine_->getEventManager().add<WindowCreateEvent>([this](const WindowCreateEvent& evt){ create(evt.window); });
+	GLFrameRenderer::GLFrameRenderer(Engine &engine) : System{ engine } {
+		engine_.getEventManager().add<WindowCreateEvent>([this](const WindowCreateEvent& evt){ create(evt.window); });
 	}
 
 	void GLFrameRenderer::init() {
 		//register callbacks
 
-		engine_->getEventManager().add<WindowResizeEvent>(std::ref(*this));
+		engine_.getEventManager().add<WindowResizeEvent>(std::ref(*this));;
 
 	}
 
@@ -34,7 +34,7 @@ namespace oak::graphics {
 		glfwGetWindowSize(window, &windowWidth_, &windowHeight_);
 
 		//add a task to swap buffers, clear, etc...
-		engine_->getTaskManager().addTask(Task{ [this, window]() { 
+		engine_.getTaskManager().addTask(Task{ [this, window]() { 
 			glfwSwapBuffers(window);
 			glViewport(0, 0, windowWidth_, windowHeight_);
 			glClearColor(0.3f, 0.2f, 0.7f, 1.0f);

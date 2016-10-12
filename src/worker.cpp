@@ -1,68 +1,63 @@
 #include "worker.h"
 
+#include "engine.h"
+
 namespace oak {
 
-	Worker::Worker() : flags_{ 0 } {}
-
 	Worker::~Worker() {
-		{
-			std::lock_guard<std::mutex> lock{ tasksMutex_ };
-			flags_[1] = true;
-		}
-		taskCv_.notify_one();
 		if (thread_.joinable()) {
 			thread_.join();
 		}
 	}
 
+	void Worker::init() {
+		thread_ = std::thread{ [this](){ run(); } };
+	}
+
 	void Worker::addTask(Task &&task) {
 		{
-			std::lock(tasksMutex_, doneMutex_);
-			std::lock_guard<std::mutex> lock1{ tasksMutex_, std::adopt_lock };
-			std::lock_guard<std::mutex> lock2{ doneMutex_, std::adopt_lock };
+			std::lock_guard<std::mutex> lock1{ tasksMutex_ };
 			tasks_.push_back(std::move(task));
-			flags_[0] = true;
 		}
 
 		taskCv_.notify_one();
-		if (!thread_.joinable()) {
-			thread_ = std::move(std::thread{ [this](){ this->run(); } });
-		}
-	}
-
-	void Worker::wait() {
-		std::unique_lock<std::mutex> lock{ doneMutex_ };
-		while (flags_[0]) {
-			doneCv_.wait(lock);
-		}
 	}
 
 	void Worker::run() {
-		while (true) {
-			Task *task;
-			{
-				std::lock_guard<std::mutex> lock{ tasksMutex_ };
-				task = &tasks_.front();
-			}
-			task->run();
-			{
-				std::lock_guard<std::mutex> lock{ tasksMutex_ };
-				tasks_.pop_front();
-			}
-			if (tasks_.size() == 0) {
+		running_ = true;
+		while (running_) {
+			//execute tasks until done
+			if (!tasks_.empty()) {
+				Task task;
+				//get the oldest task
 				{
-					std::lock_guard<std::mutex> lock{ doneMutex_ };
-					flags_[0] = false;
+					std::lock_guard<std::mutex> lock{ tasksMutex_ };
+					task = std::move(tasks_.front());
+					tasks_.pop_front();
 				}
-				doneCv_.notify_one();
-				std::unique_lock<std::mutex> lock{ tasksMutex_ };
-				taskCv_.wait(lock);
-				if (flags_[1]) {
-					break;
+
+				//run the task
+				task.run();
+
+				//if the task is supposed to loop then add it to the task manager
+				if (task.flags[Task::LOOP]) {
+					Engine::inst().getTaskManager().addTask(std::move(task));
 				}
 			}
 
+			//wait for task to be avalable
+			if (tasks_.empty()) {
+				std::unique_lock<std::mutex> lock{ cvMutex_ };
+				while (tasks_.empty() && running_) {
+					taskCv_.wait(lock);
+				}
+			}
 		}
+	}
+
+	void Worker::quit() {
+		running_ = false;
+		taskCv_.notify_all();
 	}
 
 }

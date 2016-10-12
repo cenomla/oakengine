@@ -9,7 +9,7 @@ namespace oak::graphics {
 
 	class GLFrameRenderer : public System {
 	public:
-		GLFrameRenderer(Engine *engine);
+		GLFrameRenderer(Engine &engine);
 
 		void init() override;
 		void create(GLFWwindow *window);

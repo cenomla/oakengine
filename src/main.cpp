@@ -16,13 +16,13 @@ using namespace std::chrono_literals;
 
 class TSDS : public oak::System {
 public:
-	TSDS(oak::Engine *engine) : oak::System{ engine }, 
+	TSDS(oak::Engine &engine) : oak::System{ engine }, 
 		sprite1_{ 0, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f },
 		sprite2_{ 1, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f }
 		 {}
 
 	void init() {
-		engine_->getTaskManager().addTask( oak::Task{
+		engine_.getTaskManager().addTask({
 			[this]() {
 				update();
 			}, oak::Task::LOOP_BIT
@@ -30,7 +30,7 @@ public:
 	}
 
 	void update() {
-		auto *renderer = reinterpret_cast<oak::graphics::GLSpriteRenderer*>(engine_->getSystem("sprite_renderer"));
+		auto *renderer = reinterpret_cast<oak::graphics::GLSpriteRenderer*>(engine_.getSystem("sprite_renderer"));
 		//draw a bunch o sprites
 		float rot = 0;
 		for (int i = 1; i < 1280/32; i++) {
@@ -60,7 +60,7 @@ struct Timer : public oak::System {
 	void init() {
 		lastTime = std::chrono::high_resolution_clock::now();
 
-		engine_->getTaskManager().addTask( oak::Task{
+		engine_.getTaskManager().addTask({
 			[this](){
 				auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -68,7 +68,7 @@ struct Timer : public oak::System {
 
 				lastTime = currentTime;
 
-				std::cout << "dt: " << dt.count() << std::endl;
+				//std::cout << "dt: " << dt.count() << std::endl;
 			}, oak::Task::LOOP_BIT
 		});
 	}
@@ -89,15 +89,20 @@ int main(int argc, char** argv) {
 	engine.init();
 
 	//create and add the window system
-	Timer timer{ &engine };
-	oak::Window window{ &engine, oak::Window::GL_CONTEXT };
-	oak::graphics::GLFrameRenderer frameRenderer{ &engine };
-	TSDS tsds{ &engine };
-	oak::graphics::GLSpriteRenderer spriteRenderer{ &engine };
+	Timer timer{ engine };
+	oak::Window window{ engine, oak::Window::GL_CONTEXT };
+	oak::graphics::GLFrameRenderer frameRenderer{ engine };
+	TSDS tsds{ engine };
+	oak::graphics::GLSpriteRenderer spriteRenderer{ engine };
 	
 	//add a test key listener
 	KeyListener listener;
 	engine.getEventManager().add<oak::KeyEvent>(std::cref(listener));
+
+	engine.getTaskManager().addTask({ [](){ 
+		std::this_thread::sleep_for(std::chrono::seconds{1});
+		std::cout << "this hour has 22 minutes" << std::endl;
+	 }, oak::Task::MULTI_THREAD_BIT | oak::Task::LOOP_BIT });
 
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem("timer", &timer);

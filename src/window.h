@@ -13,7 +13,7 @@ namespace oak {
 	public:
 		static constexpr uint32_t GL_CONTEXT = 0x00000001;
 
-		Window(Engine *engine, uint32_t flags = 0);
+		Window(Engine &engine, uint32_t flags = 0);
 		~Window();
 
 		void init() override;

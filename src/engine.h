@@ -13,7 +13,7 @@ namespace oak {
 
 	class Engine {
 	public:
-		inline static const Engine& inst() { oak_assert(INST != nullptr); return *INST; }
+		inline static Engine& inst() { oak_assert(INST != nullptr); return *INST; }
 
 		Engine();
 		~Engine();
