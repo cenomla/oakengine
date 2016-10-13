@@ -42,7 +42,7 @@ namespace oak {
 		~StackAllocator();
 
 		void* allocate(size_t size, byte alignment = 8);
-		void deallocate(void *p);
+		void free(void *p);
 
 		inline void* getTop() { return previousPos_; }
 	private:
@@ -60,7 +60,7 @@ namespace oak {
 		~FreelistAllocator();
 
 		void* allocate(size_t size, byte alignment = 8);
-		void deallocate(void *p, size_t size);
+		void free(void *p, size_t size);
 
 	private:
 		struct AllocationHeader {
@@ -80,7 +80,7 @@ namespace oak {
 		~PoolAllocator();
 
 		void* allocate();
-		void deallocate(void *p);
+		void free(void *p);
 
 	private:
 		void** freeList_;

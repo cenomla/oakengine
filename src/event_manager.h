@@ -15,7 +15,7 @@ namespace oak {
 		~EventManager() {
 			for (auto &it : channels_) {
 				static_cast<EventChannelBase*>(it.second.ptr)->~EventChannelBase();
-				MemoryManager::inst().deallocate(it.second);
+				MemoryManager::inst().free(it.second);
 			}
 		}
 

@@ -1,17 +1,22 @@
 #pragma once
 
-#include "system.h"
+#include "util/typeid.h"
 
 namespace oak {
 
-	class ResourceManager : public System {
+	class ResourceManager {
 	public:
-		ResourceManager();
-		~ResourceManager();
 
+		template<typename T>
+		addResource(const std::string &name, T&& resource) {
+			size_t id
+		}
+
+		template<typename T>
+		const T& getResource(const std::string &name, T&& resource);
 		
 	private:
-
+		std::array<std::unordered_map<std::string, ResourceHandleBase*>, RES_COUNT> resources_;
 	}
 
 }

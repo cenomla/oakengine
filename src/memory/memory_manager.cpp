@@ -36,7 +36,7 @@ namespace oak {
 		
 		for (auto &pool : pools_) {
 			for (auto &block : pool.second.blocks_) {
-				free(block.getStart());
+				::free(block.getStart());
 			}
 			pool.second.blocks_.clear();
 		}
@@ -52,7 +52,7 @@ namespace oak {
 		oak_assert(id != 0);
 		auto &pool = pools_.at(id);
 		for (auto &block : pool.blocks_) {
-			free(block.getStart());
+			::free(block.getStart());
 		}
 		pool.blocks_.clear();
 		pools_.erase(id);
@@ -78,12 +78,12 @@ namespace oak {
 		return { pool.blocks_.back().allocate(size), size };
 	}
 
-	void MemoryManager::deallocate(const Block &data, uint32_t id) {
+	void MemoryManager::free(const Block &data, uint32_t id) {
 		oak_assert(pools_.find(id) != std::end(pools_));
 
 		auto &pool = pools_.at(id);
 		size_t index = findInPool(pool, data.ptr);
-		pool.blocks_[index].deallocate(data.ptr, data.size);
+		pool.blocks_[index].free(data.ptr, data.size);
 		pool.usedMemory_ -= data.size;
 	}
 

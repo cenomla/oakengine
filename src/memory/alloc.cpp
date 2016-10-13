@@ -67,7 +67,7 @@ namespace oak {
 		return alignedAddress;
 	}
 
-	void StackAllocator::deallocate(void *p) {
+	void StackAllocator::free(void *p) {
 		if (p != previousPos_) { return; }
 
 		AllocationHeader* header = static_cast<AllocationHeader*>(ptrmath::subtract(p, sizeof(AllocationHeader)));
@@ -158,7 +158,7 @@ namespace oak {
 		return nullptr;
 	}
 
-	void FreelistAllocator::deallocate(void *ptr, size_t size) {
+	void FreelistAllocator::free(void *ptr, size_t size) {
 		oak_assert(ptr != nullptr);
 
 		AllocationHeader* header = static_cast<AllocationHeader*>(ptrmath::subtract(ptr, sizeof(AllocationHeader)));
@@ -248,7 +248,7 @@ namespace oak {
 		return p;
 	}
 
-	void PoolAllocator::deallocate(void *p) {
+	void PoolAllocator::free(void *p) {
 		*static_cast<void**>(p) = freeList_;
 		freeList_ = static_cast<void**>(p);
 
