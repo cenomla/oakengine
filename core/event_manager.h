@@ -15,7 +15,7 @@ namespace oak {
 		~EventManager() {
 			for (auto &it : channels_) {
 				static_cast<EventChannelBase*>(it.second.ptr)->~EventChannelBase();
-				MemoryManager::inst().deallocate(it.second);
+				MemoryManager::inst().deallocate(it.second.ptr, it.second.size);
 			}
 		}
 
@@ -24,7 +24,8 @@ namespace oak {
 			size_t tid = util::type_id<BaseEvt, TEvent>::id;
 			auto it = channels_.find(tid);
 			if (it == std::end(channels_)) {
-				const Block &block = MemoryManager::inst().allocate(sizeof(EventChannel<TEvent>));
+				size_t size = sizeof(EventChannel<TEvent>);
+				const Block &block = { MemoryManager::inst().allocate(size), size };
 				auto *channel = new (block.ptr) EventChannel<TEvent>();
 				channel->add(listener);
 				std::lock_guard<std::mutex> guard{ channelsMutex_ };

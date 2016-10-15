@@ -3,16 +3,13 @@
 namespace oak {
 	
 	Allocator::Allocator(void *start, size_t size) : start_{start}, size_{size}, usedMemory_{0}, numAllocs_{0} {}
-	Allocator::~Allocator() {}
-
 
 	LinearAllocator::LinearAllocator(void *start, size_t size) : Allocator{start, size}, currentPos_{start} {}
-	LinearAllocator::~LinearAllocator() {}
 
-	void* LinearAllocator::allocate(size_t size, byte alignment) {
+	void* LinearAllocator::allocate(size_t size, uint32_t alignment) {
 		oak_assert(size!=0);
 
-		byte adjustment = ptrmath::alignForwardAdjustment(currentPos_, alignment);
+		uint32_t adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment);
 
 		if (usedMemory_ + adjustment + size > size_) {
 			return nullptr;
@@ -37,29 +34,26 @@ namespace oak {
 
 
 	StackAllocator::StackAllocator(void *start, size_t size) : Allocator{start, size}, currentPos_{ start_ }, previousPos_{ nullptr } {}
-	StackAllocator::~StackAllocator() {
-		delete[] static_cast<char*>(start_);
-	}
 
-	void *StackAllocator::allocate(size_t size, byte alignment) {
+	void *StackAllocator::allocate(size_t size, uint32_t alignment) {
 		oak_assert(size != 0);
 
 		previousPos_ = currentPos_;
 
-		byte adjustment = ptrmath::alignForwardAdjustmentWithHeader(currentPos_, alignment, sizeof(AllocationHeader));
+		uint32_t adjustment = ptrutil::alignForwardAdjustmentWithHeader(currentPos_, alignment, sizeof(AllocationHeader));
 
 		if (usedMemory_ + adjustment + size > size_) {
 			return nullptr;
 		}
 
-		void *alignedAddress = ptrmath::add(currentPos_, adjustment);
+		void *alignedAddress = ptrutil::add(currentPos_, adjustment);
 
-		AllocationHeader* header = static_cast<AllocationHeader*>(ptrmath::subtract(alignedAddress, sizeof(AllocationHeader)));
+		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(alignedAddress, sizeof(AllocationHeader)));
 
 		header->adjustment = adjustment;
 		header->prevAddress = previousPos_;
 
-		currentPos_ = ptrmath::add(alignedAddress, size);
+		currentPos_ = ptrutil::add(alignedAddress, size);
 
 		usedMemory_ += size + adjustment;
 		numAllocs_++;
@@ -70,12 +64,12 @@ namespace oak {
 	void StackAllocator::deallocate(void *p) {
 		if (p != previousPos_) { return; }
 
-		AllocationHeader* header = static_cast<AllocationHeader*>(ptrmath::subtract(p, sizeof(AllocationHeader)));
+		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(p, sizeof(AllocationHeader)));
 		previousPos_ = header->prevAddress;
 
 		usedMemory_ -= reinterpret_cast<uintptr_t>(currentPos_) - reinterpret_cast<uintptr_t>(p) + header->adjustment;
 
-		currentPos_ = ptrmath::subtract(p, header->adjustment);
+		currentPos_ = ptrutil::subtract(p, header->adjustment);
 
 		numAllocs_--;
 
@@ -91,18 +85,14 @@ namespace oak {
 		freeList_->next = nullptr;
 	}
 
-	FreelistAllocator::~FreelistAllocator() {
-		freeList_ = nullptr;
-	}
-
-	void* FreelistAllocator::allocate(size_t size, byte alignment) {
+	void* FreelistAllocator::allocate(size_t size, uint32_t alignment) {
 		FreeBlock* prev_free_block = nullptr;
 		FreeBlock* free_block = freeList_;
 
 		while (free_block != nullptr)
 		{
 			//Calculate adjustment needed to keep object correctly aligned
-			byte adjustment = ptrmath::alignForwardAdjustmentWithHeader(free_block, alignment, sizeof(AllocationHeader));
+			uint32_t adjustment = ptrutil::alignForwardAdjustmentWithHeader(free_block, alignment, sizeof(AllocationHeader));
 
 			size_t total_size = size + adjustment;
 
@@ -130,7 +120,7 @@ namespace oak {
 			else
 			{
 				//Else create a new FreeBlock containing remaining memory
-				FreeBlock* next_block = static_cast<FreeBlock*>(ptrmath::add(free_block, total_size));
+				FreeBlock* next_block = static_cast<FreeBlock*>(ptrutil::add(free_block, total_size));
 				next_block->size = free_block->size - total_size;
 				next_block->next = free_block->next;
 
@@ -150,7 +140,7 @@ namespace oak {
 			usedMemory_ += total_size;
 			numAllocs_++;
 
-			oak_assert(ptrmath::alignForwardAdjustment((void*)aligned_address, alignment) == 0);
+			oak_assert(ptrutil::alignForwardAdjustment((void*)aligned_address, alignment) == 0);
 
 			return reinterpret_cast<void*>(aligned_address);
 		}
@@ -161,7 +151,7 @@ namespace oak {
 	void FreelistAllocator::deallocate(void *ptr, size_t size) {
 		oak_assert(ptr != nullptr);
 
-		AllocationHeader* header = static_cast<AllocationHeader*>(ptrmath::subtract(ptr, sizeof(AllocationHeader)));
+		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(ptr, sizeof(AllocationHeader)));
 
 		uintptr_t   block_start = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
 		uintptr_t   block_end = block_start + size;
@@ -211,27 +201,24 @@ namespace oak {
 		usedMemory_ -= size;
 	}
 
-	PoolAllocator::PoolAllocator(void *start, size_t size, size_t objectSize, size_t alignment)
-		: Allocator{start, size}
-		, objectSize_{((objectSize + (alignment - 1)) & (~(alignment - 1)))}
+	PoolAllocator::PoolAllocator(void *start, size_t objectSize, size_t count, size_t alignment)
+		: Allocator{start, ptrutil::alignSize(objectSize) * count}
+		, objectSize_{ptrutil::alignSize(objectSize)}
 		, alignment_{alignment} {
 
-		size_t adjustment = ptrmath::alignForwardAdjustment(start_, alignment);
-		size_t numObjects = size / objectSize_;
+		size_t adjustment = ptrutil::alignForwardAdjustment(start_, alignment);
 
-		freeList_ = static_cast<void**>(ptrmath::add(start_, adjustment));
+		freeList_ = static_cast<void**>(ptrutil::add(start_, adjustment));
 
 		void** p = freeList_;
 
-		for (size_t i = 0; i < numObjects-1; i++) {
-			*p = ptrmath::add(p, objectSize_);
+		for (size_t i = 0; i < count-1; i++) {
+			*p = ptrutil::add(p, objectSize_);
 			p = static_cast<void**>(*p);
 		}
 
 		*p = nullptr;
 	}
-
-	PoolAllocator::~PoolAllocator() {}
 
 	void* PoolAllocator::allocate() {
 		if (freeList_ == nullptr) {

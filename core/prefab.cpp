@@ -18,7 +18,7 @@ namespace oak {
 	void Prefab::clear() {
 		for (auto it : storage_) {
 			manager_->getComponentHandle(it.first)->destruct(it.second.ptr);
-			MemoryManager::inst().deallocate(it.second);
+			MemoryManager::inst().deallocate(it.second.ptr, it.second.size);
 		}
 		storage_.clear();
 	}

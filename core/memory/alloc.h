@@ -1,7 +1,7 @@
 #pragma once
 
+#include "util/pointer_util.h"
 #include "oak_assert.h"
-#include "pointer.h"
 #include "block.h"
 
 namespace oak {
@@ -9,7 +9,6 @@ namespace oak {
 	class Allocator {
 	public:
 		Allocator(void* start, size_t size);
-		~Allocator();
 
 		inline void* getStart() { return start_; }
 		inline const void* getStart() const { return start_; }
@@ -28,9 +27,8 @@ namespace oak {
 	class LinearAllocator : public Allocator {
 	public:
 		LinearAllocator(void *start, size_t size);
-		~LinearAllocator();
 		
-		void* allocate(size_t size, byte alignment = 8);
+		void* allocate(size_t size, uint32_t alignment = 8);
 		void clear();
 	private:
 		void *currentPos_;
@@ -39,16 +37,15 @@ namespace oak {
 	class StackAllocator : public Allocator {
 	public:
 		StackAllocator(void *start, size_t size);
-		~StackAllocator();
 
-		void* allocate(size_t size, byte alignment = 8);
+		void* allocate(size_t size, uint32_t alignment = 8);
 		void deallocate(void *p);
 
 		inline void* getTop() { return previousPos_; }
 	private:
 		struct AllocationHeader {
 			void *prevAddress;
-			byte adjustment;
+			size_t adjustment;
 		};
 		void *currentPos_;
 		void *previousPos_;
@@ -57,14 +54,13 @@ namespace oak {
 	class FreelistAllocator : public Allocator {
 	public:
 		FreelistAllocator(void *start, size_t size);
-		~FreelistAllocator();
 
-		void* allocate(size_t size, byte alignment = 8);
+		void* allocate(size_t size, uint32_t alignment = 8);
 		void deallocate(void *p, size_t size);
 
 	private:
 		struct AllocationHeader {
-			byte adjustment;
+			uint32_t adjustment;
 		};
 
 		struct FreeBlock {
@@ -76,8 +72,7 @@ namespace oak {
 
 	class PoolAllocator : public Allocator {
 	public:
-		PoolAllocator(void *start, size_t size, size_t objectSize, size_t alignment);
-		~PoolAllocator();
+		PoolAllocator(void *start, size_t objectSize, size_t count, size_t alignment);
 
 		void* allocate();
 		void deallocate(void *p);

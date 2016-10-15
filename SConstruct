@@ -38,3 +38,6 @@ env.Library(target = target_path, source = sources)
 
 env.VariantDir('bin/sandbox.d', 'sandbox', duplicate=0)
 env.Program(target = 'bin/sandbox', LIBS = ['oak'] + libs, source = sandbox)
+
+#env.VariantDir('bin/unit.d', 'core', duplicate=0)
+#env.Program(target = 'bin/unit', CXXFLAGS = ['-std=c++1z', '-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas'], LIBS = ['oak'] + libs, source = "core/memory/allocator.cpp")

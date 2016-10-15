@@ -1,6 +1,8 @@
 #pragma once
 
-namespace oak { namespace mpl {
+#include <cstddef>
+
+namespace oak::mpl {
 
 	struct nulltype {};
 
@@ -84,4 +86,4 @@ namespace oak { namespace mpl {
 	template<typename TList, typename... TArgs>
 	using append = typename append_list<TList, TArgs...>::type;
 
-} }
+}

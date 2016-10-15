@@ -4,7 +4,7 @@
 
 namespace oak {
 
-	LuaManager::LuaManager(Engine &engine, const std::string &path) : System{ engine }, path_{ path } {
+	LuaManager::LuaManager(Engine &engine, const std::string &path) : System{ engine, "lua" }, path_{ path } {
 
 	}
 

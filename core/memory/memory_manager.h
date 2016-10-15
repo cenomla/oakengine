@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_map>
 #include <vector>
 
 #include "oak_assert.h"
@@ -21,18 +20,21 @@ namespace oak {
 		void createPool(uint32_t id, size_t size);
 		void destroyPool(uint32_t id);
 
-		Block allocate(size_t size, uint32_t pool = 0);
-		void deallocate(const Block &data, uint32_t pool = 0);
+		void* allocate(size_t size, uint32_t pool = 0, uint32_t alignment = 8);
+		void deallocate(void* ptr, size_t size, uint32_t pool = 0);
 
 		size_t getAllocatedMemory(uint32_t id) const;
 		size_t getUsedMemory(uint32_t id) const;
 
 		size_t getAllocatedMemory() const;
 		size_t getUsedMemory() const;
+
+		size_t getPoolBlockSize(uint32_t id) const { return pools_.at(id).blockSize_; }
 	private:
 		static MemoryManager* INST;
 
 		struct MemoryPool {
+			MemoryPool() : blockSize_{ 0 }, allocatedMemory_{ 0 }, usedMemory_{ 0 } {}
 			MemoryPool(size_t blockSize) : blockSize_{ blockSize }, allocatedMemory_{ 0 }, usedMemory_{ 0 } {}
 
 			std::vector<FreelistAllocator> blocks_;
@@ -41,11 +43,10 @@ namespace oak {
 			size_t allocatedMemory_;
 			size_t usedMemory_;
 		};
-
-		
+				
 		size_t findInPool(const MemoryPool &pool, const void *ptr) const;
 
-		std::unordered_map<uint32_t, MemoryPool> pools_;
+		std::vector<MemoryPool> pools_;
 	};
 
 }

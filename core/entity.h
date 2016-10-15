@@ -34,7 +34,7 @@ namespace oak {
 		void addComponentHandle() {
 			size_t tid = util::type_id<Component, T>::id;
 			if (componentHandles_[tid].ptr != nullptr) { return; }
-			Block block = MemoryManager::inst().allocate(sizeof(TypeHandle<T>));
+			Block block = { MemoryManager::inst().allocate(sizeof(TypeHandle<T>)), sizeof(TypeHandle<T>) };
 			new (block.ptr) TypeHandle<T>{};
 			componentHandles_[tid] = block;
 		}

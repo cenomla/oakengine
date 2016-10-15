@@ -12,17 +12,17 @@ namespace oak {
 	std::string MemoryManager::memoryString(size_t bytes) {
 		double mem = static_cast<double>(bytes);
 		std::string abr = "B";
-		if (mem > 1000000000000.0) {
-			mem /= 1000000000000.0;
+		if (bytes > 1_tb) {
+			mem /= 1e12f;
 			abr = "TB";
-		} else if (mem > 1000000000.0) {
-			mem /= 1000000000.0;
+		} else if (bytes > 1_gb) {
+			mem /= 1e9f;
 			abr = "GB";
-		} else if (mem > 1000000.0) {
-			mem /= 1000000.0;
+		} else if (bytes > 1_mb) {
+			mem /= 1e6f;
 			abr = "MB";
-		} else if (mem > 1000.0) {
-			mem /= 1000.0;
+		} else if (bytes > 1_kb) {
+			mem /= 1e3f;
 			abr = "KB";
 		} 
 		return std::to_string(static_cast<size_t>(std::round(mem))) + abr;
@@ -30,7 +30,7 @@ namespace oak {
 
 	MemoryManager::MemoryManager() {
 		INST = this;
-		pools_.emplace(std::pair<uint32_t, MemoryPool>{ 0, MemoryPool{ 16_mb } });
+		pools_.emplace_back(4_mb);
 	}
 
 	MemoryManager::~MemoryManager() {
@@ -40,17 +40,20 @@ namespace oak {
 		log::cout << "memory still in use: " << memoryString(getUsedMemory()) << std::endl;
 		
 		for (auto &pool : pools_) {
-			for (auto &block : pool.second.blocks_) {
+			for (auto &block : pool.blocks_) {
 				free(block.getStart());
 			}
-			pool.second.blocks_.clear();
+			pool.blocks_.clear();
 		}
 		pools_.clear();
 	}
 
 	void MemoryManager::createPool(uint32_t id, size_t size) {
-		oak_assert(id != 0);
-		pools_.emplace(std::pair<uint32_t, MemoryPool>{ id, MemoryPool{ size } });
+		oak_assert(id != 0 && size > 0);
+		if (id >= pools_.size()) {
+			pools_.resize(id + 1);
+		}
+		pools_[id] = MemoryPool{ size };
 	}
 
 	void MemoryManager::destroyPool(uint32_t id) {
@@ -59,37 +62,36 @@ namespace oak {
 		for (auto &block : pool.blocks_) {
 			free(block.getStart());
 		}
-		pool.blocks_.clear();
-		pools_.erase(id);
+		pool = {};
 	}
 
-	Block MemoryManager::allocate(size_t size, uint32_t id) {
-		oak_assert(pools_.find(id) != std::end(pools_));
+	void* MemoryManager::allocate(size_t size, uint32_t id, uint32_t alignment) {
+		oak_assert(pools_.at(id).blockSize_ > 0);
 
 		void *ptr = nullptr;
 		auto &pool = pools_.at(id);
 		//find a pool that will fit this size of allocation
 		for (auto &block : pool.blocks_) {
-			ptr = block.allocate(size);
+			ptr = block.allocate(size, alignment);
 			if (ptr != nullptr) {
 				pool.usedMemory_ += size;
-				return { ptr, size };
+				return ptr;
 			}
 		}
 		//if no pool has enough space allocate a new pool
-		pool.blocks_.emplace_back(FreelistAllocator{ malloc(pool.blockSize_), pool.blockSize_ });
+		pool.blocks_.emplace_back(FreelistAllocator{ aligned_alloc(alignment, pool.blockSize_), pool.blockSize_ });
 		pool.allocatedMemory_ += pool.blockSize_;
 		pool.usedMemory_ += size;
-		return { pool.blocks_.back().allocate(size), size };
+		return pool.blocks_.back().allocate(size, alignment);
 	}
 
-	void MemoryManager::deallocate(const Block &data, uint32_t id) {
-		oak_assert(pools_.find(id) != std::end(pools_));
+	void MemoryManager::deallocate(void *ptr, size_t size, uint32_t id) {
+		oak_assert(pools_.at(id).usedMemory_ > 0);
 
 		auto &pool = pools_.at(id);
-		size_t index = findInPool(pool, data.ptr);
-		pool.blocks_[index].deallocate(data.ptr, data.size);
-		pool.usedMemory_ -= data.size;
+		size_t index = findInPool(pool, ptr);
+		pool.blocks_[index].deallocate(ptr, size);
+		pool.usedMemory_ -= size;
 	}
 
 	size_t MemoryManager::getAllocatedMemory(uint32_t id) const {
@@ -102,16 +104,16 @@ namespace oak {
 
 	size_t MemoryManager::getAllocatedMemory() const {
 		size_t sum = 0;
-		for (auto const &pool : pools_) {
-			sum += pool.second.allocatedMemory_;
+		for (const auto &pool : pools_) {
+			sum += pool.allocatedMemory_;
 		}
 		return sum;
 	}
 
 	size_t MemoryManager::getUsedMemory() const {
 		size_t sum = 0;
-		for (auto const &pool : pools_) {
-			sum += pool.second.usedMemory_;
+		for (const auto &pool : pools_) {
+			sum += pool.usedMemory_;
 		}
 		return sum;
 	}

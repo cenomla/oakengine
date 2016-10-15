@@ -13,7 +13,7 @@ namespace oak {
 		for (const auto &block : componentHandles_) {
 			if (block.ptr != nullptr) {
 				static_cast<TypeHandleBase*>(block.ptr)->~TypeHandleBase();
-				MemoryManager::inst().deallocate(block);
+				MemoryManager::inst().deallocate(block.ptr, block.size);
 			}
 		}
 	}
@@ -54,7 +54,7 @@ namespace oak {
 		auto &attribute = entityAttributes_[idx];
 		attribute.componentMask[tid] = true;
 		if (attribute.components[tid].ptr == nullptr) {
-			attribute.components[tid] = MemoryManager::inst().allocate(size);
+			attribute.components[tid] = { MemoryManager::inst().allocate(size), size };
 		}
 		return attribute.components[tid].ptr;
 	}
@@ -70,7 +70,8 @@ namespace oak {
 	void EntityManager::deleteComponent(uint32_t idx, uint32_t tid) {
 		auto const& attribute = entityAttributes_[idx];
 		if (attribute.components[tid].ptr != nullptr) {
-			MemoryManager::inst().deallocate(attribute.components[tid]);
+			const Block &block = attribute.components[tid];
+			MemoryManager::inst().deallocate(block.ptr, block.size);
 		}
 	}
 

@@ -10,7 +10,7 @@
 
 namespace oak {
 
-	Window::Window(Engine &engine, uint32_t flags) : System{ engine }, window_{ nullptr }, flags_{ flags } {
+	Window::Window(Engine &engine, uint32_t flags) : System{ engine, "window" }, window_{ nullptr }, flags_{ flags } {
 		
 	}
 

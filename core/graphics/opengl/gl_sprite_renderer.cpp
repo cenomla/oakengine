@@ -7,7 +7,7 @@
 
 namespace oak::graphics {
 
-	GLSpriteRenderer::GLSpriteRenderer(Engine &engine) : System{ engine }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER }, texture_{ GL_TEXTURE_2D }, maxSpriteCount_{ 0 } {
+	GLSpriteRenderer::GLSpriteRenderer(Engine &engine) : System{ engine, "gl_sprite_renderer" }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER }, texture_{ GL_TEXTURE_2D }, maxSpriteCount_{ 0 } {
 
 	}
 

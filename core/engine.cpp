@@ -1,8 +1,5 @@
 #include "engine.h"
 
-#include "system.h"
-#include "log.h"
-
 namespace oak {
 
 	Engine *Engine::INST = nullptr;
@@ -37,30 +34,24 @@ namespace oak {
 		taskManager_.run();
 	}
 
-	void Engine::addSystem(const std::string &name, System *system) {
-		auto it = systems_.find(name);
-		if (it == std::end(systems_)) {
-			system->init();
-			systems_.insert({ name, system });
-		}
-	}
-
 	void Engine::removeSystem(const std::string &name) {
-		auto it = systems_.find(name);
-		if (it != std::end(systems_)) {
-			it->second->destroy();
-			systems_.erase(name);
+		for (auto it = std::begin(systems_); it != std::end(systems_); ++it) {
+			if (it->second->getName() == name) {
+				it->second->destroy();
+				systems_.erase(it);
+				break;
+			}
 		}
 	}
 
 	System* Engine::getSystem(const std::string &name) {
-		auto it = systems_.find(name);
-		if (it != std::end(systems_)) {
-			return it->second;
-		} else {
-			log::cout << "system does not exist: " << name << std::endl;
-			return nullptr;
+		for (auto it = std::begin(systems_); it != std::end(systems_); ++it) {
+			if (it->second->getName() == name) {
+				return it->second;
+			}
 		}
+		log::cout << "system does not exist: " << name << std::endl;
+		std::exit(-1);
 	}
 
 }

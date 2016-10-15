@@ -8,7 +8,7 @@
 
 namespace oak::graphics {
 
-	GLFrameRenderer::GLFrameRenderer(Engine &engine) : System{ engine } {
+	GLFrameRenderer::GLFrameRenderer(Engine &engine) : System{ engine, "gl_frame_renderer" } {
 		engine_.getEventManager().add<WindowCreateEvent>([this](const WindowCreateEvent& evt){ create(evt.window); });
 	}
 

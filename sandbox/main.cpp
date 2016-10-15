@@ -25,7 +25,7 @@ struct SpriteComponent {
 
 class PlayerSystem : public oak::System {
 public:
-	PlayerSystem(oak::Engine &engine, oak::EntityManager &manager) : oak::System{ engine }, manager_{ manager } {
+	PlayerSystem(oak::Engine &engine, oak::EntityManager &manager) : oak::System{ engine, "player_system" }, manager_{ manager } {
 
 	}
 
@@ -39,10 +39,10 @@ public:
 
 	void update() {
 		for (const auto& entity : cache_.entities()) {
-			const auto& tc = entity.getComponent<TransformComponent>();
-			const auto* sprite = entity.getComponent<oak::graphics::Sprite*>();
-			auto *renderer = reinterpret_cast<oak::graphics::GLSpriteRenderer*>(engine_.getSystem("sprite_renderer"));
-			renderer->addSprite({ tc.x, tc.y, -1.0f }, 0, 0, 1.0f, 0.0f, sprite);
+			const auto &tc = entity.getComponent<TransformComponent>();
+			const auto *sprite = entity.getComponent<oak::graphics::Sprite*>();
+			auto &renderer = engine_.getSystem<oak::graphics::GLSpriteRenderer>();
+			renderer.addSprite({ tc.x, tc.y, -1.0f }, 0, 0, 1.0f, 0.0f, sprite);
 		}
 	}
 
@@ -109,11 +109,11 @@ int main(int argc, char** argv) {
 	PlayerSystem ps{ engine, manager };
 
 	//add the systems to the engine and therefore initilize them
-	engine.addSystem("window", &window);
-	engine.addSystem("lua_manager", &luam);
-	engine.addSystem("player_system", &ps);
-	engine.addSystem("sprite_renderer", &spriteRenderer);
-	engine.addSystem("frame_renderer", &frameRenderer);
+	engine.addSystem(&window);
+	engine.addSystem(&luam);
+	engine.addSystem(&ps);
+	engine.addSystem(&spriteRenderer);
+	engine.addSystem(&frameRenderer);
 
 	//start ur engines
 	engine.start();
