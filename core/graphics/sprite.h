@@ -14,6 +14,7 @@ namespace oak::graphics {
 			glm::vec2 position;
 			glm::vec2 texCoords;
 		};
+		
 		Sprite(uint32_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY);
 
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY) const;

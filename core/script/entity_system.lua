@@ -18,20 +18,20 @@ local entity_system = {
 	messages = {},
 
 	createEntity = function(self, layer, name)
-		local e = Scene:createEntity(layer, name)
-		e.id:activate()
+		local e = self.manager:createEntity(layer, name)
+		e:activate()
 		for i = 1, layer + 1 do
 			if not self.entities[i] then
 				self.entities[i] = {}
 			end
 		end
-		self.entities[layer + 1][e.id:index() + 1] = e
+		self.entities[layer + 1][e:index() + 1] = e
 		return e
 	end,
 
 	destroyEntity = function(self, e)
-		self.entities[e.id:getLayer() + 1][e.id:index() + 1] = nil
-		Scene:destroyEntity(e.id)
+		self.entities[e:getLayer() + 1][e:index() + 1] = nil
+		self.manager.destroyEntity(e)
 	end,
 
 	destroyAll = function(self)
@@ -42,8 +42,8 @@ local entity_system = {
 		end
 	end,
 
-	getEntity = function(self, id)
-		return self.entities[id:getLayer() + 1][id:index() + 1]
+	getEntity = function(self, layer, index)
+		return self.entities[layer + 1][index + 1]
 	end,
 
 	emit_event = function(self, event_name, ...)
@@ -53,14 +53,11 @@ local entity_system = {
 		table.insert(self.events[event_name], ...)
 	end,
 
-	send_message = function(self, event_name, id, ...)
-		local e = self.entities[id:getLayer() + 1][id:index() + 1]
+	send_message = function(self, event_name, e, ...)
 		if e[event_name] then e[event_name](e, ...) end
 	end,
 
-	process_events = function(self)
-		--keep all of the entities sorted by their depth so that the entities closest to the screen get their events triggered first
-		
+	process_events = function(self)		
 		for k, v in pairs(self.events) do
 			self:process_event(k, v)
 			self.events[k] = {}
@@ -70,7 +67,7 @@ local entity_system = {
 	process_event = function(self, event_name, ...)
 		for kl, l in rpairs(self.entities) do
 			for kv, v in rpairs(l) do
-				if v.id:isActive() and v[event_name] then
+				if v:isActive() and v[event_name] then
 					if v[event_name](v, ...) then return end
 				end
 			end

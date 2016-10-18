@@ -14,58 +14,51 @@
 #include "entity.h"
 #include "prefab.h"
 #include "lua_manager.h"
+#include "components.h"
+#include "resource_manager.h"
 
-struct TransformComponent {
-	float x, y;
-};
-
-struct SpriteComponent {
-
-};
-
-class PlayerSystem : public oak::System {
+class SpriteSystem : public oak::System {
 public:
-	PlayerSystem(oak::Engine &engine, oak::EntityManager &manager) : oak::System{ engine, "player_system" }, manager_{ manager } {
+	SpriteSystem(oak::Engine &engine) : oak::System{ engine, "sprite_system" } {
 
 	}
 
 	void init() override {
-		cache_.requireComponent<TransformComponent>();
-		cache_.requireComponent<oak::graphics::Sprite*>();
-		manager_.addCache(&cache_);
+		cache_.requireComponent<oak::TransformComponent>();
+		cache_.requireComponent<oak::SpriteComponent>();
+		engine_.getSystem<oak::EntityManager>().addCache(&cache_);
 		engine_.getEventManager().add<oak::KeyEvent>(std::ref(*this));
 		engine_.getTaskManager().addTask({ [this](){ update(); }, oak::Task::LOOP_BIT });
 	}
 
 	void update() {
 		for (const auto& entity : cache_.entities()) {
-			const auto &tc = entity.getComponent<TransformComponent>();
-			const auto *sprite = entity.getComponent<oak::graphics::Sprite*>();
+			const auto &tc = entity.getComponent<oak::TransformComponent>();
+			const auto &sc = entity.getComponent<oak::SpriteComponent>();
 			auto &renderer = engine_.getSystem<oak::graphics::GLSpriteRenderer>();
-			renderer.addSprite({ tc.x, tc.y, -1.0f }, 0, 0, 1.0f, 0.0f, sprite);
+			renderer.addSprite(tc.position, sc.animFrameX, sc.animFrameY, tc.scale, tc.rotationAngle, sc.sprite);
 		}
 	}
 
 	void operator()(const oak::KeyEvent &evt) {
 		auto entity = cache_.entities()[0];
-		auto &tc = entity.getComponent<TransformComponent>();
+		auto &tc = entity.getComponent<oak::TransformComponent>();
 		if (evt.action != GLFW_RELEASE) {
 			if (evt.key == GLFW_KEY_W) {
-				tc.y -= 4;
+				tc.position.y -= 4;
 			}
 			if (evt.key == GLFW_KEY_A) {
-				tc.x -= 4;
+				tc.position.x -= 4;
 			}
 			if (evt.key == GLFW_KEY_S) {
-				tc.y += 4;
+				tc.position.y += 4;
 			}
 			if (evt.key == GLFW_KEY_D) {
-				tc.x += 4;
+				tc.position.x += 4;
 			}
 		}
 	}
 private:
-	oak::EntityManager &manager_;
 	oak::EntityCache cache_;
 
 };
@@ -81,47 +74,39 @@ int main(int argc, char** argv) {
 	oak::Engine engine;
 	engine.init();
 
-	//create all the systems on the stack (why not)
+	//create all the systems
 	oak::Window window{ engine, oak::Window::GL_CONTEXT };
 	oak::LuaManager luam{ engine, "res/scripts/main.lua"};
 	oak::graphics::GLFrameRenderer frameRenderer{ engine };
 	oak::graphics::GLSpriteRenderer spriteRenderer{ engine };
+	oak::ResourceManager resManager{ engine };
+	oak::EntityManager entityManager{ engine };
+	SpriteSystem spriteSystem{ engine };
 	
-	//create the entity manager
-	oak::EntityManager manager;
-	manager.addComponentHandle<TransformComponent>();
-	manager.addComponentHandle<oak::graphics::Sprite*>();
-	engine.getTaskManager().addTask({ [&manager](){ manager.update(); }, oak::Task::LOOP_BIT });
-	//create a test prefab
-	oak::graphics::Sprite sprite{ 0, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f };
+	//add the systems to the engine and therefore initilize them
+	engine.addSystem(&resManager);
+	engine.addSystem(&entityManager);
+	engine.addSystem(&window);
+	engine.addSystem(&frameRenderer);
+	engine.addSystem(&luam);
+	engine.addSystem(&spriteSystem);
+	engine.addSystem(&spriteRenderer);
 
-	oak::Prefab prefab{ &manager };
-	prefab.addComponent<TransformComponent>(128.0f, 128.0f);
-	prefab.addComponent<oak::graphics::Sprite*>(&sprite);
+	//init some test stuff
+	entityManager.addComponentHandle<oak::TransformComponent>();
+	entityManager.addComponentHandle<oak::SpriteComponent>();
+	const auto& sprite = resManager.add<oak::graphics::Sprite>("spr_player", 0u, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f);
+	auto& prefab = resManager.add<oak::Prefab>("pre_player", &entityManager);
+	prefab.addComponent<oak::TransformComponent>(glm::vec3{128.0f, 128.0f, 0.0f}, 1.0f, glm::vec3{0.0f}, 0.0f);
+	prefab.addComponent<oak::SpriteComponent>(&sprite, 0, 0);
 
 	//create a test entity
 	oak::Entity entity = prefab.createInstance(0);
 	entity.activate();
 
-	prefab.clear();
-
-	//create the test system
-	PlayerSystem ps{ engine, manager };
-
-	//add the systems to the engine and therefore initilize them
-	engine.addSystem(&window);
-	engine.addSystem(&luam);
-	engine.addSystem(&ps);
-	engine.addSystem(&spriteRenderer);
-	engine.addSystem(&frameRenderer);
-
 	//start ur engines
-	engine.start();
-
-	//clean up resources
+	engine.run();
 	engine.destroy();
-
-	
 
 	return 0;
 }

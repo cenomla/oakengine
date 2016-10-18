@@ -21,7 +21,7 @@ namespace oak {
 		void init();
 		void destroy();
 
-		void start();
+		void run();
 
 		template<typename T>
 		void addSystem(T *sys) {

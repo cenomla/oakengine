@@ -2,13 +2,17 @@
 
 #include <algorithm>
 
+#include "engine.h"
+
 namespace oak {
 
-	EntityManager::EntityManager() {
+	EntityManager::EntityManager(Engine &engine) : System{ engine, "entity_manager" } {}
 
+	void EntityManager::init() {
+		engine_.getTaskManager().addTask({ [this](){ update(); }, Task::LOOP_BIT });
 	}
 
-	EntityManager::~EntityManager() {
+	void EntityManager::destroy() {
 		reset();
 		for (const auto &block : componentHandles_) {
 			if (block.ptr != nullptr) {

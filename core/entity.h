@@ -22,10 +22,12 @@ namespace oak {
 	class Entity;
 	class EntityCache;
 
-	class EntityManager {
+	class EntityManager : public System {
 	public:
-		EntityManager();
-		~EntityManager();
+		EntityManager(Engine &engine);
+
+		void init() override;
+		void destroy() override;
 
 		EntityManager(const EntityManager& other) = delete;
 		void operator=(const EntityManager& other) = delete;

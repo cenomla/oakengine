@@ -3,6 +3,10 @@
 namespace oak {
 
 	Prefab::Prefab(EntityManager *manager) : manager_{ manager } {}
+	
+	Prefab::~Prefab() {
+		clear();
+	}
 
 	Entity Prefab::createInstance(uint8_t layer) const {
 		Entity entity = manager_->createEntity(layer);

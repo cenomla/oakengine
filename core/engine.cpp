@@ -21,16 +21,13 @@ namespace oak {
 		//wait for all tasks to finish
 		taskManager_.destroy();
 
-
 		//shutdown all systems
 		for (auto &system : systems_) {
 			system.second->destroy();
 		}
-
-
 	}
 
-	void Engine::start() {
+	void Engine::run() {
 		taskManager_.run();
 	}
 

@@ -10,8 +10,15 @@ namespace oak {
 
 	void LuaManager::init() {
 		L_ = luah::createState();
-		//load the main script
 
+		//create the global oak table
+		lua_newtable(L_);
+		//load the entity system script and add it to the oak table
+		luah::loadScript(L_, "core/script/entity_system.lua");
+		lua_setfield(L_, -1, "es");
+		lua_setglobal(L_, "oak");
+
+		//load the main script
 		luah::loadScript(L_, path_);
 	}
 

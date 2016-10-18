@@ -14,6 +14,8 @@ namespace oak {
 
 		void init() override;
 		void destroy() override;
+
+		inline lua_State* getState() { return L_; }
 	private:
 		lua_State *L_;
 		std::string path_;

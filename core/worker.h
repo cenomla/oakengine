@@ -15,8 +15,6 @@ namespace oak {
 
 		~Worker();
 
-		//Worker(const Worker &) = delete;
-		//void operator=(const Worker &) = delete;
 		void init();
 
 		void addTask(Task &&task);

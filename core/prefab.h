@@ -12,6 +12,7 @@ namespace oak {
 	class Prefab {
 	public:
 		Prefab(EntityManager *manager);
+		~Prefab();
 
 		Entity createInstance(uint8_t layer) const;
 

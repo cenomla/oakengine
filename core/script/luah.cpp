@@ -21,12 +21,6 @@ namespace oak {
 
 		luaL_dostring(L, luaFun.c_str());
 
-		lua_newtable(L);
-		lua_setfield(L, LUA_REGISTRYINDEX, "Prefabs");
-
-		luah::loadScript(L, "core/script/entity_system.lua");
-		lua_setglobal(L, "ES");
-
 		return L;
 	}
 
@@ -53,7 +47,7 @@ namespace oak {
 	void luah::addFunctionToMetatable(lua_State *L, const std::string &tableName, const std::string &funcName, lua_CFunction func) {
 		luah::getMetatable(L, tableName);
 		//add the function to the metatable
-		lua_pushstring(L, funcName.c_str());
+		lua_pushstring(L, funcName.c_str()); 
 		lua_pushcfunction(L, func);
 		lua_settable(L, -3);
 
@@ -93,43 +87,84 @@ namespace oak {
 		return keys;
 	}
 
+	void luah::getGlobal(lua_State *L, const std::string &table) {
+		size_t pos = 0, len = 0, count = 0;
+
+		while ((len = table.find('.', pos)) != std::string::npos) {
+			if (count == 0) {
+				lua_getglobal(L, table.substr(pos, len - pos).c_str());
+			} else {
+				lua_getfield(L, -1, table.substr(pos, len - pos).c_str());
+			}
+
+			pos = len + 1;
+			count++;
+
+			//if we encounter a null field leave it on the stack and return
+			if (isNil(L, -1)) {
+				lua_rotate(L, -count, 1);
+				lua_pop(L, count - 1);
+				return;
+			}
+		}
+		if (count == 0) {
+			lua_getglobal(L, table.c_str());
+		} else {
+			lua_getfield(L, -1, table.substr(pos, table.size()).c_str());
+			lua_rotate(L, -(count + 1), 1);
+			lua_pop(L, count);
+		}
+	}
+
+	void luah::getRegistry(lua_State *L, const std::string &table) {
+		size_t pos = 0, len = 0, count = 0;
+
+		while ((len = table.find('.', pos)) != std::string::npos) {
+			if (count == 0) {
+				lua_getfield(L, LUA_REGISTRYINDEX, table.substr(pos, len - pos).c_str());
+			} else {
+				lua_getfield(L, -1, table.substr(pos, len - pos).c_str());
+			}
+
+			pos = len + 1;
+			count++;
+
+			//if we encounter a null field leave it on the stack and return
+			if (isNil(L, -1)) {
+				lua_rotate(L, -count, 1);
+				lua_pop(L, count - 1);
+				return;
+			}
+		}
+		if (count == 0) {
+			lua_getfield(L, LUA_REGISTRYINDEX, table.c_str());
+		} else {
+			lua_getfield(L, -1, table.substr(pos, table.size()).c_str());
+			lua_rotate(L, -(count + 1), 1);
+			lua_pop(L, count);
+		}
+	}
+
 	void luah::getField(lua_State *L, const std::string &table) {
-		int level = 0;
-		std::string var = "";
+		size_t pos = 0, len = 0, count = 0;
 
-		for (unsigned int i = 0; i<table.size(); i++) {
-			if (table.at(i) == '.') {
-				if (level == 0) {
-					lua_getglobal(L, var.c_str());
-				}
-				else {
-					lua_getfield(L, -1, var.c_str());
-				}
+		while ((len = table.find('.', pos)) != std::string::npos) {
+			lua_getfield(L, -1, table.substr(pos, len - pos).c_str());
 
-				if (lua_isnil(L, -1)) {
-					log::cout << "couldn't find value: " << table << std::endl;
-					if (level > 0) {
-						lua_pop(L, level);
-					}
-					return;
-				}
-				else {
-					var = "";
-					level++;
-				}
-			}
-			else {
-				var += table.at(i);
+			pos = len + 1;
+			count++;
+
+			//if we encounter a null field leave it on the stack and return
+			if (isNil(L, -1)) {
+				lua_rotate(L, -count, 1);
+				lua_pop(L, count - 1);
+				return;
 			}
 		}
-		if (level == 0) {
-			lua_getglobal(L, var.c_str());
-		}
-		else {
-			lua_getfield(L, -1, var.c_str());
-			lua_rotate(L, -(level + 1), 1);
-			lua_pop(L, level);
-		}
+
+		lua_getfield(L, -1, table.substr(pos, table.size()).c_str());
+		lua_rotate(L, -(count + 1), 1);
+		lua_pop(L, count);
 	}
 
 	void luah::call(lua_State *L, int nargs, int nreturns) {
@@ -158,8 +193,40 @@ namespace oak {
 		lua_pushnumber(L, v);
 	}
 
-	void luah::pushValue(lua_State *L, const char* v) {
-		lua_pushstring(L, v);
+	void luah::pushValue(lua_State *L, const std::string &v) {
+		lua_pushstring(L, v.c_str());
+	}
+
+	void luah::pushValue(lua_State *L, void* v) {
+		lua_pushlightuserdata(L, v);
+	}
+
+	template<> int luah::toValue(lua_State *L, int idx) {
+		return static_cast<int>(lua_tointeger(L, idx));
+	}
+
+	template<> size_t luah::toValue(lua_State *L, int idx) {
+		return static_cast<size_t>(lua_tointeger(L, idx));
+	}
+
+	template<> uint8_t luah::toValue(lua_State *L, int idx) {
+		return static_cast<uint8_t>(lua_tointeger(L, idx));
+	}
+
+	template<> float luah::toValue(lua_State *L, int idx) {
+		return static_cast<float>(lua_tonumber(L, idx));
+	}
+
+	template<> double luah::toValue(lua_State *L, int idx) {
+		return static_cast<double>(lua_tonumber(L, idx));
+	}
+
+	template<> std::string luah::toValue(lua_State *L, int idx) {
+		return std::string{ lua_tostring(L, idx) };
+	}
+
+	bool luah::isNil(lua_State *L, int idx) {
+		return lua_isnil(L, idx) == 0 ? false : true;
 	}
 
 }
