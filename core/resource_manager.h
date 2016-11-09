@@ -19,13 +19,13 @@ namespace oak {
 	class ResourceListHandler : public ResourceListHandlerBase {
 	public:
 		template<typename... TArgs>
-		T* addResource(const std::string &name, TArgs&&... args) {
-			auto it = resources_.emplace(name, T{ std::forward<TArgs>(args)... });
+		T* addResource(size_t id, TArgs&&... args) {
+			auto it = resources_.insert_or_assign(id, T{ std::forward<TArgs>(args)... });
 			return &it.first->second;
 		}
 
-		T* getResource(const std::string &name) {
-			const auto it = resources_.find(name);
+		T* getResource(size_t id) {
+			const auto it = resources_.find(id);
 			if (it != std::end(resources_)) {
 				return &it->second;
 			} else {
@@ -33,7 +33,7 @@ namespace oak {
 			}
 		}
 	private:
-		std::unordered_map<std::string, T> resources_;
+		std::unordered_map<size_t, T> resources_;
 	};
 
 	class ResourceManager : public System {
@@ -65,32 +65,29 @@ namespace oak {
 			}
 
 			auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
-			return *plh->addResource(name, std::forward<TArgs>(args)...);
+			return *plh->addResource(std::hash<std::string>{}(name), std::forward<TArgs>(args)...);
 		}
 
 		template<typename T>
 		const T& require(const std::string &name) {
+			return require<T>(std::hash<std::string>{}(name));
+		}
+
+		template<typename T>
+		const T& require(size_t id) {
 			size_t tid = util::type_id<Resource, T>::id;
 			
 			if (tid < resourceHandles_.size() && resourceHandles_.at(tid).ptr != nullptr) {
 				auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
 
-				auto pres = plh->getResource(name);
+				auto pres = plh->getResource(id);
 				if (pres != nullptr) {
 					return *pres;
-				} else {
-					log::cout << "failed to find resource: " << name << std::endl;
-					std::exit(-1);
 				}
-			} else {
-				log::cout << "failed to find resource: " << name << std::endl;
-				std::exit(-1);
-			}			
+			}
+			log::cout << "failed to find resource: " << id << std::endl;
+			std::exit(-1);
 		}
-
-
-
-
 
 	private:
 		struct Resource {};

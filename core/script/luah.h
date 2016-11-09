@@ -23,9 +23,9 @@ namespace oak {
 			*ptr = &i;
 		}
 
-		void pushValue(lua_State *L);
 
 		void pushValue(lua_State *L, int v);
+		void pushValue(lua_State *L, uint32_t v);
 		void pushValue(lua_State *L, size_t v);
 		void pushValue(lua_State *L, float v);
 		void pushValue(lua_State *L, double v);

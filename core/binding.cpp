@@ -1,13 +1,66 @@
 #include "binding.h"
 
+#include "resource_manager.h"
 #include "components.h"
+#include "engine.h"
+#include "prefab.h"
 
 namespace oak::luah {
 
+	//void activate(entity)
+	int c_entity_activate(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		entity.activate();
+
+		return 0;
+	}
+
+	//void deactivate(entity)
+	int c_entity_deactivate(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		entity.deactivate();
+
+		return 0;
+	}
+
+	//uint index(entity)
+	int c_entity_index(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		pushValue(L, entity.index());
+	
+		return 1;
+	}
+
+	//uint layer(entity)
+	int c_entity_layer(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		pushValue(L, entity.layer());
+
+		return 1;
+	}
+
+	//bool isActive(entity)
+	int c_entity_isActive(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		pushValue(L, entity.isActive());
+
+		return 1;
+	}
+
 	//x, y, z getPosition(entity)
-	int getPosition(lua_State *L) {
+	int c_entity_getPosition(lua_State *L) {
 		//get args
-		oak::Entity entity = luah::toValue<oak::Entity>(L, 1);
+		Entity entity = toValue<Entity>(L, 1);
 		//clear args
 		lua_settop(L, 0);
 
@@ -21,9 +74,9 @@ namespace oak::luah {
 	}
 
 	//void setPosition(entity, x, y, z)
-	int setPosition(lua_State *L) {
+	int c_entity_setPosition(lua_State *L) {
 		//get args
-		oak::Entity entity = luah::toValue<oak::Entity>(L, 1);
+		Entity entity = toValue<Entity>(L, 1);
 
 		auto& tc = entity.getComponent<TransformComponent>();
 
@@ -39,19 +92,80 @@ namespace oak::luah {
 		return 0;
 	}
 
-	//entity createEntity(manager, layer, name)
-	int createEntity(lua_State *L) {
-		EntityManager &manager = toValue<EntityManager&>(L, 1);
-		uint8_t layer = toValue<uint8_t>(L, 2);
-		std::string name = toValue<std::string>(L, 3);
+	//vx, vy, getVelocity(entity)
+	int c_entity_getVelocity(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
+
+		lua_pushnumber(L, pc.velocity.x);
+		lua_pushnumber(L, pc.velocity.y);
+
+		return 2;
+	}
+
+	//void setVelocity(entity, vx, vy)
+	int c_entity_setVelocity(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		float vx = toValue<float>(L, 2);
+		float vy = toValue<float>(L, 3);
+		lua_settop(L, 0);
+
+		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
+
+		pc.velocity = glm::vec2{ vx, vy };
+
+		return 0;
+	}
+
+	//void addForce(entity, fx, fy)
+	int c_entity_addForce(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		float fx = toValue<float>(L, 2);
+		float fy = toValue<float>(L, 3);
+		lua_settop(L, 0);
+
+		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
+
+		pc.force += glm::vec2{ fx, fy };
+
+		return 0;
+	}
+
+	//float getMass(entity)
+	int c_entity_getMass(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
+		lua_pushnumber(L, pc.mass);
+		return 1;
+	}
+
+	//entity createEntity(layer, name)
+	int c_entityManager_createEntity(lua_State *L) {
+		uint8_t layer = toValue<uint8_t>(L, 1);
+		std::string name = toValue<std::string>(L, 2);
 		//clear stack
 		lua_settop(L, 0);
 
 		lua_newtable(L);
-		getRegistry(L, "prefabs." + name);
+		getRegistry(L, name);
+		if (isNil(L, -1)) {
+			lua_pop(L, 1);//pop nil
+			loadScript(L, "res/scripts/" + name + ".lua");//get the prefab on the stack
+			lua_pushvalue(L, -1);//copy it
+			lua_setfield(L, -2, "__index");//set its index to itself
+			lua_setfield(L, LUA_REGISTRYINDEX, name.c_str());//assign it to the registry
+			getRegistry(L, name);//get the prefabs table from the registry
+		}
+		getRegistry(L, "entity");
+		lua_setmetatable(L, -2);
 		lua_setmetatable(L, -2);
 
-		Entity e = manager.createEntity(layer);
+
+		const auto& prefab = Engine::inst().getSystem<ResourceManager>().require<Prefab>(name);
+		Entity e = prefab.createInstance(layer);
 		pushValue(L, e);
 
 		lua_setfield(L, -2, "_id");
@@ -61,7 +175,7 @@ namespace oak::luah {
 	}
 
 	//void destroyEntity(entity)
-	int destroyEntity(lua_State *L) {
+	int c_entityManager_destroyEntity(lua_State *L) {
 		Entity e = toValue<Entity>(L, 1);
 
 		lua_settop(L, 0);
@@ -71,11 +185,20 @@ namespace oak::luah {
 	}
 
 	void registerBindings(lua_State *L) {
-		luah::addFunctionToMetatable(L, "entity", "getPosition", getPosition);
-		luah::addFunctionToMetatable(L, "entity", "setPosition", setPosition);
+		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
+		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
+		addFunctionToMetatable(L, "entity", "index", c_entity_index);
+		addFunctionToMetatable(L, "entity", "layer", c_entity_layer);
+		addFunctionToMetatable(L, "entity", "isActive", c_entity_isActive);
+		addFunctionToMetatable(L, "entity", "getPosition", c_entity_getPosition);
+		addFunctionToMetatable(L, "entity", "setPosition", c_entity_setPosition);
+		addFunctionToMetatable(L, "entity", "getVelocity", c_entity_getVelocity);
+		addFunctionToMetatable(L, "entity", "setVelocity", c_entity_setVelocity);
+		addFunctionToMetatable(L, "entity", "addForce", c_entity_addForce);
+		addFunctionToMetatable(L, "entity", "getMass", c_entity_getMass);
 
-		luah::addFunctionToMetatable(L, "entity_manager", "createEntity", createEntity);
-		luah::addFunctionToMetatable(L, "entity_manager", "destroyEntity", destroyEntity);
+		addFunctionToMetatable(L, "entity_manager", "createEntity", c_entityManager_createEntity);
+		addFunctionToMetatable(L, "entity_manager", "destroyEntity", c_entityManager_destroyEntity);
 
 	}
 

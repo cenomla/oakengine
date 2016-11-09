@@ -181,6 +181,10 @@ namespace oak {
 		lua_pushinteger(L, v);
 	}
 
+	void luah::pushValue(lua_State *L, uint32_t v) {
+		lua_pushinteger(L, v);
+	}
+
 	void luah::pushValue(lua_State *L, size_t v) {
 		lua_pushinteger(L, v);
 	}

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include "entity.h"
+
 struct GLFWwindow;
 
 namespace oak {
@@ -19,6 +22,16 @@ namespace oak {
 		int mods;
 	};
 
+	struct ButtonEvent {
+		int button;
+		int action;
+		int mods;
+	};
+
+	struct MouseMoveEvent {
+		int x, y;
+	};
+
 	struct WindowCreateEvent {
 		GLFWwindow *window;
 	};
@@ -26,6 +39,13 @@ namespace oak {
 	struct WindowResizeEvent {
 		int width;
 		int height;
+	};
+
+	struct CollisionEvent {
+		Entity entity;
+		Entity other;
+		glm::vec2 normal;
+		float depth;
 	};
 
 }

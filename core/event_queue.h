@@ -9,7 +9,11 @@ namespace oak {
 	template <typename TEvent>
 	class EventQueue {
 	public:
-		EventQueue(const std::function<void (const TEvent&)> &callback) : callback_{ callback } {}
+		
+		template<typename TFunc>
+		void setCallback(TFunc&& callback) {
+			callback_ = std::forward<TFunc>(callback);
+		}
 
 		void processEvents() {
 			for (auto &event : events_) {

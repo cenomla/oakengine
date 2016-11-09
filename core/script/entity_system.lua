@@ -17,8 +17,8 @@ local entity_system = {
 	events = {},
 	messages = {},
 
-	createEntity = function(self, layer, name)
-		local e = self.manager:createEntity(layer, name)
+	createEntity = function(self, layer, prefab)
+		local e = self.manager.createEntity(layer, prefab)
 		e:activate()
 		for i = 1, layer + 1 do
 			if not self.entities[i] then
@@ -26,11 +26,13 @@ local entity_system = {
 			end
 		end
 		self.entities[layer + 1][e:index() + 1] = e
+		self:send_message("create", e)
 		return e
 	end,
 
 	destroyEntity = function(self, e)
-		self.entities[e:getLayer() + 1][e:index() + 1] = nil
+		self:send_message("destroy", e)
+		self.entities[e:layer() + 1][e:index() + 1] = nil
 		self.manager.destroyEntity(e)
 	end,
 
@@ -50,7 +52,7 @@ local entity_system = {
 		if not self.events[event_name] then
 			self.events[event_name] = {}
 		end
-		table.insert(self.events[event_name], ...)
+		table.insert(self.events[event_name], { ... })
 	end,
 
 	send_message = function(self, event_name, e, ...)
@@ -58,9 +60,11 @@ local entity_system = {
 	end,
 
 	process_events = function(self)		
-		for k, v in pairs(self.events) do
-			self:process_event(k, v)
-			self.events[k] = {}
+		for name, v in pairs(self.events) do
+			for k, evt in pairs(v) do
+				self:process_event(name, table.unpack(evt))
+			end
+			self.events[name] = {}
 		end
 	end,
 

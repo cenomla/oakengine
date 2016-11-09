@@ -176,7 +176,8 @@ namespace oak {
 		void addEntity(const Entity &e);
 		void removeEntity(const Entity &e);
 
-		inline const std::vector<Entity>& entities() { return entities_; }
+		inline std::vector<Entity>& entities() { return entities_; }
+		inline const std::vector<Entity>& entities() const { return entities_; }
 
 		void sort();
 		inline const std::bitset<MAX_COMPONENTS>& getFilter() const { return filter_; }

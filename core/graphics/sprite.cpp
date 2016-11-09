@@ -4,7 +4,7 @@
 
 namespace oak::graphics {
 
-	Sprite::Sprite(uint32_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY) : 
+	Sprite::Sprite(size_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY) : 
 		materialId_{ materialId }, width_{ width }, height_{ height }, dx_{ dx }, dy_{ dy }, dw_{ dw }, dh_{ dh }, centerX_{ centerX }, centerY_{ centerY } {
 
 	}

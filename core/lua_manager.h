@@ -10,7 +10,7 @@ namespace oak {
 
 	class LuaManager : public System {
 	public:
-		LuaManager(Engine &engine, const std::string &path);
+		LuaManager(Engine &engine);
 
 		void init() override;
 		void destroy() override;
@@ -18,7 +18,6 @@ namespace oak {
 		inline lua_State* getState() { return L_; }
 	private:
 		lua_State *L_;
-		std::string path_;
 		
 	};
 

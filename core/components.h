@@ -13,9 +13,9 @@ namespace oak {
 		float rotationAngle;
 	};
 
-	struct AABB2DComponent {
-		glm::vec2 center;
-		glm::vec2 halfExtents;
+	struct AABB2dComponent {
+		glm::vec2 halfExtent;
+		glm::vec2 offset;
 	};
 
 	struct SpriteComponent {
@@ -24,9 +24,23 @@ namespace oak {
 		int animFrameY;
 	};
 
-	struct KinematicBody2DComponent {
-		glm::vec2 velocity;
+	struct PhysicsBody2dComponent {
+		PhysicsBody2dComponent(const glm::vec2 &iv, float m, float r, float sf, float df) : 
+			velocity{ iv }, 
+			force{ 0.0f }, 
+			mass{ m },
+			invMass{ m == 0.0f ? 0.0f : 1.0f / m }, 
+			restitution{ r },
+			staticFriction{ sf },
+			dynamicFriction{ df } {}
 
+		glm::vec2 velocity;
+		glm::vec2 force;
+		float mass;
+		float invMass;
+		float restitution;
+		float staticFriction;
+		float dynamicFriction;
 	};
 
 }

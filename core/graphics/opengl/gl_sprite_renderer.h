@@ -6,9 +6,8 @@
 
 #include "graphics/sprite.h"
 #include "gl_buffer.h"
-#include "gl_shader.h"
+#include "gl_material.h"
 #include "gl_vertex_array.h"
-#include "gl_texture.h"
 
 namespace oak::graphics {
 
@@ -38,6 +37,7 @@ namespace oak::graphics {
 		struct Batch {
 			size_t start;
 			size_t count;
+			const GLMaterial *material;
 		};
 
 		std::vector<SpritePos> sprites_;
@@ -47,8 +47,6 @@ namespace oak::graphics {
 		graphics::GLBuffer vbo_;
 		graphics::GLBuffer ibo_;
 		graphics::GLBuffer ubo_;
-		graphics::GLShader shader_;
-		graphics::GLTexture texture_;
 		
 		size_t maxSpriteCount_;
 	};

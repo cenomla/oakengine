@@ -5,8 +5,8 @@ namespace oak::log {
 	Logger cout_stream{ 64 };
 	std::ostream cout(&cout_stream);
 
-	Logger::Logger(size_t buffSize) : buff_(buffSize+1) {
-		setp(buff_.data(), buff_.data() + buffSize);
+	Logger::Logger(size_t buffSize) : buff_(buffSize) {
+		setp(buff_.data(), buff_.data() + buffSize-1);
 	}
 
 	bool Logger::writeAndFlush() {
@@ -15,11 +15,13 @@ namespace oak::log {
 		pbump(-n);
 
 		bool success = true;
-		bool s = true;
+		std::ios_base::iostate s;
 
 		for (auto it : ostreams_) {
-			it->write(pbase(), n);
-			if (success != false) { success = s; }
+			s = it->write(pbase(), n).rdstate();
+			if (s != std::ios_base::goodbit) {
+				success = false;
+			}
 		}
 
 		return success;

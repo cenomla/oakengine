@@ -15,14 +15,14 @@ namespace oak::graphics {
 			glm::vec2 texCoords;
 		};
 		
-		Sprite(uint32_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY);
+		Sprite(size_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY);
 
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY) const;
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY, float scale, float rotation) const;
 
-		uint32_t getMaterialId() const { return materialId_; }
+		size_t getMaterialId() const { return materialId_; }
 	private:
-		uint32_t materialId_;
+		size_t materialId_;
 		float width_, height_, dx_, dy_, dw_, dh_, centerX_, centerY_;
 	};
 

@@ -71,6 +71,8 @@ namespace oak {
 	void Window::setCallbacks() {
 		glfwSetWindowCloseCallback(window_, closeCallback);
 		glfwSetKeyCallback(window_, keyCallback);
+		glfwSetMouseButtonCallback(window_, buttonCallback);
+		glfwSetCursorPosCallback(window_, mouseCallback);
 		glfwSetWindowSizeCallback(window_, resizeCallback);
 	}
 
@@ -86,7 +88,11 @@ namespace oak {
 	}
 
 	void Window::buttonCallback(GLFWwindow *window, int button, int action, int mods) {
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(ButtonEvent{ button, action, mods });
+	}
 
+	void Window::mouseCallback(GLFWwindow *window, double xpos, double ypos) {
+		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(MouseMoveEvent{ static_cast<int>(xpos), static_cast<int>(ypos) });
 	}
 
 	void Window::resizeCallback(GLFWwindow *window, int width, int height) {

@@ -3,20 +3,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "resource_manager.h"
 #include "engine.h"
 
 namespace oak::graphics {
 
-	GLSpriteRenderer::GLSpriteRenderer(Engine &engine) : System{ engine, "gl_sprite_renderer" }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER }, texture_{ GL_TEXTURE_2D }, maxSpriteCount_{ 0 } {
+	GLSpriteRenderer::GLSpriteRenderer(Engine &engine) : System{ engine, "gl_sprite_renderer" }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER }, maxSpriteCount_{ 0 } {
 
 	}
 
 	void GLSpriteRenderer::init() {
-		//create a material
-		texture_.create("res/textures/tex.png");
-		shader_.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
-		shader_.bindBlockIndex("MatrixBlock", 0);
-
 		vao_.create();
 		vao_.bind();
 		
@@ -67,16 +63,16 @@ namespace oak::graphics {
 			void *buffer = vbo_.map(GL_WRITE_ONLY);
 			//a batch is a range of sprites with the same material
 			size_t index = 0;
-			Batch currentBatch{ index, 0 }; //first batch 
-			uint32_t id = sprites_.at(0).sprite->getMaterialId();//first sprites material
+			size_t id = sprites_.at(0).sprite->getMaterialId();//first sprites material
+			Batch currentBatch{ index, 0, &Engine::inst().getSystem<ResourceManager>().require<GLMaterial>(id) }; //first batch 
 			//iterate through the sorted sprites
 			for (const auto& sp : sprites_) {
 				//if the material is different use a different batch
 				if (id != sp.sprite->getMaterialId()) {
 					index += currentBatch.count;
 					batches_.push_back(currentBatch);
-					currentBatch = Batch{ index, 0 };
 					id = sp.sprite->getMaterialId();
+					currentBatch = Batch{ index, 0, &Engine::inst().getSystem<ResourceManager>().require<GLMaterial>(id) };
 				}
 				//stream data
 				sp.sprite->draw(buffer, sp.position.x, sp.position.y, sp.animFrameX, sp.animFrameY, sp.scale, sp.rot);
@@ -131,9 +127,7 @@ namespace oak::graphics {
 		vao_.bind();
 
 		for (const auto &batch : batches_) {
-			//batch.material->bind(); TODO: add per sprite materials
-			texture_.bind(GL_TEXTURE0);
-			shader_.bind();
+			batch.material->bind();
 			glDrawElements(GL_TRIANGLES, batch.count * 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.start * 24));
 		}
 		vao_.unbind();

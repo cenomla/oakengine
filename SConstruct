@@ -17,6 +17,7 @@ src_path = 'core'
 intermediate_path = 'bin/oak.d'
 target_path = 'bin/oak'
 flags = ['-std=c++1z', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas']
+debug_flags = ['-std=c++1z', '-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas']
 
 #lists
 sources = []
@@ -37,7 +38,7 @@ env.VariantDir(intermediate_path, src_path, duplicate=0)
 env.Library(target = target_path, source = sources)
 
 env.VariantDir('bin/sandbox.d', 'sandbox', duplicate=0)
-env.Program(target = 'bin/sandbox', LIBS = ['oak'] + libs, source = sandbox)
+env.Program(target = 'bin/sandbox', CXXFLAGS = debug_flags, LIBS = ['oak'] + libs, source = sandbox)
 
 #env.VariantDir('bin/unit.d', 'core', duplicate=0)
 #env.Program(target = 'bin/unit', CXXFLAGS = ['-std=c++1z', '-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas'], LIBS = ['oak'] + libs, source = "core/memory/allocator.cpp")
