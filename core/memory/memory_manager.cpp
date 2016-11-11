@@ -53,7 +53,9 @@ namespace oak {
 		if (id >= pools_.size()) {
 			pools_.resize(id + 1);
 		}
-		pools_[id] = MemoryPool{ size };
+		if (pools_.at(id).blockSize_ == 0) {
+			pools_[id] = MemoryPool{ size };
+		}
 	}
 
 	void MemoryManager::destroyPool(uint32_t id) {

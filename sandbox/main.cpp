@@ -43,7 +43,7 @@ public:
 			const auto &tc = entity.getComponent<oak::TransformComponent>();
 			const auto &sc = entity.getComponent<oak::SpriteComponent>();
 			auto &renderer = engine_.getSystem<oak::graphics::GLSpriteRenderer>();
-			renderer.addSprite(tc.position, sc.animFrameX, sc.animFrameY, tc.scale, tc.rotationAngle, sc.sprite);
+			renderer.addSprite(tc.position, sc.animFrameX, sc.animFrameY, tc.scale, tc.rotationAngle, sc.sprite.get());
 		}		
 	}
 
@@ -70,12 +70,14 @@ public:
 		cache_.requireComponent<oak::PhysicsBody2dComponent>();
 		engine_.getSystem<oak::EntityManager>().addCache(&cache_);
 		engine_.getEventManager().add<oak::CollisionEvent>(std::ref(queue_));
-		engine_.getTaskManager().addTask({ [this](){ update(); }, oak::Task::LOOP_BIT });
-		queue_.setCallback( [this](const oak::CollisionEvent &evt){ 
-			resolve(evt);
-			correctPosition(evt);
-		} );
-
+		engine_.getTaskManager().addTask({ [this](){ 
+			static float accum = 0.0f;
+			accum += dt.count();
+			while (accum >= 1.0f/60.0f) {
+				update(1.0f/60.0f);
+				accum -= 1.0f/60.0f; 
+			}
+		}, oak::Task::LOOP_BIT });
 	}
 
 	bool checkCollision(const ObjectInfo &a, const ObjectInfo &b, glm::vec2 &normal, float &depth) {
@@ -103,11 +105,20 @@ public:
 		return false;
 	}
 
-	void update() {
+	void update(float delta) {
 		
 		glm::vec2 normal;
 		float depth;
 		auto &entities = cache_.entities();
+
+		for (auto &entity : entities) {
+			auto& pc = entity.getComponent<oak::PhysicsBody2dComponent>();
+			pc.force += glm::vec2{ 0.0f, 981.0f } * pc.mass;
+			//integrate force
+			pc.velocity += pc.force * pc.invMass * delta;
+			pc.force = glm::vec2{ 0.0f };
+		}
+
 		for (size_t i = 0; i < entities.size(); i++) {
 			const auto& entityA = entities[i];
 			const auto& tcA = entityA.getComponent<oak::TransformComponent>();
@@ -124,23 +135,23 @@ public:
 				}
 			}
 		}
-		queue_.processEvents();
 
+		queue_.setCallback([this](const oak::CollisionEvent &evt){ resolve(evt); });
+		for (size_t iter = 0; iter < 10; iter++) {
+			queue_.processEvents();
+		}
 		//integrate physics
 		for (auto& e : entities) {
 			auto& tc = e.getComponent<oak::TransformComponent>();
 			auto& pc = e.getComponent<oak::PhysicsBody2dComponent>();
-
-			pc.force += glm::vec2{ 0.0f, 981.0f } * pc.mass;
-
-			//integrate force
-			pc.velocity += pc.force * pc.invMass * dt.count();
 			//move object by velocity
-			tc.position += glm::vec3{ pc.velocity * dt.count(), 0.0f };
-
-			pc.force = glm::vec2{ 0.0f };
+			tc.position += glm::vec3{ pc.velocity * delta, 0.0f };
 		}
 
+		queue_.setCallback([this](const oak::CollisionEvent &evt){ correctPosition(evt); });
+		queue_.processEvents();
+
+		queue_.clear();
 	}
 
 	void resolve(oak::CollisionEvent evt) {
@@ -190,12 +201,13 @@ public:
 		auto &pca = evt.entity.getComponent<oak::PhysicsBody2dComponent>();
 		auto &tcb = evt.other.getComponent<oak::TransformComponent>();
 		auto &pcb = evt.other.getComponent<oak::PhysicsBody2dComponent>();
-	
+		
 		const float percent = 0.8f;
 		const float slop = 0.01f;
 		glm::vec2 correction = glm::max(evt.depth - slop, 0.0f) / (pca.invMass + pcb.invMass) * percent * evt.normal;
 		tca.position -= glm::vec3{ pca.invMass * correction, 0.0f };
 		tcb.position += glm::vec3{ pcb.invMass * correction, 0.0f };
+		
 	}
 
 private:
@@ -297,23 +309,20 @@ int main(int argc, char** argv) {
 	auto &mat0 = resManager.add<oak::graphics::GLMaterial>("mat_block", std::hash<std::string>{}("mat_block"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
 	mat0.create("core/graphics/shaders/pass2d", "res/textures/block");
 
-	const auto& sprite = resManager.add<oak::graphics::Sprite>("spr_player", mat.id, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f);
-	const auto& sprite0 = resManager.add<oak::graphics::Sprite>("spr_block", mat0.id, 128.0f, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, 64.0f, 16.0f);
+	resManager.add<oak::graphics::Sprite>("spr_player", mat.id, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f);
+	resManager.add<oak::graphics::Sprite>("spr_block", mat0.id, 128.0f, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, 64.0f, 16.0f);
 
 	auto& prefab = resManager.add<oak::Prefab>("player", &entityManager);
 	prefab.addComponent<oak::TransformComponent>(glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{0.0f}, 0.0f);
-	prefab.addComponent<oak::SpriteComponent>(&sprite, 0, 0);
+	prefab.addComponent<oak::SpriteComponent>(std::hash<std::string>{}("spr_player"), 0, 0);
 	prefab.addComponent<oak::AABB2dComponent>(glm::vec2{ 8.0f, 8.0f }, glm::vec2{ 0.0f, 0.0f });
 	prefab.addComponent<oak::PhysicsBody2dComponent>(glm::vec2{ 0.0f }, 0.025f * 0.2f, 0.4f, 0.2f, 0.1f);
 
 	auto& prefab0 = resManager.add<oak::Prefab>("block", &entityManager);
-	prefab0.addComponent<oak::SpriteComponent>(&sprite0, 0, 0);
+	prefab0.addComponent<oak::SpriteComponent>(std::hash<std::string>{}("spr_block"), 0, 0);
 	prefab0.addComponent<oak::TransformComponent>(glm::vec3{ 256.0f, 512.0f, 0.0f }, 2.0f, glm::vec3{ 0.0f }, 0.0f);
 	prefab0.addComponent<oak::AABB2dComponent>(glm::vec2{ 128.0f, 32.0f }, glm::vec2{ 0.0f, 0.0f });
 	prefab0.addComponent<oak::PhysicsBody2dComponent>(glm::vec2{ 0.0f }, 0.0f, 0.4f, 0.5f, 0.4f);
-
-
-	
 
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
 

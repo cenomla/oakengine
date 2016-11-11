@@ -19,7 +19,9 @@ namespace oak {
 			for (auto &event : events_) {
 				callback_(event);
 			}
+		}
 
+		void clear() {
 			events_.clear();
 		}
 

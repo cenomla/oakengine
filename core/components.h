@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "resource.h"
 
 namespace graphics { class Sprite; }
 
@@ -19,7 +20,7 @@ namespace oak {
 	};
 
 	struct SpriteComponent {
-		const graphics::Sprite *sprite;
+		Resource<graphics::Sprite> sprite;
 		int animFrameX;
 		int animFrameY;
 	};
