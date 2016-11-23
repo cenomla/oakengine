@@ -1,6 +1,6 @@
 # Oak Engine
 ### Overview:
-..Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine uses modern c++ (currently c++14 with the use of nested namespaces) with lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small test demo detailing the use of the engine and a very simple physics system.
+.. Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine uses modern c++ (currently c++14 with the use of nested namespaces) with lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small test demo detailing the use of the engine and a very simple physics system.
 
 ### Features:
   - Multi-threaded task manager
@@ -13,7 +13,7 @@
   - Can render a triangle using vulkan
 
 ### Building:
-..Oak engine relies on glfw, glad, glm, lua, enet, and the stb_image.h header that are inside the lib and lib/include folders to compile. On linux it should be as simple as running the SConstruct script.
+.. Oak engine relies on glfw, glad, glm, lua, enet, and the stb_image.h header that are inside the lib and lib/include folders to compile. On linux it should be as simple as running the SConstruct script.
 
 #####Linux instructions:
 ~~~~
