@@ -13,6 +13,7 @@ namespace oak {
 		glm::vec3 rotationAxis;
 		float rotationAngle;
 	};
+	
 
 	struct AABB2dComponent {
 		glm::vec2 halfExtent;

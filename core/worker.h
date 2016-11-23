@@ -21,7 +21,7 @@ namespace oak {
 		void run();
 		void quit();
 
-		inline size_t taskCount() const { return tasks_.size(); }
+		inline size_t taskCount() const { return taskCount_; }
 	private:
 		std::thread thread_;
 
@@ -31,6 +31,7 @@ namespace oak {
 
 		std::deque<Task> tasks_;
 
+		std::atomic<size_t> taskCount_;
 		std::atomic<bool> running_;
 	};
 

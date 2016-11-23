@@ -8,6 +8,7 @@
 #include "graphics/opengl/gl_sprite_renderer.h"
 #include <GLFW/glfw3.h>
 
+#include "network/network_manager.h"
 #include "log.h"
 #include "events.h"
 #include "engine.h"
@@ -107,8 +108,6 @@ public:
 
 	void update(float delta) {
 		
-		glm::vec2 normal;
-		float depth;
 		auto &entities = cache_.entities();
 
 		for (auto &entity : entities) {
@@ -119,10 +118,15 @@ public:
 			pc.force = glm::vec2{ 0.0f };
 		}
 
+
+		//check for collisions
+		glm::vec2 normal;
+		float depth;
 		for (size_t i = 0; i < entities.size(); i++) {
 			const auto& entityA = entities[i];
 			const auto& tcA = entityA.getComponent<oak::TransformComponent>();
 			const auto& boxA = entityA.getComponent<oak::AABB2dComponent>();
+			//start one entity after entity A so we dont get duplicate pairs or entities colliding with theirselves 
 			for (size_t j = i + 1; j < entities.size(); j++) {
 				const auto& entityB = entities[j];
 				const auto& tcB = entityB.getComponent<oak::TransformComponent>();
@@ -136,10 +140,12 @@ public:
 			}
 		}
 
+		//swap bufferes so we can process the events in the back buffer (where emited events end up)
+		queue_.swap();
+
+		//we want to relove the collision events (manifolds) first
 		queue_.setCallback([this](const oak::CollisionEvent &evt){ resolve(evt); });
-		for (size_t iter = 0; iter < 10; iter++) {
-			queue_.processEvents();
-		}
+		queue_.processEvents();
 		//integrate physics
 		for (auto& e : entities) {
 			auto& tc = e.getComponent<oak::TransformComponent>();
@@ -147,11 +153,14 @@ public:
 			//move object by velocity
 			tc.position += glm::vec3{ pc.velocity * delta, 0.0f };
 		}
-
+		//now we want to correct the positions for the collisions
 		queue_.setCallback([this](const oak::CollisionEvent &evt){ correctPosition(evt); });
 		queue_.processEvents();
 
+		//clear the event queue 
 		queue_.clear();
+		//since we are garunteed to not receive incomming events from other threads we can reuse the same queue buffer
+		queue_.swap();
 	}
 
 	void resolve(oak::CollisionEvent evt) {
@@ -232,6 +241,7 @@ int main(int argc, char** argv) {
 	oak::graphics::GLFrameRenderer frameRenderer{ engine };
 	oak::graphics::GLSpriteRenderer spriteRenderer{ engine };
 	oak::ResourceManager resManager{ engine };
+	oak::network::NetworkManager networkManager{ engine };
 	oak::EntityManager entityManager{ engine };
 	SpriteSystem spriteSystem{ engine };
 	PhysicsSystem physicsSystem{ engine };
@@ -246,6 +256,7 @@ int main(int argc, char** argv) {
 	
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem(&resManager);
+	engine.addSystem(&networkManager);
 	engine.addSystem(&entityManager);
 	engine.addSystem(&window);
 	engine.addSystem(&frameRenderer);

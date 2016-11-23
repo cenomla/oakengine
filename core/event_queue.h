@@ -15,24 +15,29 @@ namespace oak {
 			callback_ = std::forward<TFunc>(callback);
 		}
 
+		void swap() {
+			std::lock_guard<std::mutex> lock{ eventsMutex_ };
+			std::swap(events_[0], events_[1]);
+		}
+
 		void processEvents() {
-			for (auto &event : events_) {
+			for (const auto &event : events_[0]) {
 				callback_(event);
 			}
 		}
 
 		void clear() {
-			events_.clear();
+			events_[0].clear();
 		}
 
 		void operator()(const TEvent& event) {
 			std::lock_guard<std::mutex> guard{ eventsMutex_ };
-			events_.push_back(event);
+			events_[1].push_back(event);
 		}
 
 	private:
 		std::function<void (const TEvent&)> callback_;
-		std::vector<TEvent> events_;
+		std::array<std::vector<TEvent>, 2> events_;
 		std::mutex eventsMutex_;
 	};
 

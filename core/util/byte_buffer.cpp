@@ -6,8 +6,12 @@
 
 namespace oak::util {
 
-	ByteBuffer::ByteBuffer(size_t size) : capacity_{ size }, buffer_{ nullptr }, pos_{ 0 }, mark_{ 0 } {
+	ByteBuffer::ByteBuffer(size_t size) : capacity_{ size }, buffer_{ nullptr }, pos_{ 0 }, mark_{ 0 }, owns_{ true } {
 		init();
+	}
+
+	ByteBuffer::ByteBuffer(void *data, size_t size) : capacity_{ size }, buffer_{ static_cast<char*>(data) }, pos_{ 0 }, mark_{ 0 }, owns_{ false } {
+
 	}
 
 	ByteBuffer::~ByteBuffer() {
@@ -24,6 +28,7 @@ namespace oak::util {
 		buffer_ = static_cast<char*>(MemoryManager::inst().allocate(capacity_, 3));
 		pos_ = other.pos_;
 		mark_ = other.mark_;
+		owns_ = other.owns_;
 
 		memcpy(buffer_, other.buffer_, capacity_);
 
@@ -38,11 +43,13 @@ namespace oak::util {
 		buffer_ = other.buffer_;
 		pos_ = other.pos_;
 		mark_ = other.mark_;
+		owns_ = other.owns_;
 
 		other.capacity_ = 0;
 		other.buffer_ = nullptr;
 		other.pos_ = 0;
 		other.mark_ = 0;
+		other.owns_ = false;
 	}
 
 	void ByteBuffer::set() {
@@ -66,7 +73,7 @@ namespace oak::util {
 	}
 
 	void ByteBuffer::destroy() {
-		if (buffer_ != nullptr) {
+		if (buffer_ != nullptr && owns_) {
 			MemoryManager::inst().deallocate(buffer_, capacity_, 3);
 			buffer_ = nullptr;
 		}

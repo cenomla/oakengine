@@ -1,12 +1,14 @@
 #pragma once
 
 #include <cstddef>
+#include <cstring>
 
 namespace oak::util {
 
 	class ByteBuffer {
 	public:
 		ByteBuffer(size_t size);
+		ByteBuffer(void *data, size_t size);
 		~ByteBuffer();
 		
 		ByteBuffer(const ByteBuffer &other);
@@ -43,6 +45,7 @@ namespace oak::util {
 		char *buffer_;
 		size_t pos_;
 		size_t mark_;
+		bool owns_;
 
 		void init();
 		void destroy();

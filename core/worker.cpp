@@ -12,12 +12,14 @@ namespace oak {
 
 	void Worker::init() {
 		thread_ = std::thread{ [this](){ run(); } };
+		taskCount_ = 0;
 	}
 
 	void Worker::addTask(Task &&task) {
 		{
 			std::lock_guard<std::mutex> lock1{ tasksMutex_ };
 			tasks_.push_back(std::move(task));
+			taskCount_++;
 		}
 
 		taskCv_.notify_one();
@@ -27,7 +29,7 @@ namespace oak {
 		running_ = true;
 		while (running_) {
 			//execute tasks until done
-			if (!tasks_.empty()) {
+			if (taskCount_ > 0) {
 				Task task;
 				//get the oldest task
 				{
@@ -38,6 +40,7 @@ namespace oak {
 
 				//run the task
 				task.run();
+				taskCount_--;
 
 				//if the task is supposed to loop then add it to the task manager
 				if (task.flags[Task::LOOP]) {
@@ -46,7 +49,7 @@ namespace oak {
 			}
 
 			//wait for task to be avalable
-			if (tasks_.empty()) {
+			if (taskCount_ == 0) {
 				std::unique_lock<std::mutex> lock{ cvMutex_ };
 				while (tasks_.empty() && running_) {
 					taskCv_.wait(lock);

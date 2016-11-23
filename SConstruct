@@ -23,7 +23,7 @@ debug_flags = ['-std=c++1z', '-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D 
 sources = []
 wayland_libs = ['glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon']
 xlibs = ['glfw3x', 'X11', 'Xxf86vm', 'Xinerama', 'Xrandr', 'Xcursor']
-libs = ['vulkan', 'GL', 'glad', 'lua'] + wayland_libs + ['xkbcommon', 'pthread', 'dl', 'm']
+libs = ['vulkan', 'GL', 'glad', 'lua', 'enet'] + wayland_libs + ['xkbcommon', 'pthread', 'dl', 'm']
 
 sandbox = []
 

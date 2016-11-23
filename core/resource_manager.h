@@ -24,7 +24,7 @@ namespace oak {
 			return &it.first->second;
 		}
 
-		T* getResource(size_t id) {
+		const T* getResource(size_t id) const {
 			const auto it = resources_.find(id);
 			if (it != std::end(resources_)) {
 				return &it->second;
@@ -78,9 +78,9 @@ namespace oak {
 			size_t tid = util::type_id<Resource, T>::id;
 			
 			if (tid < resourceHandles_.size() && resourceHandles_.at(tid).ptr != nullptr) {
-				auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
+				const auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
 
-				auto pres = plh->getResource(id);
+				const auto pres = plh->getResource(id);
 				if (pres != nullptr) {
 					return *pres;
 				}

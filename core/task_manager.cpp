@@ -21,7 +21,7 @@ namespace oak {
 			worker.init();
 		}
 
-		Engine::inst().getEventManager().add<GameExitEvent>(std::ref(*this));
+		Engine::inst().getEventManager().add<QuitEvent>(std::ref(*this));
 	}
 
 	void TaskManager::destroy() {
@@ -79,7 +79,7 @@ namespace oak {
 		}
 	}
 
-	void TaskManager::operator()(const GameExitEvent&) {
+	void TaskManager::operator()(const QuitEvent&) {
 		running_ = false;
 	}
 

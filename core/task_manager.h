@@ -25,7 +25,7 @@ namespace oak {
 		void run();
 
 		void addTask(Task task);
-		void operator()(const GameExitEvent&);
+		void operator()(const QuitEvent&);
 
 	private:
 
