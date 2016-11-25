@@ -1,44 +1,29 @@
 import os
-import fnmatch
 
+def modules():
+	yield 'lib'
+	yield 'core'
+	yield 'sandbox'
 
-#helper functions
-def get_sources_recursive(file_list, source, build, regex, rel='/'):
-	for f in os.listdir(source + rel):
-		if fnmatch.fnmatch(f, regex):
-			file_list += [build + rel + f]
-		if os.path.isdir(source + rel + f):
-			get_sources_recursive(file_list, source, build, regex, rel + f + '/')
+build_dir = 'bin'
 
-#config
-include_path = ['core', 'lib/include']
-lib_path = ['lib', 'bin']
-src_path = 'core'
-intermediate_path = 'bin/oak.d'
-target_path = 'bin/oak'
-flags = ['-std=c++1z', '-Wall', '-g', '-O3', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas']
-debug_flags = ['-std=c++1z', '-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas']
+env = Environment()
+env.Append(LIBPATH = ['#%s' % build_dir])
 
-#lists
-sources = []
-wayland_libs = ['glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon']
-xlibs = ['glfw3x', 'X11', 'Xxf86vm', 'Xinerama', 'Xrandr', 'Xcursor']
-libs = ['vulkan', 'GL', 'glad', 'lua', 'enet'] + wayland_libs + ['xkbcommon', 'pthread', 'dl', 'm']
+env['targets'] = dict()
 
-sandbox = []
+env.set_target = lambda name: set_target(name, build_dir)
+env.SConscriptChdir(0)
 
-get_sources_recursive(sources, src_path, intermediate_path, '*.cpp')
-get_sources_recursive(sandbox, 'sandbox', 'bin/sandbox.d', '*.cpp')
+for module in modules():
+	scons_path = os.path.join(module, "SCsub")
+	assert os.path.isfile(scons_path)
+	print 'reading module: ',module,'...'
 
+	targets = env.SConscript(scons_path, variant_dir = os.path.join(build_dir, module + '.d'), duplicate = 0, exports = {'env': env})
 
-#build
-env = Environment(CXX = 'g++', CXXFLAGS = flags, CPPPATH = include_path, LIBPATH = lib_path)
-
-env.VariantDir(intermediate_path, src_path, duplicate=0)
-env.Library(target = target_path, source = sources)
-
-env.VariantDir('bin/sandbox.d', 'sandbox', duplicate=0)
-env.Program(target = 'bin/sandbox', CXXFLAGS = debug_flags, LIBS = ['oak'] + libs, source = sandbox)
-
-#env.VariantDir('bin/unit.d', 'core', duplicate=0)
-#env.Program(target = 'bin/unit', CXXFLAGS = ['-std=c++1z', '-Wall', '-g', '-fno-exceptions', '-fno-rtti', '-D _DEBUG', '-Wno-pragmas'], LIBS = ['oak'] + libs, source = "core/memory/allocator.cpp")
+	if targets:
+		for target_name in targets:
+			target_key = '%s.%s' % (module, target_name)
+			assert target_key not in env['targets']
+			env['targets'][target_key] = targets[target_name]
