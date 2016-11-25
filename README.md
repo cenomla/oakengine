@@ -15,7 +15,7 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 
 ### Building:
  
-Oak engine relies on glfw, glad, glm, lua, enet, and the stb_image.h header that are inside the lib and lib/include folders to compile. On linux it should be as simple as running the SConstruct script. 
+Oak engine relies on glfw, glad, glm, lua, enet, and the stb_image.h header that are inside the lib folder to compile. On linux it should be as simple as running the SConstruct script. 
 
 #####Linux instructions:
 ~~~~
