@@ -35,14 +35,13 @@ local player = {
 	mouse_move = function(self, x, y)
 		self.mx = x
 		self.my = y
-		return true
 	end,
 	button_press = function(self, button, action, mods)
 		if button == 0 and action ~= 0 then
 			local e = oak.es:createEntity(0, "player")
 			e:setPosition(self.mx, self.my)
+			return true
 		end
-		return true
 	end
 }
 

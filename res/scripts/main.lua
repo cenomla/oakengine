@@ -10,6 +10,8 @@ local e = oak.es:createEntity(0, "player")
 e:setPosition(256, 256)
 
 oak.es:createEntity(0, "block")
-e = oak.es:createEntity(0, "block")
 
+e = oak.es:createEntity(0, "block")
 e:setPosition(512, 496)
+
+oak.es:createEntity(1, "button")

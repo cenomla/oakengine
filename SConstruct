@@ -4,11 +4,12 @@ def modules():
 	yield 'lib'
 	yield 'core'
 	yield 'sandbox'
+	yield 'tests'
 
 build_dir = 'bin'
 
 env = Environment()
-env.Append(LIBPATH = ['#%s' % build_dir])
+env.Append(LIBPATH = ['#%s' % build_dir, '#%s/lib' % build_dir])
 
 env['targets'] = dict()
 

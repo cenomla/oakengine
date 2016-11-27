@@ -30,6 +30,7 @@ namespace oak::util {
 		virtual void pup(bool &data, const ObjInfo &info) = 0;
 	
 		inline void setIo(PupperIo io) { io_ = io; }
+		inline PupperIo getIo() const { return io_; }
 	protected:
 		PupperIo io_ = PupperIo::OUT;
 	};

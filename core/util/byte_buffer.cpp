@@ -66,7 +66,7 @@ namespace oak::util {
 	}
 
 	void ByteBuffer::init() {
-		MemoryManager::inst().createPool(3, 64_mb);
+		MemoryManager::inst().createPool(3, 512_kb);
 		if (buffer_ == nullptr) {
 			buffer_ = static_cast<char*>(MemoryManager::inst().allocate(capacity_, 3));
 		}

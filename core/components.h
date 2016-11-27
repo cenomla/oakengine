@@ -1,11 +1,18 @@
 #pragma once
 
+#include <string>
 #include <glm/glm.hpp>
+
+#include "util/pupper.h"
 #include "resource.h"
 
 namespace graphics { class Sprite; }
 
 namespace oak {
+
+	struct PrefabComponent {
+		size_t id;
+	};
 
 	struct TransformComponent {
 		glm::vec3 position;
@@ -13,7 +20,6 @@ namespace oak {
 		glm::vec3 rotationAxis;
 		float rotationAngle;
 	};
-	
 
 	struct AABB2dComponent {
 		glm::vec2 halfExtent;
@@ -44,5 +50,17 @@ namespace oak {
 		float staticFriction;
 		float dynamicFriction;
 	};
+
+	struct CallbackComponent {
+		std::function<void (Entity e)> callback;
+	};
+
+	namespace util {
+		void pup(Pupper &pupper, PrefabComponent &comp, ObjInfo &info);
+		void pup(Pupper &pupper, TransformComponent &comp, ObjInfo &info);
+		void pup(Pupper &pupper, AABB2dComponent &comp, ObjInfo &info);
+		void pup(Pupper &pupper, SpriteComponent &comp, ObjInfo &info);
+		void pup(Pupper &pupper, PhysicsBody2dComponent &comp, ObjInfo &info);
+	}
 
 }

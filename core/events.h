@@ -48,4 +48,19 @@ namespace oak {
 		float depth;
 	};
 
+	struct PositionSetEvent {
+		Entity entity;
+		glm::vec3 pos;
+	};
+
+	struct PositionMoveEvent {
+		Entity entity;
+		glm::vec3 deltaPos;
+	};
+
+	struct ApplyForceEvent {
+		Entity entity;
+		glm::vec2 force;
+	};
+
 }

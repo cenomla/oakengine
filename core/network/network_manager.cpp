@@ -41,7 +41,7 @@ namespace oak::network {
 
 	void NetworkManager::run() {
 		ENetEvent event;
-
+		running_ = true;
 		while (running_ && enet_host_service(host_, &event, 1000) >= 0) {
 			switch(event.type) {
 			case ENET_EVENT_TYPE_CONNECT:

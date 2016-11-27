@@ -1,5 +1,7 @@
 #include "binding.h"
 
+#include <string>
+
 #include "resource_manager.h"
 #include "components.h"
 #include "engine.h"
@@ -142,6 +144,18 @@ namespace oak::luah {
 		return 1;
 	}
 
+	//void setText(entity, text)
+	int c_entity_setText(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		std::string text{ lua_tostring(L, 2) };
+		lua_settop(L, 0);
+		size_t id = std::hash<std::string>{}(text);
+		auto &tc = entity.getComponent<Resource<std::string>>();
+		tc = Resource<std::string>{ id };
+
+		return 0;
+	}
+
 	//entity createEntity(layer, name)
 	int c_entityManager_createEntity(lua_State *L) {
 		uint8_t layer = toValue<uint8_t>(L, 1);
@@ -196,10 +210,10 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "setVelocity", c_entity_setVelocity);
 		addFunctionToMetatable(L, "entity", "addForce", c_entity_addForce);
 		addFunctionToMetatable(L, "entity", "getMass", c_entity_getMass);
+		addFunctionToMetatable(L, "entity", "setText", c_entity_setText);
 
 		addFunctionToMetatable(L, "entity_manager", "createEntity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroyEntity", c_entityManager_destroyEntity);
-
 	}
 
 	void pushValue(lua_State *L, const Entity& e) {

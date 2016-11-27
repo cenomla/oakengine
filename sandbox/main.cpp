@@ -44,7 +44,7 @@ public:
 			const auto &tc = entity.getComponent<oak::TransformComponent>();
 			const auto &sc = entity.getComponent<oak::SpriteComponent>();
 			auto &renderer = engine_.getSystem<oak::graphics::GLSpriteRenderer>();
-			renderer.addSprite(tc.position, sc.animFrameX, sc.animFrameY, tc.scale, tc.rotationAngle, sc.sprite.get());
+			renderer.addSprite(tc.position, sc.animFrameX, sc.animFrameY, tc.scale, tc.rotationAngle, &sc.sprite.get());
 		}		
 	}
 
@@ -313,6 +313,7 @@ int main(int argc, char** argv) {
 	entityManager.addComponentHandle<oak::SpriteComponent>();
 	entityManager.addComponentHandle<oak::AABB2dComponent>();
 	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>();
+	entityManager.addComponentHandle<oak::Resource<std::string>>();
 
 	auto &mat = resManager.add<oak::graphics::GLMaterial>("mat_player", std::hash<std::string>{}("mat_player"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
 	mat.create("core/graphics/shaders/pass2d", "res/textures/character");
@@ -322,6 +323,11 @@ int main(int argc, char** argv) {
 
 	resManager.add<oak::graphics::Sprite>("spr_player", mat.id, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f);
 	resManager.add<oak::graphics::Sprite>("spr_block", mat0.id, 128.0f, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, 64.0f, 16.0f);
+
+	resManager.add<std::string>("txt_play", "Start Game");
+	resManager.add<std::string>("txt_load", "Load Game");
+	resManager.add<std::string>("txt_options", "Options");
+	resManager.add<std::string>("txt_quit", "Quit Game");
 
 	auto& prefab = resManager.add<oak::Prefab>("player", &entityManager);
 	prefab.addComponent<oak::TransformComponent>(glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{0.0f}, 0.0f);
@@ -334,6 +340,11 @@ int main(int argc, char** argv) {
 	prefab0.addComponent<oak::TransformComponent>(glm::vec3{ 256.0f, 512.0f, 0.0f }, 2.0f, glm::vec3{ 0.0f }, 0.0f);
 	prefab0.addComponent<oak::AABB2dComponent>(glm::vec2{ 128.0f, 32.0f }, glm::vec2{ 0.0f, 0.0f });
 	prefab0.addComponent<oak::PhysicsBody2dComponent>(glm::vec2{ 0.0f }, 0.0f, 0.4f, 0.5f, 0.4f);
+
+	auto& fab_button = resManager.add<oak::Prefab>("button", &entityManager);
+	fab_button.addComponent<oak::TransformComponent>(glm::vec3{ 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
+	fab_button.addComponent<oak::AABB2dComponent>(glm::vec2{ 48.0f, 12.0f }, glm::vec2{ 0.0f, 0.0f });
+	fab_button.addComponent<oak::Resource<std::string>>(size_t{ 0 });
 
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
 
