@@ -10,49 +10,27 @@ namespace oak {
 		}
 	}
 
-	void Worker::init() {
+	void Worker::init(TaskManager *taskManager) {
+		taskManager_ = taskManager;
 		thread_ = std::thread{ [this](){ run(); } };
-		taskCount_ = 0;
-	}
-
-	void Worker::addTask(Task &&task) {
-		{
-			std::lock_guard<std::mutex> lock1{ tasksMutex_ };
-			tasks_.push_back(std::move(task));
-			taskCount_++;
-		}
-
-		taskCv_.notify_one();
 	}
 
 	void Worker::run() {
 		running_ = true;
 		while (running_) {
-			//execute tasks until done
-			if (taskCount_ > 0) {
-				Task task;
-				//get the oldest task
-				{
-					std::lock_guard<std::mutex> lock{ tasksMutex_ };
-					task = std::move(tasks_.front());
-					tasks_.pop_front();
+			if (taskManager_->taskCount_ > 0) {
+				auto task = taskManager_->grabTask();
+				if (task != nullptr) {
+					task->run();
+					Engine::inst().getEventManager().emitEvent(TaskCompleteEvent{ *task });
+				} else {
+					std::unique_lock<std::mutex> lock{ taskManager_->cvMutex_ };
+					taskManager_->taskCv_.wait(lock);
 				}
-
-				//run the task
-				task.run();
-				taskCount_--;
-
-				//if the task is supposed to loop then add it to the task manager
-				if (task.flags[Task::LOOP]) {
-					Engine::inst().getTaskManager().addTask(std::move(task));
-				}
-			}
-
-			//wait for task to be avalable
-			if (taskCount_ == 0) {
-				std::unique_lock<std::mutex> lock{ cvMutex_ };
-				while (tasks_.empty() && running_) {
-					taskCv_.wait(lock);
+			} else {
+				std::unique_lock<std::mutex> lock{ taskManager_->cvMutex_ };
+				while (running_ && taskManager_->taskCount_ == 0) {
+					taskManager_->taskCv_.wait(lock);
 				}
 			}
 		}
@@ -60,7 +38,6 @@ namespace oak {
 
 	void Worker::quit() {
 		running_ = false;
-		taskCv_.notify_all();
 	}
 
 }

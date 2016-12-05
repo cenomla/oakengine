@@ -30,12 +30,14 @@ namespace oak::graphics {
 		
 		vao_.unbind();
 
+		/*
 		engine_.getTaskManager().addTask({
 			[this]() {
 				render();
 			},
 			Task::LOOP_BIT
 		});
+		*/
 
 		ubo_.create();
 		ubo_.bindBufferBase(0);

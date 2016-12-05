@@ -22,11 +22,11 @@ namespace oak {
 		createWindow();
 		setCallbacks();
 
-		TaskManager &tm = engine_.getTaskManager();
-
+		/*
 		tm.addTask(oak::Task{ [this](){
 			this->update();
 		}, Task::LOOP_BIT });
+		*/
 	}
 
 	void Window::destroy() {

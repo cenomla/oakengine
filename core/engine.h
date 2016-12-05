@@ -21,8 +21,6 @@ namespace oak {
 		void init();
 		void destroy();
 
-		void run();
-
 		template<typename T>
 		void addSystem(T *sys) {
 			size_t tid = util::type_id<System, T>::id;
@@ -61,11 +59,14 @@ namespace oak {
 
 		System* getSystem(const std::string &name);
 
-		EventManager& getEventManager() { return eventManager_; }
-		const EventManager& getEventManager() const { return eventManager_; }
+		inline EventManager& getEventManager() { return eventManager_; }
+		inline const EventManager& getEventManager() const { return eventManager_; }
 
-		TaskManager& getTaskManager() { return taskManager_; }
-		const TaskManager& getTaskManager() const { return taskManager_; }
+		inline TaskManager& getTaskManager() { return taskManager_; }
+		inline const TaskManager& getTaskManager() const { return taskManager_; }
+
+		inline void operator()(const QuitEvent&) { isRunning_ = false; }
+		inline bool isRunning() const { return isRunning_; }
 
 	private:
 		static Engine *INST;
@@ -74,6 +75,7 @@ namespace oak {
 		TaskManager taskManager_;
 		
 		std::unordered_map<size_t, System*> systems_;
+		bool isRunning_;
 	};
 
 }

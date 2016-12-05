@@ -14,8 +14,11 @@ namespace oak::graphics {
 		void init() override;
 		void create(GLFWwindow *window);
 
+		void update();
+
 		void operator()(const WindowResizeEvent& evt);
 	private:
+		GLFWwindow *window_;
 		int windowWidth_, windowHeight_;
 
 	};

@@ -36,7 +36,6 @@ public:
 		cache_.requireComponent<oak::SpriteComponent>();
 		engine_.getSystem<oak::EntityManager>().addCache(&cache_);
 		engine_.getEventManager().add<oak::KeyEvent>(std::ref(*this));
-		engine_.getTaskManager().addTask({ [this](){ update(); }, oak::Task::LOOP_BIT });
 	}
 
 	void update() {
@@ -71,14 +70,6 @@ public:
 		cache_.requireComponent<oak::PhysicsBody2dComponent>();
 		engine_.getSystem<oak::EntityManager>().addCache(&cache_);
 		engine_.getEventManager().add<oak::CollisionEvent>(std::ref(queue_));
-		engine_.getTaskManager().addTask({ [this](){ 
-			static float accum = 0.0f;
-			accum += dt.count();
-			while (accum >= 1.0f/60.0f) {
-				update(1.0f/60.0f);
-				accum -= 1.0f/60.0f; 
-			}
-		}, oak::Task::LOOP_BIT });
 	}
 
 	bool checkCollision(const ObjectInfo &a, const ObjectInfo &b, glm::vec2 &normal, float &depth) {
@@ -117,7 +108,6 @@ public:
 			pc.velocity += pc.force * pc.invMass * delta;
 			pc.force = glm::vec2{ 0.0f };
 		}
-
 
 		//check for collisions
 		glm::vec2 normal;
@@ -247,13 +237,7 @@ int main(int argc, char** argv) {
 	PhysicsSystem physicsSystem{ engine };
 
 	//add a timer task
-	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
-	engine.getTaskManager().addTask({ [&lastFrame](){ 
-		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
-		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
-		lastFrame = currentFrame;
-	}, oak::Task::LOOP_BIT });
-	
+
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem(&resManager);
 	engine.addSystem(&networkManager);
@@ -261,25 +245,12 @@ int main(int argc, char** argv) {
 	engine.addSystem(&window);
 	engine.addSystem(&frameRenderer);
 	engine.addSystem(&luam);
-
-	lua_State *L = luam.getState();
-	engine.getTaskManager().addTask({ [L](){  
-		oak::luah::getGlobal(L, "oak.es.emit_event");
-		oak::luah::getGlobal(L, "oak.es");
-		lua_pushstring(L, "update");
-		lua_pushnumber(L, dt.count());
-		oak::luah::call(L, 3, 0);
-
-		oak::luah::getGlobal(L, "oak.es.process_events");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::call(L, 1, 0);
-	}, oak::Task::LOOP_BIT });
-
 	engine.addSystem(&physicsSystem);
 	engine.addSystem(&spriteSystem);
 	engine.addSystem(&spriteRenderer);
 
 	//test event
+	lua_State *L = luam.getState();
 	engine.getEventManager().add<oak::KeyEvent>([L](const oak::KeyEvent &evt) {
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
@@ -348,8 +319,40 @@ int main(int argc, char** argv) {
 
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
 
-	//start ur engines
-	engine.run();
+	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
+	float accum = 0.0f;
+	while (engine.isRunning()) {
+
+		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
+		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
+		lastFrame = currentFrame;
+
+		entityManager.update();
+		window.update();
+		frameRenderer.update();
+
+		oak::luah::getGlobal(L, "oak.es.emit_event");
+		oak::luah::getGlobal(L, "oak.es");
+		lua_pushstring(L, "update");
+		lua_pushnumber(L, dt.count());
+		oak::luah::call(L, 3, 0);
+
+		oak::luah::getGlobal(L, "oak.es.process_events");
+		oak::luah::getGlobal(L, "oak.es");
+		oak::luah::call(L, 1, 0);
+
+		//update physics
+		accum += dt.count();
+		while (accum >= 1.0f/60.0f) {
+			physicsSystem.update(1.0f/60.0f);
+			accum -= 1.0f/60.0f; 
+		}
+
+		//draw graphics
+		spriteSystem.update();
+		spriteRenderer.render();
+	}
+
 	engine.destroy();
 
 	return 0;

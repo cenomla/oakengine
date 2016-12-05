@@ -9,7 +9,7 @@ namespace oak {
 	EntityManager::EntityManager(Engine &engine) : System{ engine, "entity_manager" } {}
 
 	void EntityManager::init() {
-		engine_.getTaskManager().addTask({ [this](){ update(); }, Task::LOOP_BIT });
+		//engine_.getTaskManager().addTask({ [this](){ update(); }, Task::LOOP_BIT });
 	}
 
 	void EntityManager::destroy() {

@@ -1,10 +1,14 @@
 #include "engine.h"
 
+#include <functional>
+
+#include "events.h"
+
 namespace oak {
 
 	Engine *Engine::INST = nullptr;
 
-	Engine::Engine() {
+	Engine::Engine() : taskManager_{ 1 }, isRunning_{ false } {
 		INST = this;
 	}
 
@@ -15,6 +19,8 @@ namespace oak {
 	void Engine::init() {
 		log::cout << "oak engine version: 0.1.0" << std::endl;
 		taskManager_.init();
+		eventManager_.add<QuitEvent>(std::ref(*this));
+		isRunning_ = true;
 	}
 
 	void Engine::destroy() {
@@ -25,10 +31,6 @@ namespace oak {
 		for (auto &system : systems_) {
 			system.second->destroy();
 		}
-	}
-
-	void Engine::run() {
-		taskManager_.run();
 	}
 
 	void Engine::removeSystem(const std::string &name) {

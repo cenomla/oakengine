@@ -32,7 +32,7 @@ namespace oak::network {
 		log::cout << "successfully created host" << std::endl;
 
 		engine_.getEventManager().add<QuitEvent>(std::ref(*this));
-		engine_.getTaskManager().addTask({ [this](){ run(); }, Task::MULTI_THREAD_BIT });
+		//engine_.getTaskManager().addTask({ [this](){ run(); }, Task::MULTI_THREAD_BIT });
 	}
 
 	void NetworkManager::destroy() {

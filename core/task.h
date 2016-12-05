@@ -1,27 +1,46 @@
 #pragma once
 
+#include <limits>
 #include <functional>
-#include <bitset>
+#include <atomic>
+#include <thread>
 
 namespace oak {
 
+	using TaskId = uint32_t;
+
 	struct Task {
-		static constexpr size_t LOOP = 0;
-		static constexpr size_t MULTI_THREAD = 1;
-		static constexpr size_t LOOP_BIT = 1;
-		static constexpr size_t MULTI_THREAD_BIT = 2;
+		static constexpr TaskId INVALID_ID = std::numeric_limits<uint32_t>::max();
+		static constexpr uint8_t USE_THREAD_AFFINITY = 0x01;
+		static constexpr uint8_t AVALIABLE = 0x02;
 
-		Task() {}
-		Task(const std::function<void ()> &r, const std::bitset<2> f) : run{ r }, flags{ f } {}
-		
-		Task(const Task &other) : run{ other.run }, flags{ other.flags } {}
-		void operator=(const Task &other) { run = other.run; flags = other.flags; }
+		Task(TaskId i, int32_t p) : id{ i }, parent{ INVALID_ID }, dependency{ INVALID_ID }, workItems{ 0 }, priority{ p }, flags{ 0 } {}
+		Task(TaskId i, std::function<void ()> &&w, int32_t p) : 
+			id{ i }, parent{ INVALID_ID }, dependency{ INVALID_ID }, workItems{ 1 }, priority{ p }, run{ w }, flags{ AVALIABLE } {}
 
-		Task(Task &&other) : run{ std::move(other.run) }, flags{ std::move(other.flags) } {}
-		void operator=(Task &&other) { run = std::move(other.run); flags = std::move(other.flags); }
+		Task(Task &&other) : id{ other.id }, parent{ other.parent }, dependency{ other.dependency },
+		workItems{ other.workItems.load() }, priority{ other.priority }, run{ std::move(other.run) }, flags{ other.flags.load() } {
+			other.id = INVALID_ID;
+			other.parent = INVALID_ID;
+			dependency = INVALID_ID;
+			other.workItems = 0;
+			other.priority = 0;
+			other.run = {};
+			other.flags = 0;
+		}
 
+		TaskId id;
+		TaskId parent;
+		TaskId dependency;
+		std::atomic<uint32_t> workItems;
+		int32_t priority;
+		std::thread::id threadAffinity;
 		std::function<void ()> run;
-		std::bitset<2> flags;
+		std::atomic<uint8_t> flags;
+	};
+
+	struct TaskCompleteEvent {
+		Task &task;
 	};
 
 }

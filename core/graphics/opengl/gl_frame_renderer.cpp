@@ -32,19 +32,19 @@ namespace oak::graphics {
 		log::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
 
 		glfwGetWindowSize(window, &windowWidth_, &windowHeight_);
+		window_ = window;
+	}
 
-		//add a task to swap buffers, clear, etc...
-		engine_.getTaskManager().addTask(Task{ [this, window]() { 
-			glfwSwapBuffers(window);
-			glViewport(0, 0, windowWidth_, windowHeight_);
-			glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+	void GLFrameRenderer::update() {
+		glfwSwapBuffers(window_);
+		glViewport(0, 0, windowWidth_, windowHeight_);
+		glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-			GLenum error = glGetError();
-			if (error != GL_NO_ERROR) {
-				log::cout << "opengl error: " << error << std::endl;
-			}
-		}, Task::LOOP_BIT });
+		GLenum error = glGetError();
+		if (error != GL_NO_ERROR) {
+			log::cout << "opengl error: " << error << std::endl;
+		}
 	}
 
 	void GLFrameRenderer::operator()(const WindowResizeEvent& evt) {
