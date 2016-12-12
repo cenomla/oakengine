@@ -54,48 +54,64 @@ namespace oak {
 		return entityAttributes_[entity.index()].flags[0];
 	}
 
-	void* EntityManager::addComponent(uint32_t idx, uint32_t tid, size_t size) {
+	void* EntityManager::addComponent(uint32_t idx, uint32_t tid) {
 		auto &attribute = entityAttributes_[idx];
 		attribute.componentMask[tid] = true;
-		if (attribute.components[tid].ptr == nullptr) {
-			attribute.components[tid] = { MemoryManager::inst().allocate(size), size };
+		if (attribute.components[tid] == nullptr || !attribute.ownsMask[tid]) {
+			attribute.components[tid] = MemoryManager::inst().allocate(componentHandles_[tid].ptr->size());
+			attribute.ownsMask[tid] = true;
 		}
-		return attribute.components[tid].ptr;
+		return attribute.components[tid];
+	}
+
+	void EntityManager::addComponent(uint32_t idx, uint32_t tid, void *ptr) {
+		auto &attribute = entityAttributes_[idx];
+		if (attribute.ownsMask[tid]) {
+			removeComponent(idx, tid);
+			deleteComponent(idx, tid);
+		}
+		attribute.componentMask[tid] = true;
+		attribute.ownsMask[tid] = false;
+		attribute.components[tid] = ptr;
 	}
 
 	void EntityManager::removeComponent(uint32_t idx, uint32_t tid) {
 		auto &attribute = entityAttributes_[idx];
 		attribute.componentMask[tid] = false;
-		if (attribute.components[tid].ptr != nullptr) {
-			static_cast<TypeHandleBase*>(componentHandles_[tid].ptr)->destruct(attribute.components[tid].ptr);
+		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
+			componentHandles_[tid].ptr->destruct(attribute.components[tid]);
 		}
 	}
 
 	void EntityManager::deleteComponent(uint32_t idx, uint32_t tid) {
-		auto const& attribute = entityAttributes_[idx];
-		if (attribute.components[tid].ptr != nullptr) {
-			const Block &block = attribute.components[tid];
-			MemoryManager::inst().deallocate(block.ptr, block.size);
+		auto& attribute = entityAttributes_[idx];
+		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
+			MemoryManager::inst().deallocate(attribute.components[tid], componentHandles_[tid].ptr->size());
+			attribute.components[tid] = nullptr;
 		}
 	}
 
 	void EntityManager::removeAllComponents(uint32_t idx) {
-		for (size_t i = 0; i < MAX_COMPONENTS; i++) {
+		for (size_t i = 0; i < config::MAX_COMPONENTS; i++) {
 			removeComponent(idx, i);
 			deleteComponent(idx, i);
 		}
 	}
 
 	void* EntityManager::getComponent(uint32_t idx, uint32_t tid) {
-		return entityAttributes_[idx].components[tid].ptr;
+		return entityAttributes_[idx].components[tid];
 	}
 
 	const void* EntityManager::getComponent(uint32_t idx, uint32_t tid) const {
-		return entityAttributes_[idx].components[tid].ptr;
+		return entityAttributes_[idx].components[tid];
 	}
 
 	bool EntityManager::hasComponent(uint32_t idx, uint32_t tid) const {
 		return entityAttributes_[idx].componentMask[tid];
+	}
+
+	bool EntityManager::ownsComponent(uint32_t idx, uint32_t tid) const {
+		return entityAttributes_[idx].ownsMask[tid];
 	}
 
 	void EntityManager::update() {

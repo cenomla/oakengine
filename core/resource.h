@@ -3,7 +3,7 @@
 #include <atomic>
 
 #include "util/byte_buffer.h"
-#include "util/pupper.h"
+#include "util/puper.h"
 #include "engine.h"
 #include "resource_manager.h"
 
@@ -14,9 +14,9 @@ namespace oak {
 
 	namespace util {
 		template<class T>
-		void pup(Pupper &pupper, Resource<T> &resource, const ObjInfo &info) {
-			pupper.pup(resource.id_, info);
-			if (pupper.getIo() == PupperIo::IN) {
+		void pup(Puper &puper, Resource<T> &resource, const ObjInfo &info) {
+			puper.pup(resource.id_, info);
+			if (puper.getIo() == PuperIo::IN) {
 				resource.res_ = nullptr;
 			}
 		}
@@ -27,7 +27,7 @@ namespace oak {
 	class Resource {
 	public:
 		template<class TF> 
-		friend void util::pup(util::Pupper &pupper, Resource<TF> &resource, const util::ObjInfo &info);
+		friend void util::pup(util::Puper &puper, Resource<TF> &resource, const util::ObjInfo &info);
 
 		Resource(size_t id) : id_{ id }, res_{ nullptr } {}
 

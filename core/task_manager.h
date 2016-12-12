@@ -31,8 +31,9 @@ namespace oak {
 
 		template<class... TArgs>
 		TaskId createTask(TArgs&&... args) {
-			addTask({ taskId_++, std::forward<TArgs>(args)... });
-			return taskId_-1;
+			TaskId id = taskId_++;
+			addTask({ id, std::forward<TArgs>(args)... });
+			return id;
 		}
 
 		void addTask(Task &&task);

@@ -301,21 +301,21 @@ int main(int argc, char** argv) {
 	resManager.add<std::string>("txt_quit", "Quit Game");
 
 	auto& prefab = resManager.add<oak::Prefab>("player", &entityManager);
-	prefab.addComponent<oak::TransformComponent>(glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{0.0f}, 0.0f);
-	prefab.addComponent<oak::SpriteComponent>(std::hash<std::string>{}("spr_player"), 0, 0);
-	prefab.addComponent<oak::AABB2dComponent>(glm::vec2{ 8.0f, 8.0f }, glm::vec2{ 0.0f, 0.0f });
-	prefab.addComponent<oak::PhysicsBody2dComponent>(glm::vec2{ 0.0f }, 0.025f * 0.2f, 0.4f, 0.2f, 0.1f);
+	prefab.addComponent<oak::TransformComponent>(false, glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{0.0f}, 0.0f);
+	prefab.addComponent<oak::SpriteComponent>(true, std::hash<std::string>{}("spr_player"), 0, 0);
+	prefab.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 8.0f, 8.0f }, glm::vec2{ 0.0f, 0.0f });
+	prefab.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.025f * 0.2f, 0.4f, 0.2f, 0.1f);
 
 	auto& prefab0 = resManager.add<oak::Prefab>("block", &entityManager);
-	prefab0.addComponent<oak::SpriteComponent>(std::hash<std::string>{}("spr_block"), 0, 0);
-	prefab0.addComponent<oak::TransformComponent>(glm::vec3{ 256.0f, 512.0f, 0.0f }, 2.0f, glm::vec3{ 0.0f }, 0.0f);
-	prefab0.addComponent<oak::AABB2dComponent>(glm::vec2{ 128.0f, 32.0f }, glm::vec2{ 0.0f, 0.0f });
-	prefab0.addComponent<oak::PhysicsBody2dComponent>(glm::vec2{ 0.0f }, 0.0f, 0.4f, 0.5f, 0.4f);
+	prefab0.addComponent<oak::SpriteComponent>(true, std::hash<std::string>{}("spr_block"), 0, 0);
+	prefab0.addComponent<oak::TransformComponent>(false, glm::vec3{ 256.0f, 512.0f, 0.0f }, 2.0f, glm::vec3{ 0.0f }, 0.0f);
+	prefab0.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 128.0f, 32.0f }, glm::vec2{ 0.0f, 0.0f });
+	prefab0.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.0f, 0.4f, 0.5f, 0.4f);
 
 	auto& fab_button = resManager.add<oak::Prefab>("button", &entityManager);
-	fab_button.addComponent<oak::TransformComponent>(glm::vec3{ 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-	fab_button.addComponent<oak::AABB2dComponent>(glm::vec2{ 48.0f, 12.0f }, glm::vec2{ 0.0f, 0.0f });
-	fab_button.addComponent<oak::Resource<std::string>>(size_t{ 0 });
+	fab_button.addComponent<oak::TransformComponent>(false, glm::vec3{ 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
+	fab_button.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 48.0f, 12.0f }, glm::vec2{ 0.0f, 0.0f });
+	fab_button.addComponent<oak::Resource<std::string>>(true, size_t{ 0 });
 
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
 

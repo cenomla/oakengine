@@ -1,6 +1,7 @@
 #pragma once
 
-#include <unordered_map>
+#include <string>
+#include <vector>
 
 #include "memory/memory_manager.h"
 #include "util/typeid.h"
@@ -17,16 +18,20 @@ namespace oak {
 		Entity createInstance(uint8_t layer) const;
 
 		template <class T, typename... TArgs>
-		void addComponent(TArgs&&... args) {
+		void addComponent(bool shared, TArgs&&... args) {
 			size_t tid = util::type_id<Component, T>::id;
 			Block comp = { MemoryManager::inst().allocate(sizeof(T)), sizeof(T) };
 			new (comp.ptr) T{ std::forward<TArgs>(args)...};
-			storage_.insert({ tid, comp });
+			//ensure size
+			if (tid >= storage_.size()) {
+				storage_.resize(tid + 1);
+			}
+			storage_[tid] = { shared, comp };
 		}
 
 		void clear();
 	private:
-		std::unordered_map<size_t, Block> storage_;
+		std::vector<std::pair<bool, Block>> storage_;
 		EntityManager *manager_;
 	};
 

@@ -25,6 +25,6 @@ for module in modules():
 
 	if targets:
 		for target_name in targets:
-			target_key = '%s.%s' % (module, target_name)
+			target_key = '%s::%s' % (module, target_name)
 			assert target_key not in env['targets']
 			env['targets'][target_key] = targets[target_name]

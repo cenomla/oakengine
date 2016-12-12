@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "util/puper.h"
+#include "script/lua_puper.h"
 #include "resource_manager.h"
 #include "components.h"
 #include "engine.h"
@@ -59,106 +61,36 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//x, y, z getPosition(entity)
-	int c_entity_getPosition(lua_State *L) {
-		//get args
+	template<class T>
+	int c_entity_getComponent(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
-		//clear args
 		lua_settop(L, 0);
 
-		const auto& tc = entity.getComponent<TransformComponent>();
-
-		lua_pushnumber(L, tc.position.x);
-		lua_pushnumber(L, tc.position.y);
-		lua_pushnumber(L, tc.position.z);
-
-		return 3;
-	}
-
-	//void setPosition(entity, x, y, z)
-	int c_entity_setPosition(lua_State *L) {
-		//get args
-		Entity entity = toValue<Entity>(L, 1);
-
-		auto& tc = entity.getComponent<TransformComponent>();
-
-		float x = toValue<float>(L, 2);
-		float y = toValue<float>(L, 3);
-		float z = isNil(L, 4) ? tc.position.z : toValue<float>(L, 4);
-
-		//clear args
-		lua_settop(L, 0);
-
-		tc.position = glm::vec3{ x, y, z };
+		auto& c = entity.getComponent<T>();
 		
-		return 0;
-	}
+		lua_newtable(L);
+		LuaPuper puper{ L, 1 };
+		pup(puper, c, {});
 
-	//vx, vy, getVelocity(entity)
-	int c_entity_getVelocity(lua_State *L) {
-		Entity entity = toValue<Entity>(L, 1);
-		lua_settop(L, 0);
-
-		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
-
-		lua_pushnumber(L, pc.velocity.x);
-		lua_pushnumber(L, pc.velocity.y);
-
-		return 2;
-	}
-
-	//void setVelocity(entity, vx, vy)
-	int c_entity_setVelocity(lua_State *L) {
-		Entity entity = toValue<Entity>(L, 1);
-		float vx = toValue<float>(L, 2);
-		float vy = toValue<float>(L, 3);
-		lua_settop(L, 0);
-
-		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
-
-		pc.velocity = glm::vec2{ vx, vy };
-
-		return 0;
-	}
-
-	//void addForce(entity, fx, fy)
-	int c_entity_addForce(lua_State *L) {
-		Entity entity = toValue<Entity>(L, 1);
-		float fx = toValue<float>(L, 2);
-		float fy = toValue<float>(L, 3);
-		lua_settop(L, 0);
-
-		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
-
-		pc.force += glm::vec2{ fx, fy };
-
-		return 0;
-	}
-
-	//float getMass(entity)
-	int c_entity_getMass(lua_State *L) {
-		Entity entity = toValue<Entity>(L, 1);
-		lua_settop(L, 0);
-		auto &pc = entity.getComponent<PhysicsBody2dComponent>();
-		lua_pushnumber(L, pc.mass);
 		return 1;
 	}
 
-	//void setText(entity, text)
-	int c_entity_setText(lua_State *L) {
+	template<class T>
+	int c_entity_setComponent(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
-		std::string text{ lua_tostring(L, 2) };
-		lua_settop(L, 0);
-		size_t id = std::hash<std::string>{}(text);
-		auto &tc = entity.getComponent<Resource<std::string>>();
-		tc = Resource<std::string>{ id };
+		
+		auto& c = entity.getComponent<T>();
+
+		LuaPuper puper{ L, 2 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, c, {});
 
 		return 0;
 	}
 
 	//entity createEntity(layer, name)
 	int c_entityManager_createEntity(lua_State *L) {
-		uint8_t layer = toValue<uint8_t>(L, 1);
+		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
 		std::string name = toValue<std::string>(L, 2);
 		//clear stack
 		lua_settop(L, 0);
@@ -204,13 +136,10 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "index", c_entity_index);
 		addFunctionToMetatable(L, "entity", "layer", c_entity_layer);
 		addFunctionToMetatable(L, "entity", "isActive", c_entity_isActive);
-		addFunctionToMetatable(L, "entity", "getPosition", c_entity_getPosition);
-		addFunctionToMetatable(L, "entity", "setPosition", c_entity_setPosition);
-		addFunctionToMetatable(L, "entity", "getVelocity", c_entity_getVelocity);
-		addFunctionToMetatable(L, "entity", "setVelocity", c_entity_setVelocity);
-		addFunctionToMetatable(L, "entity", "addForce", c_entity_addForce);
-		addFunctionToMetatable(L, "entity", "getMass", c_entity_getMass);
-		addFunctionToMetatable(L, "entity", "setText", c_entity_setText);
+		addFunctionToMetatable(L, "entity", "getTransform", c_entity_getComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "setTransform", c_entity_setComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "getPhysicsBody2d", c_entity_getComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "setPhysicsBody2d", c_entity_setComponent<PhysicsBody2dComponent>);
 
 		addFunctionToMetatable(L, "entity_manager", "createEntity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroyEntity", c_entityManager_destroyEntity);

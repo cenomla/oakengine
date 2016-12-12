@@ -22,7 +22,25 @@ namespace oak {
 		workItems{ other.workItems.load() }, priority{ other.priority }, run{ std::move(other.run) }, flags{ other.flags.load() } {
 			other.id = INVALID_ID;
 			other.parent = INVALID_ID;
-			dependency = INVALID_ID;
+			other.dependency = INVALID_ID;
+			other.workItems = 0;
+			other.priority = 0;
+			other.run = {};
+			other.flags = 0;
+		}
+
+		void operator=(Task &&other) {
+			id = other.id;
+			parent = other.parent;
+			dependency = other.dependency;
+			workItems = other.workItems.load();
+			priority = other.priority;
+			run = std::move(other.run);
+			flags = other.flags.load();
+
+			other.id = INVALID_ID;
+			other.parent = INVALID_ID;
+			other.dependency = INVALID_ID;
 			other.workItems = 0;
 			other.priority = 0;
 			other.run = {};

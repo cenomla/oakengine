@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
 		TaskId task1 = engine.getTaskManager().createTask([](){ workFun("task 1"); }, 0);
 		TaskId task2 = engine.getTaskManager().createTask([](){ workFun("task 2"); }, 0);
 		TaskId task3 = engine.getTaskManager().createTask([](){ workFun("task 3"); }, 0);
-		TaskId task4 = engine.getTaskManager().createTask([](){ workFun("task 4"); }, 0);
-		TaskId task5 = engine.getTaskManager().createTask([](){ workFun("task 5"); }, 0);
+		TaskId task4 = engine.getTaskManager().createTask([](){ workFun("task 4"); }, 1);
+		TaskId task5 = engine.getTaskManager().createTask([](){ workFun("task 5"); }, 1);
 		
 		engine.getTaskManager().depends(task3, task2);
 		engine.getTaskManager().addChild(task2, task4);
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 		workFun("eof" + std::to_string(i));
 		i++;
 
-		if (i > 12800) {
+		if (i > 128000) {
 			engine.getEventManager().emitEvent(QuitEvent{});
 		}
 

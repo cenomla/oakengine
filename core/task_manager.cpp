@@ -1,5 +1,6 @@
 #include "task_manager.h"
 
+#include <algorithm>
 #include <iostream>
 #include <chrono>
 #include <limits>
@@ -63,35 +64,22 @@ namespace oak {
 	}
 
 	Task* TaskManager::grabTask() {
-		TaskId tid = Task::INVALID_ID;
-		int32_t priority = std::numeric_limits<int32_t>::min();
-
 		std::lock_guard<std::mutex> lock{ tasksMutex_ };
-		for (const auto& task : tasks_[1]) {
+		for (auto& task : tasks_[1]) {
 			if (task.workItems > 0) {
 				//if the task has a dependency make sure it is done first
 				if (task.dependency != Task::INVALID_ID && tasks_[1][task.dependency].workItems > 0) {
 					continue;
 				}
-				//if the task has work and has no children then execute the task
+				//if the task is avaliable, has work and has no children then return the task
 				if ((task.flags.load() & Task::AVALIABLE) == Task::AVALIABLE && task.workItems == 1) {
-					if (task.priority > priority) {
-						priority = task.priority;
-						tid = task.id;
-					}
+					//make sure the task is not avaliable
+					task.flags.fetch_and(~Task::AVALIABLE);
+					return &task;
 				}
 			}
 		}
-
-		//if we found a task then return it
-		if (tid != Task::INVALID_ID) {
-			Task *task = &tasks_[1][tid];
-			//make sure the task is not avaliable
-			task->flags.fetch_and(~Task::AVALIABLE);
-			return task;
-		} else {
-			return nullptr;
-		}
+		return nullptr;
 	}
 
 	void TaskManager::operator()(const TaskCompleteEvent &evt) {

@@ -1,9 +1,12 @@
 #pragma once
 
 #include <string>
+#include <bitset>
 #include <glm/glm.hpp>
 
-#include "util/pupper.h"
+#include "config.h"
+#include "util/puper.h"
+#include "prefab.h"
 #include "resource.h"
 
 namespace graphics { class Sprite; }
@@ -11,7 +14,8 @@ namespace graphics { class Sprite; }
 namespace oak {
 
 	struct PrefabComponent {
-		size_t id;
+		Resource<Prefab> prefab;
+		std::bitset<config::MAX_COMPONENTS> ownsMask;
 	};
 
 	struct TransformComponent {
@@ -33,9 +37,9 @@ namespace oak {
 	};
 
 	struct PhysicsBody2dComponent {
-		PhysicsBody2dComponent(const glm::vec2 &iv, float m, float r, float sf, float df) : 
+		PhysicsBody2dComponent(const glm::vec2 &iv, const glm::vec2 &f, float m, float r, float sf, float df) : 
 			velocity{ iv }, 
-			force{ 0.0f }, 
+			force{ f }, 
 			mass{ m },
 			invMass{ m == 0.0f ? 0.0f : 1.0f / m }, 
 			restitution{ r },
@@ -56,11 +60,11 @@ namespace oak {
 	};
 
 	namespace util {
-		void pup(Pupper &pupper, PrefabComponent &comp, ObjInfo &info);
-		void pup(Pupper &pupper, TransformComponent &comp, ObjInfo &info);
-		void pup(Pupper &pupper, AABB2dComponent &comp, ObjInfo &info);
-		void pup(Pupper &pupper, SpriteComponent &comp, ObjInfo &info);
-		void pup(Pupper &pupper, PhysicsBody2dComponent &comp, ObjInfo &info);
+		void pup(Puper &puper, PrefabComponent &comp, const ObjInfo &info);
+		void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info);
+		void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info);
+		void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info);
+		void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info);
 	}
 
 }

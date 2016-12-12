@@ -9,4 +9,10 @@ namespace oak {
 		size_t size = 0;
 	};
 
+	template<class T> 
+	struct TBlock {
+		T *ptr = nullptr;
+		size_t size = 0;
+	};
+
 }

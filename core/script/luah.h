@@ -24,22 +24,26 @@ namespace oak {
 		}
 
 
-		void pushValue(lua_State *L, int v);
+		void pushValue(lua_State *L, int32_t v);
+		void pushValue(lua_State *L, int64_t v);
 		void pushValue(lua_State *L, uint32_t v);
-		void pushValue(lua_State *L, size_t v);
+		void pushValue(lua_State *L, uint64_t v);
 		void pushValue(lua_State *L, float v);
 		void pushValue(lua_State *L, double v);
+		void pushValue(lua_State *L, bool v);
 		void pushValue(lua_State *L, const std::string &v);
 		void pushValue(lua_State *L, void* v);
 
 		template<typename T>
 		T toValue(lua_State *L, int idx);
-
-		template<> int toValue(lua_State *L, int idx);
-		template<> size_t toValue(lua_State *L, int idx);
-		template<> uint8_t toValue(lua_State *L, int idx);
+		
+		template<> int32_t toValue(lua_State *L, int idx);
+		template<> int64_t toValue(lua_State *L, int idx);
+		template<> uint32_t toValue(lua_State *L, int idx);
+		template<> uint64_t toValue(lua_State *L, int idx);
 		template<> float toValue(lua_State *L, int idx);
 		template<> double toValue(lua_State *L, int idx);
+		template<> bool toValue(lua_State *L, int idx);
 		template<> std::string toValue(lua_State *L, int idx);
 
 		bool isNil(lua_State *L, int idx);
@@ -54,7 +58,8 @@ namespace oak {
 		std::vector<std::string> getKeys(lua_State *L);
 		void getGlobal(lua_State *L, const std::string &field);
 		void getRegistry(lua_State *L, const std::string &field);
-		void getField(lua_State *L, const std::string &field);
+		void getField(lua_State *L, int idx, const std::string &field);
+		void setField(lua_State *L, int idx, const std::string &field);
 		void call(lua_State *L, int nargs, int nreturns);
 		
 	}

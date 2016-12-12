@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <bitset>
 
+#include "config.h"
 #include "memory/memory_manager.h"
 #include "util/type_handle.h"
 #include "util/typeid.h"
@@ -14,7 +15,6 @@
 
 namespace oak {
 
-	constexpr size_t MAX_COMPONENTS = 64;
 	constexpr uint32_t MIN_FREE_INDICES = 1024;
 
 	struct Component {};
@@ -33,22 +33,23 @@ namespace oak {
 		void operator=(const EntityManager& other) = delete;
 
 		template<typename T>
-		void addComponentHandle() {
+		inline void addComponentHandle() {
 			size_t tid = util::type_id<Component, T>::id;
 			if (componentHandles_[tid].ptr != nullptr) { return; }
-			Block block = { MemoryManager::inst().allocate(sizeof(TypeHandle<T>)), sizeof(TypeHandle<T>) };
+			size_t hsize = sizeof(TypeHandle<T>);
+			TBlock<TypeHandleBase> block = { static_cast<TypeHandleBase*>(MemoryManager::inst().allocate(hsize)), hsize };
 			new (block.ptr) TypeHandle<T>{};
 			componentHandles_[tid] = block;
 		}
 
 		template<typename T>
-		const TypeHandle<T>& getComponentHandle() {
+		inline const TypeHandle<T>& getComponentHandle() {
 			size_t tid = util::type_id<Component, T>::id;
 			return *static_cast<TypeHandle<T>*>(getComponentHandle(tid));
 		}
 
 		inline TypeHandleBase* getComponentHandle(size_t tid) {
-			return static_cast<TypeHandleBase*>(componentHandles_[tid].ptr);
+			return componentHandles_[tid].ptr;
 		}
 
 		Entity createEntity(uint8_t layer);
@@ -57,7 +58,8 @@ namespace oak {
 		void deactivateEntity(const Entity &entity);
 		bool isEntityActive(const Entity &entity) const;
 
-		void* addComponent(uint32_t idx, uint32_t tid, size_t size);
+		void* addComponent(uint32_t idx, uint32_t tid);
+		void addComponent(uint32_t idx, uint32_t tid, void* ptr);
 		void removeComponent(uint32_t idx, uint32_t tid);
 		void deleteComponent(uint32_t idx, uint32_t tid);
 		void removeAllComponents(uint32_t idx);
@@ -65,6 +67,7 @@ namespace oak {
 		void* getComponent(uint32_t idx, uint32_t tid);
 		const void* getComponent(uint32_t idx, uint32_t tid) const;
 		bool hasComponent(uint32_t idx, uint32_t tid) const;
+		bool ownsComponent(uint32_t idx, uint32_t tid) const;
 
 		void update();
 		void reset();
@@ -96,10 +99,11 @@ namespace oak {
 		} entities_;
 
 		struct EntityAttribute {
+			std::array<void*, config::MAX_COMPONENTS> components{ nullptr };
+			std::bitset<config::MAX_COMPONENTS> componentMask{ 0 };
+			std::bitset<config::MAX_COMPONENTS> ownsMask{ 1 };
+			std::bitset<2> flags{ 0 };
 			std::vector<bool> caches;
-			std::bitset<MAX_COMPONENTS> componentMask;
-			std::array<Block, MAX_COMPONENTS> components;
-			std::bitset<2> flags;
 		};
 		//stores the generation of each entity
 		std::vector<uint32_t> generation_;
@@ -110,7 +114,7 @@ namespace oak {
 		//stores all the systems for entity caching
 		std::unordered_map<uint32_t, EntityCache*> caches_;
 		//component handles
-		std::array<Block, MAX_COMPONENTS> componentHandles_;
+		std::array<TBlock<TypeHandleBase>, config::MAX_COMPONENTS> componentHandles_;
 	};
 
 	class Entity {
@@ -135,7 +139,7 @@ namespace oak {
 
 		template<typename T, typename... TArgs>
 		inline T& addComponent(TArgs&&... args) {
-			T* comp = static_cast<T*>(manager_->addComponent(index(), util::type_id<Component, T>::id, sizeof(T)));
+			T* comp = static_cast<T*>(manager_->addComponent(index(), util::type_id<Component, T>::id));
 			new (comp) T{std::forward<TArgs>(args)...};
 			return *static_cast<T*>(comp);
 		}
@@ -180,7 +184,7 @@ namespace oak {
 		inline const std::vector<Entity>& entities() const { return entities_; }
 
 		void sort();
-		inline const std::bitset<MAX_COMPONENTS>& getFilter() const { return filter_; }
+		inline const std::bitset<config::MAX_COMPONENTS>& getFilter() const { return filter_; }
 
 		inline void clearEntities() { entities_.clear(); };
 		
@@ -194,7 +198,7 @@ namespace oak {
 		std::function<void (const Entity &e)> onAdd_;
 		std::function<void (const Entity &e)> onRemove_;
 
-		std::bitset<MAX_COMPONENTS> filter_;
+		std::bitset<config::MAX_COMPONENTS> filter_;
 	};
 
 }
