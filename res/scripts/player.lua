@@ -13,6 +13,11 @@ local player = {
 	end,
 	key_press = function(self, key, scancode, action, mods)
 		self.keys[key] = action
+		local chunk = oak.ts:getChunk(0, 0)
+		local tile = chunk:getTile(0, 0)
+		print(tile.dw)
+		print(tile.dh)
+		print(tile.flags)
 	end,
 	mouse_move = function(self, x, y)
 		self.mx = x

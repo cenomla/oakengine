@@ -1,25 +1,26 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
-
 #include <cmath>
 
-#include "graphics/opengl/gl_frame_renderer.h"
-#include "graphics/opengl/gl_sprite_renderer.h"
+#include <graphics/opengl/gl_frame_renderer.h>
+#include <graphics/opengl/gl_sprite_renderer.h>
 #include <GLFW/glfw3.h>
+#include <network/network_manager.h>
+#include <log.h>
+#include <events.h>
+#include <engine.h>
+#include <task.h>
+#include <window.h>
+#include <entity.h>
+#include <prefab.h>
+#include <lua_manager.h>
+#include <components.h>
+#include <resource_manager.h>
+#include <event_queue.h>
 
-#include "network/network_manager.h"
-#include "log.h"
-#include "events.h"
-#include "engine.h"
-#include "task.h"
-#include "window.h"
-#include "entity.h"
-#include "prefab.h"
-#include "lua_manager.h"
-#include "components.h"
-#include "resource_manager.h"
-#include "event_queue.h"
+#include "binding.h"
+#include "tile_system.h"
 
 std::chrono::duration<float> dt;
 
@@ -233,10 +234,9 @@ int main(int argc, char** argv) {
 	oak::ResourceManager resManager{ engine };
 	oak::network::NetworkManager networkManager{ engine };
 	oak::EntityManager entityManager{ engine };
-	SpriteSystem spriteSystem{ engine };
 	PhysicsSystem physicsSystem{ engine };
-
-	//add a timer task
+	TileSystem tileSystem{ engine };
+	SpriteSystem spriteSystem{ engine };
 
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem(&resManager);
@@ -246,51 +246,56 @@ int main(int argc, char** argv) {
 	engine.addSystem(&frameRenderer);
 	engine.addSystem(&luam);
 	engine.addSystem(&physicsSystem);
+	engine.addSystem(&tileSystem);
 	engine.addSystem(&spriteSystem);
 	engine.addSystem(&spriteRenderer);
 
-	//test event
+	//set up event listeners that push input events to lua
 	lua_State *L = luam.getState();
 	engine.getEventManager().add<oak::KeyEvent>([L](const oak::KeyEvent &evt) {
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
-		lua_pushstring(L, "key_press");
-		lua_pushinteger(L, evt.key);
-		lua_pushinteger(L, evt.scancode);
-		lua_pushinteger(L, evt.action);
-		lua_pushinteger(L, evt.mods);
+		oak::luah::pushValue(L, "key_press");
+		oak::luah::pushValue(L, evt.key);
+		oak::luah::pushValue(L, evt.scancode);
+		oak::luah::pushValue(L, evt.action);
+		oak::luah::pushValue(L, evt.mods);
 		oak::luah::call(L, 6, 0);
 	});
 	engine.getEventManager().add<oak::ButtonEvent>([L](const oak::ButtonEvent &evt){
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
-		lua_pushstring(L, "button_press");
-		lua_pushinteger(L, evt.button);
-		lua_pushinteger(L, evt.action);
-		lua_pushinteger(L, evt.mods);
+		oak::luah::pushValue(L, "button_press");
+		oak::luah::pushValue(L, evt.button);
+		oak::luah::pushValue(L, evt.action);
+		oak::luah::pushValue(L, evt.mods);
 		oak::luah::call(L, 5, 0);
 	});
 	engine.getEventManager().add<oak::MouseMoveEvent>([L](const oak::MouseMoveEvent &evt) {
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
-		lua_pushstring(L, "mouse_move");
-		lua_pushinteger(L, evt.x);
-		lua_pushinteger(L, evt.y);
+		oak::luah::pushValue(L, "mouse_move");
+		oak::luah::pushValue(L, evt.x);
+		oak::luah::pushValue(L, evt.y);
 		oak::luah::call(L, 4, 0);
 	});
 
-	//init some test stuff
+	//register components with the entity manager
 	entityManager.addComponentHandle<oak::TransformComponent>();
 	entityManager.addComponentHandle<oak::SpriteComponent>();
 	entityManager.addComponentHandle<oak::AABB2dComponent>();
 	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>();
 	entityManager.addComponentHandle<oak::Resource<std::string>>();
 
+	//create resources
 	auto &mat = resManager.add<oak::graphics::GLMaterial>("mat_player", std::hash<std::string>{}("mat_player"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
 	mat.create("core/graphics/shaders/pass2d", "res/textures/character");
 
 	auto &mat0 = resManager.add<oak::graphics::GLMaterial>("mat_block", std::hash<std::string>{}("mat_block"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
 	mat0.create("core/graphics/shaders/pass2d", "res/textures/block");
+
+	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
+	mat_tiles.create("core/graphics/shaders/pass2d", "res/textures/tiles");
 
 	resManager.add<oak::graphics::Sprite>("spr_player", mat.id, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f);
 	resManager.add<oak::graphics::Sprite>("spr_block", mat0.id, 128.0f, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, 64.0f, 16.0f);
@@ -301,7 +306,7 @@ int main(int argc, char** argv) {
 	resManager.add<std::string>("txt_quit", "Quit Game");
 
 	auto& prefab = resManager.add<oak::Prefab>("player", &entityManager);
-	prefab.addComponent<oak::TransformComponent>(false, glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{0.0f}, 0.0f);
+	prefab.addComponent<oak::TransformComponent>(false, glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
 	prefab.addComponent<oak::SpriteComponent>(true, std::hash<std::string>{}("spr_player"), 0, 0);
 	prefab.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 8.0f, 8.0f }, glm::vec2{ 0.0f, 0.0f });
 	prefab.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.025f * 0.2f, 0.4f, 0.2f, 0.1f);
@@ -317,20 +322,24 @@ int main(int argc, char** argv) {
 	fab_button.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 48.0f, 12.0f }, glm::vec2{ 0.0f, 0.0f });
 	fab_button.addComponent<oak::Resource<std::string>>(true, size_t{ 0 });
 
+	initBindings(L);
+	//add the tile system to the oak global table
+	lua_getglobal(L, "oak");
+	oak::luah::pushValue(L, tileSystem);
+	lua_setfield(L, -2, "ts");
+	lua_pop(L, 1);
+
+	//load main lua script
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
 
+	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
+	//physics accum for frame independent physics
 	float accum = 0.0f;
+	//main game loop
 	while (engine.isRunning()) {
 
-		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
-		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
-		lastFrame = currentFrame;
-
-		entityManager.update();
-		window.update();
-		frameRenderer.update();
-
+		//emit update event in scripts (game logic)
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
 		lua_pushstring(L, "update");
@@ -341,6 +350,9 @@ int main(int argc, char** argv) {
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::call(L, 1, 0);
 
+		//create / destroy / activate / deactivate entities 
+		entityManager.update();
+
 		//update physics
 		accum += dt.count();
 		while (accum >= 1.0f/60.0f) {
@@ -348,11 +360,25 @@ int main(int argc, char** argv) {
 			accum -= 1.0f/60.0f; 
 		}
 
-		//draw graphics
+		//sumbit sprites to the sprite renderer
 		spriteSystem.update();
+		//render tiles
+		tileSystem.render(mat_tiles);
+		//render sprites
 		spriteRenderer.render();
+		//swap buffers, clear buffer check for opengl errors
+		frameRenderer.render();
+
+		//poll input and check if the window should be closed
+		window.update();
+
+		//update the delta time
+		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
+		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
+		lastFrame = currentFrame;
 	}
 
+	//clean up
 	engine.destroy();
 
 	return 0;

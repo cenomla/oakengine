@@ -228,10 +228,6 @@ namespace oak {
 		lua_pushnumber(L, v);
 	}
 
-	void luah::pushValue(lua_State *L, bool v) {
-		lua_pushboolean(L, v);
-	}
-
 	void luah::pushValue(lua_State *L, const std::string &v) {
 		lua_pushstring(L, v.c_str());
 	}

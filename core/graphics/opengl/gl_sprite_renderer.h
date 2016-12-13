@@ -23,15 +23,13 @@ namespace oak::graphics {
 
 	private:
 		struct SpritePos {
-			//ff ff ff ff ff ff ff ff
-			//32 bit layer, 32 bit material
-			uint64_t id;
-			glm::vec2 position;
-			int animFrameX, animFrameY;
-			float scale, rot;
 			const graphics::Sprite *sprite;
+			glm::vec2 position;
+			int depth;
+			short animFrameX, animFrameY;
+			float scale, rot;
 
-			inline bool operator<(const SpritePos &other) const { return id < other.id; }
+			inline bool operator<(const SpritePos &other) const { return depth < other.depth; }
 		};
 
 		struct Batch {

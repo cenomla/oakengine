@@ -56,11 +56,13 @@ namespace oak {
 
 	void* EntityManager::addComponent(uint32_t idx, uint32_t tid) {
 		auto &attribute = entityAttributes_[idx];
-		attribute.componentMask[tid] = true;
 		if (attribute.components[tid] == nullptr || !attribute.ownsMask[tid]) {
 			attribute.components[tid] = MemoryManager::inst().allocate(componentHandles_[tid].ptr->size());
 			attribute.ownsMask[tid] = true;
+		} else if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
+			componentHandles_[tid].ptr->destruct(attribute.components[tid]);
 		}
+		attribute.componentMask[tid] = true;
 		return attribute.components[tid];
 	}
 

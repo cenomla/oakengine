@@ -30,7 +30,6 @@ namespace oak {
 		void pushValue(lua_State *L, uint64_t v);
 		void pushValue(lua_State *L, float v);
 		void pushValue(lua_State *L, double v);
-		void pushValue(lua_State *L, bool v);
 		void pushValue(lua_State *L, const std::string &v);
 		void pushValue(lua_State *L, void* v);
 

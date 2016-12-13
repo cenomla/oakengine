@@ -35,7 +35,7 @@ namespace oak::graphics {
 		window_ = window;
 	}
 
-	void GLFrameRenderer::update() {
+	void GLFrameRenderer::render() {
 		glfwSwapBuffers(window_);
 		glViewport(0, 0, windowWidth_, windowHeight_);
 		glClearColor(0.3f, 0.2f, 0.7f, 1.0f);

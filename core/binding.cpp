@@ -158,7 +158,7 @@ namespace oak::luah {
 	}
 
 	void pushValue(lua_State *L, EntityManager &entityManager) {
-		pushInstance<EntityManager>(L, entityManager);
+		pushInstance(L, entityManager);
 		setMetatable(L, "entity_manager");
 	}
 

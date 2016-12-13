@@ -21,12 +21,6 @@ namespace oak {
 	void Window::init() {
 		createWindow();
 		setCallbacks();
-
-		/*
-		tm.addTask(oak::Task{ [this](){
-			this->update();
-		}, Task::LOOP_BIT });
-		*/
 	}
 
 	void Window::destroy() {
