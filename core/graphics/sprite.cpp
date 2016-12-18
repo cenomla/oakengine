@@ -20,14 +20,14 @@ namespace oak::graphics {
 		static_cast<Vertex*>(buffer)[3] = {x, y + height_, u, v + dh_};
 	}
 
-	void Sprite::draw(void *buffer, float x, float y, int animFrameX, int animFrameY, float scale, float rot) const {
+	void Sprite::draw(void *buffer, float x, float y, int animFrameX, int animFrameY, float rotation, float scale) const {
 		float u = dx_ + animFrameX * dw_;
 		float v = dy_ + animFrameY * dh_;
 		glm::vec2 pos{ x, y };
-		static_cast<Vertex*>(buffer)[0] = { glm::rotate(glm::vec2{ -centerX_, -centerY_ } * scale, rot) + pos, glm::vec2{ u, v } };
-		static_cast<Vertex*>(buffer)[1] = { glm::rotate(glm::vec2{ -centerX_ + width_, -centerY_ } * scale, rot) + pos, glm::vec2{ u + dw_, v } };
-		static_cast<Vertex*>(buffer)[2] = { glm::rotate(glm::vec2{ -centerX_ + width_, -centerY_ + height_ } * scale, rot) + pos, glm::vec2{ u + dw_, v + dh_ } };
-		static_cast<Vertex*>(buffer)[3] = { glm::rotate(glm::vec2{ -centerX_, -centerY_ + height_ } * scale, rot) + pos, glm::vec2{ u, v + dh_ } };
+		static_cast<Vertex*>(buffer)[0] = { glm::rotate(glm::vec2{ -centerX_, -centerY_ } * scale, rotation) + pos, glm::vec2{ u, v } };
+		static_cast<Vertex*>(buffer)[1] = { glm::rotate(glm::vec2{ -centerX_ + width_, -centerY_ } * scale, rotation) + pos, glm::vec2{ u + dw_, v } };
+		static_cast<Vertex*>(buffer)[2] = { glm::rotate(glm::vec2{ -centerX_ + width_, -centerY_ + height_ } * scale, rotation) + pos, glm::vec2{ u + dw_, v + dh_ } };
+		static_cast<Vertex*>(buffer)[3] = { glm::rotate(glm::vec2{ -centerX_, -centerY_ + height_ } * scale, rotation) + pos, glm::vec2{ u, v + dh_ } };
 	}
 
 }

@@ -20,8 +20,8 @@ namespace oak {
 		template <class T, typename... TArgs>
 		void addComponent(bool shared, TArgs&&... args) {
 			size_t tid = util::type_id<Component, T>::id;
-			Block comp = { MemoryManager::inst().allocate(sizeof(T)), sizeof(T) };
-			new (comp.ptr) T{ std::forward<TArgs>(args)...};
+			void* comp = MemoryManager::inst().allocate(sizeof(T));
+			new (comp) T{ std::forward<TArgs>(args)...};
 			//ensure size
 			if (tid >= storage_.size()) {
 				storage_.resize(tid + 1);
@@ -31,7 +31,7 @@ namespace oak {
 
 		void clear();
 	private:
-		std::vector<std::pair<bool, Block>> storage_;
+		std::vector<std::pair<bool, void*>> storage_;
 		EntityManager *manager_;
 	};
 

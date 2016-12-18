@@ -22,6 +22,8 @@ namespace oak {
 		void pup(double &data, const util::ObjInfo &info) override;
 		void pup(bool &data, const util::ObjInfo &info) override;
 
+		inline void setIndex(int index) { index_ = index; }
+
 	private:
 		lua_State *L_;
 		int index_;

@@ -6,8 +6,6 @@
 #include <set>
 #include <GLFW/glfw3.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_USE_PNG_ONLY
 #include <stb_image.h>
 
 #include "util/file_util.h"

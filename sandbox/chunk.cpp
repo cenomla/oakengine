@@ -20,6 +20,7 @@ void pup(oak::util::Puper &puper, Tile &tile, const oak::util::ObjInfo &info) {
 	pup(puper, tile.animFrameX, ObjInfo{ "animframe_x" } + info);
 	pup(puper, tile.animFrameY, ObjInfo{ "animframe_y" } + info);
 
+	pup(puper, tile.material, ObjInfo{"material"} + info);
 	pup(puper, tile.flags, ObjInfo{"flags"} + info);
 }
 

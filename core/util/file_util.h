@@ -8,14 +8,14 @@
 namespace oak::util {
 
 	inline std::vector<char> readFile(const std::string &path) {
-		std::ifstream file(path, std::ios::ate | std::ios::binary);
+		std::ifstream file{ path, std::ios::ate | std::ios::binary };
 
 		if (!file.is_open()) {
 			log::cout << "couldnt open file: " << path << std::endl;
 			std::exit(-1);
 		}
 
-		size_t size = static_cast<size_t>(file.tellg());
+		auto size = file.tellg();
 		std::vector<char> buffer(size);
 		file.seekg(0);
 		file.read(buffer.data(), size);
@@ -26,22 +26,21 @@ namespace oak::util {
 	}
 
 	inline std::string readFileAsString(const std::string &path) {
-
-		std::ifstream file(path, std::ios::ate | std::ios::binary);
+		std::ifstream file{ path, std::ios::binary | std::ios::ate };
 
 		if (!file.is_open()) {
 			log::cout << "couldnt open file: " << path << std::endl;
 			std::exit(-1);
 		}
 
-		size_t size = static_cast<size_t>(file.tellg());
-		std::vector<char> buffer(size);
+		auto size = file.tellg();
+		std::string buffer(size, '\0');
 		file.seekg(0);
-		file.read(buffer.data(), size);
+		file.read(&buffer[0], size);
 
 		file.close();
 
-		return std::string{ buffer.data(), buffer.size() };
+		return buffer;
 	}
 
 }

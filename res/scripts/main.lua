@@ -4,14 +4,10 @@ print(package.path)
 
 print("hello world")
 
-oak.es:createEntity(0, "player")
+oak.es:create_entity(0, "player")
+oak.es:create_entity(0, "block")
 
-local e = oak.es:createEntity(0, "player")
-e:setTransform({ position = { x = 256, y = 256 } })
-
-oak.es:createEntity(0, "block")
-
-e = oak.es:createEntity(0, "block")
+e = oak.es:create_entity(0, "block")
 e:setTransform({ position = { x = 512, y = 496 } })
 
-oak.es:createEntity(1, "button")
+oak.es:create_entity(1, "button")

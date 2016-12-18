@@ -12,13 +12,13 @@ namespace oak {
 		Entity entity = manager_->createEntity(layer);
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];
-			if (it.second.ptr != nullptr) {
+			if (it.second != nullptr) {
 				if (it.first) {
-					manager_->addComponent(entity.index(), i, it.second.ptr);
+					manager_->addComponent(entity.index(), i, it.second);
 				} else {
 					void *comp = manager_->addComponent(entity.index(), i);
 					auto ch = manager_->getComponentHandle(i);
-					ch->copy(it.second.ptr, comp);
+					ch->copy(it.second, comp);
 				}
 			}
 		}
@@ -27,10 +27,12 @@ namespace oak {
 	}
 
 	void Prefab::clear() {
-		for (auto it : storage_) {
-			if (it.second.ptr != nullptr) {
-				manager_->getComponentHandle(it.first)->destruct(it.second.ptr);
-				MemoryManager::inst().deallocate(it.second.ptr, it.second.size);
+		for (size_t i = 0; i < storage_.size(); i++) {
+			const auto &it = storage_[i];
+			if (it.second != nullptr) {
+				auto ch = manager_->getComponentHandle(i);
+				ch->destruct(it.second);
+				MemoryManager::inst().deallocate(it.second, ch->size());
 			}
 		}
 		storage_.clear();

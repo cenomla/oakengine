@@ -8,18 +8,18 @@ namespace oak {
 
 	EntityManager::EntityManager(Engine &engine) : System{ engine, "entity_manager" } {}
 
-	void EntityManager::init() {
-		//engine_.getTaskManager().addTask({ [this](){ update(); }, Task::LOOP_BIT });
+	EntityManager::~EntityManager() {
+		for (auto &block : componentHandles_) {
+			if (block.ptr != nullptr) {
+				static_cast<TypeHandleBase*>(block.ptr)->~TypeHandleBase();
+				MemoryManager::inst().deallocate(block.ptr, block.size);
+				block.ptr = nullptr;
+			}
+		}
 	}
 
 	void EntityManager::destroy() {
 		reset();
-		for (const auto &block : componentHandles_) {
-			if (block.ptr != nullptr) {
-				static_cast<TypeHandleBase*>(block.ptr)->~TypeHandleBase();
-				MemoryManager::inst().deallocate(block.ptr, block.size);
-			}
-		}
 	}
 
 	Entity EntityManager::createEntity(uint8_t layer) {

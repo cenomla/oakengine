@@ -7,7 +7,8 @@ struct Tile {
 	static constexpr uint64_t SOLID = 0x00000002;
 	float dx, dy, dw, dh, offsetX, offsetY, width, height;
 	int animFrameX, animFrameY;
-	uint64_t flags;
+	uint32_t material;
+	uint32_t flags;
 
 	struct Vertex {
 		float x, y, dx, dy;

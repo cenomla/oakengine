@@ -2,17 +2,18 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-TileSystem::TileSystem(oak::Engine &engine) : oak::System{ engine, "tile_system" }, vbo_{ GL_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER } {
+TileSystem::TileSystem(oak::Engine &engine, size_t numChunks, size_t tileSize) : 
+	oak::System{ engine, "tile_system" }, numChunks_{ numChunks }, tileSize_{ tileSize }, vbo_{ GL_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER } {
 
 }
 
 void TileSystem::init() {
 
 	//create chunks
-	for (int i = 0; i < 64; i++) {
-		Chunk chunk{ (i % 8) * 256, (i / 8) * 256, 16, 16 };
+	for (int i = 0; i < numChunks_ * numChunks_; i++) {
+		Chunk chunk{ (i % numChunks_) * tileSize_ * 16, (i / numChunks_) * tileSize_ * 16, tileSize_, tileSize_ };
 		for (int j = 0; j < 256; j++) {
-			chunk.setTile(j % 16, j / 16, { 0.0f, 0.0f, 0.0625f, 0.0625f, 0.0f, 0.0f, 16.0f, 16.0f, 0, 0, Tile::VISIBLE });
+			chunk.setTile(j % 16, j / 16, { 0.0f, 0.0f, 0.0625f, 0.0625f, 0.0f, 0.0f, tileSize_, tileSize_, 0, 0, 0, Tile::VISIBLE });
 		}
 		chunks_.push_back(chunk);
 	}
@@ -75,31 +76,9 @@ void TileSystem::render(const oak::graphics::GLMaterial &mat) {
 }
 
 Chunk& TileSystem::getChunk(int x, int y) {
-	const glm::vec2 coords{ x, y };
-	for (auto &chunk : chunks_) {
-		const glm::vec2 &pos = chunk.getPosition();
-		const glm::vec2 &extent = chunk.getExtent() * glm::vec2{ 16.0f };
-
-		if (coords.x >= pos.x && coords.x < pos.x + extent.x &&
-			coords.y >= pos.y && coords.y < pos.y + extent.y) {
-			return chunk;
-		}
-	}
-
-	exit(-1);
+	return chunks_[(y / (tileSize_ * 16)) * numChunks_ + (x / (tileSize_ * 16))];
 }
 
 const Chunk& TileSystem::getChunk(int x, int y) const {
-	const glm::vec2 coords{ x, y };
-	for (const auto &chunk : chunks_) {
-		const glm::vec2 &pos = chunk.getPosition();
-		const glm::vec2 &extent = chunk.getExtent() * glm::vec2{ 16.0f };
-
-		if (coords.x >= pos.x && coords.x < pos.x + extent.x &&
-			coords.y >= pos.y && coords.y < pos.y + extent.y) {
-			return chunk;
-		}
-	}
-
-	exit(-1);
+	return chunks_[(y / (tileSize_ * 16)) * numChunks_ + (x / (tileSize_ * 16))];
 }

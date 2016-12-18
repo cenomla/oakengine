@@ -25,8 +25,8 @@ namespace oak {
 	class EntityManager : public System {
 	public:
 		EntityManager(Engine &engine);
-
-		void init() override;
+		~EntityManager();
+		
 		void destroy() override;
 
 		EntityManager(const EntityManager& other) = delete;

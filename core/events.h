@@ -41,7 +41,7 @@ namespace oak {
 		int height;
 	};
 
-	struct CollisionEvent {
+	struct EntityCollisionEvent {
 		Entity entity;
 		Entity other;
 		glm::vec2 normal;

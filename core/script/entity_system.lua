@@ -16,7 +16,7 @@ local entity_system = {
 	events = {},
 	messages = {},
 
-	createEntity = function(self, layer, prefab)
+	create_entity = function(self, layer, prefab)
 		local e = self.manager.createEntity(layer, prefab)
 		e:activate()
 		self.entities[e:index() + 1] = e
@@ -36,7 +36,7 @@ local entity_system = {
 		end
 	end,
 
-	getEntity = function(self, index)
+	get_entity = function(self, index)
 		return self.entities[index + 1]
 	end,
 

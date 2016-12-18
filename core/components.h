@@ -5,11 +5,12 @@
 #include <glm/glm.hpp>
 
 #include "config.h"
+#include "graphics/sprite.h"
+#include "graphics/font.h"
+#include "graphics/renderable.h"
 #include "util/puper.h"
 #include "prefab.h"
 #include "resource.h"
-
-namespace graphics { class Sprite; }
 
 namespace oak {
 
@@ -30,10 +31,27 @@ namespace oak {
 		glm::vec2 offset;
 	};
 
-	struct SpriteComponent {
+	struct SpriteComponent : public graphics::Renderable {
 		Resource<graphics::Sprite> sprite;
 		int animFrameX;
 		int animFrameY;
+
+		SpriteComponent(const Resource<graphics::Sprite> &s, int ax, int ay) : sprite{ s }, animFrameX{ ax }, animFrameY{ ay } {}
+
+		void draw(void *buffer, float x, float y, float rotation, float scale) const override { sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale); }
+		size_t getMaterialId() const override { return sprite.get().getMaterialId(); }
+		size_t getVertexCount() const override { return 4; }
+	};
+
+	struct TextComponent : public graphics::Renderable {
+		Resource<graphics::Font> font;
+		Resource<std::string> text;
+
+		TextComponent(const Resource<graphics::Font> &f, const Resource<std::string> &t) : font{ f }, text{ t } {}
+
+		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text.get(), x, y, rotation, scale); }
+		size_t getMaterialId() const override { return font.get().getMaterialId(); }
+		size_t getVertexCount() const override { return text.get().size() * 4; } 
 	};
 
 	struct PhysicsBody2dComponent {
