@@ -7,17 +7,12 @@ namespace oak::graphics {
 
 	struct GLMaterial {
 		size_t id;
-		GLShader shader;
-		GLTexture texture;
-
-		inline void create(const std::string &shaderPath, const std::string &texturePath) {
-			shader.create(shaderPath + "/opengl.vert", shaderPath + "/opengl.frag");
-			texture.create(texturePath + ".png");
-		}
+		GLShader *shader;
+		GLTexture *texture;
 
 		inline void bind() const {
-			shader.bind();
-			texture.bind(GL_TEXTURE0);
+			shader->bind();
+			texture->bind(GL_TEXTURE0);
 		}
 	};
 

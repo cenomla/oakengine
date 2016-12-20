@@ -7,7 +7,7 @@ namespace oak::graphics {
 
 	class GLTexture {
 	public:
-		GLTexture(GLenum type);
+		GLTexture(GLenum type, GLenum filter = GL_NEAREST);
 		~GLTexture();
 
 		void bind(GLenum slot) const;
@@ -15,9 +15,10 @@ namespace oak::graphics {
 
 		void create(const std::string &path);
 		void destroy();
-	private:
+	protected:
 		GLuint tex_;
 		GLenum type_;
+		GLenum filter_;
 	};
 
 }

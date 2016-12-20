@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "texture_region.h"
+
 namespace oak::graphics {
 
 
@@ -16,6 +18,7 @@ namespace oak::graphics {
 		};
 		
 		Sprite(size_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY);
+		Sprite(size_t materialId, float width, float height, const TextureRegion &region, float centerX, float centerY);
 
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY) const;
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY, float rotation, float scale) const;

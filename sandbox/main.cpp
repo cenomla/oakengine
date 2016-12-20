@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 
+#include <graphics/opengl/gl_texture_atlas.h>
 #include <graphics/opengl/gl_frame_renderer.h>
 #include <graphics/opengl/gl_renderer.h>
 #include <graphics/font.h>
@@ -113,26 +114,33 @@ int main(int argc, char** argv) {
 		oak::LuaPuper puper{ L, -2 };
 		glm::vec2 n = evt.normal;
 		oak::util::pup(puper, n, {});
+
 		oak::luah::pushValue(L, evt.depth);
+
 		oak::luah::call(L, 6, 0);
 	});
+
 	engine.getEventManager().add<TileCollisionEvent>([L](const TileCollisionEvent &evt) {
 		oak::luah::getGlobal(L, "oak.es.send_message");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "tile_collide");
+
 		oak::luah::getGlobal(L, "oak.es.get_entity");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, evt.entity.index());
 		oak::luah::call(L, 2, 1);
+		
 		lua_newtable(L);
 		oak::LuaPuper puper{ L, -2 };
 		Tile t = evt.tile;
 		pup(puper, t, {});
-		puper.setIndex(6);
+
 		lua_newtable(L);
 		glm::vec2 n = evt.normal;
 		oak::util::pup(puper, n, {});
+		
 		oak::luah::pushValue(L, evt.depth);
+		
 		oak::luah::call(L, 6, 0);
 	});
 
@@ -144,23 +152,36 @@ int main(int argc, char** argv) {
 	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>();
 
 	//create resources
-	auto &mat = resManager.add<oak::graphics::GLMaterial>("mat_player", std::hash<std::string>{}("mat_player"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
-	mat.create("core/graphics/shaders/pass2d", "res/textures/character");
+	//shaders
+	auto &sdr_pass = resManager.add<oak::graphics::GLShader>("sdr_pass");
+	sdr_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
 
-	auto &mat0 = resManager.add<oak::graphics::GLMaterial>("mat_block", std::hash<std::string>{}("mat_block"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
-	mat0.create("core/graphics/shaders/pass2d", "res/textures/block");
+	auto &sdr_font = resManager.add<oak::graphics::GLShader>("sdr_font");
+	sdr_font.create("core/graphics/shaders/font/opengl.vert", "core/graphics/shaders/font/opengl.frag");
 
-	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
-	mat_tiles.create("core/graphics/shaders/pass2d", "res/textures/tiles");
+	//textures
+	auto &tex_entityAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_entityAtlas", GL_TEXTURE_2D);
+	tex_entityAtlas.addTexture("res/textures/character.png");
+	tex_entityAtlas.addTexture("res/textures/block.png");
+	tex_entityAtlas.bake(512, 512);
 
-	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), oak::graphics::GLShader{}, oak::graphics::GLTexture{ GL_TEXTURE_2D });
-	mat_font.create("core/graphics/shaders/pass2d", "res/fonts/dejavu_sans/atlas");
+	auto &tex_tiles = resManager.add<oak::graphics::GLTexture>("tex_tiles", GL_TEXTURE_2D);
+	tex_tiles.create("res/textures/tiles.png");
+
+	auto &tex_font = resManager.add<oak::graphics::GLTexture>("tex_font", GL_TEXTURE_2D, GL_LINEAR);
+	tex_font.create("res/fonts/dejavu_sans/atlas.png");
+
+	//materials
+	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &sdr_pass, &tex_entityAtlas);
+	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &sdr_pass, &tex_tiles);
+	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &sdr_font, &tex_font);
 	
+	//fonts
 	auto &fnt_dejavu = resManager.add<oak::graphics::Font>("fnt_dejavu", mat_font.id);
 	fnt_dejavu.create("res/fonts/dejavu_sans/glyphs.fnt");
 
-	resManager.add<oak::graphics::Sprite>("spr_player", mat.id, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f, 8.0f, 8.0f);
-	resManager.add<oak::graphics::Sprite>("spr_block", mat0.id, 128.0f, 32.0f, 0.0f, 0.0f, 1.0f, 1.0f, 64.0f, 16.0f);
+	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 16.0f, 16.0f, tex_entityAtlas.getTextureRegion("res/textures/character.png"), 8.0f, 8.0f);
+	resManager.add<oak::graphics::Sprite>("spr_block", mat_entity.id, 128.0f, 32.0f, tex_entityAtlas.getTextureRegion("res/textures/block.png"), 64.0f, 16.0f);
 
 	resManager.add<std::string>("txt_play", "Start Game");
 	resManager.add<std::string>("txt_load", "Load Game");
@@ -168,7 +189,7 @@ int main(int argc, char** argv) {
 	resManager.add<std::string>("txt_quit", "Quit Game");
 
 	auto& prefab = resManager.add<oak::Prefab>("player", &entityManager);
-	prefab.addComponent<oak::TransformComponent>(false, glm::vec3{ 216.0f, 128.0f, 0.0f }, 0.5f, glm::vec3{ 0.0f }, 0.0f);
+	prefab.addComponent<oak::TransformComponent>(false, glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
 	prefab.addComponent<oak::SpriteComponent>(true, std::hash<std::string>{}("spr_player"), 0, 0);
 	prefab.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 8.0f, 8.0f }, glm::vec2{ 0.0f, 0.0f });
 	prefab.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.025f * 0.2f, 0.4f, 0.2f, 0.1f);

@@ -25,14 +25,6 @@ private:
 	oak::EntityCache cache_;
 };
 
-class PhysicsSystem : public oak::System {
-public:
-	PhysicsSystem(oak::Engine &engine);
-
-	void init() override;
-	void update(float dt);
-};
-
 class CollisionSystem : public oak::System {
 public:
 	CollisionSystem(oak::Engine &engine);
@@ -40,6 +32,16 @@ public:
 	void init() override;
 	void update();
 
+private:
+	oak::EntityCache cache_;
+};
+
+class PhysicsSystem : public oak::System {
+public:
+	PhysicsSystem(oak::Engine &engine);
+
+	void init() override;
+	void update(float dt);
 private:
 	oak::EntityCache cache_;
 };

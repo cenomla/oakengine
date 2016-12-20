@@ -9,6 +9,9 @@ namespace oak::graphics {
 
 	}
 
+	Sprite::Sprite(size_t materialId, float width, float height, const TextureRegion &region, float centerX, float centerY) :
+		Sprite{ materialId, width, height, region.dx, region.dy, region.dw, region.dh, centerX, centerY } {};
+
 	void Sprite::draw(void *buffer, float x, float y, int animFrameX, int animFrameY) const {
 		float u = dx_ + animFrameX * dw_;
 		float v = dy_ + animFrameY * dh_;

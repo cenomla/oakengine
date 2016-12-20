@@ -12,10 +12,10 @@ local player = {
 	update = function(self, dt)
 		local tc = self:getTransform()
 
-		if self.keys[87] ~=0 then tc.position.y = tc.position.y - 4	end
-		if self.keys[65] ~= 0 then tc.position.x = tc.position.x - 4 end
-		if self.keys[83] ~= 0 then tc.position.y = tc.position.y + 4 end
-		if self.keys[68] ~= 0 then tc.position.x = tc.position.x + 4 end
+		if self.keys[87] ~=0 then tc.position.y = tc.position.y - self.maxSpeed * dt end
+		if self.keys[65] ~= 0 then tc.position.x = tc.position.x - self.maxSpeed * dt end
+		if self.keys[83] ~= 0 then tc.position.y = tc.position.y + self.maxSpeed * dt end
+		if self.keys[68] ~= 0 then tc.position.x = tc.position.x + self.maxSpeed * dt end
 
 		self:setTransform(tc)
 	end,

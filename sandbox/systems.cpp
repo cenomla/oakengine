@@ -94,7 +94,7 @@ void CollisionSystem::update() {
 		//check for tile collisions
 		const glm::vec2 tp = glm::floor(glm::vec2{ tcA.position } / 16.0f) * 16.0f + glm::vec2{ 8.0f };
 		for (int ix = -8; ix < 8; ix++) {
-			for (int iy = -8; iy < 8; iy++) {
+			for (int iy = -8; iy < 8; iy++) {				
 				const Chunk& c = ts.getChunk(tcA.position.x + ix * 16.0f, tcA.position.y + iy * 16.0f);
 				const Tile& t = c.getTile( static_cast<int>(glm::floor(tcA.position.x / 16.0f) + ix) % 16, static_cast<int>(glm::floor(tcA.position.y / 16.0f) + iy) % 16 );
 				if ((t.flags & Tile::SOLID) == Tile::SOLID && aabb_vs_aabb(
@@ -105,7 +105,6 @@ void CollisionSystem::update() {
 				}
 			}
 		}
-
 
 		//start one entity after entity A so we dont get duplicate pairs or entities colliding with theirselves 
 		for (size_t j = i + 1; j < entities.size(); j++) {
@@ -120,4 +119,16 @@ void CollisionSystem::update() {
 			}
 		}
 	}
+}
+
+PhysicsSystem::PhysicsSystem(oak::Engine &engine) : System{ engine, "physics_system" } {}
+
+void PhysicsSystem::init() {
+	cache_.requireComponent<oak::TransformComponent>();
+	cache_.requireComponent<oak::PhysicsBody2dComponent>();
+	engine_.getSystem<oak::EntityManager>().addCache(&cache_);
+}
+
+void PhysicsSystem::update(float dt) {
+
 }

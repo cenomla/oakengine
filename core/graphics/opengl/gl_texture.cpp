@@ -9,7 +9,7 @@
 
 namespace oak::graphics {
 
-	GLTexture::GLTexture(GLenum type) : tex_{ 0 }, type_{ type } {
+	GLTexture::GLTexture(GLenum type, GLenum filter) : tex_{ 0 }, type_{ type }, filter_{ filter } {
 
 	}
 
@@ -40,8 +40,8 @@ namespace oak::graphics {
 		glBindTexture(type_, tex_);
 		glTexImage2D(type_, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		
-		glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, filter_);
+		glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, filter_);
 		glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
