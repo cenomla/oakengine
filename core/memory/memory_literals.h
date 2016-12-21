@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace oak {
 
 	inline size_t operator"" _kb(long long unsigned int kilos) {

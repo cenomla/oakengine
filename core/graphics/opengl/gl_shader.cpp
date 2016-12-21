@@ -69,16 +69,20 @@ namespace oak::graphics {
 	}
 
 
-	void GLShader::setMatrix4f(const std::string &name, const GLfloat *value) const {
-		glUniformMatrix4fv(locations_.at(name.c_str()), 1, GL_FALSE, value);
+	void GLShader::setMatrix4f(const std::string &name, const glm::mat4 &value) const {
+		glUniformMatrix4fv(locations_.at(name), 1, GL_FALSE, &value[0][0]);
 	}
 
-	void GLShader::setUniform1i(const std::string &name, const GLuint value) const {
-		glUniform1i(locations_.at(name.c_str()), value);
+	void GLShader::setVector3f(const std::string &name, const glm::vec3 &value) const {
+		glUniform3fv(locations_.at(name), 1, &value[0]);
+	}
+
+	void GLShader::setUniform1ui(const std::string &name, const GLuint value) const {
+		glUniform1ui(locations_.at(name), value);
 	}
 
 	void GLShader::setUniform1f(const std::string &name, const GLfloat value) const {
-		glUniform1f(locations_.at(name.c_str()), value);
+		glUniform1f(locations_.at(name), value);
 	}
 
 	void GLShader::bindBlockIndex(const std::string &name, GLuint binding) {

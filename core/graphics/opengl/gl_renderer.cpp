@@ -8,7 +8,7 @@
 
 namespace oak::graphics {
 
-	GLRenderer::GLRenderer(Engine &engine) : System{ engine, "gl_sprite_renderer" }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER }, vertexCount_{ 0 }, maxVertices_{ 0 } {
+	GLRenderer::GLRenderer(Engine &engine) : System{ engine, "gl_sprite_renderer" }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, vertexCount_{ 0 }, maxVertices_{ 0 } {
 
 	}
 
@@ -29,21 +29,12 @@ namespace oak::graphics {
 		ibo_.bind();
 		
 		vao_.unbind();
-
-		ubo_.create();
-		ubo_.bindBufferBase(0);
 	}
 
 	void GLRenderer::addObject(const glm::vec3 &position, float rotation, float scale, const Renderable *object) {
 		objects_.push_back({ object, glm::vec2{ position }, static_cast<int>(position.z), rotation, scale });
 		vertexCount_ += object->getVertexCount();
 	}
-
-	struct UniformBufferObject {
-		glm::mat4 proj;
-		glm::mat4 view;
-		glm::mat4 model;
-	};
 
 	void GLRenderer::render() {
 		if (objects_.empty()) { return; }
@@ -101,20 +92,7 @@ namespace oak::graphics {
 			ibo_.unbind();
 		}
 
-
-		UniformBufferObject ubo;
-
-
-		ubo.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 1.0f, -1.0f);
-		ubo.view = glm::mat4{1.0f};
-		ubo.model = glm::mat4{1.0f};
-
-		ubo_.bind();
-		ubo_.bufferData(sizeof(ubo), &ubo, GL_STREAM_DRAW);
-		ubo_.unbind();
-
 		//draw sprites
-		
 		glEnable(GL_BLEND);
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 

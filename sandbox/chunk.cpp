@@ -28,9 +28,11 @@ Chunk::Chunk(int x, int y, int width, int height) : position_{ x, y }, extent_{ 
 
 }
 
-void Chunk::draw(void *buffer) const {
+size_t Chunk::draw(void *buffer) const {
 	Tile::Vertex *data = static_cast<Tile::Vertex*>(buffer);
 	size_t offset = 0;
+
+	size_t tilesDrawn = 0;
 
 	for (size_t i = 0; i < 256; i++) {
 		const Tile& tile = tiles_[i];
@@ -46,6 +48,10 @@ void Chunk::draw(void *buffer) const {
 			data[offset++] = Tile::Vertex{ tx + tile.width, ty + tile.height, dx + tile.dw, dy + tile.dh };
 			data[offset++] = Tile::Vertex{ tx, ty + tile.height, dx, dy + tile.dh };
 			data[offset++] = Tile::Vertex{ tx, ty, dx, dy };
+		
+			tilesDrawn++;
 		}
 	}
+
+	return tilesDrawn;
 }

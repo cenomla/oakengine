@@ -10,7 +10,7 @@
 
 class TileSystem : public oak::System {
 public:
-	TileSystem(oak::Engine &engine, size_t numChunks, size_t tileSize);
+	TileSystem(oak::Engine &engine, int numChunks, int tileSize);
 
 	void init() override;
 	void render(const oak::graphics::GLMaterial &mat);
@@ -20,9 +20,7 @@ public:
 
 private:
 	std::vector<Chunk> chunks_;
-	size_t numChunks_;
-	size_t tileSize_;
+	int numChunks_, tileSize_;
 	oak::graphics::GLVertexArray vao_;
 	oak::graphics::GLBuffer vbo_;
-	oak::graphics::GLBuffer ubo_;
 };

@@ -2,8 +2,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-TileSystem::TileSystem(oak::Engine &engine, size_t numChunks, size_t tileSize) : 
-	oak::System{ engine, "tile_system" }, numChunks_{ numChunks }, tileSize_{ tileSize }, vbo_{ GL_ARRAY_BUFFER }, ubo_{ GL_UNIFORM_BUFFER } {
+TileSystem::TileSystem(oak::Engine &engine, int numChunks, int tileSize) : 
+	oak::System{ engine, "tile_system" }, numChunks_{ numChunks }, tileSize_{ tileSize }, vbo_{ GL_ARRAY_BUFFER } {
 
 }
 
@@ -13,7 +13,8 @@ void TileSystem::init() {
 	for (int i = 0; i < numChunks_ * numChunks_; i++) {
 		Chunk chunk{ (i % numChunks_) * tileSize_ * 16, (i / numChunks_) * tileSize_ * 16, tileSize_, tileSize_ };
 		for (int j = 0; j < 256; j++) {
-			chunk.setTile(j % 16, j / 16, { 0.0f, 0.0f, 0.0625f, 0.0625f, 0.0f, 0.0f, tileSize_, tileSize_, 0, 0, 0, Tile::VISIBLE });
+			chunk.setTile(j % 16, j / 16, { 0.0f, 0.0f, 0.0625f, 0.0625f, 0.0f, 0.0f, 
+				static_cast<float>(tileSize_), static_cast<float>(tileSize_), 0, 0, 0, Tile::VISIBLE });
 		}
 		chunks_.push_back(chunk);
 	}
@@ -33,46 +34,23 @@ void TileSystem::init() {
 			});
 	vbo_.unbind();
 	vao_.unbind();
-
-	ubo_.create();
-	ubo_.bindBufferBase(0);
 }
 
-struct UniformBufferObject {
-	glm::mat4 proj;
-	glm::mat4 view;
-	glm::mat4 model;
-};
-
 void TileSystem::render(const oak::graphics::GLMaterial &mat) {
-
 	vbo_.bind();
 	float *buffer = static_cast<float*>(vbo_.map(GL_WRITE_ONLY));
 
 	for (const auto &chunk : chunks_) {
-		chunk.draw(buffer);
-		buffer += 6144;
+		buffer += chunk.draw(buffer) * sizeof(Tile::Vertex) * 6 / 4;
 	}
 
 	vbo_.unmap();
 	vbo_.unbind();
 
-	UniformBufferObject ubo;
-
-
-	ubo.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 1.0f, -1.0f);
-	ubo.view = glm::mat4{1.0f};
-	ubo.model = glm::mat4{1.0f};
-
-	ubo_.bind();
-	ubo_.bufferData(sizeof(ubo), &ubo, GL_STREAM_DRAW);
-	ubo_.unbind();
-
 	vao_.bind();
 	mat.bind();
 	glDrawArrays(GL_TRIANGLES, 0, 98304);
 	vao_.unbind();
-
 }
 
 Chunk& TileSystem::getChunk(int x, int y) {

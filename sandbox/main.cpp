@@ -6,6 +6,7 @@
 #include <graphics/opengl/gl_texture_atlas.h>
 #include <graphics/opengl/gl_frame_renderer.h>
 #include <graphics/opengl/gl_renderer.h>
+#include <graphics/vertex.h>
 #include <graphics/font.h>
 #include <network/network_manager.h>
 #include <log.h>
@@ -160,21 +161,29 @@ int main(int argc, char** argv) {
 	sdr_font.create("core/graphics/shaders/font/opengl.vert", "core/graphics/shaders/font/opengl.frag");
 
 	//textures
-	auto &tex_entityAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_entityAtlas", GL_TEXTURE_2D);
+	auto &tex_entityAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_entityAtlas", GLenum{ GL_TEXTURE_2D });
 	tex_entityAtlas.addTexture("res/textures/character.png");
 	tex_entityAtlas.addTexture("res/textures/block.png");
 	tex_entityAtlas.bake(512, 512);
 
-	auto &tex_tiles = resManager.add<oak::graphics::GLTexture>("tex_tiles", GL_TEXTURE_2D);
+	auto &tex_tiles = resManager.add<oak::graphics::GLTexture>("tex_tiles", GLenum{ GL_TEXTURE_2D });
 	tex_tiles.create("res/textures/tiles.png");
 
-	auto &tex_font = resManager.add<oak::graphics::GLTexture>("tex_font", GL_TEXTURE_2D, GL_LINEAR);
+	auto &tex_font = resManager.add<oak::graphics::GLTexture>("tex_font", GLenum{ GL_TEXTURE_2D }, GLenum{ GL_LINEAR });
 	tex_font.create("res/fonts/dejavu_sans/atlas.png");
 
 	//materials
 	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &sdr_pass, &tex_entityAtlas);
 	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &sdr_pass, &tex_tiles);
-	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &sdr_font, &tex_font);
+	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &sdr_font, &tex_font, 
+		[](const oak::graphics::GLMaterial& mat) {
+			mat.shader->setUniform1f("text_width", 0.5f);
+			mat.shader->setUniform1f("text_edge", 0.1f);
+			mat.shader->setVector3f("text_color", glm::vec3{ 1.0f });
+			mat.shader->setUniform1f("border_width", 0.6f);
+			mat.shader->setUniform1f("border_edge", 0.2f);
+			mat.shader->setVector3f("border_color", glm::vec3{ 0.0f });
+		});
 	
 	//fonts
 	auto &fnt_dejavu = resManager.add<oak::graphics::Font>("fnt_dejavu", mat_font.id);
@@ -214,6 +223,20 @@ int main(int argc, char** argv) {
 
 	//load main lua script
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
+	
+	//setup view matrix
+	oak::graphics::UniformBufferObject uboData;
+	uboData.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+	uboData.view = glm::mat4{ 1.0f };
+	uboData.model = glm::mat4{ 1.0f };
+
+	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
+	ubo.create();
+	ubo.bindBufferBase(0);
+
+	ubo.bind();
+	ubo.bufferData(sizeof(oak::graphics::UniformBufferObject), &uboData, GL_STREAM_DRAW);
+	ubo.unbind();
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();

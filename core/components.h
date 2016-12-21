@@ -49,7 +49,7 @@ namespace oak {
 
 		TextComponent(const Resource<graphics::Font> &f, const Resource<std::string> &t) : font{ f }, text{ t } {}
 
-		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text.get(), x, y, rotation, scale); }
+		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text.get(), x, y, rotation, 24.0f * scale); }
 		size_t getMaterialId() const override { return font.get().getMaterialId(); }
 		size_t getVertexCount() const override { return text.get().size() * 4; } 
 	};

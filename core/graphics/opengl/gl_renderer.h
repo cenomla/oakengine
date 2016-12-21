@@ -44,7 +44,6 @@ namespace oak::graphics {
 		GLVertexArray vao_;
 		GLBuffer vbo_;
 		GLBuffer ibo_;
-		GLBuffer ubo_;
 		
 		size_t vertexCount_;
 		size_t maxVertices_;

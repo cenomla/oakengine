@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <glm/glm.hpp>
 #include <glad/glad.h>
 
 namespace oak::graphics {
@@ -20,8 +21,9 @@ namespace oak::graphics {
 		void bind() const;
 		void unbind() const;
 
-		void setMatrix4f(const std::string &name, const GLfloat *value) const;
-		void setUniform1i(const std::string &name, const GLuint value) const;
+		void setMatrix4f(const std::string &name, const glm::mat4 &value) const;
+		void setVector3f(const std::string &name, const glm::vec3 &value) const;
+		void setUniform1ui(const std::string &name, const GLuint value) const;
 		void setUniform1f(const std::string &name, const GLfloat value) const;
 
 		void bindBlockIndex(const std::string &name, GLuint binding);

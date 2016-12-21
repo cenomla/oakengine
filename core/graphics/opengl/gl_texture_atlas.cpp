@@ -25,7 +25,6 @@ namespace oak::graphics {
 		}
 
 		regions_.push_back({ image, { 0.0f, 0.0f, 0.0f, 0.0f }});
-
 	}
 
 	void GLTextureAtlas::bake(int width, int height) {
@@ -51,10 +50,7 @@ namespace oak::graphics {
 		stbrp_pack_rects(&c, rects.data(), rects.size());
 
 		//create texture and upload it to opengl
-		glGenTextures(1, &tex_);
-		glBindTexture(type_, tex_);
-
-		glTexImage2D(type_, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		create(width, height, nullptr);
 
 		float tx = 1.0f / width;
 		float ty = 1.0f / height;
@@ -70,13 +66,6 @@ namespace oak::graphics {
 
 			glTexSubImage2D(type_, 0, rect.x, rect.y, rect.w, rect.h, GL_RGBA, GL_UNSIGNED_BYTE, image.data);
 		}
-		
-		glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, filter_);
-		glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, filter_);
-		glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glBindTexture(type_, 0);
 	}
 
 	void GLTextureAtlas::clear() {

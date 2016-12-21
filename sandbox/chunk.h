@@ -26,7 +26,7 @@ class Chunk {
 public:
 	Chunk(int x, int y, int width, int height);
 
-	void draw(void *buffer) const;
+	size_t draw(void *buffer) const;
 
 	inline void setTile(int x, int y, const Tile& tile) { tiles_[y * 16 + x] = tile; }
 	inline const Tile& getTile(int x, int y) const { return tiles_[y * 16 + x]; }

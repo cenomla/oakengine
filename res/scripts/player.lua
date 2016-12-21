@@ -41,6 +41,7 @@ local player = {
 		tc.position.y = tc.position.y - normal.y * depth
 	
 		self:setTransform(tc)
+		oak.es:destroy_entity(self)
 	end,
 	tile_collide = function(self, tile, normal, depth)
 		local tc = self:getTransform()

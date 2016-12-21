@@ -8,12 +8,14 @@
 
 namespace oak::graphics {
 
-	Font::Font(size_t mat) : materialId_{ mat } {
+	Font::Font(size_t mat) : materialId_{ mat }, fontSize_{ 0 } {
 
 	}
 
-	void Font::draw(void *buffer, const std::string &text, float x, float y, float rotation, float scale) const {
+	void Font::draw(void *buffer, const std::string &text, float x, float y, float rotation, float size) const {
 		
+		float scale = size / static_cast<float>(fontSize_);
+
 		for (const char c : text) {
 			const Glyph& g = glyphs_[static_cast<size_t>(c)];
 			
@@ -44,6 +46,7 @@ namespace oak::graphics {
 			
 			if (token.compare(0, 4, "size") == 0) {
 				fhi.size = std::stoull(token.substr(5));
+				fontSize_ = fhi.size;
 			} else if (token.compare(0, 6, "scaleW") == 0) {
 				fhi.width = std::stoull(token.substr(7));
 			} else if (token.compare(0, 6, "scaleH") == 0) {

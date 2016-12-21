@@ -14,6 +14,7 @@ namespace oak::graphics {
 		void unbind() const;
 
 		void create(const std::string &path);
+		void create(int width, int height, void *data);
 		void destroy();
 	protected:
 		GLuint tex_;

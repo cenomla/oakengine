@@ -9,7 +9,7 @@ namespace oak::graphics {
 	public:
 		Font(size_t mat);	
 
-		void draw(void *buffer, const std::string &text, float x, float y, float rotation, float scale) const;
+		void draw(void *buffer, const std::string &text, float x, float y, float rotation, float size) const;
 	
 		void create(const std::string &path);
 
@@ -21,6 +21,7 @@ namespace oak::graphics {
 		};
 
 		size_t materialId_;
+		size_t fontSize_;
 		std::vector<Glyph> glyphs_;
 	};
 

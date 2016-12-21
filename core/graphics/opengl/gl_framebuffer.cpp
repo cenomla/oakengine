@@ -11,7 +11,7 @@ namespace oak::graphics {
 	}
 
 	void GLFramebuffer::create() {
-
+		
 	}
 
 	void GLFramebuffer::destroy() {

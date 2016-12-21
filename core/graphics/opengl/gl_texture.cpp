@@ -36,18 +36,22 @@ namespace oak::graphics {
 			log::cout << "failed to load texture: " << path << std::endl;
 		}
 
+		create(w, h, data);
+
+		stbi_image_free(data);
+	}
+
+	void GLTexture::create(int width, int height, void *data) {
+		if (tex_ != 0) { return; }
+
 		glGenTextures(1, &tex_);
 		glBindTexture(type_, tex_);
-		glTexImage2D(type_, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(type_, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		
 		glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, filter_);
 		glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, filter_);
 		glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glBindTexture(type_, 0);
-
-		stbi_image_free(data);
 	}
 
 	void GLTexture::destroy() {
