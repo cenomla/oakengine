@@ -15,7 +15,7 @@ namespace oak::network {
 		//start up enet
 		if (enet_initialize() != 0) {
 			log::cout << "failed to startup enet" << std::endl;
-			exit(-3);
+			abort();
 		}
 
 		ENetAddress address;
@@ -26,7 +26,7 @@ namespace oak::network {
 		host_ = enet_host_create(&address, 32, 2, 0, 0);
 		if (host_ == nullptr) {
 			log::cout << "failed to create host" << std::endl;
-			exit(-3);
+			abort();
 		}
 
 		log::cout << "successfully created host" << std::endl;

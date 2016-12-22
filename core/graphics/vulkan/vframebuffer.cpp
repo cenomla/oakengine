@@ -27,7 +27,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateFramebuffer(*device_, &framebufferInfo, nullptr, &framebuffer_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed create a framebuffer" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

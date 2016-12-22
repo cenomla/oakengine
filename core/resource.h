@@ -32,6 +32,7 @@ namespace oak {
 		Resource(size_t id) : id_{ id }, res_{ nullptr } {}
 
 		Resource(const Resource &other) : id_{ other.id_ }, res_{ nullptr } {}
+		
 		void operator=(const Resource &other) {
 			id_ = other.id_;
 			res_ = nullptr;

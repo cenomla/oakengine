@@ -34,7 +34,7 @@ namespace oak::graphics {
 			VkResult result = vkCreateImage(device_, &imageInfo, nullptr, &image_);
 			if (result != VK_SUCCESS) {
 				log::cout << "failed to create image" << std::endl;
-				std::exit(-1);
+				abort();
 			}
 		}
 
@@ -61,7 +61,7 @@ namespace oak::graphics {
 			VkResult result = vkCreateImageView(device_, &viewInfo, nullptr, &view_);
 			if (result != VK_SUCCESS) {
 				log::cout << "failed to create image view" << std::endl;
-				std::exit(-1);
+				abort();
 			}
 		}
 	}

@@ -12,7 +12,7 @@ namespace oak::util {
 
 		if (!file.is_open()) {
 			log::cout << "couldnt open file: " << path << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		auto size = file.tellg();
@@ -30,7 +30,7 @@ namespace oak::util {
 
 		if (!file.is_open()) {
 			log::cout << "couldnt open file: " << path << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		auto size = file.tellg();

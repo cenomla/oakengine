@@ -90,7 +90,7 @@ namespace oak::graphics {
 			return;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 			log::cout << "failed to get the next swapchain image" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 
@@ -113,7 +113,7 @@ namespace oak::graphics {
 		result = vkQueueSubmit(device_.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to do queue thing" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		VkPresentInfoKHR presentInfo = {};
@@ -131,7 +131,7 @@ namespace oak::graphics {
 			recreateSwapchain();
 		} else if (result != VK_SUCCESS) {
 			log::cout << "failed to present swapchain" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 
@@ -253,7 +253,7 @@ namespace oak::graphics {
 
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create vulkan instance" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 
@@ -324,7 +324,7 @@ namespace oak::graphics {
 		VkResult result = glfwCreateWindowSurface(instance_, window, nullptr, surface_.replace());
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create the vulkan surface" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 
@@ -417,7 +417,7 @@ namespace oak::graphics {
 			VkResult result = vkCreateImageView(device_, &viewInfo, nullptr, swapchainImageViews_.at(i).replace());
 			if (result != VK_SUCCESS) {
 				log::cout << "failed to create image view" << std::endl;
-				std::exit(-1);
+				abort();
 			}
 		}
 	}
@@ -450,7 +450,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateDescriptorSetLayout(device_, &layoutInfo, nullptr, descriptorSetLayout_.replace());
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create descriptor set layout" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 
@@ -636,7 +636,7 @@ namespace oak::graphics {
 		}
 
 		log::cout << "failed to find supported features" << std::endl;
-		std::exit(-1);
+		abort();
 	}
 
 	void VulkanApi::initDepthResource() {
@@ -666,7 +666,7 @@ namespace oak::graphics {
 
 		if (!pixels) {
 			log::cout << "failed to load image" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		VImage stagingImage{ device_ };
@@ -720,7 +720,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateSampler(device_, &samplerInfo, nullptr, textureSampler_.replace());
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create the texture image sampler" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 
@@ -796,7 +796,7 @@ namespace oak::graphics {
 		VkResult result = vkAllocateDescriptorSets(device_, &allocInfo, &descriptorSet_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to allocate the descriptor set" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		VkDescriptorBufferInfo bufferInfo = {};
@@ -896,7 +896,7 @@ namespace oak::graphics {
 			VkResult result = vkEndCommandBuffer(commandBuffers_.at(i));
 			if (result != VK_SUCCESS) {
 				log::cout << "failed to record the command buffer" << std::endl;
-				std::exit(-1);
+				abort();
 			}
 		}
 	}

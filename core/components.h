@@ -59,7 +59,7 @@ namespace oak {
 			velocity{ iv }, 
 			force{ f }, 
 			mass{ m },
-			invMass{ m == 0.0f ? 0.0f : 1.0f / m }, 
+			invMass{ m == 0.0f ? 0.0f : 1.0f / m },
 			restitution{ r },
 			staticFriction{ sf },
 			dynamicFriction{ df } {}

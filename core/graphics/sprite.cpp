@@ -4,13 +4,13 @@
 
 namespace oak::graphics {
 
-	Sprite::Sprite(size_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY) : 
-		materialId_{ materialId }, width_{ width }, height_{ height }, dx_{ dx }, dy_{ dy }, dw_{ dw }, dh_{ dh }, centerX_{ centerX }, centerY_{ centerY } {
+	Sprite::Sprite(size_t materialId, float centerX, float centerY, float width, float height, float dx, float dy, float dw, float dh) : 
+		materialId_{ materialId }, centerX_{ centerX }, centerY_{ centerY }, width_{ width }, height_{ height }, dx_{ dx }, dy_{ dy }, dw_{ dw }, dh_{ dh } {
 
 	}
 
-	Sprite::Sprite(size_t materialId, float width, float height, const TextureRegion &region, float centerX, float centerY) :
-		Sprite{ materialId, width, height, region.dx, region.dy, region.dw, region.dh, centerX, centerY } {};
+	Sprite::Sprite(size_t materialId, float centerX, float centerY, float width, float height, const TextureRegion &region, int maxFramesX, int maxFramesY) :
+		Sprite{ materialId, centerX, centerY, width, height, region.dx, region.dy, region.dw / maxFramesX, region.dh / maxFramesY } {};
 
 	void Sprite::draw(void *buffer, float x, float y, int animFrameX, int animFrameY) const {
 		float u = dx_ + animFrameX * dw_;

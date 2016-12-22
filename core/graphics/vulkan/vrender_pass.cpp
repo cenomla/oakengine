@@ -71,7 +71,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateRenderPass(device_, &renderPassInfo, nullptr, &renderPass_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create render pass" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

@@ -33,7 +33,7 @@ namespace oak {
 		}
 
 		entities_.alive.emplace_back(idx, generation_[idx], layer, this);
-		entityAttributes_.resize(entities_.alive.size());
+		entityAttributes_.resize(idx + 1);
 		return entities_.alive.back();
 	}
 
@@ -56,12 +56,14 @@ namespace oak {
 
 	void* EntityManager::addComponent(uint32_t idx, uint32_t tid) {
 		auto &attribute = entityAttributes_[idx];
-		if (attribute.components[tid] == nullptr || !attribute.ownsMask[tid]) {
+		
+		if (attribute.ownsMask[tid]) {
+			removeComponent(idx, tid);
+		} else {
 			attribute.components[tid] = MemoryManager::inst().allocate(componentHandles_[tid].ptr->size());
 			attribute.ownsMask[tid] = true;
-		} else if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
-			componentHandles_[tid].ptr->destruct(attribute.components[tid]);
 		}
+
 		attribute.componentMask[tid] = true;
 		return attribute.components[tid];
 	}
@@ -73,7 +75,6 @@ namespace oak {
 			deleteComponent(idx, tid);
 		}
 		attribute.componentMask[tid] = true;
-		attribute.ownsMask[tid] = false;
 		attribute.components[tid] = ptr;
 	}
 
@@ -90,6 +91,7 @@ namespace oak {
 		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
 			MemoryManager::inst().deallocate(attribute.components[tid], componentHandles_[tid].ptr->size());
 			attribute.components[tid] = nullptr;
+			attribute.ownsMask[tid] = false;
 		}
 	}
 

@@ -140,6 +140,7 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "setTransform", c_entity_setComponent<TransformComponent>);
 		addFunctionToMetatable(L, "entity", "getPhysicsBody2d", c_entity_getComponent<PhysicsBody2dComponent>);
 		addFunctionToMetatable(L, "entity", "setPhysicsBody2d", c_entity_setComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "setSprite", c_entity_setComponent<SpriteComponent>);
 
 		addFunctionToMetatable(L, "entity_manager", "createEntity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroyEntity", c_entityManager_destroyEntity);

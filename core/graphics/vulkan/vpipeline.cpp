@@ -46,7 +46,7 @@ namespace oak::graphics {
 			VkResult result = vkCreatePipelineLayout(device_, &pipelineLayoutCreateInfo, nullptr, &layout_);
 			if (result != VK_SUCCESS) {
 				log::cout << "couldnt create a pipeline layout" << std::endl;
-				std::exit(-1);
+				abort();
 			}
 		}
 
@@ -202,7 +202,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline_);
 		if (result != VK_SUCCESS) {
 			log::cout << "couldnt create the graphics pipeline" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 

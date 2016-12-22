@@ -53,7 +53,7 @@ namespace oak {
 				return *static_cast<T*>(it->second);
 			} else {
 				log::cout << "system does not exist" << std::endl;
-				std::exit(-1);
+				abort();
 			}
 		}
 

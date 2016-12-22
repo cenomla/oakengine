@@ -21,7 +21,7 @@ namespace oak::graphics {
 
 		if (image.data == nullptr) {
 			log::cout << "failed to load texture: " << name << std::endl;
-			exit(-1);
+			abort();
 		}
 
 		regions_.push_back({ image, { 0.0f, 0.0f, 0.0f, 0.0f }});

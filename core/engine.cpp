@@ -50,7 +50,7 @@ namespace oak {
 			}
 		}
 		log::cout << "system does not exist: " << name << std::endl;
-		std::exit(-1);
+		abort();
 	}
 
 }

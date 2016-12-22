@@ -23,7 +23,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateCommandPool(device_, &info, nullptr, &pool_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create command pool" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 
@@ -44,7 +44,7 @@ namespace oak::graphics {
 		VkResult result = vkAllocateCommandBuffers(device_, &allocInfo, buffers);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to allocate command buffers" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

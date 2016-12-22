@@ -22,7 +22,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateDescriptorPool(device_, &poolInfo, nullptr, &pool_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create descriptor pool" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

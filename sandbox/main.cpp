@@ -166,6 +166,10 @@ int main(int argc, char** argv) {
 	tex_entityAtlas.addTexture("res/textures/block.png");
 	tex_entityAtlas.bake(512, 512);
 
+	auto &tex_guiAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_guiAtlas", GLenum{ GL_TEXTURE_2D });
+	tex_guiAtlas.addTexture("res/textures/button.png");
+	tex_guiAtlas.bake(512, 512);
+
 	auto &tex_tiles = resManager.add<oak::graphics::GLTexture>("tex_tiles", GLenum{ GL_TEXTURE_2D });
 	tex_tiles.create("res/textures/tiles.png");
 
@@ -174,6 +178,7 @@ int main(int argc, char** argv) {
 
 	//materials
 	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &sdr_pass, &tex_entityAtlas);
+	auto &mat_gui = resManager.add<oak::graphics::GLMaterial>("mat_gui", std::hash<std::string>{}("mat_gui"), &sdr_pass, &tex_guiAtlas);
 	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &sdr_pass, &tex_tiles);
 	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &sdr_font, &tex_font, 
 		[](const oak::graphics::GLMaterial& mat) {
@@ -189,9 +194,12 @@ int main(int argc, char** argv) {
 	auto &fnt_dejavu = resManager.add<oak::graphics::Font>("fnt_dejavu", mat_font.id);
 	fnt_dejavu.create("res/fonts/dejavu_sans/glyphs.fnt");
 
-	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 16.0f, 16.0f, tex_entityAtlas.getTextureRegion("res/textures/character.png"), 8.0f, 8.0f);
-	resManager.add<oak::graphics::Sprite>("spr_block", mat_entity.id, 128.0f, 32.0f, tex_entityAtlas.getTextureRegion("res/textures/block.png"), 64.0f, 16.0f);
+	//sprites
+	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 8.0f, 8.0f, 16.0f, 16.0f, tex_entityAtlas.getTextureRegion("res/textures/character.png"));
+	resManager.add<oak::graphics::Sprite>("spr_block", mat_entity.id, 64.0f, 16.0f, 128.0f, 32.0f, tex_entityAtlas.getTextureRegion("res/textures/block.png"));
+	resManager.add<oak::graphics::Sprite>("spr_button", mat_gui.id, 0.0f, 0.0f, 48.0f, 48.0f, tex_guiAtlas.getTextureRegion("res/textures/button.png"), 2);
 
+	//strings
 	resManager.add<std::string>("txt_play", "Start Game");
 	resManager.add<std::string>("txt_load", "Load Game");
 	resManager.add<std::string>("txt_options", "Options");
@@ -210,9 +218,9 @@ int main(int argc, char** argv) {
 	prefab0.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 128.0f, 32.0f }, glm::vec2{ 0.0f, 0.0f });
 	prefab0.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.0f, 0.4f, 0.5f, 0.4f);
 
-	auto& fab_button = resManager.add<oak::Prefab>("button", &entityManager);
+	auto& fab_button = resManager.add<oak::Prefab>("gui/button", &entityManager);
 	fab_button.addComponent<oak::TransformComponent>(false, glm::vec3{ 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-	//fab_button.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 48.0f, 12.0f }, glm::vec2{ 0.0f, 0.0f });
+	fab_button.addComponent<oak::SpriteComponent>(false, std::hash<std::string>{}("spr_button"), 0, 0);
 
 	initBindings(L);
 	//add the tile system to the oak global table

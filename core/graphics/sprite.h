@@ -17,8 +17,8 @@ namespace oak::graphics {
 			glm::vec2 texCoords;
 		};
 		
-		Sprite(size_t materialId, float width, float height, float dx, float dy, float dw, float dh, float centerX, float centerY);
-		Sprite(size_t materialId, float width, float height, const TextureRegion &region, float centerX, float centerY);
+		Sprite(size_t materialId, float centerX, float centerY, float width, float height, float dx, float dy, float dw, float dh);
+		Sprite(size_t materialId, float centerX, float centerY, float width, float height, const TextureRegion &region, int maxFramesX = 1, int maxFramesY = 1);
 
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY) const;
 		void draw(void *buffer, float x, float y, int animFrameX, int animFrameY, float rotation, float scale) const;
@@ -26,7 +26,7 @@ namespace oak::graphics {
 		size_t getMaterialId() const { return materialId_; }
 	private:
 		size_t materialId_;
-		float width_, height_, dx_, dy_, dw_, dh_, centerX_, centerY_;
+		float centerX_, centerY_, width_, height_, dx_, dy_, dw_, dh_;
 	};
 
 }

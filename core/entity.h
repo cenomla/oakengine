@@ -43,12 +43,12 @@ namespace oak {
 		}
 
 		template<typename T>
-		inline const TypeHandle<T>& getComponentHandle() {
+		inline const TypeHandle<T>& getComponentHandle() const {
 			size_t tid = util::type_id<Component, T>::id;
-			return *static_cast<TypeHandle<T>*>(getComponentHandle(tid));
+			return *static_cast<const TypeHandle<T>*>(getComponentHandle(tid));
 		}
 
-		inline TypeHandleBase* getComponentHandle(size_t tid) {
+		inline const TypeHandleBase* getComponentHandle(size_t tid) const {
 			return componentHandles_[tid].ptr;
 		}
 
@@ -100,9 +100,9 @@ namespace oak {
 
 		struct EntityAttribute {
 			std::array<void*, config::MAX_COMPONENTS> components{ nullptr };
-			std::bitset<config::MAX_COMPONENTS> componentMask{ 0 };
-			std::bitset<config::MAX_COMPONENTS> ownsMask{ 1 };
-			std::bitset<2> flags{ 0 };
+			std::bitset<config::MAX_COMPONENTS> componentMask;
+			std::bitset<config::MAX_COMPONENTS> ownsMask;
+			std::bitset<2> flags;
 			std::vector<bool> caches;
 		};
 		//stores the generation of each entity

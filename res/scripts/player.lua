@@ -1,4 +1,3 @@
-
 local player = {
 	maxSpeed = 400.0,
 	mx = 0,
@@ -25,14 +24,6 @@ local player = {
 	mouse_move = function(self, x, y)
 		self.mx = x
 		self.my = y
-	end,
-	button_press = function(self, button, action, mods)
-		if button == 0 and action ~= 0 then
-			local e = oak.es:create_entity(0, "player")
-			e:setTransform({position = { x = self.mx, y = self.my }})
-
-			return true
-		end
 	end,
 	entity_collide = function(self, other, normal, depth)
 		local tc = self:getTransform()

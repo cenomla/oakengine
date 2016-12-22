@@ -25,7 +25,7 @@ namespace oak::graphics {
 		VkResult result = vkAllocateMemory(device_, &allocInfo, nullptr, &mem_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to allocate image memory" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

@@ -21,7 +21,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateSemaphore(device_, &info, nullptr, &semaphore_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create semaphore" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

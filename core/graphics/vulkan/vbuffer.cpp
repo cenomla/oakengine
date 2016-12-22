@@ -24,7 +24,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateBuffer(device_, &bufferInfo, nullptr, &buffer_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create vertex buffer" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 	}
 

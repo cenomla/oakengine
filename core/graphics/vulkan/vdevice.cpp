@@ -23,7 +23,7 @@ namespace oak::graphics {
 
 		if (!familyIndices_.complete() || swapchainDetails_.formats.empty() || swapchainDetails_.modes.empty()) {
 			log::cout << "no supported devices found" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		//create queue family create infos
@@ -69,7 +69,7 @@ namespace oak::graphics {
 		VkResult result = vkCreateDevice(physicalDevice_, &deviceInfo, nullptr, &device_);
 		if (result != VK_SUCCESS) {
 			log::cout << "failed to create device" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 		//get the queues from the device;
 		vkGetDeviceQueue(device_, familyIndices_.graphicsFamily, 0, &graphicsQueue_);

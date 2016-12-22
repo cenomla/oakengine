@@ -6,7 +6,7 @@
 
 #define oak_assert(x) \
 	do {\
-		if (!(x)) { std::cout << "assert failed: " << __FILE__ << ", " << __LINE__ << std::endl; std::exit(1); }\
+		if (!(x)) { std::cout << "assert failed: " << __FILE__ << ", " << __LINE__ << std::endl; abort(); }\
 	} while (0)
 
 #else

@@ -116,6 +116,7 @@ void CollisionSystem::update() {
 				{ glm::vec2{ tcB.position } + boxB.offset, boxB.halfExtent }, 
 				normal, depth)) {
 				engine_.getEventManager().emitEvent(oak::EntityCollisionEvent{ entityA, entityB, normal, depth });
+				engine_.getEventManager().emitEvent(oak::EntityCollisionEvent{ entityB, entityA, -normal, depth });
 			}
 		}
 	}

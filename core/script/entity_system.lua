@@ -60,16 +60,15 @@ local entity_system = {
 	process_events = function(self)
 		--create a list of entities that can be sorted
 		local sorted = {}
-		for k, v in ipairs(self.entities) do
-			table.insert(sorted, v)
+		for k, v in pairs(self.entities) do
+			if v ~= nil then
+				table.insert(sorted, v)
+			end
 		end
 
 		--sort entities
-		table.sort(sorted, function(e, o)
-			local i1, i2
-			if self.is_valid(e) then i1 = e:layer() else i1 = -2e9 end
-			if self.is_valid(o) then i2 = o:layer() else i2 = -2e9 end
-			return i1 > i2
+		table.sort(sorted, function(e, o) 
+			return e:layer() > o:layer() 
 		end)
 		--process events
 		for name, v in pairs(self.events) do

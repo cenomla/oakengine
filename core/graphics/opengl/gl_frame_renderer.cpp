@@ -26,7 +26,7 @@ namespace oak::graphics {
 
 		if (!gladLoadGL()) {
 			log::cout << "cannot load gl" << std::endl;
-			std::exit(-1);
+			abort();
 		}
 
 		log::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
