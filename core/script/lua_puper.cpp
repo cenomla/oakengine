@@ -1,6 +1,8 @@
 #include "lua_puper.h"
 
 #include "script/luah.h"
+#include "binding.h"
+#include "entity.h"
 
 namespace oak {
 
@@ -143,6 +145,19 @@ namespace oak {
 			luah::getField(L_, index_, info.name);
 			if (!luah::isNil(L_, -1)) {
 				data = luah::toValue<bool>(L_, -1);
+			}
+			lua_pop(L_, 1);
+		} else {
+			luah::pushValue(L_, data);
+			luah::setField(L_, index_, info.name);
+		}
+	}
+
+	void LuaPuper::pup(Entity &data, const util::ObjInfo &info) {
+		if (io_ == util::PuperIo::IN) {
+			luah::getField(L_, index_, info.name);
+			if (!luah::isNil(L_, -1)) {
+				data = luah::toValue<Entity>(L_, -1);
 			}
 			lua_pop(L_, 1);
 		} else {

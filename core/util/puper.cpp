@@ -96,6 +96,10 @@ namespace oak::util {
 		}
 	}
 
+	void ByteBufferPuper::pup(Entity &data, const ObjInfo &info) {
+		
+	}
+
 	void pup(Puper &puper, int8_t &data, const ObjInfo &info) { puper.pup(data, info); }
 	void pup(Puper &puper, int16_t &data, const ObjInfo &info) { puper.pup(data, info); }
 	void pup(Puper &puper, int32_t &data, const ObjInfo &info) { puper.pup(data, info); }
@@ -122,6 +126,10 @@ namespace oak::util {
 		puper.pup(data.y, ObjInfo{ "y" } + info);
 		puper.pup(data.z, ObjInfo{ "z" } + info);
 		puper.pup(data.w, ObjInfo{ "w" } + info);
+	}
+
+	void pup(Puper &puper, Entity &data, const ObjInfo &info) {
+		puper.pup(data, info);
 	}
 
 }

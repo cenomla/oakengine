@@ -6,6 +6,8 @@ struct lua_State;
 
 namespace oak {
 
+	class Entity;
+
 	class LuaPuper : public util::Puper {
 	public:
 		LuaPuper(lua_State *L, int index);
@@ -21,6 +23,7 @@ namespace oak {
 		void pup(float &data, const util::ObjInfo &info) override;
 		void pup(double &data, const util::ObjInfo &info) override;
 		void pup(bool &data, const util::ObjInfo &info) override;
+		void pup(Entity &data, const util::ObjInfo &info) override;
 
 		inline void setIndex(int index) { index_ = index; }
 

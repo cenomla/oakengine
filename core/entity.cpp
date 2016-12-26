@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "engine.h"
+#include "events.h"
 
 namespace oak {
 
@@ -43,10 +44,12 @@ namespace oak {
 	}
 
 	void EntityManager::activateEntity(const Entity &entity) {
+		Engine::inst().getEventManager().emitEvent(EntityActivateEvent{ entity });
 		entities_.activated.push_back(entity);
 	}
 
 	void EntityManager::deactivateEntity(const Entity &entity) {
+		Engine::inst().getEventManager().emitEvent(EntityDeactivateEvent{ entity });
 		entities_.deactivated.push_back(entity);
 	}
 

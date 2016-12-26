@@ -87,7 +87,6 @@ namespace oak {
 			}
 			log::cout << "failed to find resource: " << id << std::endl;
 			abort();
-			abort();
 		}
 
 	private:

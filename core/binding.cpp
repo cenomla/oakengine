@@ -51,12 +51,12 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//bool isActive(entity)
-	int c_entity_isActive(lua_State *L) {
+	//bool active(entity)
+	int c_entity_active(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
-		pushValue(L, entity.isActive());
+		lua_pushboolean(L, entity.isActive());
 
 		return 1;
 	}
@@ -135,7 +135,7 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
 		addFunctionToMetatable(L, "entity", "index", c_entity_index);
 		addFunctionToMetatable(L, "entity", "layer", c_entity_layer);
-		addFunctionToMetatable(L, "entity", "isActive", c_entity_isActive);
+		addFunctionToMetatable(L, "entity", "is_active", c_entity_active);
 		addFunctionToMetatable(L, "entity", "getTransform", c_entity_getComponent<TransformComponent>);
 		addFunctionToMetatable(L, "entity", "setTransform", c_entity_setComponent<TransformComponent>);
 		addFunctionToMetatable(L, "entity", "getPhysicsBody2d", c_entity_getComponent<PhysicsBody2dComponent>);

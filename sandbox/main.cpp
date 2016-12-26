@@ -69,80 +69,74 @@ int main(int argc, char** argv) {
 
 	//set up event listeners that push input events to lua
 	lua_State *L = luam.getState();
-	engine.getEventManager().add<oak::KeyEvent>([L](const oak::KeyEvent &evt) {
+	engine.getEventManager().add<oak::KeyEvent>([L](oak::KeyEvent evt) {
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "key_press");
-		oak::luah::pushValue(L, evt.key);
-		oak::luah::pushValue(L, evt.scancode);
-		oak::luah::pushValue(L, evt.action);
-		oak::luah::pushValue(L, evt.mods);
-		oak::luah::call(L, 6, 0);
+		lua_newtable(L);
+		oak::LuaPuper puper{ L, -2 };
+		pup(puper, evt, {});
+		oak::luah::call(L, 3, 0);
 	});
-	engine.getEventManager().add<oak::ButtonEvent>([L](const oak::ButtonEvent &evt){
+
+	engine.getEventManager().add<oak::ButtonEvent>([L](oak::ButtonEvent evt){
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "button_press");
-		oak::luah::pushValue(L, evt.button);
-		oak::luah::pushValue(L, evt.action);
-		oak::luah::pushValue(L, evt.mods);
-		oak::luah::call(L, 5, 0);
+		lua_newtable(L);
+		oak::LuaPuper puper{ L, -2 };
+		pup(puper, evt, {});
+		oak::luah::call(L, 3, 0);
 	});
-	engine.getEventManager().add<oak::MouseMoveEvent>([L](const oak::MouseMoveEvent &evt) {
+	
+	engine.getEventManager().add<oak::MouseMoveEvent>([L](oak::MouseMoveEvent evt) {
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "mouse_move");
-		oak::luah::pushValue(L, evt.x);
-		oak::luah::pushValue(L, evt.y);
-		oak::luah::call(L, 4, 0);
+		lua_newtable(L);
+		oak::LuaPuper puper{ L, -2 };
+		pup(puper, evt, {});
+		oak::luah::call(L, 3, 0);
 	});
-	engine.getEventManager().add<oak::EntityCollisionEvent>([L](const oak::EntityCollisionEvent &evt) {
+
+	engine.getEventManager().add<oak::EntityActivateEvent>([L](const oak::EntityActivateEvent &evt) {
 		oak::luah::getGlobal(L, "oak.es.send_message");
+		oak::luah::getGlobal(L, "oak.es");
+		oak::luah::pushValue(L, "on_activate");
+		oak::luah::pushValue(L, evt.entity.index());
+		oak::luah::call(L, 3, 0);
+	});
+
+	engine.getEventManager().add<oak::EntityDeactivateEvent>([L](const oak::EntityDeactivateEvent &evt) {
+		oak::luah::getGlobal(L, "oak.es.send_message");
+		oak::luah::getGlobal(L, "oak.es");
+		oak::luah::pushValue(L, "on_deactivate");
+		oak::luah::pushValue(L, evt.entity.index());
+		oak::luah::call(L, 3, 0);
+	});
+
+	engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
+		oak::luah::getGlobal(L, "oak.es.send_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "entity_collide");
 
-		oak::luah::getGlobal(L, "oak.es.get_entity");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, evt.entity.index());
-		oak::luah::call(L, 2, 1);
-
-		oak::luah::getGlobal(L, "oak.es.get_entity");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, evt.entity.index());
-		oak::luah::call(L, 2, 1);
-
 		lua_newtable(L);
 		oak::LuaPuper puper{ L, -2 };
-		glm::vec2 n = evt.normal;
-		oak::util::pup(puper, n, {});
+		pup(puper, evt, {});
 
-		oak::luah::pushValue(L, evt.depth);
-
-		oak::luah::call(L, 6, 0);
+		oak::luah::call(L, 3, 0);
 	});
 
-	engine.getEventManager().add<TileCollisionEvent>([L](const TileCollisionEvent &evt) {
-		oak::luah::getGlobal(L, "oak.es.send_message");
+	engine.getEventManager().add<TileCollisionEvent>([L](TileCollisionEvent evt) {
+		oak::luah::getGlobal(L, "oak.es.send_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "tile_collide");
-
-		oak::luah::getGlobal(L, "oak.es.get_entity");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, evt.entity.index());
-		oak::luah::call(L, 2, 1);
 		
 		lua_newtable(L);
 		oak::LuaPuper puper{ L, -2 };
-		Tile t = evt.tile;
-		pup(puper, t, {});
+		pup(puper, evt, {});
 
-		lua_newtable(L);
-		glm::vec2 n = evt.normal;
-		oak::util::pup(puper, n, {});
-		
-		oak::luah::pushValue(L, evt.depth);
-		
-		oak::luah::call(L, 6, 0);
+		oak::luah::call(L, 3, 0);
 	});
 
 	//register components with the entity manager
@@ -168,6 +162,7 @@ int main(int argc, char** argv) {
 
 	auto &tex_guiAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_guiAtlas", GLenum{ GL_TEXTURE_2D });
 	tex_guiAtlas.addTexture("res/textures/button.png");
+	tex_guiAtlas.addTexture("res/textures/tile_editor.png");
 	tex_guiAtlas.bake(512, 512);
 
 	auto &tex_tiles = resManager.add<oak::graphics::GLTexture>("tex_tiles", GLenum{ GL_TEXTURE_2D });
@@ -198,6 +193,7 @@ int main(int argc, char** argv) {
 	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 8.0f, 8.0f, 16.0f, 16.0f, tex_entityAtlas.getTextureRegion("res/textures/character.png"));
 	resManager.add<oak::graphics::Sprite>("spr_block", mat_entity.id, 64.0f, 16.0f, 128.0f, 32.0f, tex_entityAtlas.getTextureRegion("res/textures/block.png"));
 	resManager.add<oak::graphics::Sprite>("spr_button", mat_gui.id, 0.0f, 0.0f, 48.0f, 48.0f, tex_guiAtlas.getTextureRegion("res/textures/button.png"), 2);
+	resManager.add<oak::graphics::Sprite>("spr_tile_editor", mat_gui.id, 0.0f, 0.0f, 256.0f, 512.0f, tex_guiAtlas.getTextureRegion("res/textures/tile_editor.png"));
 
 	//strings
 	resManager.add<std::string>("txt_play", "Start Game");
@@ -221,6 +217,12 @@ int main(int argc, char** argv) {
 	auto& fab_button = resManager.add<oak::Prefab>("gui/button", &entityManager);
 	fab_button.addComponent<oak::TransformComponent>(false, glm::vec3{ 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
 	fab_button.addComponent<oak::SpriteComponent>(false, std::hash<std::string>{}("spr_button"), 0, 0);
+
+	auto& fab_tileEditor = resManager.add<oak::Prefab>("gui/tile_editor", &entityManager);
+	fab_tileEditor.addComponent<oak::TransformComponent>(false, glm::vec3{ 0.0f, 48.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
+	fab_tileEditor.addComponent<oak::SpriteComponent>(false, std::hash<std::string>{}("spr_tile_editor"), 0, 0);
+
+	resManager.add<oak::Prefab>("input", &entityManager);
 
 	initBindings(L);
 	//add the tile system to the oak global table
@@ -281,7 +283,7 @@ int main(int argc, char** argv) {
 		textSystem.update();
 		//render tiles
 		tileSystem.render(mat_tiles);
-		//render sprites
+		//render entities
 		entityRenderer.render();
 		//swap buffers, clear buffer check for opengl errors
 		frameRenderer.render();

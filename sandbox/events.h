@@ -11,3 +11,12 @@ struct TileCollisionEvent {
 	glm::vec2 normal;
 	float depth;
 };
+
+namespace oak::util {
+
+	class Puper;
+	class ObjInfo;
+
+	void pup(Puper &puper, TileCollisionEvent &data, const ObjInfo &info);
+
+}

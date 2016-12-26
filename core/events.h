@@ -41,6 +41,14 @@ namespace oak {
 		int height;
 	};
 
+	struct EntityActivateEvent {
+		Entity entity;
+	};
+
+	struct EntityDeactivateEvent {
+		Entity entity;
+	};
+
 	struct EntityCollisionEvent {
 		Entity entity;
 		Entity other;
@@ -62,5 +70,19 @@ namespace oak {
 		Entity entity;
 		glm::vec2 force;
 	};
+
+	namespace util {
+
+		class Puper;
+		class ObjInfo;
+
+		void pup(Puper &puper, KeyEvent &data, const ObjInfo &info);
+		void pup(Puper &puper, ButtonEvent &data, const ObjInfo &info);
+		void pup(Puper &puper, MouseMoveEvent &data, const ObjInfo &info);
+		void pup(Puper &puper, EntityActivateEvent &data, const ObjInfo &info);
+		void pup(Puper &puper, EntityDeactivateEvent &data, const ObjInfo &info);
+		void pup(Puper &puper, EntityCollisionEvent &data, const ObjInfo &info);
+
+	}
 
 }
