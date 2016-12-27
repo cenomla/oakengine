@@ -20,22 +20,23 @@ namespace oak {
 	};
 
 	struct TransformComponent {
-		glm::vec3 position;
-		float scale;
-		glm::vec3 rotationAxis;
-		float rotationAngle;
+		glm::vec3 position{ 0.0f };
+		float scale = 1.0f;
+		glm::vec3 rotationAxis{ 0.0f };
+		float rotationAngle = 0.0f;
 	};
 
 	struct AABB2dComponent {
-		glm::vec2 halfExtent;
-		glm::vec2 offset;
+		glm::vec2 halfExtent{ 0.0f };
+		glm::vec2 offset{ 0.0f };
 	};
 
 	struct SpriteComponent : public graphics::Renderable {
-		Resource<graphics::Sprite> sprite;
-		int animFrameX;
-		int animFrameY;
+		Resource<graphics::Sprite> sprite{ 0 };
+		int animFrameX = 0;
+		int animFrameY = 0;
 
+		SpriteComponent() = default;
 		SpriteComponent(const Resource<graphics::Sprite> &s, int ax, int ay) : sprite{ s }, animFrameX{ ax }, animFrameY{ ay } {}
 
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale); }
@@ -44,9 +45,10 @@ namespace oak {
 	};
 
 	struct TextComponent : public graphics::Renderable {
-		Resource<graphics::Font> font;
-		Resource<std::string> text;
+		Resource<graphics::Font> font{ 0 };
+		Resource<std::string> text{ 0 };
 
+		TextComponent() = default;
 		TextComponent(const Resource<graphics::Font> &f, const Resource<std::string> &t) : font{ f }, text{ t } {}
 
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text.get(), x, y, rotation, 24.0f * scale); }
@@ -55,6 +57,7 @@ namespace oak {
 	};
 
 	struct PhysicsBody2dComponent {
+		PhysicsBody2dComponent() = default;
 		PhysicsBody2dComponent(const glm::vec2 &iv, const glm::vec2 &f, float m, float r, float sf, float df) : 
 			velocity{ iv }, 
 			force{ f }, 
@@ -64,13 +67,13 @@ namespace oak {
 			staticFriction{ sf },
 			dynamicFriction{ df } {}
 
-		glm::vec2 velocity;
-		glm::vec2 force;
-		float mass;
-		float invMass;
-		float restitution;
-		float staticFriction;
-		float dynamicFriction;
+		glm::vec2 velocity{ 0.0f };
+		glm::vec2 force{ 0.0f };
+		float mass = 0.0f;
+		float invMass = 0.0f;
+		float restitution = 0.0f;
+		float staticFriction = 0.0f;
+		float dynamicFriction = 0.0f;
 	};
 
 	struct CallbackComponent {
@@ -82,6 +85,7 @@ namespace oak {
 		void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info);
 		void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info);
 		void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info);
+		void pup(Puper &puper, TextComponent &comp, const ObjInfo &info);
 		void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info);
 	}
 

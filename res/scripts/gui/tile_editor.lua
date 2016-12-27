@@ -3,8 +3,9 @@ local tile_editor = {
 	create = function(self)
 		self.children = {}
 		for i = 0, 5 do			
-			local e = oak.es:create_entity(2, "gui/button")
-			e:setTransform({ position = { x = 16 + ((i % 3) * 64), y = 64 + ((i // 3) * 64) }})
+			local e = oak.es:create_entity(2, "button", require("gui/button"))
+			e:setTransform({ position = { x = 16 + ((i % 3) * 64), y = 64 + ((i // 3) * 64) }, scale = 2.0/3.0 })
+			e:addText({ font = hash("fnt_dejavu"), text = hash("txt_play") })
 			self.children[i] = e
 		end
 		self:deactivate()

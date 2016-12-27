@@ -164,6 +164,7 @@ namespace oak {
 			return manager_->hasComponent(index(), util::type_id<Component, T>::id);
 		}
 
+		inline EntityManager* getManager() { return manager_; }
 		inline const EntityManager* getManager() const { return manager_; }
 
 		

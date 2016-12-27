@@ -18,7 +18,7 @@ namespace oak {
 		Entity createInstance(uint8_t layer) const;
 
 		template <class T, typename... TArgs>
-		void addComponent(bool shared, TArgs&&... args) {
+		T* addComponent(bool shared, TArgs&&... args) {
 			size_t tid = util::type_id<Component, T>::id;
 			void* comp = MemoryManager::inst().allocate(sizeof(T));
 			new (comp) T{ std::forward<TArgs>(args)...};
@@ -27,6 +27,7 @@ namespace oak {
 				storage_.resize(tid + 1);
 			}
 			storage_[tid] = { shared, comp };
+			return static_cast<T*>(comp);
 		}
 
 		void clear();

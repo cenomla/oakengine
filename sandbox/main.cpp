@@ -18,7 +18,7 @@
 #include <prefab.h>
 #include <lua_manager.h>
 #include <script/lua_puper.h>
-#include <binding.h>
+#include <script/binding.h>
 #include <components.h>
 #include <resource_manager.h>
 #include <event_queue.h>
@@ -148,11 +148,11 @@ int main(int argc, char** argv) {
 
 	//create resources
 	//shaders
-	auto &sdr_pass = resManager.add<oak::graphics::GLShader>("sdr_pass");
-	sdr_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
+	auto &shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
+	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
 
-	auto &sdr_font = resManager.add<oak::graphics::GLShader>("sdr_font");
-	sdr_font.create("core/graphics/shaders/font/opengl.vert", "core/graphics/shaders/font/opengl.frag");
+	auto &shd_font = resManager.add<oak::graphics::GLShader>("shd_font");
+	shd_font.create("core/graphics/shaders/font/opengl.vert", "core/graphics/shaders/font/opengl.frag");
 
 	//textures
 	auto &tex_entityAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_entityAtlas", GLenum{ GL_TEXTURE_2D });
@@ -172,10 +172,10 @@ int main(int argc, char** argv) {
 	tex_font.create("res/fonts/dejavu_sans/atlas.png");
 
 	//materials
-	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &sdr_pass, &tex_entityAtlas);
-	auto &mat_gui = resManager.add<oak::graphics::GLMaterial>("mat_gui", std::hash<std::string>{}("mat_gui"), &sdr_pass, &tex_guiAtlas);
-	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &sdr_pass, &tex_tiles);
-	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &sdr_font, &tex_font, 
+	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &shd_pass, &tex_entityAtlas);
+	auto &mat_gui = resManager.add<oak::graphics::GLMaterial>("mat_gui", std::hash<std::string>{}("mat_gui"), &shd_pass, &tex_guiAtlas);
+	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &shd_pass, &tex_tiles);
+	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &shd_font, &tex_font, 
 		[](const oak::graphics::GLMaterial& mat) {
 			mat.shader->setUniform1f("text_width", 0.5f);
 			mat.shader->setUniform1f("text_edge", 0.1f);
@@ -200,29 +200,6 @@ int main(int argc, char** argv) {
 	resManager.add<std::string>("txt_load", "Load Game");
 	resManager.add<std::string>("txt_options", "Options");
 	resManager.add<std::string>("txt_quit", "Quit Game");
-
-	auto& prefab = resManager.add<oak::Prefab>("player", &entityManager);
-	prefab.addComponent<oak::TransformComponent>(false, glm::vec3{ 216.0f, 128.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-	prefab.addComponent<oak::SpriteComponent>(true, std::hash<std::string>{}("spr_player"), 0, 0);
-	prefab.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 8.0f, 8.0f }, glm::vec2{ 0.0f, 0.0f });
-	prefab.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.025f * 0.2f, 0.4f, 0.2f, 0.1f);
-	prefab.addComponent<oak::TextComponent>(true, std::hash<std::string>{}("fnt_dejavu"), std::hash<std::string>{}("txt_play"));
-
-	auto& prefab0 = resManager.add<oak::Prefab>("block", &entityManager);
-	prefab0.addComponent<oak::SpriteComponent>(true, std::hash<std::string>{}("spr_block"), 0, 0);
-	prefab0.addComponent<oak::TransformComponent>(false, glm::vec3{ 256.0f, 512.0f, 0.0f }, 2.0f, glm::vec3{ 0.0f }, 0.0f);
-	prefab0.addComponent<oak::AABB2dComponent>(true, glm::vec2{ 128.0f, 32.0f }, glm::vec2{ 0.0f, 0.0f });
-	prefab0.addComponent<oak::PhysicsBody2dComponent>(false, glm::vec2{ 0.0f }, glm::vec2{ 0.0f }, 0.0f, 0.4f, 0.5f, 0.4f);
-
-	auto& fab_button = resManager.add<oak::Prefab>("gui/button", &entityManager);
-	fab_button.addComponent<oak::TransformComponent>(false, glm::vec3{ 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-	fab_button.addComponent<oak::SpriteComponent>(false, std::hash<std::string>{}("spr_button"), 0, 0);
-
-	auto& fab_tileEditor = resManager.add<oak::Prefab>("gui/tile_editor", &entityManager);
-	fab_tileEditor.addComponent<oak::TransformComponent>(false, glm::vec3{ 0.0f, 48.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-	fab_tileEditor.addComponent<oak::SpriteComponent>(false, std::hash<std::string>{}("spr_tile_editor"), 0, 0);
-
-	resManager.add<oak::Prefab>("input", &entityManager);
 
 	initBindings(L);
 	//add the tile system to the oak global table

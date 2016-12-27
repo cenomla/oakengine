@@ -1,8 +1,8 @@
 #include "lua_manager.h"
 
+#include "script/binding.h"
 #include "engine.h"
 #include "entity.h"
-#include "binding.h"
 
 namespace oak {
 

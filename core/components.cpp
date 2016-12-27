@@ -17,6 +17,11 @@ namespace oak::util {
 		pup(puper, comp.rotationAngle, ObjInfo{ "rotation_angle" } + info);
 	}
 
+	void pup(Puper &puper, TextComponent &comp, const ObjInfo &info) {
+		pup(puper, comp.font, ObjInfo{ "font" } + info);
+		pup(puper, comp.text, ObjInfo{ "text" } + info);
+	}
+
 	void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info) {
 		pup(puper, comp.halfExtent, ObjInfo{ "half_extent" } + info);
 		pup(puper, comp.offset, ObjInfo{ "offset" } + info);

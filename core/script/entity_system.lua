@@ -14,8 +14,8 @@ local entity_system = {
 	entities = {},
 	events = {},
 
-	create_entity = function(self, layer, prefab)
-		local e = self.manager.createEntity(layer, prefab)
+	create_entity = function(self, layer, prefab, table)
+		local e = self.manager.createEntity(layer, prefab, table)
 		if self.entity_metatable == nil then
 			local mt = getmetatable(e)
 			if mt ~= nil then
