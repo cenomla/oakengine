@@ -9,6 +9,9 @@ namespace oak::graphics {
 		GLBuffer(GLenum type);
 		~GLBuffer();
 
+		GLBuffer(GLBuffer &&other);
+		void operator=(GLBuffer &&other);
+
 		void bind() const;
 		void unbind() const;
 
@@ -25,7 +28,6 @@ namespace oak::graphics {
 	private:
 		GLenum type_;
 		GLuint bid_;
-		size_t size_;
 	};
 
 }

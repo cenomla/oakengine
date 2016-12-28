@@ -18,7 +18,7 @@ namespace oak::graphics {
 
 		void init() override;
 
-		void addObject(const glm::vec3 &position, float rotation, float scale, const Renderable *sprite);
+		void addObject(const glm::vec2 &position, int depth, uint32_t layer, float rotation, float scale, const Renderable *sprite);
 
 		void render();
 
@@ -26,16 +26,21 @@ namespace oak::graphics {
 		struct ObjectPos {
 			const Renderable *object;
 			glm::vec2 position;
-			int depth;
+			int depth; 
+			uint32_t layer;
 			float rotation, scale;
 
-			inline bool operator<(const ObjectPos &other) const { return depth < other.depth; }
+			inline bool operator<(const ObjectPos &other) const { 
+				return layer == other.layer ? 
+					depth < other.depth : 
+					layer < other.layer; 
+			}
 		};
 
 		struct Batch {
-			size_t start;
-			size_t count;
 			const GLMaterial *material;
+			size_t start, count;
+			uint32_t layer;
 		};
 
 		std::vector<ObjectPos> objects_;

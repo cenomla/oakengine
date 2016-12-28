@@ -21,7 +21,7 @@ void SpriteSystem::update() {
 	for (const auto& entity : cache_.entities()) {
 		const auto &tc = entity.getComponent<oak::TransformComponent>();
 		const auto &sc = entity.getComponent<oak::SpriteComponent>();
-		renderer.addObject(tc.position, tc.rotationAngle, tc.scale, &sc);
+		renderer.addObject(glm::vec2{ tc.position }, static_cast<int>(tc.position.z), entity.layer(), tc.rotationAngle, tc.scale, &sc);
 	}
 }
 
@@ -38,7 +38,7 @@ void TextSystem::update() {
 	for (const auto& entity : cache_.entities()) {
 		const auto &tc = entity.getComponent<oak::TransformComponent>();
 		const auto &tx = entity.getComponent<oak::TextComponent>();
-		renderer.addObject(tc.position, tc.rotationAngle, tc.scale, &tx);
+		renderer.addObject(glm::vec2{ tc.position }, static_cast<int>(tc.position.z) + 1, entity.layer(), tc.rotationAngle, tc.scale, &tx);
 	}
 }
 

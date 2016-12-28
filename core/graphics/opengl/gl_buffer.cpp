@@ -2,12 +2,22 @@
 
 namespace oak::graphics {
 
-	GLBuffer::GLBuffer(GLenum type) : type_{ type }, bid_{ 0 }, size_{ 0 } {
+	GLBuffer::GLBuffer(GLenum type) : type_{ type }, bid_{ 0 } {
 
 	}
 
 	GLBuffer::~GLBuffer() {
 		destroy();
+	}
+
+	GLBuffer::GLBuffer(GLBuffer &&other) : type_{ other.type_ }, bid_{ other.bid_ } { 
+		other.bid_ = 0;
+	}
+
+	void GLBuffer::operator=(GLBuffer &&other) {
+		type_ = other.type_;
+		bid_ = other.bid_;
+		other.bid_ = 0;
 	}
 
 	void GLBuffer::bind() const {

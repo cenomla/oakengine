@@ -129,7 +129,7 @@ namespace oak {
 
 		inline uint32_t index() const { return static_cast<uint32_t>(id_ & ~(uint64_t{ 1 } << 32)); }
 		inline uint32_t generation() const { return static_cast<uint32_t>((id_ >> 32) & ~(uint64_t{ 1 } << 24)); }
-		inline uint8_t layer() const { return static_cast<uint8_t>((id_ >> 56) & ~(uint64_t{ 1 } << 8)); }
+		inline uint32_t layer() const { return static_cast<uint32_t>((id_ >> 56) & ~(uint64_t{ 1 } << 8)); }
 		inline uint64_t id() const { return id_; }
 
 		inline void activate() { manager_->activateEntity(*this); }

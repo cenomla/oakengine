@@ -21,6 +21,7 @@
 #include <script/binding.h>
 #include <components.h>
 #include <resource_manager.h>
+#include <view_system.h>
 #include <event_queue.h>
 
 #include "binding.h"
@@ -49,6 +50,7 @@ int main(int argc, char** argv) {
 	oak::ResourceManager resManager{ engine };
 	oak::network::NetworkManager networkManager{ engine };
 	oak::EntityManager entityManager{ engine };
+	oak::ViewSystem viewSystem{ engine };
 	CollisionSystem collisionSystem{ engine };
 	TileSystem tileSystem{ engine, 8, 16 };
 	SpriteSystem spriteSystem{ engine };
@@ -58,6 +60,7 @@ int main(int argc, char** argv) {
 	engine.addSystem(&resManager);
 	engine.addSystem(&networkManager);
 	engine.addSystem(&entityManager);
+	engine.addSystem(&viewSystem);
 	engine.addSystem(&window);
 	engine.addSystem(&frameRenderer);
 	engine.addSystem(&luam);
@@ -150,9 +153,11 @@ int main(int argc, char** argv) {
 	//shaders
 	auto &shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
 	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
+	shd_pass.bindBlockIndex("MatrixBlock", 0);
 
 	auto &shd_font = resManager.add<oak::graphics::GLShader>("shd_font");
 	shd_font.create("core/graphics/shaders/font/opengl.vert", "core/graphics/shaders/font/opengl.frag");
+	shd_font.bindBlockIndex("MatrixBlock", 0);
 
 	//textures
 	auto &tex_entityAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_entityAtlas", GLenum{ GL_TEXTURE_2D });
@@ -201,6 +206,12 @@ int main(int argc, char** argv) {
 	resManager.add<std::string>("txt_options", "Options");
 	resManager.add<std::string>("txt_quit", "Quit Game");
 
+	//setup views
+	viewSystem.defineView(0, { 0 });
+	viewSystem.defineView(1, { 1 });
+	viewSystem.setView(0, oak::View{ 128, 0, 1280, 720 });
+	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
+
 	initBindings(L);
 	//add the tile system to the oak global table
 	lua_getglobal(L, "oak");
@@ -210,20 +221,6 @@ int main(int argc, char** argv) {
 
 	//load main lua script
 	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
-	
-	//setup view matrix
-	oak::graphics::UniformBufferObject uboData;
-	uboData.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
-	uboData.view = glm::mat4{ 1.0f };
-	uboData.model = glm::mat4{ 1.0f };
-
-	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
-	ubo.create();
-	ubo.bindBufferBase(0);
-
-	ubo.bind();
-	ubo.bufferData(sizeof(oak::graphics::UniformBufferObject), &uboData, GL_STREAM_DRAW);
-	ubo.unbind();
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
@@ -254,7 +251,7 @@ int main(int argc, char** argv) {
 			//physicsSystem.update(1.0f/60.0f);
 			accum -= 1.0f/60.0f; 
 		}
-
+		
 		//sumbit sprites and text to the entity renderer
 		spriteSystem.update();
 		textSystem.update();

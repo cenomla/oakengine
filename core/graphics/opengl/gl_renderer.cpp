@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "resource_manager.h"
+#include "view_system.h"
 #include "engine.h"
 
 namespace oak::graphics {
@@ -31,12 +32,13 @@ namespace oak::graphics {
 		vao_.unbind();
 	}
 
-	void GLRenderer::addObject(const glm::vec3 &position, float rotation, float scale, const Renderable *object) {
-		objects_.push_back({ object, glm::vec2{ position }, static_cast<int>(position.z), rotation, scale });
+	void GLRenderer::addObject(const glm::vec2 &position, int depth, uint32_t layer, float rotation, float scale, const Renderable *object) {
+		objects_.push_back({ object, position, depth, layer, rotation, scale });
 		vertexCount_ += object->getVertexCount();
 	}
 
 	void GLRenderer::render() {
+		//if there are no objects dont do anything
 		if (objects_.empty()) { return; }
 		//sort sprites by layer and material
 		std::sort(std::begin(objects_), std::end(objects_));
@@ -48,22 +50,26 @@ namespace oak::graphics {
 			void *buffer = vbo_.map(GL_WRITE_ONLY);
 			//a batch is a range of object with the same material
 			size_t index = 0;
-			size_t id = objects_.at(0).object->getMaterialId();//first objects material
-			Batch currentBatch{ index, 0, &Engine::inst().getSystem<ResourceManager>().require<GLMaterial>(id) }; //first batch
+			size_t id = objects_.at(0).object->getMaterialId();
+			uint32_t layer = objects_.at(0).layer;
+
+			auto& resManager = Engine::inst().getSystem<ResourceManager>();
+			Batch currentBatch{ &resManager.require<GLMaterial>(id), index, 0, layer }; //first batch
 			//iterate through the sorted object
-			for (const auto& op : objects_) {
+			for (const auto& it : objects_) {
 				//if the material is different use a different batch
-				if (id != op.object->getMaterialId()) {
+				if (id != it.object->getMaterialId() || layer != it.layer) {
 					index += currentBatch.count;
 					batches_.push_back(currentBatch);
-					id = op.object->getMaterialId();
-					currentBatch = Batch{ index, 0, &Engine::inst().getSystem<ResourceManager>().require<GLMaterial>(id) };
+					id = it.object->getMaterialId();
+					layer = it.layer;
+					currentBatch = Batch{ &resManager.require<GLMaterial>(id), index, 0, layer };
 				}
 				//stream data
-				op.object->draw(buffer, op.position.x, op.position.y, op.rotation, op.scale);
-				buffer = static_cast<char*>(buffer) + op.object->getVertexCount() * sizeof(Sprite::Vertex);
+				it.object->draw(buffer, it.position.x, it.position.y, it.rotation, it.scale);
+				buffer = static_cast<char*>(buffer) + it.object->getVertexCount() * sizeof(Sprite::Vertex);
 
-				currentBatch.count += op.object->getVertexCount() / 4;
+				currentBatch.count += it.object->getVertexCount() / 4;
 			}
 			batches_.push_back(currentBatch);
 			vbo_.unmap();
@@ -98,7 +104,10 @@ namespace oak::graphics {
 
 		vao_.bind();
 
+		auto &viewSystem = Engine::inst().getSystem<ViewSystem>();
+
 		for (const auto &batch : batches_) {
+			batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
 			batch.material->bind();
 			glDrawElements(GL_TRIANGLES, batch.count * 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.start * 24));
 		}

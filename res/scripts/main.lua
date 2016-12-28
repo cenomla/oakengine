@@ -62,9 +62,7 @@ oak.es.manager:create_prefab("block", {
 
 oak.es.manager:create_prefab("button", {
 	transform = {
-		position = {
-			z = 2.0
-		}
+		position = { z = 1.0 }
 	},
 	sprite = {
 		sprite = hash("spr_button")
@@ -73,7 +71,7 @@ oak.es.manager:create_prefab("button", {
 
 oak.es.manager:create_prefab("tile_editor", {
 	transform = {
-		position = { y = 48.0, z = 1.0 }
+		position = { y = 48.0 }
 	},
 	sprite = {
 		sprite = hash("spr_tile_editor")
@@ -86,7 +84,7 @@ oak.es:create_entity(0, "block", {})
 local e = oak.es:create_entity(0, "block", {})
 e:setTransform({ position = { x = 512, y = 496 } })
 
-local te = oak.es:create_entity(2, "tile_editor", require("gui/tile_editor"))
+local te = oak.es:create_entity(1, "tile_editor", require("gui/tile_editor"))
 
 e = oak.es:create_entity(1, "button", require("gui/button"))
 e.callback = function(button) te:on_press(button) end
