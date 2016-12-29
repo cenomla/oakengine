@@ -96,6 +96,20 @@ namespace oak::util {
 		}
 	}
 
+	void ByteBufferPuper::pup(std::string &data, const ObjInfo &info) {
+		if (io_ == PuperIo::OUT) {
+			buffer_->write(data.size());
+			for (size_t i = 0; i < data.size(); i++) {
+				buffer_->write(data[i]);
+			}
+		} else {
+			size_t size = buffer_->read<size_t>();
+			for (size_t i = 0; i < size; i++) {
+				data.push_back(buffer_->read<char>());
+			}
+		}
+	}
+
 	void ByteBufferPuper::pup(Entity &data, const ObjInfo &info) {
 		
 	}
@@ -111,6 +125,8 @@ namespace oak::util {
 	void pup(Puper &puper, float &data, const ObjInfo &info) { puper.pup(data, info); }
 	void pup(Puper &puper, double &data, const ObjInfo &info) { puper.pup(data, info); }
 	void pup(Puper &puper, bool &data, const ObjInfo &info) { puper.pup(data, info); }
+	void pup(Puper &puper, std::string &data, const ObjInfo &info) { puper.pup(data, info); }
+	void pup(Puper &puper, Entity &data, const ObjInfo &info) { puper.pup(data, info); }
 	
 	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info) {
 		puper.pup(data.x, ObjInfo{ "x" } + info);
@@ -128,8 +144,5 @@ namespace oak::util {
 		puper.pup(data.w, ObjInfo{ "w" } + info);
 	}
 
-	void pup(Puper &puper, Entity &data, const ObjInfo &info) {
-		puper.pup(data, info);
-	}
 
 }

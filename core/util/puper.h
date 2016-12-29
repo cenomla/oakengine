@@ -45,6 +45,7 @@ namespace oak::util {
 		virtual void pup(float &data, const ObjInfo &info) = 0;
 		virtual void pup(double &data, const ObjInfo &info) = 0;
 		virtual void pup(bool &data, const ObjInfo &info) = 0;
+		virtual void pup(std::string &data, const ObjInfo &info) = 0;
 		virtual void pup(Entity &data, const ObjInfo &info) = 0;
 	
 		inline void setIo(PuperIo io) { io_ = io; }
@@ -70,6 +71,7 @@ namespace oak::util {
 		void pup(float &data, const ObjInfo &info) override;
 		void pup(double &data, const ObjInfo &info) override;
 		void pup(bool &data, const ObjInfo &info) override;
+		void pup(std::string &data, const ObjInfo &info) override;
 		void pup(Entity &data, const ObjInfo &info) override;
 
 	private:
@@ -87,6 +89,7 @@ namespace oak::util {
 	void pup(Puper &puper, float &data, const ObjInfo &info);
 	void pup(Puper &puper, double &data, const ObjInfo &info);
 	void pup(Puper &puper, bool &data, const ObjInfo &info);
+	void pup(Puper &puper, std::string &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec3 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec4 &data, const ObjInfo &info);

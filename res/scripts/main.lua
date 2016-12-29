@@ -31,7 +31,7 @@ oak.es.manager:create_prefab("player", {
 	},
 	text = {
 		font = hash("fnt_dejavu"),
-		text = hash("txt_play")
+		text = "This be the Player!"
 	}
 })
 

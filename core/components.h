@@ -43,11 +43,11 @@ namespace oak {
 
 	struct TextComponent : public graphics::Renderable {
 		Resource<graphics::Font> font{ 0 };
-		Resource<std::string> text{ 0 };
+		std::string text;
 
-		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text.get(), x, y, rotation, 24.0f * scale); }
+		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text, x, y, rotation, 24.0f * scale); }
 		size_t getMaterialId() const override { return font.get().getMaterialId(); }
-		size_t getVertexCount() const override { return text.get().size() * 4; } 
+		size_t getVertexCount() const override { return text.size() * 4; } 
 	};
 
 	struct PhysicsBody2dComponent {
