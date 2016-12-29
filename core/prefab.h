@@ -30,6 +30,18 @@ namespace oak {
 			return static_cast<T*>(comp);
 		}
 
+		void* addComponent(bool shared, size_t tid) {
+			const auto *thandle = manager_->getComponentHandle(tid);
+			void *comp = MemoryManager::inst().allocate(thandle->size());
+			thandle->construct(comp);
+			//ensure size
+			if (tid >= storage_.size()) {
+				storage_.resize(tid + 1);
+			}
+			storage_[tid] = { shared, comp };
+			return comp;
+		}
+
 		void clear();
 	private:
 		std::vector<std::pair<bool, void*>> storage_;

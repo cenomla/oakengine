@@ -36,9 +36,6 @@ namespace oak {
 		int animFrameX = 0;
 		int animFrameY = 0;
 
-		SpriteComponent() = default;
-		SpriteComponent(const Resource<graphics::Sprite> &s, int ax, int ay) : sprite{ s }, animFrameX{ ax }, animFrameY{ ay } {}
-
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale); }
 		size_t getMaterialId() const override { return sprite.get().getMaterialId(); }
 		size_t getVertexCount() const override { return 4; }
@@ -47,9 +44,6 @@ namespace oak {
 	struct TextComponent : public graphics::Renderable {
 		Resource<graphics::Font> font{ 0 };
 		Resource<std::string> text{ 0 };
-
-		TextComponent() = default;
-		TextComponent(const Resource<graphics::Font> &f, const Resource<std::string> &t) : font{ f }, text{ t } {}
 
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text.get(), x, y, rotation, 24.0f * scale); }
 		size_t getMaterialId() const override { return font.get().getMaterialId(); }

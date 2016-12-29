@@ -11,23 +11,6 @@
 
 namespace oak::luah {
 
-	template<class T>
-	void loadPrefabComponent(lua_State *L, const std::string &name, Prefab &prefab) {
-		lua_getfield(L, -1, name.c_str());
-		lua_getfield(L, -1, "shared");
-		bool shared = false;
-		if (!isNil(L, -1)) {
-			shared = toValue<bool>(L, -1);
-		}
-		lua_pop(L, 1);
-
-		T *comp = prefab.addComponent<T>(shared);
-		LuaPuper puper{ L, -1 };
-		puper.setIo(util::PuperIo::IN);
-		pup(puper, *comp, {});
-		lua_pop(L, 1);
-	}
-
 	//void create_prefab(manager, name, table)
 	int c_create_prefab(lua_State *L) {
 		EntityManager &manager = toValue<EntityManager&>(L, 1);
@@ -38,17 +21,24 @@ namespace oak::luah {
 		Prefab &prefab = Engine::inst().getSystem<ResourceManager>().add<Prefab>(name, &manager);
 
 		for (const auto &k : keys) {
-			if (k == "transform") {
-				loadPrefabComponent<TransformComponent>(L, k, prefab);
-			} else if (k == "physics_body_2d") {
-				loadPrefabComponent<PhysicsBody2dComponent>(L, k, prefab);
-			} else if (k == "aabb_2d") {
-				loadPrefabComponent<AABB2dComponent>(L, k, prefab);
-			} else if (k == "sprite") {
-				loadPrefabComponent<SpriteComponent>(L, k, prefab);
-			} else if (k == "text") {
-				loadPrefabComponent<TextComponent>(L, k, prefab);
+			lua_getfield(L, -1, k.c_str());
+			//check whether or not this component should be shared default no
+			lua_getfield(L, -1, "shared");
+			bool shared = false;
+			if (!isNil(L, -1)) {
+				shared = toValue<bool>(L, -1);
 			}
+			lua_pop(L, 1);
+
+			//deserialize the component
+			size_t tid = manager.getComponentId(k);
+			void *comp = prefab.addComponent(shared, tid);
+
+			LuaPuper puper{ L, -1 };
+			puper.setIo(util::PuperIo::IN);
+			manager.getComponentHandle(tid)->pupObject(puper, comp, {});
+			
+			lua_pop(L, 1);
 		}
 
 		lua_settop(L, 0);
@@ -161,9 +151,13 @@ namespace oak::luah {
 
 	//entity createEntity(layer, name, table)
 	int c_entityManager_createEntity(lua_State *L) {
+		int argc = lua_gettop(L);
 		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
-		std::string name = toValue<std::string>(L, 2);
-		lua_rotate(L, -3, 1);
+		std::string name;
+		if (argc == 3) {
+			name = toValue<std::string>(L, 2);
+		}
+		lua_rotate(L, -argc, 1);
 		lua_settop(L, 1);
 		
 		lua_newtable(L);
@@ -177,12 +171,15 @@ namespace oak::luah {
 		lua_setmetatable(L, -2);
 		lua_setmetatable(L, -2);
 
-		const auto& prefab = Engine::inst().getSystem<ResourceManager>().require<Prefab>(name);
-		Entity e = prefab.createInstance(layer);
+		Entity e{ 0, nullptr };
+		if (argc == 3) {
+			e = Engine::inst().getSystem<ResourceManager>().require<Prefab>(name).createInstance(layer);
+		} else {
+			e = Engine::inst().getSystem<EntityManager>().createEntity(layer);
+		}
 		pushValue(L, e);
 
 		lua_setfield(L, -2, "_id");
-		
 
 		return 1;
 	}

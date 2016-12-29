@@ -1,8 +1,7 @@
 package.path = "res/scripts/?.lua;res/scripts/?/init.lua" .. package.path
 print(package.path)
 
-oak.es.manager:create_prefab("input", {})
-oak.input = oak.es:create_entity(255, "input", require("input"))
+oak.input = oak.es:create_entity(255, require("input"))
 
 oak.es.manager:create_prefab("player", {
 	transform = {

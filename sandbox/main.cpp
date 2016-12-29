@@ -143,11 +143,11 @@ int main(int argc, char** argv) {
 	});
 
 	//register components with the entity manager
-	entityManager.addComponentHandle<oak::TransformComponent>();
-	entityManager.addComponentHandle<oak::SpriteComponent>();
-	entityManager.addComponentHandle<oak::TextComponent>();
-	entityManager.addComponentHandle<oak::AABB2dComponent>();
-	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>();
+	entityManager.addComponentHandle<oak::TransformComponent>("transform");
+	entityManager.addComponentHandle<oak::SpriteComponent>("sprite");
+	entityManager.addComponentHandle<oak::TextComponent>("text");
+	entityManager.addComponentHandle<oak::AABB2dComponent>("aabb_2d");
+	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>("physics_body_2d");
 
 	//create resources
 	//shaders
