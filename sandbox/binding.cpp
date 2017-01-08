@@ -2,8 +2,10 @@
 
 #include <script/luah.h>
 #include <script/lua_puper.h>
+#include <engine.h>
 
 #include "tile_system.h"
+#include "events.h"
 
 using namespace oak::luah;
 
@@ -60,6 +62,25 @@ void initBindings(lua_State *L) {
 	addFunctionToMetatable(L, "chunk", "setTile", c_setTile);
 
 	addFunctionToMetatable(L, "tile_system", "getChunk", c_getChunk);
+
+	auto &engine = oak::Engine::inst();
+
+	engine.getEventManager().add<TileCollisionEvent>([L](TileCollisionEvent evt) {
+		oak::luah::getGlobal(L, "oak.es.send_event");
+		oak::luah::getGlobal(L, "oak.es");
+		oak::luah::pushValue(L, "tile_collide");
+		
+		lua_newtable(L);
+		oak::LuaPuper puper{ L, -2 };
+		pup(puper, evt, {});
+
+		oak::luah::call(L, 3, 0);
+	});
+	//add the tile system to the oak global table
+	lua_getglobal(L, "oak");
+	oak::luah::pushValue(L, engine.getSystem<TileSystem>());
+	lua_setfield(L, -2, "ts");
+	lua_pop(L, 1);
 }
 
 namespace oak::luah {

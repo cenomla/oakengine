@@ -3,7 +3,45 @@ print(package.path)
 
 oak.input = oak.es:create_entity(255, require("input"))
 
-oak.es.manager:create_prefab("player", {
+oak.load_shader({
+	name = "shd_test",
+	path = "core/graphics/shaders/pass2d"
+})
+
+oak.load_texture({
+	name = "tex_test",
+	path = "res/textures/character",
+	flags = 1
+})
+
+oak.load_atlas({
+	name = "atlas_test",
+	textures = {
+		"res/textures/character", "res/textures/button", "res/textures/block", size = 3
+	},
+	extent = {
+		x = 512,
+		y = 512
+	},
+	flags = 1
+})
+
+oak.load_material({
+	name = "mat_test",
+	shader = "shd_test",
+	texture = "atlas_test"
+})
+
+oak.load_sprite({
+	name = "spr_test",
+	material = "mat_test",
+	center = { x = 16.0, y = 16.0 },
+	extent = { x = 32.0, y = 32.0 },
+	atlas = "atlas_test",
+	path = "res/textures/character"
+})
+
+oak.es:create_prefab("player", {
 	transform = {
 		position = {
 			x = 216.0,
@@ -13,13 +51,13 @@ oak.es.manager:create_prefab("player", {
 	},
 	sprite = {
 		shared = true,
-		sprite = hash("spr_player")
+		sprite = hash("spr_test")
 	},
 	aabb_2d = {
 		shared = true,
 		half_extent = {
-			x = 8.0, 
-			y = 8.0	
+			x = 16.0, 
+			y = 16.0	
 		}
 	},
 	physics_body_2d = {
@@ -31,11 +69,12 @@ oak.es.manager:create_prefab("player", {
 	},
 	text = {
 		font = hash("fnt_dejavu"),
-		text = "This be the Player!"
+		text = "This be the Player!",
+		offset = { x = -96.0, y = 8.0 }
 	}
 })
 
-oak.es.manager:create_prefab("block", {
+oak.es:create_prefab("block", {
 	transform = {
 		position = {
 			x = 256.0,
@@ -59,7 +98,7 @@ oak.es.manager:create_prefab("block", {
 	}
 })
 
-oak.es.manager:create_prefab("button", {
+oak.es:create_prefab("button", {
 	transform = {
 		position = { z = 1.0 }
 	},
@@ -68,7 +107,7 @@ oak.es.manager:create_prefab("button", {
 	}
 })
 
-oak.es.manager:create_prefab("tile_editor", {
+oak.es:create_prefab("tile_editor", {
 	transform = {
 		position = { y = 48.0 }
 	},

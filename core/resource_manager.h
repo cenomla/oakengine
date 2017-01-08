@@ -15,10 +15,10 @@ namespace oak {
 		virtual ~ResourceListHandlerBase() {}
 	};
 
-	template<typename T>
+	template<class T>
 	class ResourceListHandler : public ResourceListHandlerBase {
 	public:
-		template<typename... TArgs>
+		template<class... TArgs>
 		T* addResource(size_t id, TArgs&&... args) {
 			auto it = resources_.insert_or_assign(id, T{ std::forward<TArgs>(args)... });
 			return &it.first->second;
@@ -53,7 +53,7 @@ namespace oak {
 			}
 		}
 
-		template<typename T, typename... TArgs>
+		template<class T, class... TArgs>
 		T& add(const std::string &name, TArgs&&... args) {
 			size_t tid = util::type_id<Resource, T>::id;
 
@@ -68,13 +68,8 @@ namespace oak {
 			return *plh->addResource(std::hash<std::string>{}(name), std::forward<TArgs>(args)...);
 		}
 
-		template<typename T>
-		const T& require(const std::string &name) {
-			return require<T>(std::hash<std::string>{}(name));
-		}
-
-		template<typename T>
-		const T& require(size_t id) {
+		template<class T>
+		const T* try_require(size_t id) {
 			size_t tid = util::type_id<Resource, T>::id;
 			
 			if (tid < resourceHandles_.size() && resourceHandles_.at(tid).ptr != nullptr) {
@@ -82,11 +77,28 @@ namespace oak {
 
 				const auto pres = plh->getResource(id);
 				if (pres != nullptr) {
-					return *pres;
+					return pres;
 				}
 			}
+
+			return nullptr;
+		}
+
+		template<class T>
+		const T& require(size_t id) {
+			const auto ptr = try_require<T>(id);
+
+			if (ptr != nullptr) {
+				return *ptr;
+			}
+
 			log::cout << "failed to find resource: " << id << std::endl;
 			abort();
+		}
+
+		template<class T>
+		const T& require(const std::string &name) {
+			return require<T>(std::hash<std::string>{}(name));
 		}
 
 	private:

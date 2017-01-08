@@ -24,15 +24,11 @@ void pup(oak::util::Puper &puper, Tile &tile, const oak::util::ObjInfo &info) {
 	pup(puper, tile.flags, ObjInfo{"flags"} + info);
 }
 
-Chunk::Chunk(int x, int y, int width, int height) : position_{ x, y }, extent_{ width, height } {
+Chunk::Chunk(size_t materialId, int x, int y, int width, int height) : materialId_{ materialId }, tileCount_{ 0 }, position_{ x, y }, extent_{ width, height } { }
 
-}
-
-size_t Chunk::draw(void *buffer) const {
+void Chunk::draw(void *buffer, float x, float y, float rotation, float scale) const {
 	Tile::Vertex *data = static_cast<Tile::Vertex*>(buffer);
 	size_t offset = 0;
-
-	size_t tilesDrawn = 0;
 
 	for (size_t i = 0; i < 256; i++) {
 		const Tile& tile = tiles_[i];
@@ -45,13 +41,7 @@ size_t Chunk::draw(void *buffer) const {
 			data[offset++] = Tile::Vertex{ tx, ty, dx, dy };
 			data[offset++] = Tile::Vertex{ tx + tile.width, ty, dx + tile.dw, dy };
 			data[offset++] = Tile::Vertex{ tx + tile.width, ty + tile.height, dx + tile.dw, dy + tile.dh };
-			data[offset++] = Tile::Vertex{ tx + tile.width, ty + tile.height, dx + tile.dw, dy + tile.dh };
 			data[offset++] = Tile::Vertex{ tx, ty + tile.height, dx, dy + tile.dh };
-			data[offset++] = Tile::Vertex{ tx, ty, dx, dy };
-		
-			tilesDrawn++;
 		}
 	}
-
-	return tilesDrawn;
 }

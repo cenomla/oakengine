@@ -36,16 +36,21 @@ namespace oak {
 		int animFrameX = 0;
 		int animFrameY = 0;
 
-		void draw(void *buffer, float x, float y, float rotation, float scale) const override { sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale); }
+		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 
+			sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale); 
+		}
 		size_t getMaterialId() const override { return sprite.get().getMaterialId(); }
 		size_t getVertexCount() const override { return 4; }
 	};
 
 	struct TextComponent : public graphics::Renderable {
 		Resource<graphics::Font> font{ 0 };
-		std::string text;
+		std::string text{ "" };
+		glm::vec2 offset{ 0.0f };
 
-		void draw(void *buffer, float x, float y, float rotation, float scale) const override { font.get().draw(buffer, text, x, y, rotation, 24.0f * scale); }
+		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 
+			font.get().draw(buffer, text, x + offset.x, y + offset.y, rotation, 24.0f * scale);
+		}
 		size_t getMaterialId() const override { return font.get().getMaterialId(); }
 		size_t getVertexCount() const override { return text.size() * 4; } 
 	};

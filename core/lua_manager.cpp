@@ -12,9 +12,7 @@ namespace oak {
 
 	void LuaManager::init() {
 		L_ = luah::createState();
-		luah::registerBindings(L_);
-
-
+		
 		//create the global oak table
 		lua_newtable(L_);
 		//load the entity system script and add it to the oak table
@@ -24,6 +22,8 @@ namespace oak {
 		lua_setfield(L_, -2, "es");
 
 		lua_setglobal(L_, "oak");
+		
+		luah::registerBindings(L_);
 	}
 
 	void LuaManager::destroy() {

@@ -26,7 +26,7 @@ namespace oak::graphics {
 		void setUniform1ui(const std::string &name, const GLuint value) const;
 		void setUniform1f(const std::string &name, const GLfloat value) const;
 
-		void bindBlockIndex(const std::string &name, GLuint binding);
+		void bindBlockIndex(const std::string &name, GLuint binding) const;
 
 		inline GLuint getId() const { return pid_; }
 

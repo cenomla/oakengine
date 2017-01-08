@@ -1,14 +1,15 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <graphics/renderable.h>
 
 struct Tile {
 	static constexpr uint64_t VISIBLE = 0x00000001;
 	static constexpr uint64_t SOLID = 0x00000002;
-	float dx, dy, dw, dh, offsetX, offsetY, width, height;
-	int animFrameX, animFrameY;
-	uint32_t material;
-	uint32_t flags;
+	float dx = 0.0f, dy = 0.0f, dw = 0.0f, dh = 0.0f, offsetX = 0.0f, offsetY = 0.0f, width = 0.0f, height = 0.0f;
+	int animFrameX = 0, animFrameY = 0;
+	uint32_t material = 0;
+	uint32_t flags = 0;
 
 	struct Vertex {
 		float x, y, dx, dy;
@@ -22,20 +23,31 @@ namespace oak::util {
 
 void pup(oak::util::Puper &puper, Tile &tile, const oak::util::ObjInfo &info);
 
-class Chunk {
+class Chunk : public oak::graphics::Renderable {
 public:
-	Chunk(int x, int y, int width, int height);
+	Chunk(size_t materialId, int x, int y, int width, int height);
 
-	size_t draw(void *buffer) const;
+	void draw(void *buffer, float x, float y, float rotation, float scale) const override;
 
-	inline void setTile(int x, int y, const Tile& tile) { tiles_[y * 16 + x] = tile; }
+	inline void setTile(int x, int y, const Tile& tile) { 
+		Tile &t = tiles_[y * 16 + x];
+		if ((t.flags & Tile::VISIBLE) != (tile.flags & Tile::VISIBLE)) {
+			tileCount_ += (tile.flags & Tile::VISIBLE)  ? 1 : -1;
+		}
+		t = tile;
+	}
 	inline const Tile& getTile(int x, int y) const { return tiles_[y * 16 + x]; }
 	inline Tile& getTile(int x, int y) { return tiles_[y * 16 + x]; }
 
 	inline const glm::vec2& getPosition() const { return position_; }
 	inline const glm::vec2& getExtent() const { return extent_; }
+
+	inline size_t getMaterialId() const override { return materialId_; }
+	inline size_t getVertexCount() const override { return tileCount_ * 4; }
 private:
 	Tile tiles_[256];
+	size_t materialId_;
+	size_t tileCount_;
 	glm::vec2 position_;
 	glm::vec2 extent_;
 };

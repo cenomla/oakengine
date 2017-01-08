@@ -13,7 +13,7 @@ public:
 	TileSystem(oak::Engine &engine, int numChunks, int tileSize);
 
 	void init() override;
-	void render(const oak::graphics::GLMaterial &mat);
+	void update();
 
 	Chunk& getChunk(int x, int y);
 	const Chunk& getChunk(int x, int y) const;
@@ -21,6 +21,4 @@ public:
 private:
 	std::vector<Chunk> chunks_;
 	int numChunks_, tileSize_;
-	oak::graphics::GLVertexArray vao_;
-	oak::graphics::GLBuffer vbo_;
 };

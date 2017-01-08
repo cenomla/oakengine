@@ -9,8 +9,8 @@ namespace oak::graphics {
 
 	struct GLMaterial {
 		size_t id;
-		GLShader *shader;
-		GLTexture *texture;
+		const GLShader *shader;
+		const GLTexture *texture;
 		std::function<void (const GLMaterial&)> bindFun;
 
 		inline void bind() const {

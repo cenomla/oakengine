@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 #include <string>
 #include <glm/glm.hpp>
 
@@ -94,5 +95,23 @@ namespace oak::util {
 	void pup(Puper &puper, glm::vec3 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec4 &data, const ObjInfo &info);
 	void pup(Puper &puper, Entity &data, const ObjInfo &info);
+	
+	template<class T>
+	void pup(Puper &puper, std::vector<T> &data, const ObjInfo &info) {
+		if (puper.getIo() == PuperIo::OUT) {
+			size_t size = data.size();
+			pup(puper, size, ObjInfo{ "size" } + info);
+			for (size_t i = 0; i < size; i++) {
+				pup(puper, data[i], ObjInfo{ std::to_string(i) } + info);
+			}
+		} else {
+			size_t size = 0;
+			pup(puper, size, ObjInfo{ "size" } + info);
+			data.resize(size);
+			for (size_t i = 0; i < size; i++) {
+				pup(puper, data[i], ObjInfo{ std::to_string(i) } + info);
+			}
+		}
+	}
 
 }

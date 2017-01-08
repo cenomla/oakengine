@@ -144,5 +144,4 @@ namespace oak::util {
 		puper.pup(data.w, ObjInfo{ "w" } + info);
 	}
 
-
 }

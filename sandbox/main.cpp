@@ -65,82 +65,10 @@ int main(int argc, char** argv) {
 	engine.addSystem(&frameRenderer);
 	engine.addSystem(&luam);
 	engine.addSystem(&collisionSystem);
-	engine.addSystem(&tileSystem);
 	engine.addSystem(&spriteSystem);
 	engine.addSystem(&textSystem);
+	engine.addSystem(&tileSystem);
 	engine.addSystem(&entityRenderer);
-
-	//set up event listeners that push input events to lua
-	lua_State *L = luam.getState();
-	engine.getEventManager().add<oak::KeyEvent>([L](oak::KeyEvent evt) {
-		oak::luah::getGlobal(L, "oak.es.emit_event");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "key_press");
-		lua_newtable(L);
-		oak::LuaPuper puper{ L, -2 };
-		pup(puper, evt, {});
-		oak::luah::call(L, 3, 0);
-	});
-
-	engine.getEventManager().add<oak::ButtonEvent>([L](oak::ButtonEvent evt){
-		oak::luah::getGlobal(L, "oak.es.emit_event");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "button_press");
-		lua_newtable(L);
-		oak::LuaPuper puper{ L, -2 };
-		pup(puper, evt, {});
-		oak::luah::call(L, 3, 0);
-	});
-	
-	engine.getEventManager().add<oak::MouseMoveEvent>([L](oak::MouseMoveEvent evt) {
-		oak::luah::getGlobal(L, "oak.es.emit_event");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "mouse_move");
-		lua_newtable(L);
-		oak::LuaPuper puper{ L, -2 };
-		pup(puper, evt, {});
-		oak::luah::call(L, 3, 0);
-	});
-
-	engine.getEventManager().add<oak::EntityActivateEvent>([L](const oak::EntityActivateEvent &evt) {
-		oak::luah::getGlobal(L, "oak.es.send_message");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "on_activate");
-		oak::luah::pushValue(L, evt.entity.index());
-		oak::luah::call(L, 3, 0);
-	});
-
-	engine.getEventManager().add<oak::EntityDeactivateEvent>([L](const oak::EntityDeactivateEvent &evt) {
-		oak::luah::getGlobal(L, "oak.es.send_message");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "on_deactivate");
-		oak::luah::pushValue(L, evt.entity.index());
-		oak::luah::call(L, 3, 0);
-	});
-
-	engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
-		oak::luah::getGlobal(L, "oak.es.send_event");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "entity_collide");
-
-		lua_newtable(L);
-		oak::LuaPuper puper{ L, -2 };
-		pup(puper, evt, {});
-
-		oak::luah::call(L, 3, 0);
-	});
-
-	engine.getEventManager().add<TileCollisionEvent>([L](TileCollisionEvent evt) {
-		oak::luah::getGlobal(L, "oak.es.send_event");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "tile_collide");
-		
-		lua_newtable(L);
-		oak::LuaPuper puper{ L, -2 };
-		pup(puper, evt, {});
-
-		oak::luah::call(L, 3, 0);
-	});
 
 	//register components with the entity manager
 	entityManager.addComponentHandle<oak::TransformComponent>("transform");
@@ -179,7 +107,6 @@ int main(int argc, char** argv) {
 	//materials
 	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &shd_pass, &tex_entityAtlas);
 	auto &mat_gui = resManager.add<oak::graphics::GLMaterial>("mat_gui", std::hash<std::string>{}("mat_gui"), &shd_pass, &tex_guiAtlas);
-	auto &mat_tiles = resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &shd_pass, &tex_tiles);
 	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &shd_font, &tex_font, 
 		[](const oak::graphics::GLMaterial& mat) {
 			mat.shader->setUniform1f("text_width", 0.5f);
@@ -189,6 +116,7 @@ int main(int argc, char** argv) {
 			mat.shader->setUniform1f("border_edge", 0.2f);
 			mat.shader->setVector3f("border_color", glm::vec3{ 0.0f });
 		});
+	resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &shd_pass, &tex_tiles);
 	
 	//fonts
 	auto &fnt_dejavu = resManager.add<oak::graphics::Font>("fnt_dejavu", mat_font.id);
@@ -200,27 +128,17 @@ int main(int argc, char** argv) {
 	resManager.add<oak::graphics::Sprite>("spr_button", mat_gui.id, 0.0f, 0.0f, 48.0f, 48.0f, tex_guiAtlas.getTextureRegion("res/textures/button.png"), 2);
 	resManager.add<oak::graphics::Sprite>("spr_tile_editor", mat_gui.id, 0.0f, 0.0f, 256.0f, 512.0f, tex_guiAtlas.getTextureRegion("res/textures/tile_editor.png"));
 
-	//strings
-	resManager.add<std::string>("txt_play", "Start Game");
-	resManager.add<std::string>("txt_load", "Load Game");
-	resManager.add<std::string>("txt_options", "Options");
-	resManager.add<std::string>("txt_quit", "Quit Game");
-
 	//setup views
 	viewSystem.defineView(0, { 0 });
 	viewSystem.defineView(1, { 1 });
 	viewSystem.setView(0, oak::View{ 128, 0, 1280, 720 });
 	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
 
+	//setup lua bindings
+	lua_State *L = luam.getState();
 	initBindings(L);
-	//add the tile system to the oak global table
-	lua_getglobal(L, "oak");
-	oak::luah::pushValue(L, tileSystem);
-	lua_setfield(L, -2, "ts");
-	lua_pop(L, 1);
-
 	//load main lua script
-	oak::luah::loadScript(luam.getState(), "res/scripts/main.lua");
+	oak::luah::loadScript(L, "res/scripts/main.lua");
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
@@ -252,11 +170,17 @@ int main(int argc, char** argv) {
 			accum -= 1.0f/60.0f; 
 		}
 		
-		//sumbit sprites and text to the entity renderer
+
+		//hack view to follow player
+		oak::Entity player{ 1, 0, 0, &entityManager };
+		auto &tc = player.getComponent<oak::TransformComponent>();
+		viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });
+
+		//sumbit sprites and text to the renderer
 		spriteSystem.update();
 		textSystem.update();
-		//render tiles
-		tileSystem.render(mat_tiles);
+		//sumbit chunks to the renderer
+		tileSystem.update();
 		//render entities
 		entityRenderer.render();
 		//swap buffers, clear buffer check for opengl errors

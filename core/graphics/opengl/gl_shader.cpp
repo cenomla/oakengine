@@ -85,7 +85,7 @@ namespace oak::graphics {
 		glUniform1f(locations_.at(name), value);
 	}
 
-	void GLShader::bindBlockIndex(const std::string &name, GLuint binding) {
+	void GLShader::bindBlockIndex(const std::string &name, GLuint binding) const {
 		GLuint index = glGetUniformBlockIndex(pid_, name.c_str());
 		glUniformBlockBinding(pid_, index, binding);
 	}

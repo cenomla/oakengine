@@ -1,6 +1,7 @@
 #include "luah.h"
 
 #include <iostream>
+#include <cctype>
 
 #include "log.h"
 
@@ -151,7 +152,12 @@ namespace oak {
 		lua_pushvalue(L, idx);
 
 		while ((len = table.find('.', pos)) != std::string::npos) {
-			lua_getfield(L, -1, table.substr(pos, len - pos).c_str());
+			const std::string &token = table.substr(pos, len - pos);
+			if (!isdigit(token.at(0))) {
+				lua_getfield(L, -1, token.c_str());
+			} else {
+				lua_geti(L, -1, std::stoi(token) + 1);
+			}
 
 			pos = len + 1;
 			count++;
@@ -164,7 +170,12 @@ namespace oak {
 			}
 		}
 
-		lua_getfield(L, -1, table.substr(pos, table.size()).c_str());
+		const std::string &token = table.substr(pos, table.size());
+		if (!isdigit(token.at(0))) {
+			lua_getfield(L, -1, token.c_str());
+		} else {
+			lua_geti(L, -1, std::stoi(token) + 1);
+		}
 		lua_rotate(L, -(count + 2), 1);
 		lua_pop(L, count + 1);
 	}

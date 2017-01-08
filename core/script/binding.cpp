@@ -2,14 +2,214 @@
 
 #include <string>
 
+#include "graphics/opengl/gl_shader.h"
+#include "graphics/opengl/gl_texture.h"
+#include "graphics/opengl/gl_texture_atlas.h"
+#include "graphics/opengl/gl_material.h"
 #include "util/puper.h"
 #include "script/lua_puper.h"
 #include "resource_manager.h"
+#include "events.h"
 #include "components.h"
 #include "engine.h"
 #include "prefab.h"
 
 namespace oak::luah {
+
+	struct LuaShader {
+		std::string name;
+		std::string path;
+	};
+
+	void pup(util::Puper &puper, LuaShader &data, const util::ObjInfo &info) {
+		using namespace util;
+		pup(puper, data.name, ObjInfo{ "name" } + info);
+		pup(puper, data.path, ObjInfo{ "path" } + info);
+	}
+
+	struct LuaTexture {
+		std::string name;
+		std::string path;
+		uint32_t flags = 0;
+	};
+
+	void pup(util::Puper &puper, LuaTexture &data, const util::ObjInfo &info) {
+		using namespace util;
+		pup(puper, data.name, ObjInfo{ "name" } + info);
+		pup(puper, data.path, ObjInfo{ "path" } + info);
+		pup(puper, data.flags, ObjInfo{ "flags" } + info);
+	}
+
+	struct LuaAtlas {
+		std::string name;
+		std::vector<std::string> paths;
+		glm::vec2 extent{ 0.0f };
+		uint32_t flags = 0;
+	};
+
+	void pup(util::Puper &puper, LuaAtlas &data, const util::ObjInfo &info) {
+		using namespace util;
+		pup(puper, data.name, ObjInfo{ "name" } + info);
+		pup(puper, data.paths, ObjInfo{ "textures" } + info);
+		pup(puper, data.extent, ObjInfo{ "extent" } + info);
+		pup(puper, data.flags, ObjInfo{ "flags" } + info);
+	}
+
+	struct LuaMaterial {
+		std::string name;
+		std::string shader;
+		std::string texture;
+	};
+
+	void pup(util::Puper &puper, LuaMaterial &data, const util::ObjInfo &info) {
+		using namespace util;
+		pup(puper, data.name, ObjInfo{ "name" } + info);
+		pup(puper, data.shader, ObjInfo{ "shader" } + info);
+		pup(puper, data.texture, ObjInfo{ "texture" } + info);
+	}
+
+	struct LuaFont {
+		std::string name;
+		std::string material;
+		std::string path;
+	};
+
+	void pup(util::Puper &puper, LuaFont &data, const util::ObjInfo &info) {
+		using namespace util;
+		pup(puper, data.name, ObjInfo{ "name" } + info);
+		pup(puper, data.material, ObjInfo{ "material" } + info);
+		pup(puper, data.path, ObjInfo{ "path" } + info);
+	}
+
+	struct LuaSprite {
+		std::string name;
+		std::string material;
+		glm::vec2 center{ 0.0f }, extent{ 0.0f }, draw{ 0.0f }, drawExtent{ 1.0f };
+		std::string atlas;
+		std::string path;
+		int animFramesX = 1, animFramesY = 1;
+	};
+
+	void pup(util::Puper &puper, LuaSprite &data, const util::ObjInfo &info) {
+		using namespace util;
+		pup(puper, data.name, ObjInfo{ "name" } + info);
+		pup(puper, data.material, ObjInfo{ "material" } + info);
+		pup(puper, data.center, ObjInfo{ "center" } + info);
+		pup(puper, data.extent, ObjInfo{ "extent" } + info);
+		pup(puper, data.draw, ObjInfo{ "draw_position" } + info);
+		pup(puper, data.drawExtent, ObjInfo{ "draw_extent" } + info);
+		pup(puper, data.atlas, ObjInfo{ "atlas" } + info);
+		pup(puper, data.path, ObjInfo{ "path" } + info);
+		pup(puper, data.animFramesX, ObjInfo{ "animframes_x" } + info);
+		pup(puper, data.animFramesY, ObjInfo{ "animframes_y" } + info);
+	}
+
+	//void load_shader(table)
+	int c_resource_load_shader(lua_State *L) {
+		LuaShader data;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, data, {});
+
+		auto &shader = Engine::inst().getSystem<ResourceManager>().add<graphics::GLShader>(data.name);
+		shader.create(data.path + "/opengl.vert", data.path + "/opengl.frag");
+
+		return 0;
+	}
+
+	//void load_texture(table)
+	int c_resource_load_texture(lua_State *L) {
+		LuaTexture data;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, data, {});
+
+		auto &texture = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTexture>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_LINEAR });
+		texture.create(data.path + ".png");
+	
+		return 0;
+	}
+
+	//void load_atlas(table)
+	int c_resource_load_atlas(lua_State *L) {
+		LuaAtlas data;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, data, {});
+
+		auto &atlas = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTextureAtlas>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_LINEAR });
+		for (auto &it : data.paths) {
+			atlas.addTexture(it + ".png");
+		}
+		atlas.bake(static_cast<int>(data.extent.x), static_cast<int>(data.extent.y));
+	
+		return 0;
+	}
+
+	//void load_material(table)
+	int c_resource_load_material(lua_State *L) {
+		LuaMaterial data;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, data, {});
+
+		auto &resManager = Engine::inst().getSystem<ResourceManager>();
+
+		auto shader = resManager.try_require<graphics::GLShader>(std::hash<std::string>{}(data.shader));
+		const graphics::GLTexture *texture = resManager.try_require<graphics::GLTextureAtlas>(std::hash<std::string>{}(data.texture));
+		if (texture == nullptr) {
+			texture = resManager.try_require<graphics::GLTexture>(std::hash<std::string>{}(data.texture));
+		}
+
+		if (shader == nullptr || texture == nullptr) {
+			log::cout << "invalid material: " << data.name << std::endl;
+			abort();
+		}
+
+		resManager.add<graphics::GLMaterial>(data.name, std::hash<std::string>{}(data.name), shader, texture);
+
+		return 0;
+	}
+
+	//void load_font(table)
+	int c_resource_load_font(lua_State *L) {
+		LuaFont data;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, data, {});
+
+		auto &font = Engine::inst().getSystem<ResourceManager>().add<graphics::Font>(data.name, std::hash<std::string>{}(data.material));
+		font.create(data.path + "/glyphs.fnt");
+	
+		return 0;
+	}
+
+	//void load_sprite(table)
+	int c_resource_load_sprite(lua_State *L) {
+		LuaSprite data;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(util::PuperIo::IN);
+		pup(puper, data, {});
+
+		auto &resManager = Engine::inst().getSystem<ResourceManager>();
+
+		if (data.atlas.empty()) {
+			resManager.add<graphics::Sprite>(data.name, std::hash<std::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, data.draw.x, data.draw.y, data.drawExtent.x, data.drawExtent.y);
+		} else {
+			const auto &atlas = resManager.require<graphics::GLTextureAtlas>(data.atlas);
+			resManager.add<graphics::Sprite>(data.name, std::hash<std::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, atlas.getTextureRegion(data.path + ".png"), data.animFramesX, data.animFramesY);
+		}
+
+		return 0;
+
+	}
+
 
 	//void create_prefab(manager, name, table)
 	int c_create_prefab(lua_State *L) {
@@ -240,8 +440,84 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity_manager", "createEntity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroyEntity", c_entityManager_destroyEntity);
 
+		lua_getglobal(L, "oak");
+		lua_pushcfunction(L, c_resource_load_shader);
+		lua_setfield(L, -2, "load_shader");
+		lua_pushcfunction(L, c_resource_load_texture);
+		lua_setfield(L, -2, "load_texture");
+		lua_pushcfunction(L, c_resource_load_atlas);
+		lua_setfield(L, -2, "load_atlas");
+		lua_pushcfunction(L, c_resource_load_material);
+		lua_setfield(L, -2, "load_material");
+		lua_pushcfunction(L, c_resource_load_font);
+		lua_setfield(L, -2, "load_font");
+		lua_pushcfunction(L, c_resource_load_sprite);
+		lua_setfield(L, -2, "load_sprite");
+		lua_pop(L, 1);
+
 		lua_pushcfunction(L, c_hash);
 		lua_setglobal(L, "hash");
+
+		auto &engine = Engine::inst();
+
+		//setup event listeners
+		engine.getEventManager().add<oak::KeyEvent>([L](oak::KeyEvent evt) {
+			oak::luah::getGlobal(L, "oak.es.emit_event");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "key_press");
+			lua_newtable(L);
+			oak::LuaPuper puper{ L, -2 };
+			pup(puper, evt, {});
+			oak::luah::call(L, 3, 0);
+		});
+
+		engine.getEventManager().add<oak::ButtonEvent>([L](oak::ButtonEvent evt){
+			oak::luah::getGlobal(L, "oak.es.emit_event");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "button_press");
+			lua_newtable(L);
+			oak::LuaPuper puper{ L, -2 };
+			pup(puper, evt, {});
+			oak::luah::call(L, 3, 0);
+		});
+		
+		engine.getEventManager().add<oak::MouseMoveEvent>([L](oak::MouseMoveEvent evt) {
+			oak::luah::getGlobal(L, "oak.es.emit_event");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "mouse_move");
+			lua_newtable(L);
+			oak::LuaPuper puper{ L, -2 };
+			pup(puper, evt, {});
+			oak::luah::call(L, 3, 0);
+		});
+
+		engine.getEventManager().add<oak::EntityActivateEvent>([L](const oak::EntityActivateEvent &evt) {
+			oak::luah::getGlobal(L, "oak.es.send_message");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "on_activate");
+			oak::luah::pushValue(L, evt.entity.index());
+			oak::luah::call(L, 3, 0);
+		});
+
+		engine.getEventManager().add<oak::EntityDeactivateEvent>([L](const oak::EntityDeactivateEvent &evt) {
+			oak::luah::getGlobal(L, "oak.es.send_message");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "on_deactivate");
+			oak::luah::pushValue(L, evt.entity.index());
+			oak::luah::call(L, 3, 0);
+		});
+
+		engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
+			oak::luah::getGlobal(L, "oak.es.send_event");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "entity_collide");
+
+			lua_newtable(L);
+			oak::LuaPuper puper{ L, -2 };
+			pup(puper, evt, {});
+
+			oak::luah::call(L, 3, 0);
+		});
 	}
 
 	void pushValue(lua_State *L, const Entity& e) {
