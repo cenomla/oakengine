@@ -21,10 +21,10 @@ namespace oak::graphics {
 		void bind() const;
 		void unbind() const;
 
-		void setMatrix4f(const std::string &name, const glm::mat4 &value) const;
-		void setVector3f(const std::string &name, const glm::vec3 &value) const;
-		void setUniform1ui(const std::string &name, const GLuint value) const;
-		void setUniform1f(const std::string &name, const GLfloat value) const;
+		void setUniform(const std::string &name, const glm::mat4 &value) const;
+		void setUniform(const std::string &name, const glm::vec3 &value) const;
+		void setUniform(const std::string &name, const uint32_t value) const;
+		void setUniform(const std::string &name, const float value) const;
 
 		void bindBlockIndex(const std::string &name, GLuint binding) const;
 

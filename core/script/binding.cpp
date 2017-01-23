@@ -126,7 +126,7 @@ namespace oak::luah {
 		puper.setIo(util::PuperIo::IN);
 		pup(puper, data, {});
 
-		auto &texture = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTexture>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_LINEAR });
+		auto &texture = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTexture>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_NEAREST });
 		texture.create(data.path + ".png");
 	
 		return 0;
@@ -140,7 +140,7 @@ namespace oak::luah {
 		puper.setIo(util::PuperIo::IN);
 		pup(puper, data, {});
 
-		auto &atlas = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTextureAtlas>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_LINEAR });
+		auto &atlas = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTextureAtlas>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_NEAREST });
 		for (auto &it : data.paths) {
 			atlas.addTexture(it + ".png");
 		}
@@ -208,6 +208,39 @@ namespace oak::luah {
 
 		return 0;
 
+	}
+
+	//void set_uniform(shader, name, value)
+	int c_resource_set_uniform(lua_State *L) {
+		const std::string shaderName{ lua_tostring(L, 1) };
+		const std::string uniformName{ lua_tostring(L, 2) };
+
+		auto &resManager = Engine::inst().getSystem<ResourceManager>();
+		const auto& shader = resManager.require<graphics::GLShader>(shaderName);
+		shader.bind();
+
+		switch (lua_type(L, 3)) {
+			case LUA_TNUMBER:
+				if (lua_isinteger(L, 3)) {
+					shader.setUniform(uniformName, static_cast<uint32_t>(lua_tointeger(L, 3)));
+				} else {
+					shader.setUniform(uniformName, static_cast<float>(lua_tonumber(L, 3)));
+				}
+			break;
+			case LUA_TTABLE:
+				lua_len(L, 3);
+				if (lua_tointeger(L, -1) == 3) {
+					lua_pop(L, 1);
+					lua_geti(L, 3, 1);
+					lua_geti(L, 3, 2);
+					lua_geti(L, 3, 3);
+					shader.setUniform(uniformName, glm::vec3{ lua_tonumber(L, 4), lua_tonumber(L, 5), lua_tonumber(L, 6) });
+				}
+			break;
+		}
+
+		lua_settop(L, 0);
+		return 0;
 	}
 
 
@@ -453,6 +486,8 @@ namespace oak::luah {
 		lua_setfield(L, -2, "load_font");
 		lua_pushcfunction(L, c_resource_load_sprite);
 		lua_setfield(L, -2, "load_sprite");
+		lua_pushcfunction(L, c_resource_set_uniform);
+		lua_setfield(L, -2, "set_uniform");
 		lua_pop(L, 1);
 
 		lua_pushcfunction(L, c_hash);

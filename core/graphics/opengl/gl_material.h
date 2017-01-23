@@ -11,14 +11,10 @@ namespace oak::graphics {
 		size_t id;
 		const GLShader *shader;
 		const GLTexture *texture;
-		std::function<void (const GLMaterial&)> bindFun;
 
 		inline void bind() const {
 			shader->bind();
 			texture->bind(GL_TEXTURE0);
-			if (bindFun) {
-				bindFun(*this);
-			}
 		}
 	};
 

@@ -69,19 +69,19 @@ namespace oak::graphics {
 	}
 
 
-	void GLShader::setMatrix4f(const std::string &name, const glm::mat4 &value) const {
+	void GLShader::setUniform(const std::string &name, const glm::mat4 &value) const {
 		glUniformMatrix4fv(locations_.at(name), 1, GL_FALSE, &value[0][0]);
 	}
 
-	void GLShader::setVector3f(const std::string &name, const glm::vec3 &value) const {
+	void GLShader::setUniform(const std::string &name, const glm::vec3 &value) const {
 		glUniform3fv(locations_.at(name), 1, &value[0]);
 	}
 
-	void GLShader::setUniform1ui(const std::string &name, const GLuint value) const {
+	void GLShader::setUniform(const std::string &name, const uint32_t value) const {
 		glUniform1ui(locations_.at(name), value);
 	}
 
-	void GLShader::setUniform1f(const std::string &name, const GLfloat value) const {
+	void GLShader::setUniform(const std::string &name, const float value) const {
 		glUniform1f(locations_.at(name), value);
 	}
 

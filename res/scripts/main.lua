@@ -4,42 +4,125 @@ print(package.path)
 oak.input = oak.es:create_entity(255, require("input"))
 
 oak.load_shader({
-	name = "shd_test",
+	name = "shd_pass",
 	path = "core/graphics/shaders/pass2d"
 })
 
+oak.load_shader({
+	name = "shd_font",
+	path = "core/graphics/shaders/font"
+})
+
 oak.load_texture({
-	name = "tex_test",
-	path = "res/textures/character",
+	name = "tex_tiles",
+	path = "res/textures/tiles",
+	flags = 0
+})
+
+oak.load_texture({
+	name ="tex_font",
+	path = "res/fonts/dejavu_sans/atlas",
 	flags = 1
 })
 
 oak.load_atlas({
-	name = "atlas_test",
+	name = "atlas_entity",
 	textures = {
-		"res/textures/character", "res/textures/button", "res/textures/block", size = 3
+		"res/textures/character", "res/textures/block", size = 2
 	},
 	extent = {
 		x = 512,
 		y = 512
 	},
-	flags = 1
+	flags = 0
+})
+
+oak.load_atlas({
+	name = "atlas_gui",
+	textures = {
+		"res/textures/button", "res/textures/tile_editor", size = 2
+	},
+	extent = {
+		x = 512,
+		y = 512
+	},
+	flags = 0
 })
 
 oak.load_material({
-	name = "mat_test",
-	shader = "shd_test",
-	texture = "atlas_test"
+	name = "mat_entity",
+	shader = "shd_pass",
+	texture = "atlas_entity"
+})
+
+oak.load_material({
+	name = "mat_gui",
+	shader = "shd_pass",
+	texture = "atlas_gui"
+})
+
+oak.load_material({
+	name = "mat_font",
+	shader = "shd_font",
+	texture = "tex_font"
+})
+
+oak.set_uniform("shd_font", "text_width", 0.5)
+oak.set_uniform("shd_font", "text_edge", 0.1)
+oak.set_uniform("shd_font", "text_color", { 1.0, 1.0, 1.0 })
+oak.set_uniform("shd_font", "border_width", 0.6)
+oak.set_uniform("shd_font", "border_edge", 0.2)
+oak.set_uniform("shd_font", "border_color", { 0.0, 0.0, 0.0 })
+
+oak.load_material({
+	name = "mat_tiles",
+	shader = "shd_pass",
+	texture = "tex_tiles"
+})
+
+oak.load_font({
+	name = "fnt_dejavu",
+	material = "mat_font",
+	path = "res/fonts/dejavu_sans"
 })
 
 oak.load_sprite({
-	name = "spr_test",
-	material = "mat_test",
-	center = { x = 16.0, y = 16.0 },
-	extent = { x = 32.0, y = 32.0 },
-	atlas = "atlas_test",
+	name = "spr_player",
+	material = "mat_entity",
+	center = { x = 8.0, y = 8.0 },
+	extent = { x = 16.0, y = 16.0 },
+	atlas = "atlas_entity",
 	path = "res/textures/character"
 })
+
+oak.load_sprite({
+	name = "spr_block",
+	material = "mat_entity",
+	center = { x = 64.0, y = 16.0 },
+	extent = { x = 128.0, y = 32.0 },
+	atlas = "atlas_entity",
+	path = "res/textures/block"
+})
+
+oak.load_sprite({
+	name = "spr_button",
+	material = "mat_gui",
+	center = { x = 0.0, y = 0.0 },
+	extent = { x = 48.0, y = 48.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/button",
+	animframes_x = 2
+})
+
+oak.load_sprite({
+	name = "spr_tile_editor",
+	material = "mat_gui",
+	center = { x = 0.0, y = 0.0 },
+	extent = { x = 256.0, y = 512.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/tile_editor"
+})
+
 
 oak.es:create_prefab("player", {
 	transform = {
@@ -51,13 +134,13 @@ oak.es:create_prefab("player", {
 	},
 	sprite = {
 		shared = true,
-		sprite = hash("spr_test")
+		sprite = hash("spr_player")
 	},
 	aabb_2d = {
 		shared = true,
 		half_extent = {
-			x = 16.0, 
-			y = 16.0	
+			x = 8.0, 
+			y = 8.0	
 		}
 	},
 	physics_body_2d = {

@@ -77,57 +77,6 @@ int main(int argc, char** argv) {
 	entityManager.addComponentHandle<oak::AABB2dComponent>("aabb_2d");
 	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>("physics_body_2d");
 
-	//create resources
-	//shaders
-	auto &shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
-	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
-	shd_pass.bindBlockIndex("MatrixBlock", 0);
-
-	auto &shd_font = resManager.add<oak::graphics::GLShader>("shd_font");
-	shd_font.create("core/graphics/shaders/font/opengl.vert", "core/graphics/shaders/font/opengl.frag");
-	shd_font.bindBlockIndex("MatrixBlock", 0);
-
-	//textures
-	auto &tex_entityAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_entityAtlas", GLenum{ GL_TEXTURE_2D });
-	tex_entityAtlas.addTexture("res/textures/character.png");
-	tex_entityAtlas.addTexture("res/textures/block.png");
-	tex_entityAtlas.bake(512, 512);
-
-	auto &tex_guiAtlas = resManager.add<oak::graphics::GLTextureAtlas>("tex_guiAtlas", GLenum{ GL_TEXTURE_2D });
-	tex_guiAtlas.addTexture("res/textures/button.png");
-	tex_guiAtlas.addTexture("res/textures/tile_editor.png");
-	tex_guiAtlas.bake(512, 512);
-
-	auto &tex_tiles = resManager.add<oak::graphics::GLTexture>("tex_tiles", GLenum{ GL_TEXTURE_2D });
-	tex_tiles.create("res/textures/tiles.png");
-
-	auto &tex_font = resManager.add<oak::graphics::GLTexture>("tex_font", GLenum{ GL_TEXTURE_2D }, GLenum{ GL_LINEAR });
-	tex_font.create("res/fonts/dejavu_sans/atlas.png");
-
-	//materials
-	auto &mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<std::string>{}("mat_entity"), &shd_pass, &tex_entityAtlas);
-	auto &mat_gui = resManager.add<oak::graphics::GLMaterial>("mat_gui", std::hash<std::string>{}("mat_gui"), &shd_pass, &tex_guiAtlas);
-	auto &mat_font = resManager.add<oak::graphics::GLMaterial>("mat_font", std::hash<std::string>{}("mat_font"), &shd_font, &tex_font, 
-		[](const oak::graphics::GLMaterial& mat) {
-			mat.shader->setUniform1f("text_width", 0.5f);
-			mat.shader->setUniform1f("text_edge", 0.1f);
-			mat.shader->setVector3f("text_color", glm::vec3{ 1.0f });
-			mat.shader->setUniform1f("border_width", 0.6f);
-			mat.shader->setUniform1f("border_edge", 0.2f);
-			mat.shader->setVector3f("border_color", glm::vec3{ 0.0f });
-		});
-	resManager.add<oak::graphics::GLMaterial>("mat_tiles", std::hash<std::string>{}("mat_tiles"), &shd_pass, &tex_tiles);
-	
-	//fonts
-	auto &fnt_dejavu = resManager.add<oak::graphics::Font>("fnt_dejavu", mat_font.id);
-	fnt_dejavu.create("res/fonts/dejavu_sans/glyphs.fnt");
-
-	//sprites
-	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 8.0f, 8.0f, 16.0f, 16.0f, tex_entityAtlas.getTextureRegion("res/textures/character.png"));
-	resManager.add<oak::graphics::Sprite>("spr_block", mat_entity.id, 64.0f, 16.0f, 128.0f, 32.0f, tex_entityAtlas.getTextureRegion("res/textures/block.png"));
-	resManager.add<oak::graphics::Sprite>("spr_button", mat_gui.id, 0.0f, 0.0f, 48.0f, 48.0f, tex_guiAtlas.getTextureRegion("res/textures/button.png"), 2);
-	resManager.add<oak::graphics::Sprite>("spr_tile_editor", mat_gui.id, 0.0f, 0.0f, 256.0f, 512.0f, tex_guiAtlas.getTextureRegion("res/textures/tile_editor.png"));
-
 	//setup views
 	viewSystem.defineView(0, { 0 });
 	viewSystem.defineView(1, { 1 });
