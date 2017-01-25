@@ -18,7 +18,7 @@ namespace oak::graphics {
 
 		void init() override;
 
-		void addObject(const glm::vec2 &position, int depth, uint32_t layer, float rotation, float scale, const Renderable *object);
+		void addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object);
 
 		void render();
 
@@ -26,7 +26,7 @@ namespace oak::graphics {
 		struct ObjectPos {
 			const Renderable *object;
 			glm::vec2 position;
-			int depth; 
+			float depth; 
 			uint32_t layer;
 			float rotation, scale;
 

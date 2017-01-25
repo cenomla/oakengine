@@ -83,6 +83,8 @@ int main(int argc, char** argv) {
 	viewSystem.setView(0, oak::View{ 128, 0, 1280, 720 });
 	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
 
+	tileSystem.createLayer(std::hash<std::string>{}("mat_tiles"));
+
 	//setup lua bindings
 	lua_State *L = luam.getState();
 	initBindings(L);

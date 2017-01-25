@@ -17,7 +17,7 @@ int c_getTile(lua_State *L) {
 	int y = toValue<int>(L, 3);
 	lua_settop(L, 0);
 
-	auto &tile = chunk.getTile(x, y);
+	auto tile = chunk.getTile(x, y);
 
 	lua_newtable(L);
 	oak::LuaPuper puper{ L, 1 };
@@ -32,25 +32,29 @@ int c_setTile(lua_State *L) {
 	int x = toValue<int>(L, 2);
 	int y = toValue<int>(L, 3);
 
-	auto &tile = chunk.getTile(x, y);
+	auto tile = chunk.getTile(x, y);
 
 	oak::LuaPuper puper{ L, 4 };
 	puper.setIo(oak::util::PuperIo::IN);
 	pup(puper, tile, {});
+
+	chunk.setTile(x, y, tile);
 
 	lua_settop(L, 0);
 
 	return 0;
 }
 
-//chunk getChunk(tileSystem, x, y)
+//chunk get_chunk(tileSystem, x, y, layer)
 int c_getChunk(lua_State *L) {
 	TileSystem& tileSystem = toValue<TileSystem&>(L, 1);
 	int x = toValue<int>(L, 2);
 	int y = toValue<int>(L, 3);
+	uint32_t layer = toValue<uint32_t>(L, 4);
+
 	lua_settop(L, 0);
 
-	auto &chunk = tileSystem.getChunk(x, y);
+	auto &chunk = tileSystem.getChunk(x, y, layer);
 
 	pushValue(L, chunk);
 
@@ -58,10 +62,10 @@ int c_getChunk(lua_State *L) {
 }
 
 void initBindings(lua_State *L) {
-	addFunctionToMetatable(L, "chunk", "getTile", c_getTile);
-	addFunctionToMetatable(L, "chunk", "setTile", c_setTile);
+	addFunctionToMetatable(L, "chunk", "get_tile", c_getTile);
+	addFunctionToMetatable(L, "chunk", "set_tile", c_setTile);
 
-	addFunctionToMetatable(L, "tile_system", "getChunk", c_getChunk);
+	addFunctionToMetatable(L, "tile_system", "get_chunk", c_getChunk);
 
 	auto &engine = oak::Engine::inst();
 

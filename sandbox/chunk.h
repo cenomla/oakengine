@@ -31,13 +31,14 @@ public:
 
 	inline void setTile(int x, int y, const Tile& tile) { 
 		Tile &t = tiles_[y * 16 + x];
-		if ((t.flags & Tile::VISIBLE) != (tile.flags & Tile::VISIBLE)) {
-			tileCount_ += (tile.flags & Tile::VISIBLE)  ? 1 : -1;
-		}
+		tileCount_ += (t.flags & Tile::VISIBLE) != (tile.flags & Tile::VISIBLE) ? 
+			((tile.flags & Tile::VISIBLE) == Tile::VISIBLE ? 1 : -1) : 0;
 		t = tile;
 	}
+
+	inline void setMaterialId(size_t id) { materialId_ = id; }
+
 	inline const Tile& getTile(int x, int y) const { return tiles_[y * 16 + x]; }
-	inline Tile& getTile(int x, int y) { return tiles_[y * 16 + x]; }
 
 	inline const glm::vec2& getPosition() const { return position_; }
 	inline const glm::vec2& getExtent() const { return extent_; }

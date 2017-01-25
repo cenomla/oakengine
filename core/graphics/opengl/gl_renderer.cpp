@@ -32,9 +32,12 @@ namespace oak::graphics {
 		vao_.unbind();
 	}
 
-	void GLRenderer::addObject(const glm::vec2 &position, int depth, uint32_t layer, float rotation, float scale, const Renderable *object) {
-		objects_.push_back({ object, position, depth, layer, rotation, scale });
-		vertexCount_ += object->getVertexCount();
+	void GLRenderer::addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object) {
+		size_t vCount = object->getVertexCount();
+		if (vCount > 0) {
+			vertexCount_ += vCount;
+			objects_.push_back({ object, position, depth, layer, rotation, scale });
+		}
 	}
 
 	void GLRenderer::render() {

@@ -21,7 +21,7 @@ void SpriteSystem::update() {
 	for (const auto& entity : cache_.entities()) {
 		const auto &tc = entity.getComponent<oak::TransformComponent>();
 		const auto &sc = entity.getComponent<oak::SpriteComponent>();
-		renderer.addObject(glm::vec2{ tc.position }, static_cast<int>(tc.position.z), entity.layer(), tc.rotationAngle, tc.scale, &sc);
+		renderer.addObject(glm::vec2{ tc.position }, tc.position.z, entity.layer(), tc.rotationAngle, tc.scale, &sc);
 	}
 }
 
@@ -38,7 +38,7 @@ void TextSystem::update() {
 	for (const auto& entity : cache_.entities()) {
 		const auto &tc = entity.getComponent<oak::TransformComponent>();
 		const auto &tx = entity.getComponent<oak::TextComponent>();
-		renderer.addObject(glm::vec2{ tc.position }, static_cast<int>(tc.position.z) + 1, entity.layer(), tc.rotationAngle, tc.scale, &tx);
+		renderer.addObject(glm::vec2{ tc.position }, tc.position.z + 0.1f, entity.layer(), tc.rotationAngle, tc.scale, &tx);
 	}
 }
 
@@ -95,7 +95,7 @@ void CollisionSystem::update() {
 		const glm::vec2 tp = glm::floor(glm::vec2{ tcA.position } / 16.0f) * 16.0f + glm::vec2{ 8.0f };
 		for (int ix = -8; ix < 8; ix++) {
 			for (int iy = -8; iy < 8; iy++) {				
-				const Chunk& c = ts.getChunk(tcA.position.x + ix * 16.0f, tcA.position.y + iy * 16.0f);
+				const Chunk& c = ts.getChunk(tcA.position.x + ix * 16.0f, tcA.position.y + iy * 16.0f, entityA.layer());
 				const Tile& t = c.getTile( static_cast<int>(glm::floor(tcA.position.x / 16.0f) + ix) % 16, static_cast<int>(glm::floor(tcA.position.y / 16.0f) + iy) % 16 );
 				if ((t.flags & Tile::SOLID) == Tile::SOLID && aabb_vs_aabb(
 					{ glm::vec2{ tcA.position } + boxA.offset, boxA.halfExtent }, 

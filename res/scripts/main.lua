@@ -40,7 +40,12 @@ oak.load_atlas({
 oak.load_atlas({
 	name = "atlas_gui",
 	textures = {
-		"res/textures/button", "res/textures/tile_editor", size = 2
+		"res/textures/gui/button",
+		"res/textures/gui/arrows",
+		"res/textures/gui/tile_editor/background",
+		"res/textures/gui/tile_editor/icons",
+		"res/textures/gui/tile_editor/selector",
+		size = 5
 	},
 	extent = {
 		x = 512,
@@ -105,13 +110,14 @@ oak.load_sprite({
 })
 
 oak.load_sprite({
-	name = "spr_button",
+	name = "spr_gui_button",
 	material = "mat_gui",
 	center = { x = 0.0, y = 0.0 },
-	extent = { x = 48.0, y = 48.0 },
+	extent = { x = 32.0, y = 32.0 },
 	atlas = "atlas_gui",
-	path = "res/textures/button",
-	animframes_x = 2
+	path = "res/textures/gui/button",
+	animframes_x = 2,
+	animframes_y = 2
 })
 
 oak.load_sprite({
@@ -120,9 +126,45 @@ oak.load_sprite({
 	center = { x = 0.0, y = 0.0 },
 	extent = { x = 256.0, y = 512.0 },
 	atlas = "atlas_gui",
-	path = "res/textures/tile_editor"
+	path = "res/textures/gui/tile_editor/background"
 })
 
+oak.load_sprite({
+	name = "spr_tile_editor_icons",
+	material = "mat_gui",
+	extent = { x = 32.0, y = 32.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/tile_editor/icons",
+	animframes_x = 5,
+	animframes_y = 4
+})
+
+oak.load_sprite({
+	name = "spr_gui_arrows",
+	material = "mat_gui",
+	extent = { x = 32.0, y = 32.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/arrows",
+	animframes_x = 2,
+	animframes_y = 2
+})
+
+oak.load_sprite({
+	name = "spr_tile_editor_tilemap",
+	material = "mat_tiles",
+	extent = { x = 256.0, y = 256.0 },
+	draw_position = { x = 0.0, y = 0.0 },
+	draw_extent = { x = 1.0, y = 1.0 }
+})
+
+oak.load_sprite({
+	name = "spr_tile_editor_selector",
+	material = "mat_gui",
+	extent = { x = 32.0, y = 32.0 },
+	center = { x = 8.0, y = 8.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/tile_editor/selector"
+})
 
 oak.es:create_prefab("player", {
 	transform = {
@@ -181,18 +223,27 @@ oak.es:create_prefab("block", {
 	}
 })
 
-oak.es:create_prefab("button", {
+oak.es:create_prefab("gui_button", {
 	transform = {
 		position = { z = 1.0 }
 	},
 	sprite = {
-		sprite = hash("spr_button")
+		sprite = hash("spr_gui_button")
+	}
+})
+
+oak.es:create_prefab("gui_arrow", {
+	transform = {
+		position = { z = 1.0 }
+	},
+	sprite = {
+		sprite = hash("spr_gui_arrows")
 	}
 })
 
 oak.es:create_prefab("tile_editor", {
 	transform = {
-		position = { y = 48.0 }
+		position = { y = 32.0 }
 	},
 	sprite = {
 		sprite = hash("spr_tile_editor")
@@ -207,8 +258,8 @@ e:setTransform({ position = { x = 512, y = 496 } })
 
 local te = oak.es:create_entity(1, "tile_editor", require("gui/tile_editor"))
 
-e = oak.es:create_entity(1, "button", require("gui/button"))
-e.callback = function(button) te:on_press(button) end
+e = oak.es:create_entity(1, "gui_button", require("gui/button"))
+e.callback = function(button) te:toggle_active(button) end
 
-e = oak.es:create_entity(1, "button", require("gui/button"))
-e:setTransform({ position = { x = 48 }})
+e = oak.es:create_entity(1, "gui_button", require("gui/button"))
+e:setTransform({ position = { x = 32 }})

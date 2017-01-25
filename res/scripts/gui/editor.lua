@@ -1,7 +1,0 @@
-local editor = {
-
-	
-
-}
-
-return editor
