@@ -1,5 +1,5 @@
 .sconsign.dblite
 .vscode
-bin/*.d
+bin/obj
 log
 TODO

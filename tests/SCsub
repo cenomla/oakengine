@@ -1,10 +1,9 @@
 Import('*')
 
 module_targets = dict()
-unit_flags = ['-std=c++1z', '-g', '-Wall', '-fno-exceptions', '-fno-rtti', '-D_DEBUG', '-Wno-pragmas']
 unit_libs = ['oak', 'vulkan', 'GL', 'glad', 'lua', 'enet', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'm', 'pthread', 'dl']
 
 tm_sources = ['task.cpp']
-module_targets['task_manager'] = env.Program(target = env.set_target('tests/taskmanager'), source = tm_sources, CXXFLAGS = unit_flags, LIBS = unit_libs)
+module_targets['task_manager'] = env.Program(target = 'taskmanager', source = tm_sources, LIBS = unit_libs)
 
 Return('module_targets')

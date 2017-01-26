@@ -1,11 +1,12 @@
 Import('*')
 
-env.Append(CPPPATH = ['#core'])
+import os
 
-module_targets = dict()
+env.Append(CPPPATH = ['#core'], LIBPATH = [os.path.join('#$BINDIR', 'core')])
+
+module_targets = {}
 core_sources = []
 get_sources_recursive(core_sources, 'core/', '*.cpp')
-core_flags = ['-std=c++1z', '-g', '-Wall', '-fno-exceptions', '-fno-rtti', '-D_DEBUG', '-Wno-pragmas']
-module_targets['core'] = env.Library(target = env.set_target('liboak.a'), source = core_sources, CXXFLAGS = core_flags)
+module_targets['core'] = env.Library(target = 'liboak.a', source = core_sources)
 
 Return('module_targets')
