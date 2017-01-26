@@ -1,8 +1,6 @@
 local player = {
 	max_speed = 400.0,
-	create = function(self)
-	end,
-	update = function(self, dt)
+	on_update = function(self, dt)
 		local tc = self:getTransform()
 
 		if oak.input.keys[87] ~= 0 then tc.position.y = tc.position.y - self.max_speed * dt end
@@ -12,7 +10,7 @@ local player = {
 
 		self:setTransform(tc)
 	end,
-	entity_collide = function(self, evt)
+	on_entity_collide = function(self, evt)
 		local tc = self:getTransform()
 
 		tc.position.x = tc.position.x - evt.normal.x * evt.depth
@@ -20,7 +18,7 @@ local player = {
 	
 		self:setTransform(tc)
 	end,
-	tile_collide = function(self, evt)
+	on_tile_collide = function(self, evt)
 		local tc = self:getTransform()
 
 		tc.position.x = tc.position.x - evt.normal.x * evt.depth

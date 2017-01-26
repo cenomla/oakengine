@@ -1,27 +1,26 @@
 #include "chunk.h"
 
-#include <util/puper.h>
+#include <pup.h>
 
+namespace oak {
+	void pup(Puper &puper, Tile &tile, const ObjInfo &info) {
 
-void pup(oak::util::Puper &puper, Tile &tile, const oak::util::ObjInfo &info) {
+		pup(puper, tile.dx, ObjInfo{ "dx" } + info);
+		pup(puper, tile.dy, ObjInfo{ "dy" } + info);
+		pup(puper, tile.dw, ObjInfo{ "dw" } + info);
+		pup(puper, tile.dh, ObjInfo{ "dh" } + info);
 
-	using namespace oak::util;
+		pup(puper, tile.offsetX, ObjInfo{ "offset_x" } + info);
+		pup(puper, tile.offsetY, ObjInfo{ "offset_y" } + info);
+		pup(puper, tile.width, ObjInfo{ "width" } + info);
+		pup(puper, tile.height, ObjInfo{ "height" } + info);
 
-	pup(puper, tile.dx, ObjInfo{ "dx" } + info);
-	pup(puper, tile.dy, ObjInfo{ "dy" } + info);
-	pup(puper, tile.dw, ObjInfo{ "dw" } + info);
-	pup(puper, tile.dh, ObjInfo{ "dh" } + info);
+		pup(puper, tile.animFrameX, ObjInfo{ "animframe_x" } + info);
+		pup(puper, tile.animFrameY, ObjInfo{ "animframe_y" } + info);
 
-	pup(puper, tile.offsetX, ObjInfo{ "offset_x" } + info);
-	pup(puper, tile.offsetY, ObjInfo{ "offset_y" } + info);
-	pup(puper, tile.width, ObjInfo{ "width" } + info);
-	pup(puper, tile.height, ObjInfo{ "height" } + info);
-
-	pup(puper, tile.animFrameX, ObjInfo{ "animframe_x" } + info);
-	pup(puper, tile.animFrameY, ObjInfo{ "animframe_y" } + info);
-
-	pup(puper, tile.material, ObjInfo{"material"} + info);
-	pup(puper, tile.flags, ObjInfo{"flags"} + info);
+		pup(puper, tile.material, ObjInfo{"material"} + info);
+		pup(puper, tile.flags, ObjInfo{"flags"} + info);
+	}
 }
 
 Chunk::Chunk(size_t materialId, int x, int y, int width, int height) : materialId_{ materialId }, tileCount_{ 0 }, position_{ x, y }, extent_{ width, height } { }

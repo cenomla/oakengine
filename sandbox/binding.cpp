@@ -11,7 +11,7 @@ using namespace oak::luah;
 
 
 //tile getTile(chunk, x, y)
-int c_getTile(lua_State *L) {
+static int c_getTile(lua_State *L) {
 	Chunk& chunk = toValue<Chunk&>(L, 1);
 	int x = toValue<int>(L, 2);
 	int y = toValue<int>(L, 3);
@@ -27,7 +27,7 @@ int c_getTile(lua_State *L) {
 }
 
 //void setTile(chunk, x, y, tile)
-int c_setTile(lua_State *L) {
+static int c_setTile(lua_State *L) {
 	Chunk &chunk = toValue<Chunk&>(L, 1);
 	int x = toValue<int>(L, 2);
 	int y = toValue<int>(L, 3);
@@ -35,7 +35,7 @@ int c_setTile(lua_State *L) {
 	auto tile = chunk.getTile(x, y);
 
 	oak::LuaPuper puper{ L, 4 };
-	puper.setIo(oak::util::PuperIo::IN);
+	puper.setIo(oak::PuperIo::IN);
 	pup(puper, tile, {});
 
 	chunk.setTile(x, y, tile);
@@ -46,7 +46,7 @@ int c_setTile(lua_State *L) {
 }
 
 //chunk get_chunk(tileSystem, x, y, layer)
-int c_getChunk(lua_State *L) {
+static int c_getChunk(lua_State *L) {
 	TileSystem& tileSystem = toValue<TileSystem&>(L, 1);
 	int x = toValue<int>(L, 2);
 	int y = toValue<int>(L, 3);
@@ -72,7 +72,7 @@ void initBindings(lua_State *L) {
 	engine.getEventManager().add<TileCollisionEvent>([L](TileCollisionEvent evt) {
 		oak::luah::getGlobal(L, "oak.es.send_event");
 		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "tile_collide");
+		oak::luah::pushValue(L, "on_tile_collide");
 		
 		lua_newtable(L);
 		oak::LuaPuper puper{ L, -2 };

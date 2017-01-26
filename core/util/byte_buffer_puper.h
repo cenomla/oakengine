@@ -1,16 +1,18 @@
 #pragma once
 
-#include "util/puper.h"
+#include <cstdint>
+#include <string>
+#include <glm/glm.hpp>
 
-struct lua_State;
+#include "util/puper.h"
 
 namespace oak {
 
-	class Entity;
+	namespace util { class ByteBuffer; }
 
-	class LuaPuper : public Puper {
+	class ByteBufferPuper : public Puper {
 	public:
-		LuaPuper(lua_State *L, int index);
+		ByteBufferPuper(util::ByteBuffer &buffer);
 
 		void pup(int8_t &data, const ObjInfo &info) override;
 		void pup(int16_t &data, const ObjInfo &info) override;
@@ -26,11 +28,8 @@ namespace oak {
 		void pup(std::string &data, const ObjInfo &info) override;
 		void pup(Entity &data, const ObjInfo &info) override;
 
-		inline void setIndex(int index) { index_ = index; }
-
 	private:
-		lua_State *L_;
-		int index_;
+		util::ByteBuffer *buffer_;
 	};
 
-};
+}

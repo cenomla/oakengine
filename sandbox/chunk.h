@@ -16,12 +16,13 @@ struct Tile {
 	};
 };
 
-namespace oak::util {
-	class Puper;
-	class ObjInfo;
-}
+namespace oak {
 
-void pup(oak::util::Puper &puper, Tile &tile, const oak::util::ObjInfo &info);
+	class Puper;
+	struct ObjInfo;
+
+	void pup(Puper &puper, Tile &tile, const ObjInfo &info);
+}
 
 class Chunk : public oak::graphics::Renderable {
 public:

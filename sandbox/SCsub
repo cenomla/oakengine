@@ -1,10 +1,10 @@
 Import('*')
 
 module_targets = dict()
-flags = ['-std=c++1z', '-g', '-Wall', '-fno-exceptions', '-fno-rtti', '-D_DEBUG', '-Wno-pragmas']
 libs = ['oak', 'vulkan', 'GL', 'glad', 'lua', 'enet', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'm', 'pthread', 'dl']
+x11_libs = ['oak', 'vulkan', 'GL', 'glad', 'lua', 'enet', 'glfw3', 'X11', 'Xrandr', 'Xinerama', 'Xcursor', 'Xxf86vm', 'Xi', 'm', 'pthread', 'dl']
 sources = []
 get_sources_recursive(sources, 'sandbox/', '*.cpp')
-module_targets['sandbox'] = env.Program(target = env.set_target('sandbox'), source = sources, CXXFLAGS = flags, LIBS = libs)
+module_targets['sandbox'] = env.Program(target = 'sandbox', source = sources, LIBS = x11_libs)
 
 Return('module_targets')

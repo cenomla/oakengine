@@ -21,8 +21,7 @@ namespace oak::luah {
 		std::string path;
 	};
 
-	void pup(util::Puper &puper, LuaShader &data, const util::ObjInfo &info) {
-		using namespace util;
+	static void pup(Puper &puper, LuaShader &data, const ObjInfo &info) {
 		pup(puper, data.name, ObjInfo{ "name" } + info);
 		pup(puper, data.path, ObjInfo{ "path" } + info);
 	}
@@ -33,8 +32,7 @@ namespace oak::luah {
 		uint32_t flags = 0;
 	};
 
-	void pup(util::Puper &puper, LuaTexture &data, const util::ObjInfo &info) {
-		using namespace util;
+	static void pup(Puper &puper, LuaTexture &data, const ObjInfo &info) {
 		pup(puper, data.name, ObjInfo{ "name" } + info);
 		pup(puper, data.path, ObjInfo{ "path" } + info);
 		pup(puper, data.flags, ObjInfo{ "flags" } + info);
@@ -47,8 +45,7 @@ namespace oak::luah {
 		uint32_t flags = 0;
 	};
 
-	void pup(util::Puper &puper, LuaAtlas &data, const util::ObjInfo &info) {
-		using namespace util;
+	static void pup(Puper &puper, LuaAtlas &data, const ObjInfo &info) {
 		pup(puper, data.name, ObjInfo{ "name" } + info);
 		pup(puper, data.paths, ObjInfo{ "textures" } + info);
 		pup(puper, data.extent, ObjInfo{ "extent" } + info);
@@ -61,8 +58,7 @@ namespace oak::luah {
 		std::string texture;
 	};
 
-	void pup(util::Puper &puper, LuaMaterial &data, const util::ObjInfo &info) {
-		using namespace util;
+	static void pup(Puper &puper, LuaMaterial &data, const ObjInfo &info) {
 		pup(puper, data.name, ObjInfo{ "name" } + info);
 		pup(puper, data.shader, ObjInfo{ "shader" } + info);
 		pup(puper, data.texture, ObjInfo{ "texture" } + info);
@@ -74,8 +70,7 @@ namespace oak::luah {
 		std::string path;
 	};
 
-	void pup(util::Puper &puper, LuaFont &data, const util::ObjInfo &info) {
-		using namespace util;
+	static void pup(Puper &puper, LuaFont &data, const ObjInfo &info) {
 		pup(puper, data.name, ObjInfo{ "name" } + info);
 		pup(puper, data.material, ObjInfo{ "material" } + info);
 		pup(puper, data.path, ObjInfo{ "path" } + info);
@@ -90,8 +85,7 @@ namespace oak::luah {
 		int animFramesX = 1, animFramesY = 1;
 	};
 
-	void pup(util::Puper &puper, LuaSprite &data, const util::ObjInfo &info) {
-		using namespace util;
+	static void pup(Puper &puper, LuaSprite &data, const ObjInfo &info) {
 		pup(puper, data.name, ObjInfo{ "name" } + info);
 		pup(puper, data.material, ObjInfo{ "material" } + info);
 		pup(puper, data.center, ObjInfo{ "center" } + info);
@@ -105,11 +99,11 @@ namespace oak::luah {
 	}
 
 	//void load_shader(table)
-	int c_resource_load_shader(lua_State *L) {
+	static int c_resource_load_shader(lua_State *L) {
 		LuaShader data;
 
 		LuaPuper puper{ L, 1 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
 		auto &shader = Engine::inst().getSystem<ResourceManager>().add<graphics::GLShader>(data.name);
@@ -119,11 +113,11 @@ namespace oak::luah {
 	}
 
 	//void load_texture(table)
-	int c_resource_load_texture(lua_State *L) {
+	static int c_resource_load_texture(lua_State *L) {
 		LuaTexture data;
 
 		LuaPuper puper{ L, 1 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
 		auto &texture = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTexture>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_NEAREST });
@@ -133,11 +127,11 @@ namespace oak::luah {
 	}
 
 	//void load_atlas(table)
-	int c_resource_load_atlas(lua_State *L) {
+	static int c_resource_load_atlas(lua_State *L) {
 		LuaAtlas data;
 
 		LuaPuper puper{ L, 1 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
 		auto &atlas = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTextureAtlas>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_NEAREST });
@@ -150,11 +144,11 @@ namespace oak::luah {
 	}
 
 	//void load_material(table)
-	int c_resource_load_material(lua_State *L) {
+	static int c_resource_load_material(lua_State *L) {
 		LuaMaterial data;
 
 		LuaPuper puper{ L, 1 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
 		auto &resManager = Engine::inst().getSystem<ResourceManager>();
@@ -176,11 +170,11 @@ namespace oak::luah {
 	}
 
 	//void load_font(table)
-	int c_resource_load_font(lua_State *L) {
+	static int c_resource_load_font(lua_State *L) {
 		LuaFont data;
 
 		LuaPuper puper{ L, 1 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
 		auto &font = Engine::inst().getSystem<ResourceManager>().add<graphics::Font>(data.name, std::hash<std::string>{}(data.material));
@@ -190,11 +184,11 @@ namespace oak::luah {
 	}
 
 	//void load_sprite(table)
-	int c_resource_load_sprite(lua_State *L) {
+	static int c_resource_load_sprite(lua_State *L) {
 		LuaSprite data;
 
 		LuaPuper puper{ L, 1 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
 		auto &resManager = Engine::inst().getSystem<ResourceManager>();
@@ -211,7 +205,7 @@ namespace oak::luah {
 	}
 
 	//void set_uniform(shader, name, value)
-	int c_resource_set_uniform(lua_State *L) {
+	static int c_resource_set_uniform(lua_State *L) {
 		const std::string shaderName{ lua_tostring(L, 1) };
 		const std::string uniformName{ lua_tostring(L, 2) };
 
@@ -245,7 +239,7 @@ namespace oak::luah {
 
 
 	//void create_prefab(manager, name, table)
-	int c_create_prefab(lua_State *L) {
+	static int c_create_prefab(lua_State *L) {
 		EntityManager &manager = toValue<EntityManager&>(L, 1);
 		std::string name = toValue<std::string>(L, 2);
 		lua_pushvalue(L, 3);
@@ -268,7 +262,7 @@ namespace oak::luah {
 			void *comp = prefab.addComponent(shared, tid);
 
 			LuaPuper puper{ L, -1 };
-			puper.setIo(util::PuperIo::IN);
+			puper.setIo(PuperIo::IN);
 			manager.getComponentHandle(tid)->pupObject(puper, comp, {});
 			
 			lua_pop(L, 1);
@@ -280,7 +274,7 @@ namespace oak::luah {
 	}
 
 	//void activate(entity)
-	int c_entity_activate(lua_State *L) {
+	static int c_entity_activate(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -290,7 +284,7 @@ namespace oak::luah {
 	}
 
 	//void deactivate(entity)
-	int c_entity_deactivate(lua_State *L) {
+	static int c_entity_deactivate(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -300,7 +294,7 @@ namespace oak::luah {
 	}
 
 	//uint index(entity)
-	int c_entity_index(lua_State *L) {
+	static int c_entity_index(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -310,7 +304,7 @@ namespace oak::luah {
 	}
 
 	//uint layer(entity)
-	int c_entity_layer(lua_State *L) {
+	static int c_entity_layer(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -320,7 +314,7 @@ namespace oak::luah {
 	}
 
 	//bool active(entity)
-	int c_entity_active(lua_State *L) {
+	static int c_entity_active(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -331,13 +325,13 @@ namespace oak::luah {
 
 
 	template<class T>
-	int c_entity_addComponent(lua_State *L) {
+	static int c_entity_addComponent(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 
 		T& comp = entity.addComponent<T>();
 
 		LuaPuper puper{ L, 2 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, comp, {});
 		
 		lua_settop(L, 0);
@@ -346,7 +340,7 @@ namespace oak::luah {
 	}
 
 	template<class T>
-	int c_entity_removeComponent(lua_State *L) {
+	static int c_entity_removeComponent(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -356,7 +350,7 @@ namespace oak::luah {
 	}
 
 	template<class T>
-	int c_entity_getComponent(lua_State *L) {
+	static int c_entity_getComponent(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
@@ -370,20 +364,20 @@ namespace oak::luah {
 	}
 
 	template<class T>
-	int c_entity_setComponent(lua_State *L) {
+	static int c_entity_setComponent(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		
 		auto& c = entity.getComponent<T>();
 
 		LuaPuper puper{ L, 2 };
-		puper.setIo(util::PuperIo::IN);
+		puper.setIo(PuperIo::IN);
 		pup(puper, c, {});
 
 		return 0;
 	}
 
 	//entity createEntity(layer, name, table)
-	int c_entityManager_createEntity(lua_State *L) {
+	static int c_entityManager_createEntity(lua_State *L) {
 		int argc = lua_gettop(L);
 		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
 		std::string name;
@@ -418,7 +412,7 @@ namespace oak::luah {
 	}
 
 	//void destroyEntity(entity)
-	int c_entityManager_destroyEntity(lua_State *L) {
+	static int c_entityManager_destroyEntity(lua_State *L) {
 		Entity e = toValue<Entity>(L, 1);
 
 		lua_settop(L, 0);
@@ -428,7 +422,7 @@ namespace oak::luah {
 	}
 
 	//int hash(string)
-	int c_hash(lua_State *L) {
+	static int c_hash(lua_State *L) {
 		std::string str = toValue<std::string>(L, 1);
 		lua_settop(L, 0);
 
@@ -499,7 +493,7 @@ namespace oak::luah {
 		engine.getEventManager().add<oak::KeyEvent>([L](oak::KeyEvent evt) {
 			oak::luah::getGlobal(L, "oak.es.emit_event");
 			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "key_press");
+			oak::luah::pushValue(L, "on_key_press");
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -509,7 +503,7 @@ namespace oak::luah {
 		engine.getEventManager().add<oak::ButtonEvent>([L](oak::ButtonEvent evt){
 			oak::luah::getGlobal(L, "oak.es.emit_event");
 			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "button_press");
+			oak::luah::pushValue(L, "on_button_press");
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -519,7 +513,17 @@ namespace oak::luah {
 		engine.getEventManager().add<oak::MouseMoveEvent>([L](oak::MouseMoveEvent evt) {
 			oak::luah::getGlobal(L, "oak.es.emit_event");
 			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "mouse_move");
+			oak::luah::pushValue(L, "on_mouse_move");
+			lua_newtable(L);
+			oak::LuaPuper puper{ L, -2 };
+			pup(puper, evt, {});
+			oak::luah::call(L, 3, 0);
+		});
+
+		engine.getEventManager().add<oak::CharEvent>([L](oak::CharEvent evt) {
+			oak::luah::getGlobal(L, "oak.es.emit_event");
+			oak::luah::getGlobal(L, "oak.es");
+			oak::luah::pushValue(L, "on_char_press");
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -545,7 +549,7 @@ namespace oak::luah {
 		engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
 			oak::luah::getGlobal(L, "oak.es.send_event");
 			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "entity_collide");
+			oak::luah::pushValue(L, "on_entity_collide");
 
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };

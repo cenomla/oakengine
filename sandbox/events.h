@@ -12,10 +12,7 @@ struct TileCollisionEvent {
 	float depth;
 };
 
-namespace oak::util {
-
-	class Puper;
-	class ObjInfo;
+namespace oak {
 
 	void pup(Puper &puper, TileCollisionEvent &data, const ObjInfo &info);
 

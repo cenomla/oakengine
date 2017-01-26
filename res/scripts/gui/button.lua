@@ -4,9 +4,10 @@ local button = {
 	active = 0,
 	set_active = function(self, active)
 		self:setSprite({ animframe_y = active })
-		if self.active ~= active then
-			self.active = active
+		if self.callback ~= nil then 
+			self:callback(active)
 		end
+		self.active = active
 	end,
 	toggle_active = function(self)
 		if self.active == 0 then
@@ -14,11 +15,8 @@ local button = {
 		else 
 			self:set_active(0)
 		end
-		if self.callback ~= nil then 
-			self:callback()
-		end
 	end,
-	button_press = function(self, evt)
+	on_button_press = function(self, evt)
 		local tc = self:getTransform()
 		local aabb = { half_extent = { x = 16.0, y = 16.0 }, offset = { x = 16.0, y = 16.0 } }
 

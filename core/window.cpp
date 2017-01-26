@@ -59,7 +59,33 @@ namespace oak {
 		glfwSetWindowUserPointer(window_, this);
 
 		engine_.getEventManager().emitEvent(WindowCreateEvent{ window_ });
+	}
 
+	static void closeCallback(GLFWwindow *window) {
+		Engine::inst().getEventManager().emitEvent(QuitEvent{});
+	}
+
+	static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+		Engine::inst().getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+			glfwSetWindowShouldClose(window, GL_TRUE);
+		}
+	}
+
+	static void buttonCallback(GLFWwindow *window, int button, int action, int mods) {
+		Engine::inst().getEventManager().emitEvent(ButtonEvent{ button, action, mods });
+	}
+
+	static void mouseCallback(GLFWwindow *window, double xpos, double ypos) {
+		Engine::inst().getEventManager().emitEvent(MouseMoveEvent{ static_cast<int>(xpos), static_cast<int>(ypos) });
+	}
+
+	static void charCallback(GLFWwindow *window, uint32_t codepoint) {
+		Engine::inst().getEventManager().emitEvent(CharEvent{ codepoint });
+	}
+
+	static void resizeCallback(GLFWwindow *window, int width, int height) {
+		Engine::inst().getEventManager().emitEvent(WindowResizeEvent{ width, height });
 	}
 
 	void Window::setCallbacks() {
@@ -67,30 +93,8 @@ namespace oak {
 		glfwSetKeyCallback(window_, keyCallback);
 		glfwSetMouseButtonCallback(window_, buttonCallback);
 		glfwSetCursorPosCallback(window_, mouseCallback);
+		glfwSetCharCallback(window_, charCallback);
 		glfwSetWindowSizeCallback(window_, resizeCallback);
-	}
-
-	void Window::closeCallback(GLFWwindow *window) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(QuitEvent{});
-	}
-
-	void Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
-	}
-
-	void Window::buttonCallback(GLFWwindow *window, int button, int action, int mods) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(ButtonEvent{ button, action, mods });
-	}
-
-	void Window::mouseCallback(GLFWwindow *window, double xpos, double ypos) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(MouseMoveEvent{ static_cast<int>(xpos), static_cast<int>(ypos) });
-	}
-
-	void Window::resizeCallback(GLFWwindow *window, int width, int height) {
-		static_cast<Window*>(glfwGetWindowUserPointer(window))->engine_.getEventManager().emitEvent(WindowResizeEvent{ width, height });
 	}
 
 }

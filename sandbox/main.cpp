@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
 	//setup views
 	viewSystem.defineView(0, { 0 });
 	viewSystem.defineView(1, { 1 });
-	viewSystem.setView(0, oak::View{ 128, 0, 1280, 720 });
+	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
 
 	tileSystem.createLayer(std::hash<std::string>{}("mat_tiles"));
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
 		//emit update event in scripts (game logic)
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "update");
+		oak::luah::pushValue(L, "on_update");
 		oak::luah::pushValue(L, dt.count());
 		oak::luah::call(L, 3, 0);
 
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 		//hack view to follow player
 		oak::Entity player{ 1, 0, 0, &entityManager };
 		auto &tc = player.getComponent<oak::TransformComponent>();
-		viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });
+		//viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });
 
 		//sumbit sprites and text to the renderer
 		spriteSystem.update();

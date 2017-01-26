@@ -18,8 +18,8 @@ local entity_system = {
 		self.manager:create_prefab(name, prefab)
 	end,
 
-	create_entity = function(self, layer, ...)
-		local e = self.manager.createEntity(layer, ...)
+	create_entity = function(self, ...)
+		local e = self.manager.createEntity(...)
 		if self.entity_metatable == nil then
 			local mt = getmetatable(e)
 			if mt ~= nil then
@@ -27,14 +27,14 @@ local entity_system = {
 			end
 		end
 		self.entities[e:index() + 1] = e
-		self:send_message("create", e)
+		self:send_message("on_create", e)
 		e:activate()
 		return e
 	end,
 
 	destroy_entity = function(self, e)
 		if self.is_valid(e) then
-			self:send_message("destroy", e)
+			self:send_message("on_destroy", e)
 
 			self.entities[e:index() + 1] = nil
 			self.manager.destroyEntity(e)

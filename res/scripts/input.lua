@@ -1,6 +1,6 @@
 local input = {
 
-	create = function(self)
+	on_create = function(self)
 		self.mx = 0
 		self.my = 0
 		self.buttons = {}
@@ -8,20 +8,20 @@ local input = {
 			self.buttons[i] = 0
 		end
 		self.keys = {}
-		for i = 0, 255 do
+		for i = 0, 1024 do
 			self.keys[i] = 0
 		end
 	end,
 
-	key_press = function(self, evt)
+	on_key_press = function(self, evt)
 		self.keys[evt.key] = evt.action
 	end,
 
-	button_press = function(self, evt)
+	on_button_press = function(self, evt)
 		self.buttons[evt.button] = evt.action
 	end,
 
-	mouse_move = function(self, evt)
+	on_mouse_move = function(self, evt)
 		self.mx = evt.x
 		self.my = evt.y
 	end

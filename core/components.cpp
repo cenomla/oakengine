@@ -1,6 +1,8 @@
 #include "components.h"
 
-namespace oak::util {
+#include "pup.h"
+
+namespace oak {
 
 	void pup(Puper &puper, PrefabComponent &comp, const ObjInfo &info) {
 		pup(puper, comp.prefab, info);
@@ -21,6 +23,7 @@ namespace oak::util {
 		pup(puper, comp.font, ObjInfo{ "font" } + info);
 		pup(puper, comp.text, ObjInfo{ "text" } + info);
 		pup(puper, comp.offset, ObjInfo{ "offset" } + info);
+		pup(puper, comp.size, ObjInfo{ "size" } + info);
 	}
 
 	void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info) {

@@ -2,7 +2,7 @@
 
 #include <util/puper.h>
 
-namespace oak::util {
+namespace oak {
 
 	void pup(Puper &puper, TileCollisionEvent &data, const ObjInfo &info) {
 		pup(puper, data.entity, ObjInfo{ "entity" } + info);

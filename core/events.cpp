@@ -1,8 +1,8 @@
 #include "events.h"
 
-#include "util/puper.h"
+#include "pup.h"
 
-namespace oak::util {
+namespace oak {
 
 	void pup(Puper &puper, KeyEvent &data, const ObjInfo &info) {
 		pup(puper, data.key, ObjInfo{ "key" } + info);
@@ -20,6 +20,10 @@ namespace oak::util {
 	void pup(Puper &puper, MouseMoveEvent &data, const ObjInfo &info) {
 		pup(puper, data.x, ObjInfo{ "x" } + info);
 		pup(puper, data.y, ObjInfo{ "y" } + info);
+	}
+
+	void pup(Puper &puper, CharEvent &data, const ObjInfo &info) {
+		pup(puper, data.codepoint, ObjInfo{ "codepoint" } + info);
 	}
 
 	void pup(Puper &puper, EntityActivateEvent &data, const ObjInfo &info) {

@@ -8,9 +8,10 @@
 #include "graphics/sprite.h"
 #include "graphics/font.h"
 #include "graphics/renderable.h"
-#include "util/puper.h"
 #include "prefab.h"
 #include "resource.h"
+#include "entity.h"
+#include "pup.h"
 
 namespace oak {
 
@@ -47,9 +48,10 @@ namespace oak {
 		Resource<graphics::Font> font{ 0 };
 		std::string text{ "" };
 		glm::vec2 offset{ 0.0f };
+		float size = 24.0f;
 
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 
-			font.get().draw(buffer, text, x + offset.x, y + offset.y, rotation, 24.0f * scale);
+			font.get().draw(buffer, text, x + offset.x, y + offset.y, rotation, size * scale);
 		}
 		size_t getMaterialId() const override { return font.get().getMaterialId(); }
 		size_t getVertexCount() const override { return text.size() * 4; } 
@@ -79,13 +81,11 @@ namespace oak {
 		std::function<void (Entity e)> callback;
 	};
 
-	namespace util {
-		void pup(Puper &puper, PrefabComponent &comp, const ObjInfo &info);
-		void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info);
-		void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info);
-		void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info);
-		void pup(Puper &puper, TextComponent &comp, const ObjInfo &info);
-		void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info);
-	}
+	void pup(Puper &puper, PrefabComponent &comp, const ObjInfo &info);
+	void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info);
+	void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info);
+	void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info);
+	void pup(Puper &puper, TextComponent &comp, const ObjInfo &info);
+	void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info);
 
 }

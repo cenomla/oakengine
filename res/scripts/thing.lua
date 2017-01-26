@@ -1,5 +1,0 @@
-local thing = {
-
-}
-
-return thing

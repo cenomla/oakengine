@@ -285,7 +285,7 @@ static void keyboardHandleKey(void* data,
     code = key + 8;
     num_syms = xkb_key_get_syms(_glfw.wl.xkb.state, code, &syms);
 
-    if (num_syms == 1)
+    if (num_syms == 1 && action != 0)
     {
         cp = _glfwKeySym2Unicode(syms[0]);
         if (cp != -1)
@@ -442,6 +442,7 @@ static void createKeyTables(void)
 {
     memset(_glfw.wl.publicKeys, -1, sizeof(_glfw.wl.publicKeys));
 
+    _glfw.wl.publicKeys[KEY_SPACE]      = GLFW_KEY_SPACE;
     _glfw.wl.publicKeys[KEY_GRAVE]      = GLFW_KEY_GRAVE_ACCENT;
     _glfw.wl.publicKeys[KEY_1]          = GLFW_KEY_1;
     _glfw.wl.publicKeys[KEY_2]          = GLFW_KEY_2;

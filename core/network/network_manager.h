@@ -6,9 +6,10 @@
 #include <enet/enet.h>
 
 #include "util/byte_buffer.h"
-#include "util/puper.h"
+#include "util/byte_buffer_puper.h"
 #include "system.h"
 #include "events.h"
+#include "pup.h"
 
 namespace oak::network {
 
@@ -24,11 +25,11 @@ namespace oak::network {
 		template<class T>
 		void broadcast(uint32_t packetId, const T& data) {
 			//create a byte buffer puper to serialize the data
-			util::ByteBufferPuper puper{ packetBuffer_ };
+			ByteBufferPuper puper{ packetBuffer_ };
 			//write the packet id
 			packetBuffer_.write(packetId);
 			//call serialization function
-			util::pup(puper, data, util::ObjInfo{});
+			pup(puper, data, ObjInfo{});
 
 			//send a packet to every peer
 			ENetPacket *packet;

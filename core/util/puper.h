@@ -1,15 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <string>
 #include <glm/glm.hpp>
 
 namespace oak {
-	class Entity;
-}
-
-namespace oak::util {
 
 	struct ObjInfo {
 		std::string name;
@@ -30,6 +25,8 @@ namespace oak::util {
 		IN,
 		OUT
 	};
+
+	class Entity;
 
 	class Puper {
 	public:
@@ -54,64 +51,5 @@ namespace oak::util {
 	protected:
 		PuperIo io_ = PuperIo::OUT;
 	};
-
-	class ByteBuffer;
-
-	class ByteBufferPuper : public Puper {
-	public:
-		ByteBufferPuper(ByteBuffer &buffer);
-
-		void pup(int8_t &data, const ObjInfo &info) override;
-		void pup(int16_t &data, const ObjInfo &info) override;
-		void pup(int32_t &data, const ObjInfo &info) override;
-		void pup(int64_t &data, const ObjInfo &info) override;
-		void pup(uint8_t &data, const ObjInfo &info) override;
-		void pup(uint16_t &data, const ObjInfo &info) override;
-		void pup(uint32_t &data, const ObjInfo &info) override;
-		void pup(uint64_t &data, const ObjInfo &info) override;
-		void pup(float &data, const ObjInfo &info) override;
-		void pup(double &data, const ObjInfo &info) override;
-		void pup(bool &data, const ObjInfo &info) override;
-		void pup(std::string &data, const ObjInfo &info) override;
-		void pup(Entity &data, const ObjInfo &info) override;
-
-	private:
-		ByteBuffer *buffer_;
-	};
-	
-	void pup(Puper &puper, int8_t &data, const ObjInfo &info);
-	void pup(Puper &puper, int16_t &data, const ObjInfo &info);
-	void pup(Puper &puper, int32_t &data, const ObjInfo &info);
-	void pup(Puper &puper, int64_t &data, const ObjInfo &info);
-	void pup(Puper &puper, uint8_t &data, const ObjInfo &info);
-	void pup(Puper &puper, uint16_t &data, const ObjInfo &info);
-	void pup(Puper &puper, uint32_t &data, const ObjInfo &info);
-	void pup(Puper &puper, uint64_t &data, const ObjInfo &info);
-	void pup(Puper &puper, float &data, const ObjInfo &info);
-	void pup(Puper &puper, double &data, const ObjInfo &info);
-	void pup(Puper &puper, bool &data, const ObjInfo &info);
-	void pup(Puper &puper, std::string &data, const ObjInfo &info);
-	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info);
-	void pup(Puper &puper, glm::vec3 &data, const ObjInfo &info);
-	void pup(Puper &puper, glm::vec4 &data, const ObjInfo &info);
-	void pup(Puper &puper, Entity &data, const ObjInfo &info);
-	
-	template<class T>
-	void pup(Puper &puper, std::vector<T> &data, const ObjInfo &info) {
-		if (puper.getIo() == PuperIo::OUT) {
-			size_t size = data.size();
-			pup(puper, size, ObjInfo{ "size" } + info);
-			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], ObjInfo{ std::to_string(i) } + info);
-			}
-		} else {
-			size_t size = 0;
-			pup(puper, size, ObjInfo{ "size" } + info);
-			data.resize(size);
-			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], ObjInfo{ std::to_string(i) } + info);
-			}
-		}
-	}
 
 }

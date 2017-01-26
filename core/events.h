@@ -32,6 +32,10 @@ namespace oak {
 		int x, y;
 	};
 
+	struct CharEvent {
+		uint32_t codepoint;
+	};
+
 	struct WindowCreateEvent {
 		GLFWwindow *window;
 	};
@@ -71,18 +75,12 @@ namespace oak {
 		glm::vec2 force;
 	};
 
-	namespace util {
-
-		class Puper;
-		class ObjInfo;
-
-		void pup(Puper &puper, KeyEvent &data, const ObjInfo &info);
-		void pup(Puper &puper, ButtonEvent &data, const ObjInfo &info);
-		void pup(Puper &puper, MouseMoveEvent &data, const ObjInfo &info);
-		void pup(Puper &puper, EntityActivateEvent &data, const ObjInfo &info);
-		void pup(Puper &puper, EntityDeactivateEvent &data, const ObjInfo &info);
-		void pup(Puper &puper, EntityCollisionEvent &data, const ObjInfo &info);
-
-	}
+	void pup(Puper &puper, KeyEvent &data, const ObjInfo &info);
+	void pup(Puper &puper, ButtonEvent &data, const ObjInfo &info);
+	void pup(Puper &puper, MouseMoveEvent &data, const ObjInfo &info);
+	void pup(Puper &puper, CharEvent &data, const ObjInfo &info);
+	void pup(Puper &puper, EntityActivateEvent &data, const ObjInfo &info);
+	void pup(Puper &puper, EntityDeactivateEvent &data, const ObjInfo &info);
+	void pup(Puper &puper, EntityCollisionEvent &data, const ObjInfo &info);
 
 }

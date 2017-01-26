@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "util/puper.h"
+#include "pup.h"
 
 namespace oak {
 
@@ -13,7 +13,7 @@ namespace oak {
 		virtual void construct(void *src, void *target) const = 0;
 		virtual void copy(void *src, void *target) const = 0;
 		virtual void destruct(void *comp) const = 0;
-		virtual void pupObject(util::Puper &puper, void *data, const util::ObjInfo &info) const = 0;
+		virtual void pupObject(Puper &puper, void *data, const ObjInfo &info) const = 0;
 		inline size_t size() const { return size_; }
 		inline const std::string& name() const { return name_; }
 	protected:
@@ -41,8 +41,7 @@ namespace oak {
 			static_cast<T*>(comp)->~T();
 		}
 
-		void pupObject(util::Puper &puper, void *data, const util::ObjInfo &info) const override {
-			using namespace util;
+		void pupObject(Puper &puper, void *data, const ObjInfo &info) const override {
 			pup(puper, *static_cast<T*>(data), info);
 		}
 	};
