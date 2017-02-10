@@ -61,11 +61,67 @@ static int c_getChunk(lua_State *L) {
 	return 1;
 }
 
+//uint32_t create_layer(tileSystem, matid)
+static int c_createLayer(lua_State *L) {
+	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
+	size_t matid = toValue<size_t>(L, 2);
+
+	lua_settop(L, 0);
+
+	uint32_t layer = tileSystem.createLayer(matid);
+
+	pushValue(L, layer);
+
+	return 1;
+}
+
+//void destroy_layer(tileSystem, matid)
+static int c_destroyLayer(lua_State *L) {
+	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
+	uint32_t layer = toValue<uint32_t>(L, 2);
+
+	lua_settop(L, 0);
+
+	tileSystem.destroyLayer(layer);
+
+	return 0;
+}
+
+//void move_layer(tileSystem, layer, newlayer)
+static int c_moveLayer(lua_State *L) {
+	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
+	uint32_t layer = toValue<uint32_t>(L, 2);
+	uint32_t newLayer = toValue<uint32_t>(L, 3);
+
+	lua_settop(L, 0);
+
+	tileSystem.moveLayer(layer, newLayer);
+
+	return 0;
+}
+
+//void set_layer_dpeth(tileSystem, layer, depth)
+static int c_setLayerDepth(lua_State *L) {
+	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
+	uint32_t layer = toValue<uint32_t>(L, 2);
+	float depth = toValue<float>(L, 3);
+
+	lua_settop(L, 0);
+
+	tileSystem.setLayerDepth(layer, depth);
+
+	return 0;
+}
+
 void initBindings(lua_State *L) {
 	addFunctionToMetatable(L, "chunk", "get_tile", c_getTile);
 	addFunctionToMetatable(L, "chunk", "set_tile", c_setTile);
 
 	addFunctionToMetatable(L, "tile_system", "get_chunk", c_getChunk);
+	addFunctionToMetatable(L, "tile_system", "create_layer", c_createLayer);
+	addFunctionToMetatable(L, "tile_system", "destroy_layer", c_destroyLayer);
+	addFunctionToMetatable(L, "tile_system", "move_layer", c_moveLayer);
+	addFunctionToMetatable(L, "tile_system", "set_layer_depth", c_setLayerDepth);
 
 	auto &engine = oak::Engine::inst();
 

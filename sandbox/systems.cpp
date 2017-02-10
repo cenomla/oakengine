@@ -47,6 +47,7 @@ CollisionSystem::CollisionSystem(oak::Engine &engine) : oak::System{ engine, "co
 void CollisionSystem::init() {
 	cache_.requireComponent<oak::TransformComponent>();
 	cache_.requireComponent<oak::AABB2dComponent>();
+	cache_.requireComponent<oak::PhysicsBody2dComponent>();
 	engine_.getSystem<oak::EntityManager>().addCache(&cache_);
 }
 
@@ -92,6 +93,7 @@ void CollisionSystem::update() {
 		const auto& tcA = entityA.getComponent<oak::TransformComponent>();
 		const auto& boxA = entityA.getComponent<oak::AABB2dComponent>();
 		//check for tile collisions
+		/*
 		const glm::vec2 tp = glm::floor(glm::vec2{ tcA.position } / 16.0f) * 16.0f + glm::vec2{ 8.0f };
 		for (int ix = -8; ix < 8; ix++) {
 			for (int iy = -8; iy < 8; iy++) {				
@@ -104,7 +106,7 @@ void CollisionSystem::update() {
 					engine_.getEventManager().emitEvent(TileCollisionEvent{ entityA, t, normal, depth });
 				}
 			}
-		}
+		}*/
 
 		//start one entity after entity A so we dont get duplicate pairs or entities colliding with theirselves 
 		for (size_t j = i + 1; j < entities.size(); j++) {

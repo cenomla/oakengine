@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	entityManager.addComponentHandle<oak::TransformComponent>("transform");
 	entityManager.addComponentHandle<oak::SpriteComponent>("sprite");
 	entityManager.addComponentHandle<oak::TextComponent>("text");
-	entityManager.addComponentHandle<oak::AABB2dComponent>("aabb_2d");
+	entityManager.addComponentHandle<oak::AABB2dComponent>("aabb2d");
 	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>("physics_body_2d");
 
 	//setup views
@@ -82,8 +82,6 @@ int main(int argc, char** argv) {
 	viewSystem.defineView(1, { 1 });
 	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
-
-	tileSystem.createLayer(std::hash<std::string>{}("mat_tiles"));
 
 	//setup lua bindings
 	lua_State *L = luam.getState();

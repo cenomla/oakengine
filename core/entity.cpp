@@ -83,10 +83,10 @@ namespace oak {
 
 	void EntityManager::removeComponent(uint32_t idx, uint32_t tid) {
 		auto &attribute = entityAttributes_[idx];
-		attribute.componentMask[tid] = false;
-		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
+		if (attribute.componentMask[tid] && attribute.ownsMask[tid]) {
 			componentHandles_[tid].ptr->destruct(attribute.components[tid]);
 		}
+		attribute.componentMask[tid] = false;
 	}
 
 	void EntityManager::deleteComponent(uint32_t idx, uint32_t tid) {

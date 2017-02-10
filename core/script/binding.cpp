@@ -376,6 +376,18 @@ namespace oak::luah {
 		return 0;
 	}
 
+	template<class T>
+	static int c_entity_hasComponent(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		bool has = entity.hasComponent<T>();
+
+		lua_pushboolean(L, has);
+
+		return 1;
+	}
+
 	//entity createEntity(layer, name, table)
 	static int c_entityManager_createEntity(lua_State *L) {
 		int argc = lua_gettop(L);
@@ -438,34 +450,39 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "layer", c_entity_layer);
 		addFunctionToMetatable(L, "entity", "is_active", c_entity_active);
 
-		addFunctionToMetatable(L, "entity", "addTransform", c_entity_addComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "removeTransform", c_entity_removeComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "getTransform", c_entity_getComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "setTransform", c_entity_setComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "add_transform", c_entity_addComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "remove_transform", c_entity_removeComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "get_transform", c_entity_getComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "set_transform", c_entity_setComponent<TransformComponent>);
+		addFunctionToMetatable(L, "entity", "has_transform", c_entity_hasComponent<TransformComponent>);
 
-		addFunctionToMetatable(L, "entity", "addPhysicsBody2d", c_entity_addComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "removePhysicsBody2d", c_entity_removeComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "getPhysicsBody2d", c_entity_getComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "setPhysicsBody2d", c_entity_setComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "add_physicsBody2d", c_entity_addComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "remove_physicsBody2d", c_entity_removeComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "get_physicsBody2d", c_entity_getComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "set_physicsBody2d", c_entity_setComponent<PhysicsBody2dComponent>);
+		addFunctionToMetatable(L, "entity", "has_physicsBody2d", c_entity_hasComponent<PhysicsBody2dComponent>);
 
-		addFunctionToMetatable(L, "entity", "addAABB2d", c_entity_addComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "removeAABB2d", c_entity_removeComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "getAABB2d", c_entity_getComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "setAABB2d", c_entity_setComponent<AABB2dComponent>);
+		addFunctionToMetatable(L, "entity", "add_aabb2d", c_entity_addComponent<AABB2dComponent>);
+		addFunctionToMetatable(L, "entity", "remove_aabb2d", c_entity_removeComponent<AABB2dComponent>);
+		addFunctionToMetatable(L, "entity", "get_aabb2d", c_entity_getComponent<AABB2dComponent>);
+		addFunctionToMetatable(L, "entity", "set_aabb2d", c_entity_setComponent<AABB2dComponent>);
+		addFunctionToMetatable(L, "entity", "has_aabb2d", c_entity_hasComponent<AABB2dComponent>);
 
-		addFunctionToMetatable(L, "entity", "addSprite", c_entity_addComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "removeSprite", c_entity_removeComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "getSprite", c_entity_getComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "setSprite", c_entity_setComponent<SpriteComponent>);
+		addFunctionToMetatable(L, "entity", "add_sprite", c_entity_addComponent<SpriteComponent>);
+		addFunctionToMetatable(L, "entity", "remove_sprite", c_entity_removeComponent<SpriteComponent>);
+		addFunctionToMetatable(L, "entity", "get_sprite", c_entity_getComponent<SpriteComponent>);
+		addFunctionToMetatable(L, "entity", "set_sprite", c_entity_setComponent<SpriteComponent>);
+		addFunctionToMetatable(L, "entity", "has_sprite", c_entity_hasComponent<SpriteComponent>);
 
-		addFunctionToMetatable(L, "entity", "addText", c_entity_addComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "removeText", c_entity_removeComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "getText", c_entity_getComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "setText", c_entity_setComponent<TextComponent>);
+		addFunctionToMetatable(L, "entity", "add_text", c_entity_addComponent<TextComponent>);
+		addFunctionToMetatable(L, "entity", "remove_text", c_entity_removeComponent<TextComponent>);
+		addFunctionToMetatable(L, "entity", "get_text", c_entity_getComponent<TextComponent>);
+		addFunctionToMetatable(L, "entity", "set_text", c_entity_setComponent<TextComponent>);
+		addFunctionToMetatable(L, "entity", "has_text", c_entity_hasComponent<TextComponent>);
 
 		addFunctionToMetatable(L, "entity_manager", "create_prefab", c_create_prefab);
-		addFunctionToMetatable(L, "entity_manager", "createEntity", c_entityManager_createEntity);
-		addFunctionToMetatable(L, "entity_manager", "destroyEntity", c_entityManager_destroyEntity);
+		addFunctionToMetatable(L, "entity_manager", "create_entity", c_entityManager_createEntity);
+		addFunctionToMetatable(L, "entity_manager", "destroy_entity", c_entityManager_destroyEntity);
 
 		lua_getglobal(L, "oak");
 		lua_pushcfunction(L, c_resource_load_shader);

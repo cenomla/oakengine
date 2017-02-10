@@ -19,7 +19,7 @@ local entity_system = {
 	end,
 
 	create_entity = function(self, ...)
-		local e = self.manager.createEntity(...)
+		local e = self.manager.create_entity(...)
 		if self.entity_metatable == nil then
 			local mt = getmetatable(e)
 			if mt ~= nil then
@@ -37,13 +37,13 @@ local entity_system = {
 			self:send_message("on_destroy", e)
 
 			self.entities[e:index() + 1] = nil
-			self.manager.destroyEntity(e)
+			self.manager.destroy_entity(e)
 		end
 	end,
 
 	destroy_all = function(self)
 		for k, v in pairs(self.entities) do
-			self:destroyEntity(v)
+			self:destroy_entity(v)
 		end
 	end,
 

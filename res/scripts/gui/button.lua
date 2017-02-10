@@ -3,13 +3,13 @@ require("util/collision")
 local button = {
 	active = 0,
 	set_active = function(self, active)
-		self:setSprite({ animframe_y = active })
+		self:set_sprite({ animframe_y = active })
+		self.active = active
 		if self.callback ~= nil then 
 			self:callback(active)
 		end
-		self.active = active
 	end,
-	toggle_active = function(self)
+	toggle_active = function(self, active)
 		if self.active == 0 then
 			self:set_active(1)
 		else 
@@ -17,17 +17,20 @@ local button = {
 		end
 	end,
 	on_button_press = function(self, evt)
-		local tc = self:getTransform()
+		local tc = self:get_transform()
 		local aabb = { half_extent = { x = 16.0, y = 16.0 }, offset = { x = 16.0, y = 16.0 } }
+		if self:has_aabb2d() then
+			aabb = self:get_aabb2d()
+		end
 
-		local sp = self:getSprite()
-		if evt.action == 0 then self:setSprite({ animframe_x = 0 }) end
+		local sp = self:get_sprite()
+		if evt.action == 0 then self:set_sprite({ animframe_x = 0 }) end
 		if point_intersects(tc, aabb, { x = oak.input.mx, y = oak.input.my }) then
 			if evt.button == 0 then
 				if evt.action == 0 then
 					if sp.animframe_x == 1 then self:toggle_active() end
 				else
-					self:setSprite({ animframe_x = 1 })
+					self:set_sprite({ animframe_x = 1 })
 				end
 				return true
 			end

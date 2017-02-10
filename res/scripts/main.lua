@@ -47,11 +47,14 @@ oak.load_atlas({
 		"res/textures/gui/tile_editor/background",
 		"res/textures/gui/tile_editor/icons",
 		"res/textures/gui/tile_editor/selector",
-		size = 7
+		"res/textures/gui/tool_bar/background",
+		"res/textures/gui/tool_bar/icons",
+		"res/textures/gui/console/background",
+		size = 10
 	},
 	extent = {
-		x = 512,
-		y = 512
+		x = 1024,
+		y = 1024
 	},
 	flags = 0
 })
@@ -187,6 +190,31 @@ oak.load_sprite({
 	path = "res/textures/gui/tile_editor/selector"
 })
 
+oak.load_sprite({
+	name = "spr_tool_bar",
+	material = "mat_gui",
+	extent = { x = 176.0, y = 32.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/tool_bar/background"
+})
+
+oak.load_sprite({
+	name = "spr_tool_bar_icons",
+	material = "mat_gui",
+	extent = { x = 32.0, y = 32.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/tool_bar/icons",
+	animframes_x = 4
+})
+
+oak.load_sprite({
+	name = "spr_console",
+	material = "mat_gui",
+	extent = { x = 512.0, y = 256.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/console/background"
+})
+
 oak.es:create_prefab("player", {
 	transform = {
 		position = {
@@ -233,7 +261,7 @@ oak.es:create_prefab("block", {
 		shared = true,
 		sprite = hash("spr_block")
 	},
-	aabb_2d = {
+	aabb2d = {
 		shared = true,
 		half_extent = { x = 128.0, y = 32.0 }
 	}, 
@@ -270,6 +298,10 @@ oak.es:create_prefab("gui_text_box", {
 	sprite = {
 		sprite = hash("spr_gui_text_box")
 	},
+	aabb2d = {
+		half_extent = { x = 32.0, y = 8.0 },
+		offset = { x = 32.0, y = 8.0 }
+	},
 	text = {
 		font = hash("fnt_dejavu"),
 		offset = { x = 2.0, y = 2.0 },
@@ -286,16 +318,27 @@ oak.es:create_prefab("tile_editor", {
 	}
 })
 
+oak.es:create_prefab("console", {
+	transform = {
+		position = { y = 32.0 }
+	},
+	sprite = {
+		sprite = hash("spr_console")
+	}
+})
+
+oak.es:create_prefab("tool_bar", {
+	transform = {
+	},
+	sprite = {
+		sprite = hash("spr_tool_bar")
+	}
+})
+
 oak.es:create_entity(0, "player", require("player"))
 oak.es:create_entity(0, "block", {})
 
 local e = oak.es:create_entity(0, "block", {})
-e:setTransform({ position = { x = 512, y = 496 } })
+e:set_transform({ position = { x = 512, y = 496 } })
 
-local te = oak.es:create_entity(1, "tile_editor", require("gui/tile_editor"))
-
-e = oak.es:create_entity(1, "gui_button", require("gui/button"))
-e.callback = function(button, active) te:toggle_active() end
-
-e = oak.es:create_entity(1, "gui_button", require("gui/button"))
-e:setTransform({ position = { x = 32 }})
+oak.es:create_entity(1, "tool_bar", require("gui/tool_bar"))
