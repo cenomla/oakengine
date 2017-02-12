@@ -40,6 +40,13 @@ namespace oak::graphics {
 		}
 	}
 
+	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void()> &op) {
+		if (layer >= drawOperations_.size()) {
+			drawOperations_.resize(layer + 1);
+		}
+		drawOperations_[layer] = op;
+	}
+
 	void GLRenderer::render() {
 		//if there are no objects dont do anything
 		if (objects_.empty()) { return; }
@@ -110,9 +117,13 @@ namespace oak::graphics {
 		auto &viewSystem = Engine::inst().getSystem<ViewSystem>();
 
 		for (const auto &batch : batches_) {
-			batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
-			batch.material->bind();
-			glDrawElements(GL_TRIANGLES, batch.count * 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.start * 24));
+			if (batch.layer < drawOperations_.size() && drawOperations_[batch.layer]) {
+				drawOperations_[batch.layer](batch.material, batch.start, batch.end);
+			} else {
+				batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
+				batch.material->bind();
+				glDrawElements(GL_TRIANGLES, batch.count * 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.start * 24));
+			}
 		}
 		vao_.unbind();
 
