@@ -20,7 +20,7 @@ namespace oak::graphics {
 		void init() override;
 
 		void addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object);
-		void setDrawOp(uint32_t layer, const std::function<void ()> &op);
+		void setDrawOp(uint32_t layer, const std::function<void(const GLMaterial*, size_t, size_t)> &op);
 
 		void render();
 
@@ -47,7 +47,7 @@ namespace oak::graphics {
 
 		std::vector<ObjectPos> objects_;
 		std::vector<Batch> batches_;
-		std::vector<std::function<void(const GLMaterial *material, size_t start, size_t end)>> drawOperations_;
+		std::vector<std::function<void(const GLMaterial*, size_t, size_t)>> drawOperations_;
 
 		GLVertexArray vao_;
 		GLBuffer vbo_;

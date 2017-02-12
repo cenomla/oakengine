@@ -40,7 +40,7 @@ namespace oak::graphics {
 		}
 	}
 
-	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void()> &op) {
+	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void(const GLMaterial*, size_t, size_t)> &op) {
 		if (layer >= drawOperations_.size()) {
 			drawOperations_.resize(layer + 1);
 		}
@@ -118,7 +118,7 @@ namespace oak::graphics {
 
 		for (const auto &batch : batches_) {
 			if (batch.layer < drawOperations_.size() && drawOperations_[batch.layer]) {
-				drawOperations_[batch.layer](batch.material, batch.start, batch.end);
+				drawOperations_[batch.layer](batch.material, batch.start, batch.count);
 			} else {
 				batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
 				batch.material->bind();
