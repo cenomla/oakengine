@@ -13,6 +13,12 @@
 
 namespace oak::graphics {
 
+	struct Batch {
+		const GLMaterial *material;
+		size_t start, count, objectCount;
+		uint32_t layer;
+	};
+
 	class GLRenderer : public System {
 	public:
 		GLRenderer(Engine &engine);
@@ -20,7 +26,7 @@ namespace oak::graphics {
 		void init() override;
 
 		void addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object);
-		void setDrawOp(uint32_t layer, const std::function<void(const GLMaterial*, size_t, size_t)> &op);
+		void setDrawOp(uint32_t layer, const std::function<void(const GLVertexArray&, const Batch&)> &op);
 
 		void render();
 
@@ -39,15 +45,9 @@ namespace oak::graphics {
 			}
 		};
 
-		struct Batch {
-			const GLMaterial *material;
-			size_t start, count;
-			uint32_t layer;
-		};
-
 		std::vector<ObjectPos> objects_;
 		std::vector<Batch> batches_;
-		std::vector<std::function<void(const GLMaterial*, size_t, size_t)>> drawOperations_;
+		std::vector<std::function<void(const GLVertexArray&, const Batch&)>> drawOperations_;
 
 		GLVertexArray vao_;
 		GLBuffer vbo_;

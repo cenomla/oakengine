@@ -25,6 +25,12 @@ oak.load_texture({
 	flags = 1
 })
 
+oak.load_texture({
+	name = "tex_light",
+	path = "res/textures/light",
+	flags = 0
+})
+
 oak.load_atlas({
 	name = "atlas_entity",
 	textures = {
@@ -75,6 +81,12 @@ oak.load_material({
 	name = "mat_font",
 	shader = "shd_font",
 	texture = "tex_font"
+})
+
+oak.load_material({
+	name = "mat_light",
+	shader = "shd_pass",
+	texture = "tex_light"
 })
 
 oak.set_uniform("shd_font", "text_width", 0.4)
@@ -227,7 +239,10 @@ oak.es:create_prefab("player", {
 		shared = true,
 		sprite = hash("spr_player")
 	},
-	aabb_2d = {
+	light = {
+
+	},
+	aabb2d = {
 		shared = true,
 		half_extent = {
 			x = 8.0, 
@@ -260,6 +275,9 @@ oak.es:create_prefab("block", {
 	sprite = {
 		shared = true,
 		sprite = hash("spr_block")
+	},
+	occluder = {
+
 	},
 	aabb2d = {
 		shared = true,
@@ -341,4 +359,4 @@ oak.es:create_entity(0, "block", {})
 local e = oak.es:create_entity(0, "block", {})
 e:set_transform({ position = { x = 512, y = 496 } })
 
-oak.es:create_entity(1, "tool_bar", require("gui/tool_bar"))
+oak.es:create_entity(3, "tool_bar", require("gui/tool_bar"))

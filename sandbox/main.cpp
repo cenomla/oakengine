@@ -24,8 +24,10 @@
 #include <view_system.h>
 #include <event_queue.h>
 
+#include "component_extentions.h"
 #include "binding.h"
 #include "tile_system.h"
+#include "light_renderer.h"
 #include "systems.h"
 #include "events.h"
 
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
 	TileSystem tileSystem{ engine, 8, 16 };
 	SpriteSystem spriteSystem{ engine };
 	TextSystem textSystem{ engine };
+	LightRenderer lightRenderer{ engine };
 
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem(&resManager);
@@ -69,6 +72,7 @@ int main(int argc, char** argv) {
 	engine.addSystem(&textSystem);
 	engine.addSystem(&tileSystem);
 	engine.addSystem(&entityRenderer);
+	engine.addSystem(&lightRenderer);
 
 	//register components with the entity manager
 	entityManager.addComponentHandle<oak::TransformComponent>("transform");
@@ -76,10 +80,12 @@ int main(int argc, char** argv) {
 	entityManager.addComponentHandle<oak::TextComponent>("text");
 	entityManager.addComponentHandle<oak::AABB2dComponent>("aabb2d");
 	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>("physics_body_2d");
+	entityManager.addComponentHandle<OccluderComponent>("occluder");
+	entityManager.addComponentHandle<LightComponent>("light");
 
 	//setup views
-	viewSystem.defineView(0, { 0 });
-	viewSystem.defineView(1, { 1 });
+	viewSystem.defineView(0, { 0, 1, 2 });
+	viewSystem.defineView(1, { 3 });
 	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
 
@@ -125,11 +131,17 @@ int main(int argc, char** argv) {
 		auto &tc = player.getComponent<oak::TransformComponent>();
 		//viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });
 
+		oak::Entity block{ 2, 0, 0, &entityManager };
+
+		std::cout << block.hasComponent<OccluderComponent>() << std::endl;
+
 		//sumbit sprites and text to the renderer
 		spriteSystem.update();
 		textSystem.update();
 		//sumbit chunks to the renderer
 		tileSystem.update();
+		//update lights
+		lightRenderer.update();
 		//render entities
 		entityRenderer.render();
 		//swap buffers, clear buffer check for opengl errors

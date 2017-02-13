@@ -40,7 +40,7 @@ namespace oak::graphics {
 		}
 	}
 
-	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void(const GLMaterial*, size_t, size_t)> &op) {
+	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void(const GLVertexArray&, const Batch&)> &op) {
 		if (layer >= drawOperations_.size()) {
 			drawOperations_.resize(layer + 1);
 		}
@@ -64,7 +64,7 @@ namespace oak::graphics {
 			uint32_t layer = objects_.at(0).layer;
 
 			auto& resManager = Engine::inst().getSystem<ResourceManager>();
-			Batch currentBatch{ &resManager.require<GLMaterial>(id), index, 0, layer }; //first batch
+			Batch currentBatch{ &resManager.require<GLMaterial>(id), index, 0, 0, layer }; //first batch
 			//iterate through the sorted object
 			for (const auto& it : objects_) {
 				//if the material is different use a different batch
@@ -73,13 +73,14 @@ namespace oak::graphics {
 					batches_.push_back(currentBatch);
 					id = it.object->getMaterialId();
 					layer = it.layer;
-					currentBatch = Batch{ &resManager.require<GLMaterial>(id), index, 0, layer };
+					currentBatch = Batch{ &resManager.require<GLMaterial>(id), index, 0, 0, layer };
 				}
 				//stream data
 				it.object->draw(buffer, it.position.x, it.position.y, it.rotation, it.scale);
 				buffer = static_cast<char*>(buffer) + it.object->getVertexCount() * sizeof(Sprite::Vertex);
 
 				currentBatch.count += it.object->getVertexCount() / 4;
+				currentBatch.objectCount++;
 			}
 			batches_.push_back(currentBatch);
 			vbo_.unmap();
@@ -108,25 +109,25 @@ namespace oak::graphics {
 			ibo_.unbind();
 		}
 
-		//draw sprites
-		glEnable(GL_BLEND);
-		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
-
-		vao_.bind();
 
 		auto &viewSystem = Engine::inst().getSystem<ViewSystem>();
 
 		for (const auto &batch : batches_) {
 			if (batch.layer < drawOperations_.size() && drawOperations_[batch.layer]) {
-				drawOperations_[batch.layer](batch.material, batch.start, batch.count);
+				drawOperations_[batch.layer](vao_, batch);
 			} else {
+				//draw sprites
+				glEnable(GL_BLEND);
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+
+				vao_.bind();
 				batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
 				batch.material->bind();
 				glDrawElements(GL_TRIANGLES, batch.count * 6, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.start * 24));
 			}
 		}
-		vao_.unbind();
 
+		vao_.unbind();
 		vertexCount_ = 0;
 
 		objects_.clear();

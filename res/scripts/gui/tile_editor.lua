@@ -106,7 +106,7 @@ local tile_editor = {
 		end
 
 		for i = 0, 14 do			
-			local e = oak.es:create_entity(1, "gui_button", require("gui/button"))
+			local e = oak.es:create_entity(self:layer(), "gui_button", require("gui/button"))
 			e.callback = function(button, active)
 				if self.tools[i + 1] ~= nil then
 					self.tools[i + 1](button, active)
@@ -118,7 +118,7 @@ local tile_editor = {
 					y = 48 + ((i // 5) * 48)
 				} 
 			})
-			local icon = oak.es:create_entity(1, {})
+			local icon = oak.es:create_entity(self:layer(), {})
 			icon:add_transform({
 				position = { 
 					x = 16 + ((i % 5) * 48), 
@@ -137,14 +137,14 @@ local tile_editor = {
 			table.insert(self.children, icon)
 		end
 		for i = 0, 4 do
-			local e = oak.es:create_entity(1, "gui_button", require("gui/button"))
+			local e = oak.es:create_entity(self:layer(), "gui_button", require("gui/button"))
 			e:set_transform({
 				position = {
 					x = 16 + (i * 48),
 					y = 424.0
 				}
 			})
-			local icon = oak.es:create_entity(1, {})
+			local icon = oak.es:create_entity(self:layer(), {})
 			icon:add_transform({
 				position = { 
 					x = 16 + (i * 48), 
@@ -161,7 +161,7 @@ local tile_editor = {
 			table.insert(self.children, icon)
 		end
 
-		e = oak.es:create_entity(1, "gui_text_box", require("gui/text_box"))
+		e = oak.es:create_entity(self:layer(), "gui_text_box", require("gui/text_box"))
 		e:set_transform({
 			position = {
 				x = 16.0,
@@ -178,7 +178,7 @@ local tile_editor = {
 
 
 
-		self.tilemap = oak.es:create_entity(1, {})
+		self.tilemap = oak.es:create_entity(self:layer(), {})
 		self.tilemap:add_transform({
 			position = {
 				x = 16.0,
@@ -191,7 +191,7 @@ local tile_editor = {
 		})
 		table.insert(self.children, self.tilemap)
 
-		self.selector = oak.es:create_entity(1, {})
+		self.selector = oak.es:create_entity(self:layer(), {})
 		self.selector:add_transform({
 			position = {
 				x = 16.0,
@@ -207,7 +207,7 @@ local tile_editor = {
 
 
 		--layer selector 	
-		self.layer_text = oak.es:create_entity(1, {})
+		self.layer_text = oak.es:create_entity(self:layer(), {})
 		self.layer_text:add_transform({
 			position = {
 				x = 184.0,
@@ -223,7 +223,7 @@ local tile_editor = {
 		})
 		table.insert(self.children, self.layer_text)
 
-		self.layer_name = oak.es:create_entity(1, "gui_text_box", require("gui/text_box"))
+		self.layer_name = oak.es:create_entity(self:layer(), "gui_text_box", require("gui/text_box"))
 		self.layer_name:remove_sprite()
 		self.layer_name:set_transform({
 			position = {
@@ -244,7 +244,7 @@ local tile_editor = {
 		end
 		table.insert(self.children, self.layer_name)
 
-		self.layer_depth = oak.es:create_entity(1, "gui_text_box", require("gui/text_box"))
+		self.layer_depth = oak.es:create_entity(self:layer(), "gui_text_box", require("gui/text_box"))
 		self.layer_depth:remove_sprite()
 		self.layer_depth:set_transform({
 			position = {
@@ -266,7 +266,7 @@ local tile_editor = {
 		end
 		table.insert(self.children, self.layer_depth)
 
-		local lau = oak.es:create_entity(1, "gui_arrow", require("gui/button"))
+		local lau = oak.es:create_entity(self:layer(), "gui_arrow", require("gui/button"))
 		lau:set_transform({
 			position = {
 				x = 32.0,
@@ -298,7 +298,7 @@ local tile_editor = {
 				self.layer_name:update_text() 
 			end
 		end
-		local lad = oak.es:create_entity(1, "gui_arrow", require("gui/button"))
+		local lad = oak.es:create_entity(self:layer(), "gui_arrow", require("gui/button"))
 		lad:set_transform({
 			position = {
 				x = 144.0,

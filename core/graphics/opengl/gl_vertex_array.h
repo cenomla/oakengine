@@ -15,8 +15,8 @@ namespace oak::graphics {
 		void create();
 		void destroy();
 	
-		void bind();
-		void unbind();
+		void bind() const;
+		void unbind() const;
 
 		void attributeDescription(BindingData &&binding, std::initializer_list<AttributeData> &&attribs);
 	private:

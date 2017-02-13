@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 
+#include "gl_texture.h"
+
 namespace oak::graphics {
 
 	class GLFramebuffer {
@@ -9,11 +11,11 @@ namespace oak::graphics {
 		GLFramebuffer();
 		~GLFramebuffer();
 
-		void create();
+		void create(const GLTexture &texture, int width, int height);
 		void destroy();
 
-		void bind();
-		void unbind();
+		void bind() const;
+		void unbind() const;
 
 	private:
 		GLuint fbo_;

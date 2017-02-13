@@ -38,7 +38,7 @@ namespace oak::graphics {
 	void GLFrameRenderer::render() {
 		glfwSwapBuffers(window_);
 		glViewport(0, 0, windowWidth_, windowHeight_);
-		glClearColor(0.3f, 0.2f, 0.7f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		GLenum error = glGetError();

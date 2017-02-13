@@ -20,11 +20,11 @@ namespace oak::graphics {
 		}
 	}
 
-	void GLVertexArray::bind() {
+	void GLVertexArray::bind() const {
 		glBindVertexArray(vao_);
 	}
 
-	void GLVertexArray::unbind() {
+	void GLVertexArray::unbind() const {
 		glBindVertexArray(0);
 	}
 

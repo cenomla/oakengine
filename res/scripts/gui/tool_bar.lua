@@ -14,8 +14,8 @@ local tool_bar = {
 		self.children = {}
 		self.buttons = {}
 
-		local tile_editor = oak.es:create_entity(1, "tile_editor", require("gui/tile_editor"))
-		local b1, i1 = make_button(0, 0, 1, 0, function(button, active)
+		local tile_editor = oak.es:create_entity(self:layer(), "tile_editor", require("gui/tile_editor"))
+		local b1, i1 = make_button(0, 0, self:layer(), 0, function(button, active)
 			if active == 1 then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then
@@ -26,8 +26,8 @@ local tool_bar = {
 			tile_editor:toggle_active(active)
 		end)
 
-		local console = oak.es:create_entity(1, "console", require("gui/console"))
-		local b2, i2 = make_button(144, 0, 1, 3, function(button, active)
+		local console = oak.es:create_entity(self:layer(), "console", require("gui/console"))
+		local b2, i2 = make_button(144, 0, self:layer(), 3, function(button, active)
 			if active == 1 then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then

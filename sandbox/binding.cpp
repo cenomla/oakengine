@@ -2,8 +2,10 @@
 
 #include <script/luah.h>
 #include <script/lua_puper.h>
+#include <script/binding.h>
 #include <engine.h>
 
+#include "component_extentions.h"
 #include "tile_system.h"
 #include "events.h"
 
@@ -114,6 +116,18 @@ static int c_setLayerDepth(lua_State *L) {
 }
 
 void initBindings(lua_State *L) {
+	addFunctionToMetatable(L, "entity", "add_light", oak::c_entity_addComponent<LightComponent>);
+	addFunctionToMetatable(L, "entity", "remove_light", oak::c_entity_removeComponent<LightComponent>);
+	addFunctionToMetatable(L, "entity", "get_light", oak::c_entity_getComponent<LightComponent>);
+	addFunctionToMetatable(L, "entity", "set_light", oak::c_entity_setComponent<LightComponent>);
+	addFunctionToMetatable(L, "entity", "has_light", oak::c_entity_hasComponent<LightComponent>);
+
+	addFunctionToMetatable(L, "entity", "add_occluder", oak::c_entity_addComponent<OccluderComponent>);
+	addFunctionToMetatable(L, "entity", "remove_occluder", oak::c_entity_removeComponent<OccluderComponent>);
+	addFunctionToMetatable(L, "entity", "get_occluder", oak::c_entity_getComponent<OccluderComponent>);
+	addFunctionToMetatable(L, "entity", "set_occluder", oak::c_entity_setComponent<OccluderComponent>);
+	addFunctionToMetatable(L, "entity", "has_occluder", oak::c_entity_hasComponent<OccluderComponent>);
+
 	addFunctionToMetatable(L, "chunk", "get_tile", c_getTile);
 	addFunctionToMetatable(L, "chunk", "set_tile", c_setTile);
 

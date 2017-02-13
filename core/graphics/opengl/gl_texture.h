@@ -16,6 +16,8 @@ namespace oak::graphics {
 		void create(const std::string &path);
 		void create(int width, int height, void *data);
 		void destroy();
+
+		inline GLuint getId() const { return tex_; }
 	protected:
 		GLuint tex_;
 		GLenum type_;
