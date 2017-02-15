@@ -371,6 +371,19 @@ namespace oak::luah {
 
 	//void define_view(viewId, layers)
 	static int c_view_defineView(lua_State *L) {
+		ViewSystem& viewSystem = Engine::inst().getSystem<ViewSystem>();
+
+		size_t viewId = toValue<size_t>(L, 1);
+
+		std::vector<uint32_t> layers;
+
+		LuaPuper puper{ L, 2 };
+		puper.setIo(PuperIo::IN);
+		pup(puper, layers, {});
+
+		viewSystem.defineView(viewId, layers);
+
+		lua_settop(L, 0);
 
 		return 0;
 
@@ -378,9 +391,35 @@ namespace oak::luah {
 
 	//void set_view(viewId, view)
 	static int c_view_setView(lua_State *L) {
+		ViewSystem& viewSystem = Engine::inst().getSystem<ViewSystem>();
+
+		size_t viewId = toValue<size_t>(L, 1);
+
+		View view = viewSystem.getView(viewId);
+		LuaPuper puper{ L, 2 };
+		puper.setIo(PuperIo::IN);
+		pup(puper, view, {});
+
+		viewSystem.setView(viewId, view);
+
+		lua_settop(L, 0);
 
 		return 0;
+	}
 
+	//void view_get_view(viewId)
+	static int c_view_getView(lua_State *L) {
+		ViewSystem& viewSystem = Engine::inst().getSystem<ViewSystem>();
+		size_t viewId = toValue<size_t>(L, 1);
+
+		lua_settop(L, 0);
+		lua_newtable(L);
+
+		View view = viewSystem.getView(viewId);
+		LuaPuper puper{ L, 1 };
+		pup(puper, view, {});
+
+		return 1;
 	}
 
 	//vec2 view_transform_point(viewId, point)
@@ -404,6 +443,20 @@ namespace oak::luah {
 		puper.setIo(PuperIo::OUT);
 
 		pup(puper, point, {});
+
+		return 1;
+	}
+
+	//int view_get_id(layer)
+	static int c_view_getId(lua_State *L) {
+		ViewSystem& vs = Engine::inst().getSystem<ViewSystem>();
+
+		uint32_t layer = toValue<uint32_t>(L, 1);
+		lua_settop(L, 0);
+
+		size_t id = vs.getViewId(layer);
+
+		pushValue(L, id);
 
 		return 1;
 	}
@@ -466,6 +519,12 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_font", c_resource_load_font);
 		addFunctionToMetatable(L, "oak", "load_sprite", c_resource_load_sprite);
 		addFunctionToMetatable(L, "oak", "set_uniform", c_resource_set_uniform);
+
+		addFunctionToMetatable(L, "oak", "view_transform_point", c_view_transformPoint);
+		addFunctionToMetatable(L, "oak", "view_get_id", c_view_getId);
+		addFunctionToMetatable(L, "oak", "view_define_view", c_view_defineView);
+		addFunctionToMetatable(L, "oak", "view_set_view", c_view_setView);
+		addFunctionToMetatable(L, "oak", "view_get_view", c_view_getView);
 
 		lua_pushcfunction(L, c_hash);
 		lua_setglobal(L, "hash");

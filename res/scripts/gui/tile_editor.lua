@@ -57,14 +57,17 @@ local tile_editor = {
 				end
 				self.tool.update = function(self, dt)
 					if oak.input.buttons[0] ~= 0 and self.num_layers > 0 then
-						local c = oak.ts.get_chunk(oak.input.mx, oak.input.my, self.current_layer)
+						local vmx = oak.view_transform_point(oak.view_get_id(0), { x = oak.input.mx, y = oak.input.my })
+						print(vmx.x .. "," .. vmx.y)
+						local c = oak.ts.get_chunk(vmx.x, vmx.y, self.current_layer)
 						local ttsx = 1.0 / 8000.0
 						local ttsy = 1.0 / 6400.0
 						local stc = self.selector:get_transform()
 						local fs = 0
 						if self.children[31].active == 1 then fs = fs | 1 end
 						if self.children[33].active == 1 then fs = fs | 2 end
-						c:set_tile((oak.input.mx // 16) % 16, (oak.input.my // 16) % 16, {
+
+						c:set_tile((vmx.x // 16) % 16, (vmx.y // 16) % 16, {
 							dx = (stc.position.x - 16.0) * ttsx,
 							dy = (stc.position.y - 192.0) * ttsy,
 							dw = ttsx * 16.0,

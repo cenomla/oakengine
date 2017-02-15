@@ -83,12 +83,6 @@ int main(int argc, char** argv) {
 	entityManager.addComponentHandle<OccluderComponent>("occluder");
 	entityManager.addComponentHandle<LightComponent>("light");
 
-	//setup views
-	viewSystem.defineView(0, { 0, 1, 2 });
-	viewSystem.defineView(1, { 3 });
-	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
-	viewSystem.setView(1, oak::View{ 0, 0, 1280, 720 });
-
 	//setup lua bindings
 	lua_State *L = luam.getState();
 	initBindings(L);
@@ -124,12 +118,6 @@ int main(int argc, char** argv) {
 			//physicsSystem.update(1.0f/60.0f);
 			accum -= 1.0f/60.0f; 
 		}
-		
-
-		//hack view to follow player
-		oak::Entity player{ 1, 0, 0, &entityManager };
-		auto &tc = player.getComponent<oak::TransformComponent>();
-		//viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });K
 
 		//sumbit sprites and text to the renderer
 		spriteSystem.update();

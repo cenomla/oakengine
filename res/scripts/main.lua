@@ -246,7 +246,7 @@ oak.es:create_prefab("player", {
 		sprite = hash("spr_player")
 	},
 	light = {
-
+		size = 512
 	},
 	aabb2d = {
 		shared = true,
@@ -370,6 +370,11 @@ oak.es:create_prefab("tool_bar", {
 		sprite = hash("spr_tool_bar")
 	}
 })
+
+oak.view_define_view(0, { 0, 1, size = 2 })
+oak.view_define_view(1, { 2, size = 1 })
+oak.view_set_view(0, { x = 0, y = 0, width = 1280, height = 720 })
+oak.view_set_view(1, { x = 0, y = 0, width = 1280, height = 720 })
 
 oak.es:create_entity(0, "player", require("player"))
 oak.es:create_entity(0, "block", {})

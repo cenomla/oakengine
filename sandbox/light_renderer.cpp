@@ -196,6 +196,6 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 	tex_.bind(GL_TEXTURE0);
 	fvao_.bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	
+
 	lines_.clear();
 }

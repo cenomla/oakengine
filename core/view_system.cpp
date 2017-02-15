@@ -8,7 +8,7 @@ namespace oak {
 	
 	ViewSystem::ViewSystem(Engine &engine) : System{ engine, "view_system" } {}
 
-	void ViewSystem::defineView(size_t viewId, const std::initializer_list<uint32_t>& layers) {
+	void ViewSystem::defineView(size_t viewId, const std::vector<uint32_t>& layers) {
 		for (auto layer : layers) {
 			if (layer >= layerToView_.size()) {
 				layerToView_.resize(layer + 1);
@@ -26,7 +26,7 @@ namespace oak {
 	void ViewSystem::setView(size_t viewId, const View& view) {
 		auto &it = views_[viewId];
 		it.view = view;
-		it.matrixBlock.proj = glm::ortho(0.0f, static_cast<float>(it.view.width), static_cast<float>(it.view.height), 0.0f, -1.0f, 1.0f);
+		it.matrixBlock.proj = glm::ortho(0.0f, it.view.width, it.view.height, 0.0f, -1.0f, 1.0f);
 		it.matrixBlock.view = glm::translate(glm::mat4{ 1.0f }, glm::vec3{ -it.view.x, -it.view.y, 0.0f });
 		it.matrixBlock.model = glm::mat4{ 1.0f };
 
@@ -37,9 +37,8 @@ namespace oak {
 
 	glm::vec2 ViewSystem::transformPoint(size_t viewId, const glm::vec2& point) {
 		auto &it = views_[viewId];
-		glm::vec4 t = it.matrixBlock.proj * it.matrixBlock.view * it.matrixBlock.model * glm::vec4{ point, 0.0f, 1.0f };
 
-		return glm::vec2{ t };
+		return glm::vec2{ point.x + it.view.x, point.y + it.view.y };
 	}
 
 	size_t ViewSystem::getViewId(uint32_t layer) const {

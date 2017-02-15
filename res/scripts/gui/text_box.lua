@@ -47,9 +47,11 @@ local text_box = {
 		local tc = self:get_transform()
 		local aabb = self:get_aabb2d()
 
+		local vmx = oak.view_transform_point(oak.view_get_id(self:layer()), { x = oak.input.mx, y = oak.input.my })
+
 		local sp = self:get_sprite()
 		if evt.action == 0 then self:set_sprite({ animframe_x = 0 }) end
-		if point_intersects(tc, aabb, { x = oak.input.mx, y = oak.input.my }) then
+		if point_intersects(tc, aabb, { x = vmx.x, y = vmx.y }) then
 			if evt.action == 0 then
 				if sp.animframe_x == 1 then 
 					self:toggle_active()
