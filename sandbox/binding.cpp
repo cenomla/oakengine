@@ -47,12 +47,12 @@ static int c_setTile(lua_State *L) {
 	return 0;
 }
 
-//chunk get_chunk(tileSystem, x, y, layer)
+//chunk get_chunk(x, y, layer)
 static int c_getChunk(lua_State *L) {
-	TileSystem& tileSystem = toValue<TileSystem&>(L, 1);
-	int x = toValue<int>(L, 2);
-	int y = toValue<int>(L, 3);
-	uint32_t layer = toValue<uint32_t>(L, 4);
+	TileSystem& tileSystem = oak::Engine::inst().getSystem<TileSystem>();
+	int x = toValue<int>(L, 1);
+	int y = toValue<int>(L, 2);
+	uint32_t layer = toValue<uint32_t>(L, 3);
 
 	lua_settop(L, 0);
 
@@ -63,10 +63,10 @@ static int c_getChunk(lua_State *L) {
 	return 1;
 }
 
-//uint32_t create_layer(tileSystem, matid)
+//uint32_t create_layer(matid)
 static int c_createLayer(lua_State *L) {
-	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
-	size_t matid = toValue<size_t>(L, 2);
+	TileSystem &tileSystem = oak::Engine::inst().getSystem<TileSystem>();
+	size_t matid = toValue<size_t>(L, 1);
 
 	lua_settop(L, 0);
 
@@ -77,10 +77,10 @@ static int c_createLayer(lua_State *L) {
 	return 1;
 }
 
-//void destroy_layer(tileSystem, matid)
+//void destroy_layer(matid)
 static int c_destroyLayer(lua_State *L) {
-	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
-	uint32_t layer = toValue<uint32_t>(L, 2);
+	TileSystem &tileSystem = oak::Engine::inst().getSystem<TileSystem>();
+	uint32_t layer = toValue<uint32_t>(L, 1);
 
 	lua_settop(L, 0);
 
@@ -89,11 +89,11 @@ static int c_destroyLayer(lua_State *L) {
 	return 0;
 }
 
-//void move_layer(tileSystem, layer, newlayer)
+//void move_layer(layer, newlayer)
 static int c_moveLayer(lua_State *L) {
-	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
-	uint32_t layer = toValue<uint32_t>(L, 2);
-	uint32_t newLayer = toValue<uint32_t>(L, 3);
+	TileSystem &tileSystem = oak::Engine::inst().getSystem<TileSystem>();
+	uint32_t layer = toValue<uint32_t>(L, 1);
+	uint32_t newLayer = toValue<uint32_t>(L, 2);
 
 	lua_settop(L, 0);
 
@@ -102,11 +102,11 @@ static int c_moveLayer(lua_State *L) {
 	return 0;
 }
 
-//void set_layer_dpeth(tileSystem, layer, depth)
+//void set_layer_dpeth(layer, depth)
 static int c_setLayerDepth(lua_State *L) {
-	TileSystem &tileSystem = toValue<TileSystem&>(L, 1);
-	uint32_t layer = toValue<uint32_t>(L, 2);
-	float depth = toValue<float>(L, 3);
+	TileSystem &tileSystem = oak::Engine::inst().getSystem<TileSystem>();
+	uint32_t layer = toValue<uint32_t>(L, 1);
+	float depth = toValue<float>(L, 2);
 
 	lua_settop(L, 0);
 
@@ -150,23 +150,15 @@ void initBindings(lua_State *L) {
 
 		oak::luah::call(L, 3, 0);
 	});
-	//add the tile system to the oak global table
+
 	lua_getglobal(L, "oak");
-	oak::luah::pushValue(L, engine.getSystem<TileSystem>());
+	lua_newtable(L);
+	setMetatable(L, "tile_system");
 	lua_setfield(L, -2, "ts");
 	lua_pop(L, 1);
 }
 
 namespace oak::luah {
-
-	void pushValue(lua_State *L, TileSystem &tileSystem) {
-		pushInstance(L, tileSystem);
-		setMetatable(L, "tile_system");
-	}
-
-	template<> TileSystem& toValue(lua_State *L, int idx) {
-		return toInstance<TileSystem>(L, idx);
-	}
 
 	void pushValue(lua_State *L, Chunk &chunk) {
 		pushInstance(L, chunk);

@@ -17,10 +17,12 @@ namespace oak {
 		lua_newtable(L_);
 		//load the entity system script and add it to the oak table
 		luah::loadScript(L_, "core/script/entity_system.lua");
-		luah::pushValue(L_, engine_.getSystem<EntityManager>());
+		lua_newtable(L_);
+		luah::setMetatable(L_, "entity_manager");
 		lua_setfield(L_, -2, "manager");
 		lua_setfield(L_, -2, "es");
 
+		luah::setMetatable(L_, "oak");
 		lua_setglobal(L_, "oak");
 		
 		luah::registerBindings(L_);

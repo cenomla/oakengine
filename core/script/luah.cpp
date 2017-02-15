@@ -30,12 +30,12 @@ namespace oak {
 		lua_close(L);
 	}
 
-	void luah::setMetatable(lua_State *L, const std::string &tableName) {
+	void luah::setMetatable(lua_State *L, const std::string& tableName) {
 		luah::getMetatable(L, tableName);
 		lua_setmetatable(L, -2);
 	}
 
-	void luah::getMetatable(lua_State *L, const std::string &tableName) {
+	void luah::getMetatable(lua_State *L, const std::string& tableName) {
 		int isNewTable = luaL_newmetatable(L, tableName.c_str());
 		if (isNewTable != 0) {
 			//if the table is a new table then set it's index value to itself 
@@ -45,17 +45,21 @@ namespace oak {
 		}
 	}
 
-	void luah::addFunctionToMetatable(lua_State *L, const std::string &tableName, const std::string &funcName, lua_CFunction func) {
-		luah::getMetatable(L, tableName);
-		//add the function to the metatable
-		lua_pushstring(L, funcName.c_str()); 
+	void luah::addFunctionToTable(lua_State *L, int idx, const std::string& funcName, lua_CFunction func) {
 		lua_pushcfunction(L, func);
-		lua_settable(L, -3);
+		lua_setfield(L, idx, funcName.c_str());
+	}
+
+	void luah::addFunctionToMetatable(lua_State *L, const std::string& tableName, const std::string& funcName, lua_CFunction func) {
+		luah::getMetatable(L, tableName);
+		//add the function to the metatable 
+		lua_pushcfunction(L, func);
+		lua_setfield(L, -2, funcName.c_str());
 
 		lua_pop(L, 1);
 	}
 
-	void luah::loadScript(lua_State *L, const std::string &path) {
+	void luah::loadScript(lua_State *L, const std::string& path) {
 		log::cout << "loading script: " << path << std::endl;
 		luaL_loadfile(L, path.c_str());
 		int err = lua_pcall(L, 0, LUA_MULTRET, 0);

@@ -10,7 +10,7 @@ local tile_editor = {
 		self.layer_depths = {}
 		self.tools[1] = function(button, active)
 			if active == 1 then
-				self.current_layer = oak.ts:create_layer(hash("mat_tiles"))
+				self.current_layer = oak.ts.create_layer(hash("mat_tiles"))
 				self.num_layers = self.num_layers + 1
 				self.layer_text:set_text({ text = self.current_layer + 1 .. "/" .. self.num_layers })
 				self.layer_name.value = {}
@@ -24,8 +24,8 @@ local tile_editor = {
 
 		self.tools[2] = function(button, active)
 			if active == 1 then
-				if self.num_layers > 1 then
-					oak.ts:destroy_layer(self.current_layer)
+				if self.num_layers > 0 then
+					oak.ts.destroy_layer(self.current_layer)
 					table.remove(self.layer_names, self.current_layer + 1)
 					table.remove(self.layer_depths, self.current_layer + 1)
 					if self.current_layer == self.num_layers - 1 then
@@ -57,17 +57,18 @@ local tile_editor = {
 				end
 				self.tool.update = function(self, dt)
 					if oak.input.buttons[0] ~= 0 and self.num_layers > 0 then
-						local c = oak.ts:get_chunk(oak.input.mx, oak.input.my, self.current_layer)
-						local tts = 1.0 / 128.0
+						local c = oak.ts.get_chunk(oak.input.mx, oak.input.my, self.current_layer)
+						local ttsx = 1.0 / 8000.0
+						local ttsy = 1.0 / 6400.0
 						local stc = self.selector:get_transform()
 						local fs = 0
 						if self.children[31].active == 1 then fs = fs | 1 end
 						if self.children[33].active == 1 then fs = fs | 2 end
 						c:set_tile((oak.input.mx // 16) % 16, (oak.input.my // 16) % 16, {
-							dx = (stc.position.x - 16.0) * tts * 0.5,
-							dy = (stc.position.y - 192.0) * tts * 0.5,
-							dw = tts * 8.0,
-							dh = tts * 8.0,
+							dx = (stc.position.x - 16.0) * ttsx,
+							dy = (stc.position.y - 192.0) * ttsy,
+							dw = ttsx * 16.0,
+							dh = ttsy * 16.0,
 							width = 16.0,
 							height = 16.0,
 							flags = fs
@@ -88,7 +89,7 @@ local tile_editor = {
 				end
 				self.tool.update = function(self, dt)
 					if oak.input.buttons[0] ~= 0 then
-						local c = oak.ts:get_chunk(oak.input.mx, oak.input.my, self.current_layer)
+						local c = oak.ts.get_chunk(oak.input.mx, oak.input.my, self.current_layer)
 						c:set_tile((oak.input.mx // 16) % 16, (oak.input.my // 16) % 16, {
 							dx = 0.0,
 							dy = 0.0,
@@ -261,7 +262,7 @@ local tile_editor = {
 		self.layer_depth.callback = function(e, active)
 			if active == 0 then
 				self.layer_depths[self.current_layer + 1] = utf8.char(table.unpack(e.value))
-				oak.ts:set_layer_depth(self.current_layer, tonumber(self.layer_depths[self.current_layer+1]))
+				oak.ts.set_layer_depth(self.current_layer, tonumber(self.layer_depths[self.current_layer+1]))
 			end
 		end
 		table.insert(self.children, self.layer_depth)

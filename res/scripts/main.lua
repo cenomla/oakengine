@@ -14,12 +14,6 @@ oak.load_shader({
 })
 
 oak.load_texture({
-	name = "tex_tiles",
-	path = "res/textures/tiles",
-	flags = 0
-})
-
-oak.load_texture({
 	name ="tex_font",
 	path = "res/fonts/dejavu_sans/atlas",
 	flags = 1
@@ -39,6 +33,18 @@ oak.load_atlas({
 	extent = {
 		x = 512,
 		y = 512
+	},
+	flags = 0
+})
+
+oak.load_atlas({
+	name = "atlas_tiles",
+	textures = {
+		"res/textures/tiles/geometric_wall_1", size = 1
+	},
+	extent = {
+		x = 8000, 
+		y = 6400
 	},
 	flags = 0
 })
@@ -99,7 +105,7 @@ oak.set_uniform("shd_font", "border_color", { 0.0, 0.0, 0.0 })
 oak.load_material({
 	name = "mat_tiles",
 	shader = "shd_pass",
-	texture = "tex_tiles"
+	texture = "atlas_tiles"
 })
 
 oak.load_font({
@@ -188,7 +194,7 @@ oak.load_sprite({
 oak.load_sprite({
 	name = "spr_tile_editor_tilemap",
 	material = "mat_tiles",
-	extent = { x = 256.0, y = 256.0 },
+	extent = { x = 8000.0, y = 6400.0 },
 	draw_position = { x = 0.0, y = 0.0 },
 	draw_extent = { x = 1.0, y = 1.0 }
 })
@@ -336,12 +342,24 @@ oak.es:create_prefab("tile_editor", {
 	}
 })
 
+oak.es:create_prefab("entity_editor", {
+	transform = {
+		position = { y = 32.0 }
+	}
+})
+
 oak.es:create_prefab("console", {
 	transform = {
 		position = { y = 32.0 }
 	},
 	sprite = {
 		sprite = hash("spr_console")
+	}
+})
+
+oak.es:create_prefab("debug", {
+	transform = {
+		position = { y = 32.0 }
 	}
 })
 
@@ -359,4 +377,4 @@ oak.es:create_entity(0, "block", {})
 local e = oak.es:create_entity(0, "block", {})
 e:set_transform({ position = { x = 512, y = 496 } })
 
-oak.es:create_entity(3, "tool_bar", require("gui/tool_bar"))
+oak.es:create_entity(2, "tool_bar", require("gui/tool_bar"))

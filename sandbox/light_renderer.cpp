@@ -185,11 +185,13 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 
 	glDisable(GL_STENCIL_TEST);
 
+
 	//draw the fbo tex 
 	fbo_.unbind();
 	glViewport(0, 0, 1280, 720);
 	glBlendFunc(GL_DST_COLOR, GL_ZERO);//multiplicative blending
 
+	//blur the texture
 	fullscreenShader_.bind();
 	tex_.bind(GL_TEXTURE0);
 	fvao_.bind();

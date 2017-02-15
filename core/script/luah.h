@@ -18,7 +18,7 @@ namespace oak {
 		}
 
 		template <class T>
-		void pushInstance(lua_State *L, T &i) {
+		void pushInstance(lua_State *L, T& i) {
 			void** ptr = reinterpret_cast<void**>(lua_newuserdata(L, sizeof(void*)));
 			*ptr = &i;
 		}
@@ -30,7 +30,7 @@ namespace oak {
 		void pushValue(lua_State *L, uint64_t v);
 		void pushValue(lua_State *L, float v);
 		void pushValue(lua_State *L, double v);
-		void pushValue(lua_State *L, const std::string &v);
+		void pushValue(lua_State *L, const std::string& v);
 		void pushValue(lua_State *L, void* v);
 
 		template<typename T>
@@ -49,16 +49,19 @@ namespace oak {
 
 
 		//metatable functions
-		void setMetatable(lua_State *L, const std::string &tableName);
-		void getMetatable(lua_State *L, const std::string &tableName);
-		void addFunctionToMetatable(lua_State *L, const std::string &tableName, const std::string &funcName, lua_CFunction func);
+		void setMetatable(lua_State *L, const std::string& tableName);
+		void getMetatable(lua_State *L, const std::string& tableName);
 
-		void loadScript(lua_State *L, const std::string &path);
+		//function functions
+		void addFunctionToTable(lua_State *L, int idx, const std::string& funcName, lua_CFunction func);
+		void addFunctionToMetatable(lua_State *L, const std::string& tableName, const std::string& funcName, lua_CFunction func);
+
+		void loadScript(lua_State *L, const std::string& path);
 		std::vector<std::string> getKeys(lua_State *L);
-		void getGlobal(lua_State *L, const std::string &field);
-		void getRegistry(lua_State *L, const std::string &field);
-		void getField(lua_State *L, int idx, const std::string &field);
-		void setField(lua_State *L, int idx, const std::string &field);
+		void getGlobal(lua_State *L, const std::string& field);
+		void getRegistry(lua_State *L, const std::string& field);
+		void getField(lua_State *L, int idx, const std::string& field);
+		void setField(lua_State *L, int idx, const std::string& field);
 		void call(lua_State *L, int nargs, int nreturns);
 		
 	}

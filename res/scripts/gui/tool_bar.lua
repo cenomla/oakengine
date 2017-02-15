@@ -26,8 +26,27 @@ local tool_bar = {
 			tile_editor:toggle_active(active)
 		end)
 
+		table.insert(self.children, b1)
+		table.insert(self.children, i1)
+		table.insert(self.buttons, b1)
+
+		local entity_editor = oak.es:create_entity(self:layer(), "entity_editor", require("gui/entity_editor"))
+		local b2, i2 = make_button(48, 0, self:layer(), 1, function(button, active)
+			if active == 1 then
+				for k, v in pairs(self.buttons) do
+					if v ~= button then
+						v:set_active(0)
+					end
+				end
+			end
+		end)
+
+		table.insert(self.children, b2)
+		table.insert(self.children, i2)
+		table.insert(self.buttons, b2)
+
 		local console = oak.es:create_entity(self:layer(), "console", require("gui/console"))
-		local b2, i2 = make_button(144, 0, self:layer(), 3, function(button, active)
+		local b3, i3 = make_button(96, 0, self:layer(), 2, function(button, active)
 			if active == 1 then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then
@@ -39,12 +58,25 @@ local tool_bar = {
 		end)
 
 
-		table.insert(self.children, b1)
-		table.insert(self.children, i1)
-		table.insert(self.buttons, b1)
-		table.insert(self.children, b2)
-		table.insert(self.children, i2)
-		table.insert(self.buttons, b2)
+		table.insert(self.children, b3)
+		table.insert(self.children, i3)
+		table.insert(self.buttons, b3)
+
+		local debug = oak.es:create_entity(self:layer(), "debug", {})
+		local b4, i4 = make_button(144, 0, self:layer(), 3, function(button, active)
+			if active == 1 then
+				for k, v in pairs(self.buttons) do
+					if v ~= button then
+						v:set_active(0)
+					end
+				end
+			end
+		end)
+
+
+		table.insert(self.children, b4)
+		table.insert(self.children, i4)
+		table.insert(self.buttons, b4)
 	end,
 
 	on_activate = function(self)

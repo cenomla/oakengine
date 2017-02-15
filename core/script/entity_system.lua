@@ -15,7 +15,7 @@ local entity_system = {
 	events = {},
 
 	create_prefab = function(self, name, prefab)
-		self.manager:create_prefab(name, prefab)
+		self.manager.create_prefab(name, prefab)
 	end,
 
 	create_entity = function(self, ...)

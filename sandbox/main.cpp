@@ -129,11 +129,7 @@ int main(int argc, char** argv) {
 		//hack view to follow player
 		oak::Entity player{ 1, 0, 0, &entityManager };
 		auto &tc = player.getComponent<oak::TransformComponent>();
-		//viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });
-
-		oak::Entity block{ 2, 0, 0, &entityManager };
-
-		std::cout << block.hasComponent<OccluderComponent>() << std::endl;
+		//viewSystem.setView(0, oak::View{ tc.position.x - 640, tc.position.y - 360, 1280, 720 });K
 
 		//sumbit sprites and text to the renderer
 		spriteSystem.update();

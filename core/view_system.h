@@ -5,20 +5,19 @@
 #include <glm/glm.hpp>
 
 #include "graphics/opengl/gl_buffer.h"
+#include "view.h"
 #include "system.h"
 
 namespace oak {
-
-	struct View {
-		int x = 0, y = 0, width = 0, height = 0;
-	};
 
 	class ViewSystem : public System {
 	public:
 		ViewSystem(Engine &engine);
 
-		void defineView(size_t viewId, std::initializer_list<uint32_t> &&layers);
-		void setView(size_t viewId, const View &view);
+		void defineView(size_t viewId, const std::initializer_list<uint32_t>& layers);
+		void setView(size_t viewId, const View& view);
+
+		glm::vec2 transformPoint(size_t viewId, const glm::vec2& point);
 
 		size_t getViewId(uint32_t layer) const;
 		const View& getViewByLayer(uint32_t layer) const;

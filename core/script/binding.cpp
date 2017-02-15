@@ -9,6 +9,7 @@
 #include "util/puper.h"
 #include "script/lua_puper.h"
 #include "resource_manager.h"
+#include "view_system.h"
 #include "events.h"
 #include "components.h"
 #include "engine.h"
@@ -238,11 +239,11 @@ namespace oak::luah {
 	}
 
 
-	//void create_prefab(manager, name, table)
+	//void create_prefab(name, table)
 	static int c_create_prefab(lua_State *L) {
-		EntityManager &manager = toValue<EntityManager&>(L, 1);
-		std::string name = toValue<std::string>(L, 2);
-		lua_pushvalue(L, 3);
+		EntityManager &manager = oak::Engine::inst().getSystem<EntityManager>();
+		std::string name = toValue<std::string>(L, 1);
+		lua_pushvalue(L, 2);
 		auto keys = getKeys(L);
 
 		Prefab &prefab = Engine::inst().getSystem<ResourceManager>().add<Prefab>(name, &manager);
@@ -323,7 +324,7 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//entity createEntity(layer, name, table)
+	//entity create_entity(layer, name, table)
 	static int c_entityManager_createEntity(lua_State *L) {
 		int argc = lua_gettop(L);
 		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
@@ -358,7 +359,7 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//void destroyEntity(entity)
+	//void destroy_entity(entity)
 	static int c_entityManager_destroyEntity(lua_State *L) {
 		Entity e = toValue<Entity>(L, 1);
 
@@ -366,6 +367,45 @@ namespace oak::luah {
 
 		e.destroy();
 		return 0;
+	}
+
+	//void define_view(viewId, layers)
+	static int c_view_defineView(lua_State *L) {
+
+		return 0;
+
+	}
+
+	//void set_view(viewId, view)
+	static int c_view_setView(lua_State *L) {
+
+		return 0;
+
+	}
+
+	//vec2 view_transform_point(viewId, point)
+	static int c_view_transformPoint(lua_State *L) {
+		ViewSystem& vs = Engine::inst().getSystem<ViewSystem>();
+
+		size_t viewId = toValue<size_t>(L, 1);
+
+		LuaPuper puper{ L, 2 };
+		puper.setIo(PuperIo::IN);
+		glm::vec2 point;
+		pup(puper, point, {});
+
+		lua_settop(L, 0);
+
+		point = vs.transformPoint(viewId, point);
+
+		lua_newtable(L);
+
+		puper.setIndex(1);
+		puper.setIo(PuperIo::OUT);
+
+		pup(puper, point, {});
+
+		return 1;
 	}
 
 	//int hash(string)
@@ -419,22 +459,13 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity_manager", "create_entity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroy_entity", c_entityManager_destroyEntity);
 
-		lua_getglobal(L, "oak");
-		lua_pushcfunction(L, c_resource_load_shader);
-		lua_setfield(L, -2, "load_shader");
-		lua_pushcfunction(L, c_resource_load_texture);
-		lua_setfield(L, -2, "load_texture");
-		lua_pushcfunction(L, c_resource_load_atlas);
-		lua_setfield(L, -2, "load_atlas");
-		lua_pushcfunction(L, c_resource_load_material);
-		lua_setfield(L, -2, "load_material");
-		lua_pushcfunction(L, c_resource_load_font);
-		lua_setfield(L, -2, "load_font");
-		lua_pushcfunction(L, c_resource_load_sprite);
-		lua_setfield(L, -2, "load_sprite");
-		lua_pushcfunction(L, c_resource_set_uniform);
-		lua_setfield(L, -2, "set_uniform");
-		lua_pop(L, 1);
+		addFunctionToMetatable(L, "oak", "load_shader", c_resource_load_shader);
+		addFunctionToMetatable(L, "oak", "load_texture", c_resource_load_texture);
+		addFunctionToMetatable(L, "oak", "load_atlas", c_resource_load_atlas);
+		addFunctionToMetatable(L, "oak", "load_material", c_resource_load_material);
+		addFunctionToMetatable(L, "oak", "load_font", c_resource_load_font);
+		addFunctionToMetatable(L, "oak", "load_sprite", c_resource_load_sprite);
+		addFunctionToMetatable(L, "oak", "set_uniform", c_resource_set_uniform);
 
 		lua_pushcfunction(L, c_hash);
 		lua_setglobal(L, "hash");
@@ -521,15 +552,6 @@ namespace oak::luah {
 		Entity *e = static_cast<Entity*>(lua_touserdata(L, -1));
 		lua_pop(L, 1);
 		return *e;
-	}
-
-	void pushValue(lua_State *L, EntityManager &entityManager) {
-		pushInstance(L, entityManager);
-		setMetatable(L, "entity_manager");
-	}
-
-	template<> EntityManager& toValue(lua_State *L, int idx) {
-		return toInstance<EntityManager>(L, idx);
 	}
 
 }

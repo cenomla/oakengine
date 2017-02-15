@@ -5,10 +5,10 @@
 #include "engine.h"
 
 namespace oak {
-
+	
 	ViewSystem::ViewSystem(Engine &engine) : System{ engine, "view_system" } {}
 
-	void ViewSystem::defineView(size_t viewId, std::initializer_list<uint32_t> &&layers) {
+	void ViewSystem::defineView(size_t viewId, const std::initializer_list<uint32_t>& layers) {
 		for (auto layer : layers) {
 			if (layer >= layerToView_.size()) {
 				layerToView_.resize(layer + 1);
@@ -23,7 +23,7 @@ namespace oak {
 		view.ubo.bindBufferBase(viewId);
 	}
 
-	void ViewSystem::setView(size_t viewId, const View &view) {
+	void ViewSystem::setView(size_t viewId, const View& view) {
 		auto &it = views_[viewId];
 		it.view = view;
 		it.matrixBlock.proj = glm::ortho(0.0f, static_cast<float>(it.view.width), static_cast<float>(it.view.height), 0.0f, -1.0f, 1.0f);
@@ -33,6 +33,13 @@ namespace oak {
 		it.ubo.bind();
 		it.ubo.bufferData(sizeof(it.matrixBlock), &it.matrixBlock, GL_STREAM_DRAW);
 		it.ubo.unbind();
+	}
+
+	glm::vec2 ViewSystem::transformPoint(size_t viewId, const glm::vec2& point) {
+		auto &it = views_[viewId];
+		glm::vec4 t = it.matrixBlock.proj * it.matrixBlock.view * it.matrixBlock.model * glm::vec4{ point, 0.0f, 1.0f };
+
+		return glm::vec2{ t };
 	}
 
 	size_t ViewSystem::getViewId(uint32_t layer) const {
