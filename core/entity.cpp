@@ -9,16 +9,6 @@ namespace oak {
 
 	EntityManager::EntityManager(Engine &engine) : System{ engine, "entity_manager" } {}
 
-	EntityManager::~EntityManager() {
-		for (auto &block : componentHandles_) {
-			if (block.ptr != nullptr) {
-				static_cast<TypeHandleBase*>(block.ptr)->~TypeHandleBase();
-				MemoryManager::inst().deallocate(block.ptr, block.size);
-				block.ptr = nullptr;
-			}
-		}
-	}
-
 	void EntityManager::destroy() {
 		reset();
 	}
@@ -63,7 +53,7 @@ namespace oak {
 		if (attribute.ownsMask[tid]) {
 			removeComponent(idx, tid);
 		} else {
-			attribute.components[tid] = MemoryManager::inst().allocate(componentHandles_[tid].ptr->size());
+			attribute.components[tid] = MemoryManager::inst().allocate(Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->size());
 			attribute.ownsMask[tid] = true;
 		}
 
@@ -84,7 +74,7 @@ namespace oak {
 	void EntityManager::removeComponent(uint32_t idx, uint32_t tid) {
 		auto &attribute = entityAttributes_[idx];
 		if (attribute.componentMask[tid] && attribute.ownsMask[tid]) {
-			componentHandles_[tid].ptr->destruct(attribute.components[tid]);
+			Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->destruct(attribute.components[tid]);
 		}
 		attribute.componentMask[tid] = false;
 	}
@@ -92,7 +82,7 @@ namespace oak {
 	void EntityManager::deleteComponent(uint32_t idx, uint32_t tid) {
 		auto& attribute = entityAttributes_[idx];
 		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
-			MemoryManager::inst().deallocate(attribute.components[tid], componentHandles_[tid].ptr->size());
+			MemoryManager::inst().deallocate(attribute.components[tid], Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->size());
 			attribute.components[tid] = nullptr;
 			attribute.ownsMask[tid] = false;
 		}

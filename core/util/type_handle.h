@@ -25,11 +25,11 @@ namespace oak {
 	struct TypeHandle : public TypeHandleBase {
 		TypeHandle(const std::string &name) : TypeHandleBase{ name, sizeof(T) } {};
 
-		void construct(void *object) const {
+		void construct(void *object) const override {
 			new (object) T{};
 		}
 
-		void construct(void *src, void *target) const {
+		void construct(void *src, void *target) const override {
 			new (target) T{ *static_cast<T*>(src) };
 		}
 

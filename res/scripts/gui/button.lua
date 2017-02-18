@@ -23,7 +23,7 @@ local button = {
 			aabb = self:get_aabb2d()
 		end
 
-		local vmx = oak.view_transform_point(oak.view_get_id(self:layer()), { x = oak.input.mx, y = oak.input.my })
+		local vmx = oak.vs.transform_point(oak.vs.get_id(self:layer()), { x = oak.input.mx, y = oak.input.my })
 
 		local sp = self:get_sprite()
 		if evt.action == 0 then self:set_sprite({ animframe_x = 0 }) end

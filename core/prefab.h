@@ -5,6 +5,7 @@
 
 #include "memory/memory_manager.h"
 #include "util/typeid.h"
+#include "engine.h"
 #include "entity.h"
 
 
@@ -31,7 +32,7 @@ namespace oak {
 		}
 
 		void* addComponent(bool shared, size_t tid) {
-			const auto *thandle = manager_->getComponentHandle(tid);
+			const auto *thandle = Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid);
 			void *comp = MemoryManager::inst().allocate(thandle->size());
 			thandle->construct(comp);
 			//ensure size

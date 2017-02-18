@@ -247,6 +247,7 @@ namespace oak::luah {
 		auto keys = getKeys(L);
 
 		Prefab &prefab = Engine::inst().getSystem<ResourceManager>().add<Prefab>(name, &manager);
+		auto &thandle = Engine::inst().getSystem<ComponentHandleStorage>();
 
 		for (const auto &k : keys) {
 			lua_getfield(L, -1, k.c_str());
@@ -259,12 +260,12 @@ namespace oak::luah {
 			lua_pop(L, 1);
 
 			//deserialize the component
-			size_t tid = manager.getComponentId(k);
+			size_t tid = thandle.getId(k);
 			void *comp = prefab.addComponent(shared, tid);
 
 			LuaPuper puper{ L, -1 };
 			puper.setIo(PuperIo::IN);
-			manager.getComponentHandle(tid)->pupObject(puper, comp, {});
+			thandle.getHandle(tid)->pupObject(puper, comp, {});
 			
 			lua_pop(L, 1);
 		}
@@ -520,11 +521,17 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_sprite", c_resource_load_sprite);
 		addFunctionToMetatable(L, "oak", "set_uniform", c_resource_set_uniform);
 
-		addFunctionToMetatable(L, "oak", "view_transform_point", c_view_transformPoint);
-		addFunctionToMetatable(L, "oak", "view_get_id", c_view_getId);
-		addFunctionToMetatable(L, "oak", "view_define_view", c_view_defineView);
-		addFunctionToMetatable(L, "oak", "view_set_view", c_view_setView);
-		addFunctionToMetatable(L, "oak", "view_get_view", c_view_getView);
+		addFunctionToMetatable(L, "view_system", "transform_point", c_view_transformPoint);
+		addFunctionToMetatable(L, "view_system", "get_id", c_view_getId);
+		addFunctionToMetatable(L, "view_system", "define_view", c_view_defineView);
+		addFunctionToMetatable(L, "view_system", "set_view", c_view_setView);
+		addFunctionToMetatable(L, "view_system", "get_view", c_view_getView);
+
+		lua_getglobal(L, "oak");
+		lua_newtable(L);
+		setMetatable(L, "view_system");
+		lua_setfield(L, -2, "vs");
+		lua_pop(L, 1);
 
 		lua_pushcfunction(L, c_hash);
 		lua_setglobal(L, "hash");

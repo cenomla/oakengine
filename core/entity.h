@@ -9,8 +9,7 @@
 
 #include "config.h"
 #include "memory/memory_manager.h"
-#include "util/type_handle.h"
-#include "util/typeid.h"
+#include "util/type_handle_storage.h"
 #include "system.h"
 
 namespace oak {
@@ -18,6 +17,7 @@ namespace oak {
 	constexpr uint32_t MIN_FREE_INDICES = 1024;
 
 	struct Component {};
+	using ComponentHandleStorage = TypeHandleStorage<Component, config::MAX_COMPONENTS>;
 
 	class Entity;
 	class EntityCache;
@@ -25,41 +25,11 @@ namespace oak {
 	class EntityManager : public System {
 	public:
 		EntityManager(Engine &engine);
-		~EntityManager();
 		
 		void destroy() override;
 
 		EntityManager(const EntityManager& other) = delete;
 		void operator=(const EntityManager& other) = delete;
-
-		template<typename T>
-		inline void addComponentHandle(const std::string &name) {
-			size_t tid = util::type_id<Component, T>::id;
-			if (componentHandles_[tid].ptr != nullptr) { return; }
-			size_t hsize = sizeof(TypeHandle<T>);
-			TBlock<TypeHandleBase> block = { static_cast<TypeHandleBase*>(MemoryManager::inst().allocate(hsize)), hsize };
-			new (block.ptr) TypeHandle<T>{ name };
-			componentHandles_[tid] = block;
-			handleConverter_[name] = tid;
-		}
-
-		template<typename T>
-		inline const TypeHandle<T>& getComponentHandle() const {
-			size_t tid = util::type_id<Component, T>::id;
-			return *static_cast<const TypeHandle<T>*>(getComponentHandle(tid));
-		}
-
-		inline const TypeHandleBase* getComponentHandle(size_t tid) const {
-			return componentHandles_[tid].ptr;
-		}
-
-		inline size_t getComponentId(const std::string &name) const {
-			const auto& it = handleConverter_.find(name);
-			if (it != std::end(handleConverter_)) {
-				return it->second;
-			}
-			return 0;
-		}
 
 		Entity createEntity(uint8_t layer);
 		void destroyEntity(const Entity &entity);
@@ -122,9 +92,6 @@ namespace oak {
 		std::vector<EntityAttribute> entityAttributes_;
 		//stores all the systems for entity caching
 		std::unordered_map<uint32_t, EntityCache*> caches_;
-		//component handles
-		std::array<TBlock<TypeHandleBase>, config::MAX_COMPONENTS> componentHandles_;
-		std::unordered_map<std::string, size_t> handleConverter_;
 	};
 
 	class Entity {

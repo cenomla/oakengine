@@ -17,7 +17,7 @@ namespace oak {
 					manager_->addComponent(entity.index(), i, it.second);
 				} else {
 					void *comp = manager_->addComponent(entity.index(), i);
-					const auto ch = manager_->getComponentHandle(i);
+					const auto ch = Engine::inst().getSystem<ComponentHandleStorage>().getHandle(i);
 					ch->construct(it.second, comp);
 				}
 			}
@@ -30,7 +30,7 @@ namespace oak {
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto &it = storage_[i];
 			if (it.second != nullptr) {
-				const auto ch = manager_->getComponentHandle(i);
+				const auto ch = Engine::inst().getSystem<ComponentHandleStorage>().getHandle(i);
 				ch->destruct(it.second);
 				MemoryManager::inst().deallocate(it.second, ch->size());
 			}

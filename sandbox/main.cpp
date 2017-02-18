@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
 	SpriteSystem spriteSystem{ engine };
 	TextSystem textSystem{ engine };
 	LightRenderer lightRenderer{ engine };
+	oak::ComponentHandleStorage chstorage{ engine };
 
 	//add the systems to the engine and therefore initilize them
 	engine.addSystem(&resManager);
@@ -73,15 +74,16 @@ int main(int argc, char** argv) {
 	engine.addSystem(&tileSystem);
 	engine.addSystem(&entityRenderer);
 	engine.addSystem(&lightRenderer);
+	engine.addSystem(&chstorage);
 
 	//register components with the entity manager
-	entityManager.addComponentHandle<oak::TransformComponent>("transform");
-	entityManager.addComponentHandle<oak::SpriteComponent>("sprite");
-	entityManager.addComponentHandle<oak::TextComponent>("text");
-	entityManager.addComponentHandle<oak::AABB2dComponent>("aabb2d");
-	entityManager.addComponentHandle<oak::PhysicsBody2dComponent>("physics_body_2d");
-	entityManager.addComponentHandle<OccluderComponent>("occluder");
-	entityManager.addComponentHandle<LightComponent>("light");
+	chstorage.addHandle<oak::TransformComponent>("transform");
+	chstorage.addHandle<oak::SpriteComponent>("sprite");
+	chstorage.addHandle<oak::TextComponent>("text");
+	chstorage.addHandle<oak::AABB2dComponent>("aabb2d");
+	chstorage.addHandle<oak::PhysicsBody2dComponent>("physics_body_2d");
+	chstorage.addHandle<OccluderComponent>("occluder");
+	chstorage.addHandle<LightComponent>("light");
 
 	//setup lua bindings
 	lua_State *L = luam.getState();

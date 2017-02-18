@@ -11,7 +11,7 @@ local player = {
 		self:set_transform(tc)
 
 		local t = { x = tc.position.x - 640, y = tc.position.y - 360 }
-		oak.view_set_view(0, t)
+		oak.vs.set_view(0, t)
 
 	end,
 	on_entity_collide = function(self, evt)
@@ -24,7 +24,7 @@ local player = {
 
 
 		local t = { x = tc.position.x - 640, y = tc.position.y - 360 }
-		oak.view_set_view(0, t)
+		oak.vs.set_view(0, t)
 	end,
 	on_tile_collide = function(self, evt)
 		local tc = self:get_transform()
@@ -36,7 +36,7 @@ local player = {
 
 
 		local t = { x = tc.position.x - 640, y = tc.position.y - 360 }
-		oak.view_set_view(0, t)
+		oak.vs.set_view(0, t)
 	end
 }
 
