@@ -4,21 +4,33 @@
 
 namespace oak {
 
-	void Debugger::startProfile(const std::string &name) {
-		const auto it = profiles_.find(name);
+	Debugger::Debugger(Engine &engine) : System{ engine, "debugger" } {}
+
+	size_t Debugger::createProfile(const std::string& name) {
+		size_t id = std::hash<std::string>{}(name);
+		const auto& it = profiles_.find(id);
+
+		if (it == std::end(profiles_)) {
+			const auto& it = profiles_.insert({ id, { } });
+			it.first->second.name = name;
+			it.first->second.perfId = id;
+			it.first->second.running = false;
+		}
+
+		return id;
+	}
+
+	void Debugger::startProfile(size_t perfId) {
+		const auto& it = profiles_.find(perfId);
 
 		if (it != std::end(profiles_)) {
 			it->second.start = std::chrono::high_resolution_clock::now();
 			it->second.running = true;
-		} else {
-			auto it = profiles_.insert({ name, {} });
-			it.first->second.start = std::chrono::high_resolution_clock::now();
-			it.first->second.running = true;
 		}
 	}
 
-	void Debugger::endProfile(const std::string &name) {
-		const auto it = profiles_.find(name);
+	void Debugger::endProfile(size_t perfId) {
+		const auto& it = profiles_.find(perfId);
 
 		if (it != std::end(profiles_)) {
 			it->second.end = std::chrono::high_resolution_clock::now();
@@ -27,8 +39,8 @@ namespace oak {
 		}
 	}
 
-	const PerformanceProfile& Debugger::getProfile(const std::string &name) {
-		const auto it = profiles_.find(name);
+	const PerformanceProfile& Debugger::getProfile(size_t perfId) {
+		const auto& it = profiles_.find(perfId);
 
 		if (it != std::end(profiles_)) {
 			return it->second;
@@ -36,6 +48,10 @@ namespace oak {
 
 		log::cout << "profile doesnt exist" << std::endl;
 		abort();
+	}
+
+	const PerformanceProfile& Debugger::getProfile(const std::string &name) {
+		return getProfile(std::hash<std::string>{}(name));
 	}
 
 }

@@ -5,9 +5,9 @@
 #include <script/binding.h>
 #include <engine.h>
 
-#include "component_extentions.h"
 #include "tile_system.h"
-#include "events.h"
+#include "component_ext.h"
+#include "event_ext.h"
 
 using namespace oak::luah;
 

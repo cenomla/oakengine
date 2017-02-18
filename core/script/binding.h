@@ -12,8 +12,10 @@ namespace luah {
 	void pushValue(lua_State *L, const Entity &entity);
 	template<> Entity toValue(lua_State *L, int idx);
 
+	void pushValue(lua_State *L, void *data);
+	template<> void* toValue(lua_State *L, int idx);
 
-} 
+}
 
 	template<class T>
 	int c_entity_addComponent(lua_State *L) {

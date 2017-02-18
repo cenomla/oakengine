@@ -6,7 +6,7 @@
 #include <events.h>
 
 #include "tile_system.h"
-#include "events.h"
+#include "event_ext.h"
 
 SpriteSystem::SpriteSystem(oak::Engine &engine) : oak::System{ engine, "sprite_system" } {}
 

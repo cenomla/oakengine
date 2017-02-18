@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "config.h"
 #include "engine.h"
 #include "events.h"
 #include "log.h"
@@ -44,8 +45,8 @@ namespace oak {
 		if (flags_ & GL_CONTEXT) {
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config::GL_VERSION_MAJOR);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config::GL_VERSION_MINOR);
 		} else {
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}

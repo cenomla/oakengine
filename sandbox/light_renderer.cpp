@@ -4,8 +4,7 @@
 #include <view_system.h>
 #include <engine.h>
 
-#include "component_extentions.h"
-#include "components.h"
+#include "component_ext.h"
 
 LightRenderer::LightRenderer(oak::Engine &engine) : oak::System{ engine, "light_renderer" }, vbo_{ GL_ARRAY_BUFFER }, tex_{ GL_TEXTURE_2D }, fvbo_{ GL_ARRAY_BUFFER } {
 
@@ -125,25 +124,26 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 	for (size_t i = 0; i < batch.objectCount; i++) {
 		const auto& light = lights[i];
 		const auto& ltc = light.getComponent<oak::TransformComponent>();
+		const auto& llc = light.getComponent<LightComponent>();
 
 		vbo_.bind();
-		vbo_.bufferData((shadowCache_.entities().size()) * 192.0f , nullptr, GL_STREAM_DRAW);
+		vbo_.bufferData((shadowCache_.entities().size()) * 192 , nullptr, GL_STREAM_DRAW);
 		glm::vec2 *buffer = static_cast<glm::vec2*>(vbo_.map(GL_WRITE_ONLY));
 		size_t vertexCount = 0;
 
 		glm::vec2 normal, lightToStart, lightToEnd, pos;
 
 		for (const auto& line : lines_) {
-			normal = glm::vec2{ -(line.start.y - line.end.y), line.start.x - line.end.x };
-			lightToStart = line.start - glm::vec2{ ltc.position };
+			normal = glm::normalize(glm::vec2{ -(line.start.y - line.end.y), line.start.x - line.end.x });
+			lightToStart = glm::normalize(line.start - glm::vec2{ ltc.position });
 			if (glm::dot(normal, lightToStart) > 0.0f) {
-				lightToEnd = line.end - glm::vec2{ ltc.position };
+				lightToEnd = glm::normalize(line.end - glm::vec2{ ltc.position });
 
 				buffer[0] = line.start;
 				buffer[1] = line.end;
-				buffer[2] = glm::vec2{ line.end + lightToEnd * glm::vec2{ 100.0f } };
+				buffer[2] = glm::vec2{ line.end + lightToEnd * llc.size };
 				buffer[3] = buffer[2];
-				buffer[4] = glm::vec2{ line.start + lightToStart * glm::vec2{ 100.0f } };
+				buffer[4] = glm::vec2{ line.start + lightToStart * llc.size };
 				buffer[5] = buffer[0];
 
 				buffer += 6;

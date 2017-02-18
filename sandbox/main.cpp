@@ -3,11 +3,8 @@
 #include <chrono>
 #include <cmath>
 
-#include <graphics/opengl/gl_texture_atlas.h>
 #include <graphics/opengl/gl_frame_renderer.h>
 #include <graphics/opengl/gl_renderer.h>
-#include <graphics/vertex.h>
-#include <graphics/font.h>
 #include <network/network_manager.h>
 #include <log.h>
 #include <events.h>
@@ -15,21 +12,18 @@
 #include <task.h>
 #include <window.h>
 #include <entity.h>
-#include <prefab.h>
-#include <lua_manager.h>
-#include <script/lua_puper.h>
 #include <script/binding.h>
+#include <lua_manager.h>
 #include <components.h>
 #include <resource_manager.h>
 #include <view_system.h>
-#include <event_queue.h>
 
-#include "component_extentions.h"
+#include "component_ext.h"
+#include "event_ext.h"
 #include "binding.h"
+#include "systems.h"
 #include "tile_system.h"
 #include "light_renderer.h"
-#include "systems.h"
-#include "events.h"
 
 std::chrono::duration<float> dt;
 
@@ -98,6 +92,11 @@ int main(int argc, char** argv) {
 	//main game loop
 	while (engine.isRunning()) {
 
+
+		float delta = dt.count();
+		oak::luah::pushValue(L, reinterpret_cast<void*>(&delta));
+		lua_setglobal(L, "dt");
+
 		//emit update event in scripts (game logic)
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
@@ -108,6 +107,7 @@ int main(int argc, char** argv) {
 		oak::luah::getGlobal(L, "oak.es.process_events");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::call(L, 1, 0);
+
 
 		//create / destroy / activate / deactivate entities 
 		entityManager.update();

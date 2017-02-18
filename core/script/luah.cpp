@@ -247,10 +247,6 @@ namespace oak {
 		lua_pushstring(L, v.c_str());
 	}
 
-	void luah::pushValue(lua_State *L, void* v) {
-		lua_pushlightuserdata(L, v);
-	}
-
 	template<> int32_t luah::toValue(lua_State *L, int idx) {
 		return static_cast<int32_t>(lua_tointeger(L, idx));
 	}

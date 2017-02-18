@@ -62,7 +62,7 @@ local tool_bar = {
 		table.insert(self.children, i3)
 		table.insert(self.buttons, b3)
 
-		local debug = oak.es:create_entity(self:layer(), "debug", {})
+		local debug = oak.es:create_entity(self:layer(), "debug", require("gui/debug_menu"))
 		local b4, i4 = make_button(144, 0, self:layer(), 3, function(button, active)
 			if active == 1 then
 				for k, v in pairs(self.buttons) do

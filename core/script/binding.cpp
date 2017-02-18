@@ -247,7 +247,7 @@ namespace oak::luah {
 		auto keys = getKeys(L);
 
 		Prefab &prefab = Engine::inst().getSystem<ResourceManager>().add<Prefab>(name, &manager);
-		auto &thandle = Engine::inst().getSystem<ComponentHandleStorage>();
+		auto &chs = Engine::inst().getSystem<ComponentHandleStorage>();
 
 		for (const auto &k : keys) {
 			lua_getfield(L, -1, k.c_str());
@@ -260,12 +260,12 @@ namespace oak::luah {
 			lua_pop(L, 1);
 
 			//deserialize the component
-			size_t tid = thandle.getId(k);
+			size_t tid = chs.getId(k);
 			void *comp = prefab.addComponent(shared, tid);
 
 			LuaPuper puper{ L, -1 };
 			puper.setIo(PuperIo::IN);
-			thandle.getHandle(tid)->pupObject(puper, comp, {});
+			chs.getHandle(tid)->pupObject(puper, comp, {});
 			
 			lua_pop(L, 1);
 		}
@@ -387,7 +387,6 @@ namespace oak::luah {
 		lua_settop(L, 0);
 
 		return 0;
-
 	}
 
 	//void set_view(viewId, view)
@@ -472,6 +471,34 @@ namespace oak::luah {
 		return 1;
 	}
 
+
+	//int get_int(void*)
+	static int c_pointer_getInt(lua_State *L) {
+		void *data = toValue<void*>(L, 1);
+		lua_settop(L, 0);
+		pushValue(L, *static_cast<int*>(data));
+
+		return 1;
+	}
+
+	//float get_number(void*)
+	static int c_pointer_getNumber(lua_State *L) {
+		void *data = toValue<void*>(L, 1);
+		lua_settop(L, 0);
+		pushValue(L, *static_cast<float*>(data));
+
+		return 1;
+	}
+
+	//string get_string(void*)
+	static int c_pointer_getString(lua_State *L) {
+		void *data = toValue<void*>(L, 1);
+		lua_settop(L, 0);
+		pushValue(L, *static_cast<std::string*>(data));
+
+		return 1;
+	}
+
 	void registerBindings(lua_State *L) {
 		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
@@ -526,6 +553,10 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "view_system", "define_view", c_view_defineView);
 		addFunctionToMetatable(L, "view_system", "set_view", c_view_setView);
 		addFunctionToMetatable(L, "view_system", "get_view", c_view_getView);
+
+		addFunctionToMetatable(L, "pointer", "get_int", c_pointer_getInt);
+		addFunctionToMetatable(L, "pointer", "get_number", c_pointer_getNumber);
+		addFunctionToMetatable(L, "pointer", "get_string", c_pointer_getString);
 
 		lua_getglobal(L, "oak");
 		lua_newtable(L);
@@ -618,6 +649,16 @@ namespace oak::luah {
 		Entity *e = static_cast<Entity*>(lua_touserdata(L, -1));
 		lua_pop(L, 1);
 		return *e;
+	}
+
+	void pushValue(lua_State *L, void *data) {
+		void **ptr = reinterpret_cast<void**>(lua_newuserdata(L, sizeof(void*)));
+		*ptr = data;
+		setMetatable(L, "pointer");
+	}
+
+	template<> void* toValue(lua_State *L, int idx) {
+		return *reinterpret_cast<void**>(lua_touserdata(L, idx));
 	}
 
 }

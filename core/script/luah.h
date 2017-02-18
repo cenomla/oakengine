@@ -31,7 +31,6 @@ namespace oak {
 		void pushValue(lua_State *L, float v);
 		void pushValue(lua_State *L, double v);
 		void pushValue(lua_State *L, const std::string& v);
-		void pushValue(lua_State *L, void* v);
 
 		template<typename T>
 		T toValue(lua_State *L, int idx);

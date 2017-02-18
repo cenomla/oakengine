@@ -10,6 +10,7 @@ namespace oak {
 
 	Entity Prefab::createInstance(uint8_t layer) const {
 		Entity entity = manager_->createEntity(layer);
+		const auto& chs = Engine::inst().getSystem<ComponentHandleStorage>();
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];
 			if (it.second != nullptr) {
@@ -17,7 +18,7 @@ namespace oak {
 					manager_->addComponent(entity.index(), i, it.second);
 				} else {
 					void *comp = manager_->addComponent(entity.index(), i);
-					const auto ch = Engine::inst().getSystem<ComponentHandleStorage>().getHandle(i);
+					const auto& ch = chs.getHandle(i);
 					ch->construct(it.second, comp);
 				}
 			}
@@ -27,10 +28,11 @@ namespace oak {
 	}
 
 	void Prefab::clear() {
+		const auto& chs = Engine::inst().getSystem<ComponentHandleStorage>();
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto &it = storage_[i];
 			if (it.second != nullptr) {
-				const auto ch = Engine::inst().getSystem<ComponentHandleStorage>().getHandle(i);
+				const auto& ch = chs.getHandle(i);
 				ch->destruct(it.second);
 				MemoryManager::inst().deallocate(it.second, ch->size());
 			}
