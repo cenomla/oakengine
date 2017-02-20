@@ -343,7 +343,7 @@ namespace oak::luah {
 		lua_pushvalue(L, -1);
 		lua_setfield(L, -2, "__index");
 
-		getRegistry(L, "entity");
+		lua_getfield(L, LUA_REGISTRYINDEX, "entity");
 		lua_setmetatable(L, -2);
 		lua_setmetatable(L, -2);
 

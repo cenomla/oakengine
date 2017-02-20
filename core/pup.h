@@ -28,14 +28,14 @@ namespace oak {
 			size_t size = data.size();
 			pup(puper, size, ObjInfo{ "size" } + info);
 			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], ObjInfo{ std::to_string(i) } + info);
+				pup(puper, data[i], ObjInfo{ std::to_string(i + 1) } + info);
 			}
 		} else {
 			size_t size = 0;
 			pup(puper, size, ObjInfo{ "size" } + info);
 			data.resize(size);
 			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], ObjInfo{ std::to_string(i) } + info);
+				pup(puper, data[i], ObjInfo{ std::to_string(i + 1) } + info);
 			}
 		}
 	}

@@ -1,8 +1,10 @@
 #include "luah.h"
 
 #include <iostream>
+#include <cstring>
 #include <cctype>
 
+#include "util/string_util.h"
 #include "log.h"
 
 namespace oak {
@@ -92,121 +94,88 @@ namespace oak {
 		return keys;
 	}
 
-	void luah::getGlobal(lua_State *L, const std::string &table) {
-		size_t pos = 0, len = 0, count = 0;
+	void luah::getField(lua_State *L, int idx, const std::string& field) {
+		std::vector<std::string> tokens;
+		std::string delimeters = ".[]";
 
-		while ((len = table.find('.', pos)) != std::string::npos) {
-			if (count == 0) {
-				lua_getglobal(L, table.substr(pos, len - pos).c_str());
-			} else {
-				lua_getfield(L, -1, table.substr(pos, len - pos).c_str());
-			}
-
-			pos = len + 1;
-			count++;
-
-			//if we encounter a null field leave it on the stack and return
-			if (isNil(L, -1)) {
-				lua_rotate(L, -count, 1);
-				lua_pop(L, count - 1);
-				return;
-			}
-		}
-		if (count == 0) {
-			lua_getglobal(L, table.c_str());
-		} else {
-			lua_getfield(L, -1, table.substr(pos, table.size()).c_str());
-			lua_rotate(L, -(count + 1), 1);
-			lua_pop(L, count);
-		}
-	}
-
-	void luah::getRegistry(lua_State *L, const std::string &table) {
-		size_t pos = 0, len = 0, count = 0;
-
-		while ((len = table.find('.', pos)) != std::string::npos) {
-			if (count == 0) {
-				lua_getfield(L, LUA_REGISTRYINDEX, table.substr(pos, len - pos).c_str());
-			} else {
-				lua_getfield(L, -1, table.substr(pos, len - pos).c_str());
-			}
-
-			pos = len + 1;
-			count++;
-
-			//if we encounter a null field leave it on the stack and return
-			if (isNil(L, -1)) {
-				lua_rotate(L, -count, 1);
-				lua_pop(L, count - 1);
-				return;
-			}
-		}
-		if (count == 0) {
-			lua_getfield(L, LUA_REGISTRYINDEX, table.c_str());
-		} else {
-			lua_getfield(L, -1, table.substr(pos, table.size()).c_str());
-			lua_rotate(L, -(count + 1), 1);
-			lua_pop(L, count);
-		}
-	}
-
-	void luah::getField(lua_State *L, int idx, const std::string &table) {
-		size_t pos = 0, len = 0, count = 0;
+		oak::util::splitstr(field, delimeters, tokens);
 
 		lua_pushvalue(L, idx);
 
-		while ((len = table.find('.', pos)) != std::string::npos) {
-			const std::string &token = table.substr(pos, len - pos);
-			if (!isdigit(token.at(0))) {
-				lua_getfield(L, -1, token.c_str());
+		int i = 0;
+		for (const auto& t : tokens) {
+			if (strspn(t.c_str(), "0123456789") == t.size()) {
+				lua_geti(L, -1, stoi(t));
 			} else {
-				lua_geti(L, -1, std::stoi(token) + 1);
+				lua_getfield(L, -1, t.c_str());
 			}
-
-			pos = len + 1;
-			count++;
-
-			//if we encounter a null field leave it on the stack and return
+			i++;
 			if (isNil(L, -1)) {
-				lua_rotate(L, -(count + 1), 1);
-				lua_pop(L, count);
-				return;
+				break;
 			}
 		}
-
-		const std::string &token = table.substr(pos, table.size());
-		if (!isdigit(token.at(0))) {
-			lua_getfield(L, -1, token.c_str());
-		} else {
-			lua_geti(L, -1, std::stoi(token) + 1);
-		}
-		lua_rotate(L, -(count + 2), 1);
-		lua_pop(L, count + 1);
+		
+		lua_rotate(L, -(i+1), 1);
+		lua_pop(L, i);
 	}
 
-	void luah::setField(lua_State *L, int idx, const std::string &table) {
-		size_t pos = 0, len = 0, count = 0;
+	void luah::setField(lua_State *L, int idx, const std::string& field) {
+		std::vector<std::string> tokens;
+		std::string delimeters = ".[]";
 
+		oak::util::splitstr(field, delimeters, tokens);
+		
 		lua_pushvalue(L, idx);
 
-		while ((len = table.find('.', pos)) != std::string::npos) {
-			const std::string &token = table.substr(pos, len - pos);
+		int i = 0;
+		for (const auto& t : tokens) {
+			if (strspn(t.c_str(), "0123456789") == t.size()) {
+				lua_geti(L, -1, stoi(t));
+			} else {
+				lua_getfield(L, -1, t.c_str());
+			}
+			i++;
 
-			lua_getfield(L, -1, token.c_str());
 			if (isNil(L, -1)) {
 				lua_pop(L, 1);
 				lua_newtable(L);
-				lua_setfield(L, -2, token.c_str());
-				lua_getfield(L, -1, token.c_str());
-			}
+				if (strspn(t.c_str(), "0123456789") == t.size()) {
+					lua_seti(L, -2, stoi(t));
+				} else {
+					lua_setfield(L, -2, t.c_str());
+				}
+				if (strspn(t.c_str(), "0123456789") == t.size()) {
+					lua_geti(L, -1, stoi(t));
+				} else {
+					lua_getfield(L, -1, t.c_str());
+				}
 
-			pos = len + 1;
-			count++;
+			}
 		}
-		const std::string &token = table.substr(pos, table.size());
-		lua_rotate(L, -(count + 2), -1);
-		lua_setfield(L, -2, token.c_str());
-		lua_pop(L, count + 1);
+
+		lua_pop(L, 1);
+		const auto& t = tokens.back();
+		lua_rotate(L, -(i + 1), -1);
+		if (strspn(t.c_str(), "0123456789") == t.size()) {
+			lua_seti(L, -2, stoi(t));
+		} else {
+			lua_setfield(L, -2, t.c_str());
+		}
+		lua_pop(L, i);
+	}
+
+	void luah::getGlobal(lua_State *L, const std::string& field) {
+		lua_geti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
+		getField(L, -1, field);
+		lua_rotate(L, -2, -1);
+		lua_pop(L, 1);
+	}
+
+	void luah::setGlobal(lua_State *L, const std::string& field) {
+		lua_geti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
+		lua_rotate(L, -2, -1);
+		setField(L, -2, field);
+		lua_pop(L, 1);
 	}
 
 	void luah::call(lua_State *L, int nargs, int nreturns) {

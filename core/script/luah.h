@@ -57,10 +57,12 @@ namespace oak {
 
 		void loadScript(lua_State *L, const std::string& path);
 		std::vector<std::string> getKeys(lua_State *L);
-		void getGlobal(lua_State *L, const std::string& field);
-		void getRegistry(lua_State *L, const std::string& field);
+
 		void getField(lua_State *L, int idx, const std::string& field);
 		void setField(lua_State *L, int idx, const std::string& field);
+		void getGlobal(lua_State *L, const std::string& field);
+		void setGlobal(lua_State *L, const std::string& field);
+
 		void call(lua_State *L, int nargs, int nreturns);
 		
 	}

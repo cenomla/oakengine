@@ -7,7 +7,13 @@
 namespace oak {
 
 	struct ObjInfo {
+		constexpr static uint32_t HAS_NAME = 0x00000001;
+		constexpr static uint32_t HAS_INDEX = 0x00000002;
+		constexpr static uint32_t SIZE_VAR = 0x00000004;
+
 		std::string name;
+		int index = -1;
+		uint32_t flags = 0;
 
 		inline const ObjInfo& combine(const ObjInfo &other) {
 			if (!other.name.empty()) {

@@ -40,8 +40,8 @@ void LightRenderer::init() {
 	vbo_.unbind();
 	vao_.unbind();
 
-	tex_.create(1280, 720, nullptr);
-	fbo_.create(tex_, 1280, 720);
+	tex_.create(160, 90, nullptr);
+	fbo_.create(tex_, 160, 90);
 	shadowShader_.create("res/shaders/shadow/opengl.vert", "res/shaders/shadow/opengl.frag");
 
 	fvao_.create();
@@ -83,7 +83,7 @@ void LightRenderer::update() {
 
 void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::graphics::Batch& batch) {
 	fbo_.bind();
-	glViewport(0, 0, 1280, 720);
+	glViewport(0, 0, 160, 90);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_STENCIL_TEST);
