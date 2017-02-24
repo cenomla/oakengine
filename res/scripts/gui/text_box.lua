@@ -1,5 +1,5 @@
 local text_box = {
-	active = 0,
+	active = false,
 	size = 12.0,
 	on_create = function(self)
 		self.value = {}
@@ -11,9 +11,11 @@ local text_box = {
 		})
 	end,
 	set_active = function(self, active)
-		self:set_sprite({ animframe_y = active })
+		local ay = 0
+		if active then ay = 1 end
+		self:set_sprite({ animframe_y = ay })
 		self.active = active
-		if active == 1 then
+		if active then
 			self.text = {}
 			self.cursor:activate()
 		else
@@ -25,10 +27,10 @@ local text_box = {
 		end
 	end,
 	toggle_active = function(self)
-		if self.active == 0 then
-			self:set_active(1)
+		if not self.active then
+			self:set_active(true)
 		else 
-			self:set_active(0)
+			self:set_active(false)
 		end
 	end,
 	on_key_press = function(self, evt)
@@ -39,7 +41,7 @@ local text_box = {
 			end
 			if evt.key == 257 and #self.text > 0 then
 				self.value = { table.unpack(self.text) }
-				self:set_active(0)
+				self:set_active(false)
 			end
 		end
 	end,
@@ -61,7 +63,7 @@ local text_box = {
 				self:set_sprite({ animframe_x = 1 })
 			end
 		else 
-			self:set_active(0)
+			self:set_active(false)
 		end
 	end,
 	on_char_press = function(self, evt)

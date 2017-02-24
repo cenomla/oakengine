@@ -62,7 +62,8 @@ oak.load_atlas({
 		"res/textures/gui/tool_bar/background",
 		"res/textures/gui/tool_bar/icons",
 		"res/textures/gui/console/background",
-		size = 10
+		"res/textures/gui/debug_menu/background",
+		size = 11
 	},
 	extent = {
 		x = 1024,
@@ -233,6 +234,14 @@ oak.load_sprite({
 	path = "res/textures/gui/console/background"
 })
 
+oak.load_sprite({
+	name = "spr_debug_menu",
+	material = "mat_gui",
+	extent = { x = 256.0, y = 512.0 },
+	atlas = "atlas_gui",
+	path = "res/textures/gui/debug_menu/background"
+})
+
 oak.es:create_prefab("player", {
 	transform = {
 		position = {
@@ -360,6 +369,9 @@ oak.es:create_prefab("console", {
 oak.es:create_prefab("debug", {
 	transform = {
 		position = { y = 32.0 }
+	},
+	sprite = {
+		sprite = hash("spr_debug_menu")
 	}
 })
 

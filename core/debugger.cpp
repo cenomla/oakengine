@@ -4,54 +4,46 @@
 
 namespace oak {
 
+	void pup(Puper& puper, DebugVars& data, const ObjInfo& info) {
+		pup(puper, *data.dt, ObjInfo{ "delta_time" } + info);
+		pup(puper, *data.fps, ObjInfo{ "fps" } + info);
+		pup(puper, *data.usedMemory, ObjInfo{ "used_memory" } + info);
+		pup(puper, *data.allocatedMemory, ObjInfo{ "allocated_memory" } + info);
+	}
+
 	Debugger::Debugger(Engine &engine) : System{ engine, "debugger" } {}
 
 	size_t Debugger::createProfile(const std::string& name) {
-		size_t id = std::hash<std::string>{}(name);
-		const auto& it = profiles_.find(id);
+		size_t id = profiles_.size();
 
-		if (it == std::end(profiles_)) {
-			const auto& it = profiles_.insert({ id, { } });
-			it.first->second.name = name;
-			it.first->second.perfId = id;
-			it.first->second.running = false;
-		}
+		PerformanceProfile prof;
+		prof.name = name;
+		prof.perfId = id;
+		prof.running = false;
+
+		profiles_.resize(id + 1);
+		profiles_.push_back(std::move(prof));
 
 		return id;
 	}
 
 	void Debugger::startProfile(size_t perfId) {
-		const auto& it = profiles_.find(perfId);
-
-		if (it != std::end(profiles_)) {
-			it->second.start = std::chrono::high_resolution_clock::now();
-			it->second.running = true;
-		}
+		auto& it = profiles_[perfId];
+		
+		it.start = std::chrono::high_resolution_clock::now();
+		it.running = true;
 	}
 
 	void Debugger::endProfile(size_t perfId) {
-		const auto& it = profiles_.find(perfId);
+		auto& it = profiles_[perfId];
 
-		if (it != std::end(profiles_)) {
-			it->second.end = std::chrono::high_resolution_clock::now();
-			it->second.running = false;
-			it->second.totalTime += it->second.end - it->second.start;
-		}
+		it.end = std::chrono::high_resolution_clock::now();
+		it.running = false;
+		it.durration = std::chrono::high_resolution_clock::duration{ it.end - it.start }.count();
 	}
 
 	const PerformanceProfile& Debugger::getProfile(size_t perfId) {
-		const auto& it = profiles_.find(perfId);
-
-		if (it != std::end(profiles_)) {
-			return it->second;
-		}
-
-		log::cout << "profile doesnt exist" << std::endl;
-		abort();
-	}
-
-	const PerformanceProfile& Debugger::getProfile(const std::string &name) {
-		return getProfile(std::hash<std::string>{}(name));
+		return profiles_.at(perfId);
 	}
 
 }

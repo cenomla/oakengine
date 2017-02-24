@@ -5,25 +5,27 @@
 #include <chrono>
 
 #include "system.h"
+#include "pup.h"
 
 namespace oak {
 
 	struct PerformanceProfile {
 		std::chrono::high_resolution_clock::time_point start;
 		std::chrono::high_resolution_clock::time_point end;
-		std::chrono::high_resolution_clock::duration totalTime;
 		std::string name;
 		size_t perfId;
+		float durration;
 		bool running;
 	};
 
-	struct VariableView {
-		void *data;
-
-		size_t getSizeT() { return *static_cast<size_t*>(data); }
-		int getInt() { return *static_cast<int*>(data); }
-		float getFloat() { return *static_cast<float*>(data); }
+	struct DebugVars {
+		float *dt = nullptr;
+		float *fps = nullptr;
+		size_t *usedMemory = nullptr;
+		size_t *allocatedMemory = nullptr;
 	};
+
+	void pup(Puper& puper, DebugVars& data, const ObjInfo& info);
 
 	class Debugger : public System {
 	public:
@@ -32,13 +34,11 @@ namespace oak {
 		size_t createProfile(const std::string &name);
 		void startProfile(size_t perfId);
 		void endProfile(size_t perfId);
-
 		const PerformanceProfile& getProfile(size_t perfId);
-		const PerformanceProfile& getProfile(const std::string &name);
 
+		DebugVars debugVars;
 	private:
-		std::unordered_map<size_t, PerformanceProfile> profiles_;
-		std::unordered_map<std::string, VariableView> views_;
+		std::vector<PerformanceProfile> profiles_;
 	};
 
 }

@@ -16,10 +16,10 @@ local tool_bar = {
 
 		local tile_editor = oak.es:create_entity(self:layer(), "tile_editor", require("gui/tile_editor"))
 		local b1, i1 = make_button(0, 0, self:layer(), 0, function(button, active)
-			if active == 1 then
+			if active then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then
-						v:set_active(0)
+						v:set_active(false)
 					end
 				end
 			end
@@ -32,10 +32,10 @@ local tool_bar = {
 
 		local entity_editor = oak.es:create_entity(self:layer(), "entity_editor", require("gui/entity_editor"))
 		local b2, i2 = make_button(48, 0, self:layer(), 1, function(button, active)
-			if active == 1 then
+			if active then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then
-						v:set_active(0)
+						v:set_active(false)
 					end
 				end
 			end
@@ -47,10 +47,10 @@ local tool_bar = {
 
 		local console = oak.es:create_entity(self:layer(), "console", require("gui/console"))
 		local b3, i3 = make_button(96, 0, self:layer(), 2, function(button, active)
-			if active == 1 then
+			if active then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then
-						v:set_active(0)
+						v:set_active(false)
 					end
 				end
 			end
@@ -64,13 +64,14 @@ local tool_bar = {
 
 		local debug = oak.es:create_entity(self:layer(), "debug", require("gui/debug_menu"))
 		local b4, i4 = make_button(144, 0, self:layer(), 3, function(button, active)
-			if active == 1 then
+			if active then
 				for k, v in pairs(self.buttons) do
 					if v ~= button then
-						v:set_active(0)
+						v:set_active(false)
 					end
 				end
 			end
+			debug:toggle_active(active)
 		end)
 
 

@@ -1,19 +1,21 @@
 require("util/collision")
 
 local button = {
-	active = 0,
+	active = false,
 	set_active = function(self, active)
-		self:set_sprite({ animframe_y = active })
+		local ay = 0
+		if active then ay = 1 end
+		self:set_sprite({ animframe_y = ay })
 		self.active = active
 		if self.callback ~= nil then 
 			self:callback(active)
 		end
 	end,
 	toggle_active = function(self, active)
-		if self.active == 0 then
-			self:set_active(1)
+		if not self.active then
+			self:set_active(true)
 		else 
-			self:set_active(0)
+			self:set_active(false)
 		end
 	end,
 	on_button_press = function(self, evt)

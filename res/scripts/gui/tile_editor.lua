@@ -1,5 +1,4 @@
 local tile_editor = {
-	active = 0,
 	on_create = function(self)
 		self.children = {}
 		self.buttons = {}
@@ -9,7 +8,7 @@ local tile_editor = {
 		self.layer_names = {}
 		self.layer_depths = {}
 		self.tools[1] = function(button, active)
-			if active == 1 then
+			if active then
 				self.current_layer = oak.ts.create_layer(hash("mat_tiles"))
 				self.num_layers = self.num_layers + 1
 				self.layer_text:set_text({ text = self.current_layer + 1 .. "/" .. self.num_layers })
@@ -18,12 +17,12 @@ local tile_editor = {
 				self.layer_depth.value = { utf8.codepoint("-1000000.0", 1, 10) }
 				self.layer_depth:update_text()
 				self.layer_depths[self.current_layer + 1] = "-1000000.0"
-				button:set_active(0)
+				button:set_active(false)
 			end
 		end
 
 		self.tools[2] = function(button, active)
-			if active == 1 then
+			if active then
 				if self.num_layers > 0 then
 					oak.ts.destroy_layer(self.current_layer)
 					table.remove(self.layer_names, self.current_layer + 1)
@@ -44,15 +43,15 @@ local tile_editor = {
 					self.layer_name:update_text() 
 					self.layer_text:set_text({ text = self.current_layer + 1 .. "/" .. self.num_layers })
 				end
-				button:set_active(0)
+				button:set_active(false)
 			end
 		end
 
 		self.tools[5] = function(button, active)
-			if active == 1 then
+			if active then
 				for k, v in pairs(self.buttons) do	
 					if v ~= button then
-						v:set_active(0)
+						v:set_active(false)
 					end
 				end
 				self.tool.update = function(self, dt)
@@ -63,8 +62,8 @@ local tile_editor = {
 						local ttsy = 1.0 / 6400.0
 						local stc = self.selector:get_transform()
 						local fs = 0
-						if self.children[31].active == 1 then fs = fs | 1 end
-						if self.children[33].active == 1 then fs = fs | 2 end
+						if self.children[31].active then fs = fs | 1 end
+						if self.children[33].active then fs = fs | 2 end
 
 						c:set_tile((vmx.x // 16) % 16, (vmx.y // 16) % 16, {
 							dx = (stc.position.x - 16.0) * ttsx,
@@ -83,10 +82,10 @@ local tile_editor = {
 		end
 
 		self.tools[15] = function(button, active)
-			if active == 1 then
+			if active then
 				for k, v in pairs(self.buttons) do	
 					if v ~= button then
-						v:set_active(0)
+						v:set_active(false)
 					end
 				end
 				self.tool.update = function(self, dt)
@@ -242,7 +241,7 @@ local tile_editor = {
 			offset = { x = 56.0, y = 8.0 }
 		})
 		self.layer_name.callback = function(e, active)
-			if active == 0 then
+			if not active then
 				self.layer_names[self.current_layer + 1] = utf8.char(table.unpack(e.value))
 			end
 		end
@@ -263,7 +262,7 @@ local tile_editor = {
 			offset = { x = 112.0, y = 8.0 }
 		})
 		self.layer_depth.callback = function(e, active)
-			if active == 0 then
+			if not active then
 				self.layer_depths[self.current_layer + 1] = utf8.char(table.unpack(e.value))
 				oak.ts.set_layer_depth(self.current_layer, tonumber(self.layer_depths[self.current_layer+1]))
 			end
@@ -284,12 +283,12 @@ local tile_editor = {
 			offset = { x = -8.0, y = -8.0 }
 		})
 		lau.callback = function(arrow, active)
-			if active == 1 then
+			if active then
 				if self.current_layer < self.num_layers - 1 then
 					self.current_layer = self.current_layer + 1 
 					self.layer_text:set_text({ text = self.current_layer + 1 .. "/" .. self.num_layers })
 				end
-				arrow:set_active(0)
+				arrow:set_active(false)
 				local ld = self.layer_depths[self.current_layer + 1]
 				self.layer_depth.value = { utf8.codepoint(ld, 1, #ld) }
 				self.layer_depth:update_text()
@@ -312,12 +311,12 @@ local tile_editor = {
 			scale = 0.5
 		})
 		lad.callback = function(arrow, active)
-			if active == 1 then
+			if active then
 				if self.current_layer > 0 then
 					self.current_layer = self.current_layer - 1
 					self.layer_text:set_text({ text = self.current_layer + 1 .. "/" .. self.num_layers })
 				end
-				arrow:set_active(0)
+				arrow:set_active(false)
 				local ld = self.layer_depths[self.current_layer + 1]
 				self.layer_depth.value = { utf8.codepoint(ld, 1, #ld) }
 				self.layer_depth:update_text()
@@ -382,13 +381,11 @@ local tile_editor = {
 	end,
 
 	toggle_active = function(self, active)
-		if active ~= self.active then
-			if self.active == 0 then
-				self.active = 1
-				self:activate()
-			else
-				self.active = 0
+		if active ~= self:is_active() then
+			if self:is_active() then
 				self:deactivate()
+			else
+				self:activate()
 			end
 		end
 	end

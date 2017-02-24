@@ -10,6 +10,7 @@
 #include "script/lua_puper.h"
 #include "resource_manager.h"
 #include "view_system.h"
+#include "debugger.h"
 #include "events.h"
 #include "components.h"
 #include "engine.h"
@@ -499,6 +500,17 @@ namespace oak::luah {
 		return 1;
 	}
 
+	//table get_debug_vars()
+	static int c_debug_getVars(lua_State *L) {
+		auto& ds = Engine::inst().getSystem<Debugger>();
+
+		lua_newtable(L);
+		LuaPuper puper{ L, 1 };
+		pup(puper, ds.debugVars, {});
+
+		return 1;
+	}
+
 	void registerBindings(lua_State *L) {
 		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
@@ -547,6 +559,7 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_font", c_resource_load_font);
 		addFunctionToMetatable(L, "oak", "load_sprite", c_resource_load_sprite);
 		addFunctionToMetatable(L, "oak", "set_uniform", c_resource_set_uniform);
+		addFunctionToMetatable(L, "oak", "debug_get_vars", c_debug_getVars);
 
 		addFunctionToMetatable(L, "view_system", "transform_point", c_view_transformPoint);
 		addFunctionToMetatable(L, "view_system", "get_id", c_view_getId);

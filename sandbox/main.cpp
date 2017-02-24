@@ -17,6 +17,7 @@
 #include <components.h>
 #include <resource_manager.h>
 #include <view_system.h>
+#include <debugger.h>
 
 #include "component_ext.h"
 #include "event_ext.h"
@@ -47,6 +48,7 @@ int main(int argc, char** argv) {
 	oak::network::NetworkManager networkManager{ engine };
 	oak::EntityManager entityManager{ engine };
 	oak::ViewSystem viewSystem{ engine };
+	oak::Debugger debugger{ engine };
 	CollisionSystem collisionSystem{ engine };
 	TileSystem tileSystem{ engine, 8, 16 };
 	SpriteSystem spriteSystem{ engine };
@@ -59,6 +61,7 @@ int main(int argc, char** argv) {
 	engine.addSystem(&networkManager);
 	engine.addSystem(&entityManager);
 	engine.addSystem(&viewSystem);
+	engine.addSystem(&debugger);
 	engine.addSystem(&window);
 	engine.addSystem(&frameRenderer);
 	engine.addSystem(&luam);
@@ -89,19 +92,31 @@ int main(int argc, char** argv) {
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
 	//physics accum for frame independent physics
 	float accum = 0.0f;
+	//debug vars
+	float delta_time;
+	float fps;
+	size_t usedMemory;
+	size_t allocatedMemory;
+	debugger.debugVars = {
+		&delta_time,
+		&fps,
+		&usedMemory,
+		&allocatedMemory,
+	};
+
 	//main game loop
 	while (engine.isRunning()) {
-
-
-		float delta = dt.count();
-		oak::luah::pushValue(L, reinterpret_cast<void*>(&delta));
-		lua_setglobal(L, "dt");
+		//set debug vars
+		delta_time = dt.count();
+		fps = 1.0f / delta_time;
+		usedMemory = oak::MemoryManager::inst().getUsedMemory();
+		allocatedMemory = oak::MemoryManager::inst().getAllocatedMemory();
 
 		//emit update event in scripts (game logic)
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "on_update");
-		oak::luah::pushValue(L, dt.count());
+		oak::luah::pushValue(L, delta_time);
 		oak::luah::call(L, 3, 0);
 
 		oak::luah::getGlobal(L, "oak.es.process_events");
@@ -115,7 +130,7 @@ int main(int argc, char** argv) {
 		collisionSystem.update();
 
 		//update physics
-		accum += dt.count();
+		accum += delta_time;
 		while (accum >= 1.0f/60.0f) {
 			//physicsSystem.update(1.0f/60.0f);
 			accum -= 1.0f/60.0f; 
