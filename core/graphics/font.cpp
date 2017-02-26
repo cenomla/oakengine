@@ -14,7 +14,8 @@ namespace oak::graphics {
 
 	void Font::draw(void *buffer, const std::string &text, float x, float y, float rotation, float size) const {
 		
-		float scale = size / static_cast<float>(fontSize_);
+		const float scale = size / static_cast<float>(fontSize_);
+		const float sx = x;
 
 		for (const char c : text) {
 			const Glyph& g = glyphs_[static_cast<size_t>(c)];
@@ -27,6 +28,10 @@ namespace oak::graphics {
 
 			buffer = static_cast<Sprite::Vertex*>(buffer) + 4;
 			x += g.advance * scale;
+			if (c == '\n') {
+				x = sx;
+				y += size * 1.2f;
+			}
 		}
 	}
 

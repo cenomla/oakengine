@@ -16,7 +16,7 @@ local debug_menu = {
 	end,
 	on_update = function(self)
 		local dvars = oak.debug_get_vars()
-		local str = "dt: " .. dvars.delta_time .. " fps: " .. dvars.fps .. " used mem: " .. dvars.used_memory .. " allocated mem: " .. dvars.allocated_memory
+		local str = "dt: " .. dvars.delta_time .. "\nfps: " .. dvars.fps .. "\nused mem: " .. dvars.used_memory .. "\nallocated mem: " .. dvars.allocated_memory
 
 		self.text:set_text({
 			text = str
