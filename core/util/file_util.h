@@ -3,11 +3,12 @@
 #include <iostream>
 #include <fstream>
 
+#include "memory/container.h"
 #include "log.h"
 
 namespace oak::util {
 
-	inline std::vector<char> readFile(const std::string &path) {
+	inline oak::vector<char> readFile(const oak::string &path) {
 		std::ifstream file{ path, std::ios::ate | std::ios::binary };
 
 		if (!file.is_open()) {
@@ -16,7 +17,7 @@ namespace oak::util {
 		}
 
 		auto size = file.tellg();
-		std::vector<char> buffer(size);
+		oak::vector<char> buffer(size);
 		file.seekg(0);
 		file.read(buffer.data(), size);
 
@@ -25,7 +26,7 @@ namespace oak::util {
 		return buffer;
 	}
 
-	inline std::string readFileAsString(const std::string &path) {
+	inline oak::string readFileAsString(const oak::string &path) {
 		std::ifstream file{ path, std::ios::binary | std::ios::ate };
 
 		if (!file.is_open()) {
@@ -34,7 +35,7 @@ namespace oak::util {
 		}
 
 		auto size = file.tellg();
-		std::string buffer(size, '\0');
+		oak::string buffer(size, '\0');
 		file.seekg(0);
 		file.read(&buffer[0], size);
 

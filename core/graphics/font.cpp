@@ -12,7 +12,7 @@ namespace oak::graphics {
 
 	}
 
-	void Font::draw(void *buffer, const std::string &text, float x, float y, float rotation, float size) const {
+	void Font::draw(void *buffer, const oak::string &text, float x, float y, float rotation, float size) const {
 		
 		const float scale = size / static_cast<float>(fontSize_);
 		const float sx = x;
@@ -39,15 +39,15 @@ namespace oak::graphics {
 		size_t size, width, height;
 	};
 
-	void Font::create(const std::string &path) {
-		const std::string file = util::readFileAsString(path);
+	void Font::create(const oak::string &path) {
+		const oak::string file = util::readFileAsString(path);
 		size_t pos = 0, len = 0;
 
 		FontHeaderInfo fhi;
 		//parse header
 
-		while((len = file.find(' ', pos)) != std::string::npos) {
-			const std::string &token = file.substr(pos, len - pos);
+		while((len = file.find(' ', pos)) != oak::string::npos) {
+			const oak::string &token = file.substr(pos, len - pos);
 			
 			if (token.compare(0, 4, "size") == 0) {
 				fhi.size = std::stoull(token.substr(5));
@@ -64,8 +64,8 @@ namespace oak::graphics {
 		}
 
 		//parse glyphs
-		while((len = file.find('\n', pos)) != std::string::npos) {
-			const std::string &token = file.substr(pos, len - pos);
+		while((len = file.find('\n', pos)) != oak::string::npos) {
+			const oak::string &token = file.substr(pos, len - pos);
 			
 			if (token.compare(0, 4, "char") == 0) {
 				Glyph glyph;

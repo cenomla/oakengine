@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <glm/glm.hpp>
+
+#include "memory/container.h"
 
 namespace oak {
 
@@ -11,7 +12,7 @@ namespace oak {
 		constexpr static uint32_t HAS_INDEX = 0x00000002;
 		constexpr static uint32_t SIZE_VAR = 0x00000004;
 
-		std::string name;
+		oak::string name;
 		int index = -1;
 		uint32_t flags = 0;
 
@@ -49,7 +50,7 @@ namespace oak {
 		virtual void pup(float &data, const ObjInfo &info) = 0;
 		virtual void pup(double &data, const ObjInfo &info) = 0;
 		virtual void pup(bool &data, const ObjInfo &info) = 0;
-		virtual void pup(std::string &data, const ObjInfo &info) = 0;
+		virtual void pup(oak::string &data, const ObjInfo &info) = 0;
 		virtual void pup(Entity &data, const ObjInfo &info) = 0;
 	
 		inline void setIo(PuperIo io) { io_ = io; }

@@ -1,7 +1,5 @@
 #include "gl_shader.h"
 
-#include <vector>
-
 #include "util/file_util.h"
 #include "log.h"
 
@@ -23,7 +21,7 @@ namespace oak::graphics {
 		other.pid_ = 0;
 	}
 
-	void GLShader::create(const std::string &vertPath, const std::string &fragPath) {
+	void GLShader::create(const oak::string &vertPath, const oak::string &fragPath) {
 		if (pid_ != 0) { return; }
 
 		//create the program
@@ -49,7 +47,7 @@ namespace oak::graphics {
 			//if the block index is -1 (the default block) then get the name and cache the location
 			if (blockIndex != -1) { continue; }
 			glGetActiveUniformName(pid_, i, 64, NULL, buffer);
-			locations_.insert({ std::string{ buffer },  glGetUniformLocation(pid_, buffer) });
+			locations_.insert({ oak::string{ buffer },  glGetUniformLocation(pid_, buffer) });
 		}
 	}
 
@@ -69,29 +67,29 @@ namespace oak::graphics {
 	}
 
 
-	void GLShader::setUniform(const std::string &name, const glm::mat4 &value) const {
+	void GLShader::setUniform(const oak::string &name, const glm::mat4 &value) const {
 		glUniformMatrix4fv(locations_.at(name), 1, GL_FALSE, &value[0][0]);
 	}
 
-	void GLShader::setUniform(const std::string &name, const glm::vec3 &value) const {
+	void GLShader::setUniform(const oak::string &name, const glm::vec3 &value) const {
 		glUniform3fv(locations_.at(name), 1, &value[0]);
 	}
 
-	void GLShader::setUniform(const std::string &name, const uint32_t value) const {
+	void GLShader::setUniform(const oak::string &name, const uint32_t value) const {
 		glUniform1ui(locations_.at(name), value);
 	}
 
-	void GLShader::setUniform(const std::string &name, const float value) const {
+	void GLShader::setUniform(const oak::string &name, const float value) const {
 		glUniform1f(locations_.at(name), value);
 	}
 
-	void GLShader::bindBlockIndex(const std::string &name, GLuint binding) const {
+	void GLShader::bindBlockIndex(const oak::string &name, GLuint binding) const {
 		GLuint index = glGetUniformBlockIndex(pid_, name.c_str());
 		glUniformBlockBinding(pid_, index, binding);
 	}
 
-	GLuint GLShader::load(const std::string &path, GLenum type) {	
-		const std::string code = util::readFileAsString(path);
+	GLuint GLShader::load(const oak::string &path, GLenum type) {	
+		const oak::string code = util::readFileAsString(path);
 		const char *cstr = code.c_str();
 
 		GLuint shader = glCreateShader(type);
@@ -104,7 +102,7 @@ namespace oak::graphics {
 		//get log and print it
 		GLint length;
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-		std::vector<char> log(length + 1);
+		oak::vector<char> log(length + 1);
 		glGetShaderInfoLog(shader, length, &length, log.data());
 		if (length > 1) {
 			log::cout << log.data() << std::endl;

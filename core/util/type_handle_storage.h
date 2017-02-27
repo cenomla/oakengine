@@ -1,10 +1,10 @@
 #pragma once
 
 #include <array>
-#include <unordered_map>
 
 #include "typeid.h"
 #include "type_handle.h"
+#include "memory/container.h"
 #include "memory/memory_manager.h"
 #include "system.h"
 
@@ -27,7 +27,7 @@ namespace oak {
 		}
 
 		template<class T>
-		inline void addHandle(const std::string &name) {
+		inline void addHandle(const oak::string &name) {
 			size_t tid = util::type_id<U, T>::id;
 			if (handles_[tid].ptr != nullptr) { return; }
 			size_t hsize = sizeof(TypeHandle<T>);
@@ -47,7 +47,7 @@ namespace oak {
 			return handles_[tid].ptr;
 		}
 
-		inline size_t getId(const std::string &name) const {
+		inline size_t getId(const oak::string &name) const {
 			const auto& it = nameMap_.find(name);
 			if (it != std::end(nameMap_)) {
 				return it->second;
@@ -58,7 +58,7 @@ namespace oak {
 
 	private:
 		std::array<TBlock<TypeHandleBase>, C> handles_;
-		std::unordered_map<std::string, size_t> nameMap_;
+		oak::unordered_map<oak::string, size_t> nameMap_;
 	};
 
 

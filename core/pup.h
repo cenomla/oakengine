@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "memory/container.h"
 #include "util/puper.h"
 
 namespace oak {
@@ -16,14 +16,14 @@ namespace oak {
 	void pup(Puper &puper, float &data, const ObjInfo &info);
 	void pup(Puper &puper, double &data, const ObjInfo &info);
 	void pup(Puper &puper, bool &data, const ObjInfo &info);
-	void pup(Puper &puper, std::string &data, const ObjInfo &info);
+	void pup(Puper &puper, oak::string &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec3 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec4 &data, const ObjInfo &info);
 	void pup(Puper &puper, Entity &data, const ObjInfo &info);
 	
 	template<class T>
-	void pup(Puper &puper, std::vector<T> &data, const ObjInfo &info) {
+	void pup(Puper &puper, oak::vector<T> &data, const ObjInfo &info) {
 		if (puper.getIo() == PuperIo::OUT) {
 			size_t size = data.size();
 			pup(puper, size, ObjInfo{ "size" } + info);

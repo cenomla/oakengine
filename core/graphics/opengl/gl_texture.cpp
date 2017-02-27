@@ -26,7 +26,7 @@ namespace oak::graphics {
 		glBindTexture(type_, 0);
 	}
 
-	void GLTexture::create(const std::string &path) {
+	void GLTexture::create(const oak::string &path) {
 		if (tex_ != 0) { return; }
 
 		int w, h, comp;

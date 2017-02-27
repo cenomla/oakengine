@@ -46,7 +46,7 @@ namespace oak {
 
 	struct TextComponent : public graphics::Renderable {
 		Resource<graphics::Font> font{ 0 };
-		std::string text{ "" };
+		oak::string text{ "" };
 		glm::vec2 offset{ 0.0f };
 		float size = 24.0f;
 

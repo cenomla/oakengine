@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <vulkan/vulkan.h>
+#include "memory/container.h"
 
 namespace oak::graphics {
 
@@ -18,8 +18,8 @@ namespace oak::graphics {
 
 		struct SwapchainSupportDetails {
 			VkSurfaceCapabilitiesKHR capabilities;
-			std::vector<VkSurfaceFormatKHR> formats;
-			std::vector<VkPresentModeKHR> modes;
+			oak::vector<VkSurfaceFormatKHR> formats;
+			oak::vector<VkPresentModeKHR> modes;
 		};
 
 		VDevice(const VkInstance *instance);

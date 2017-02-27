@@ -1,9 +1,8 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "oak_assert.h"
 #include "memory/memory_manager.h"
+#include "memory/container.h"
 #include "event_manager.h"
 #include "task_manager.h"
 #include "system.h"
@@ -42,7 +41,7 @@ namespace oak {
 			}
 		}
 
-		void removeSystem(const std::string &name);
+		void removeSystem(const oak::string &name);
 
 		template<typename T>
 		T& getSystem() {
@@ -57,7 +56,7 @@ namespace oak {
 			}
 		}
 
-		System* getSystem(const std::string &name);
+		System* getSystem(const oak::string &name);
 
 		inline EventManager& getEventManager() { return eventManager_; }
 		inline const EventManager& getEventManager() const { return eventManager_; }
@@ -74,7 +73,7 @@ namespace oak {
 		EventManager eventManager_;
 		TaskManager taskManager_;
 		
-		std::unordered_map<size_t, System*> systems_;
+		oak::unordered_map<size_t, System*> systems_;
 		bool isRunning_;
 	};
 

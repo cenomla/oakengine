@@ -27,7 +27,7 @@ namespace oak::graphics {
 		}
 
 		//create queue family create infos
-		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		oak::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 		std::set<int> uniqueQueueFamilies{ familyIndices_.graphicsFamily, familyIndices_.presentFamily };
 
 		float queuePriority = 1.0f;
@@ -88,7 +88,7 @@ namespace oak::graphics {
 		//enumerate physical devices
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(*instance_, &deviceCount, nullptr);
-		std::vector<VkPhysicalDevice> devices(deviceCount);
+		oak::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(*instance_, &deviceCount, devices.data());
 
 		//print amount of devices
@@ -112,7 +112,7 @@ namespace oak::graphics {
 	void VDevice::findQueueFamilyIndices(VkSurfaceKHR surface) {		
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queueFamilyCount, nullptr);
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		oak::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queueFamilyCount, queueFamilies.data());
 
 		log::cout << "queue family count: " << queueFamilyCount << std::endl;

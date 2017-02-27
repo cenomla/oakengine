@@ -1,9 +1,9 @@
 #pragma once
 
 #include <initializer_list>
-#include <vector>
 #include <vulkan/vulkan.h>
 
+#include "memory/container.h"
 #include "graphics/attribute_data.h"
 #include "vdevice.h"
 #include "vshader.h"
@@ -28,9 +28,9 @@ namespace oak::graphics {
 		const VDevice &device_;
 		VkPipelineLayout layout_;
 		VkPipeline pipeline_;
-		std::vector<BindingData> bindingDescriptions_;
-		std::vector<AttributeData> attributeDescriptions_;
-		std::vector<VShader> modules_;
+		oak::vector<BindingData> bindingDescriptions_;
+		oak::vector<AttributeData> attributeDescriptions_;
+		oak::vector<VShader> modules_;
 	};
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <memory/container.h>
 #include <graphics/opengl/gl_vertex_array.h>
 #include <graphics/opengl/gl_buffer.h>
 #include <graphics/opengl/gl_material.h>
@@ -25,9 +25,9 @@ public:
 	void setLayerDepth(uint32_t layer, float depth);
 
 private:
-	std::vector<std::vector<Chunk>> chunks_;
-	std::vector<size_t> chunkLayers_;
-	std::vector<uint32_t> layers_;
-	std::vector<float> depths_;
+	oak::vector<oak::vector<Chunk>> chunks_;
+	oak::vector<size_t> chunkLayers_;
+	oak::vector<uint32_t> layers_;
+	oak::vector<float> depths_;
 	int numChunks_, tileSize_;
 };

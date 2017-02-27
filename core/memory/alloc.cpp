@@ -1,5 +1,7 @@
 #include "alloc.h"
 
+#include "debug_vars.h"
+
 namespace oak {
 	
 	Allocator::Allocator(void *start, size_t size) : start_{start}, size_{size}, usedMemory_{0}, numAllocs_{0} {}

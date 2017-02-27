@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <functional>
-#include <vector>
 
+#include "memory/container.h"
 #include "util/typeid.h"
 
 namespace oak {
@@ -41,7 +41,7 @@ namespace oak {
 			size_t id;
 			std::function<void (const TEvent&)> func;
 		};
-		std::vector<Listener> listeners_;
+		oak::vector<Listener> listeners_;
 	};
 
 }

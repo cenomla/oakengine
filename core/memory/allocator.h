@@ -1,40 +1,50 @@
 #pragma once
 
-#include "memory_manager.h"
+#include <utility>
+#include <cstddef>
+#include <cinttypes>
 
 namespace oak {
 
-	template<typename T>
+	namespace detail {
+		void* allocate(size_t size, uint32_t pool, uint32_t align);
+		void deallocate(void *ptr, size_t size, uint32_t pool);
+		size_t blockSize(uint32_t pool);
+	}
+
+	template<class T, size_t P = 0, size_t A = 8>
 	class OakAllocator {
 	public:
+		static constexpr uint32_t pool = P;
+		static constexpr uint32_t align = A;
+
 		typedef T value_type;
 		typedef T* pointer;
 		typedef const T* const_pointer;
+		typedef T& reference;
+		typedef const T& const_reference;
 		typedef size_t size_type;
 		typedef ptrdiff_t difference_type;
 
-		template<typename U>
+		template<class U, size_t N = 0, size_t L = 8>
 		struct rebind {
-			typedef MemAllocator<U> other;	
+			typedef OakAllocator<U, N, L> other;	
 		};
 
-		OakAllocator(uint32_t p = 0, uint32_t a = 8) : pool{ p }, alignment{ a } {}
+		OakAllocator() = default;
 
-		template<typename U>
-		OakAllocator(const MemAllocator<U> &other) : pool{ other.pool }, alignment{ other.alignment } {}
+		template<class U, size_t N = 0, size_t L = 8>
+		OakAllocator(const OakAllocator<U, N, L> &other) {}
 
-		inline pointer allocate(size_t size, const_pointer locality = nullptr) {
-			std::cout << "allocating " << MemoryManager::memoryString(size * sizeof(value_type)) << std::endl;
-			return static_cast<pointer>(MemoryManager::inst().allocate(size * sizeof(value_type), pool, alignment));
+		pointer allocate(size_t size, const_pointer locality = nullptr) {
+			return static_cast<pointer>(detail::allocate(size * sizeof(value_type), pool, align));
 		}
 
-		inline void deallocate(void *ptr, size_t size) {
-
-			std::cout << "deallocating " << MemoryManager::memoryString(size * sizeof(value_type)) << std::endl;
-			MemoryManager::inst().deallocate(ptr, size * sizeof(value_type), pool);
+		void deallocate(void *ptr, size_t size) {
+			detail::deallocate(ptr, size * sizeof(value_type), pool);
 		}
 
-		template<typename... TArgs>
+		template<class... TArgs>
 		inline void construct(pointer ptr, TArgs&&... args) {
 			new (ptr) value_type{ std::forward<TArgs>(args)... };
 		}
@@ -43,19 +53,18 @@ namespace oak {
 			ptr->~value_type();
 		}
 
-		inline size_type max_size() const { return MemoryManager::inst().getPoolBlockSize(pool) / sizeof(value_type); }
-
-		const uint32_t alignment;
-		const uint32_t pool;
+		size_type max_size() const {
+			return detail::blockSize(pool) / sizeof(value_type);
+		}
 	};
 
-	template<typename T, typename U>
-	inline bool operator==(const MemAllocator<T> &first, const MemAllocator<U> &second) {
-		return first.alignment == second.alignment && first.pool == second.pool;
+	template<class T, size_t P, size_t A, class U, size_t N, size_t L>
+	inline bool operator==(const OakAllocator<T, P, A> &first, const OakAllocator<U, N, L> &second) {
+		return first.align == second.align && first.pool == second.pool;
 	}
 
-	template<typename T, typename U>
-	inline bool operator!=(const MemAllocator<T> &first, const MemAllocator<U> &second) {
+	template<class T, size_t P, size_t A, class U, size_t N, size_t L>
+	inline bool operator!=(const OakAllocator<T, P, A> &first, const OakAllocator<U, N, L> &second) {
 		return !(first == second);
 	}
 

@@ -1,6 +1,5 @@
 #include "memory_manager.h"
 
-#include <string>
 #include <cmath>
 
 #include "log.h"
@@ -9,9 +8,9 @@ namespace oak {
 
 	MemoryManager* MemoryManager::INST = nullptr;
 
-	std::string MemoryManager::memoryString(size_t bytes) {
+	oak::string MemoryManager::memoryString(size_t bytes) {
 		double mem = static_cast<double>(bytes);
-		std::string abr = "B";
+		oak::string abr = "B";
 		if (bytes > 1_tb) {
 			mem /= 1e12f;
 			abr = "TB";

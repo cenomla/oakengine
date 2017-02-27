@@ -14,7 +14,7 @@ namespace oak::graphics {
 		clear();
 	}
 
-	void GLTextureAtlas::addTexture(const std::string &name) {
+	void GLTextureAtlas::addTexture(const oak::string &name) {
 		TextureImage image;
 		image.name = name;
 		image.data = stbi_load(name.c_str(), &image.width, &image.height, &image.comp, 4);
@@ -30,13 +30,13 @@ namespace oak::graphics {
 	void GLTextureAtlas::bake(int width, int height) {
 		if (tex_ != 0) { return; }
 
-		std::vector<stbrp_node> nodes;
+		oak::vector<stbrp_node> nodes;
 		nodes.resize(width+1);
 
 		stbrp_context c;
 		stbrp_init_target(&c, width, height, nodes.data(), nodes.size());
 
-		std::vector<stbrp_rect> rects;
+		oak::vector<stbrp_rect> rects;
 		rects.resize(regions_.size());
 
 		for (size_t i = 0; i < rects.size(); i++) {
@@ -80,7 +80,7 @@ namespace oak::graphics {
 
 	constexpr TextureRegion emptyRegion{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-	const TextureRegion& GLTextureAtlas::getTextureRegion(const std::string &name) const {
+	const TextureRegion& GLTextureAtlas::getTextureRegion(const oak::string &name) const {
 		for (const auto& it : regions_) {
 			if (it.first.name == name) { return it.second; }
 		}

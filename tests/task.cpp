@@ -9,7 +9,7 @@ using namespace oak;
 
 std::mutex coutMutex;
 
-void workFun(const std::string &str) {
+void workFun(const oak::string &str) {
 	std::lock_guard<std::mutex> lock{ coutMutex };
 	std::cout << str << std::endl;
 }

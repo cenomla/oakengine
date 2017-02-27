@@ -1,7 +1,7 @@
 #include "binding.h"
 
-#include <string>
 
+#include "memory/container.h"
 #include "graphics/opengl/gl_shader.h"
 #include "graphics/opengl/gl_texture.h"
 #include "graphics/opengl/gl_texture_atlas.h"
@@ -19,8 +19,8 @@
 namespace oak::luah {
 
 	struct LuaShader {
-		std::string name;
-		std::string path;
+		oak::string name;
+		oak::string path;
 	};
 
 	static void pup(Puper &puper, LuaShader &data, const ObjInfo &info) {
@@ -29,8 +29,8 @@ namespace oak::luah {
 	}
 
 	struct LuaTexture {
-		std::string name;
-		std::string path;
+		oak::string name;
+		oak::string path;
 		uint32_t flags = 0;
 	};
 
@@ -41,8 +41,8 @@ namespace oak::luah {
 	}
 
 	struct LuaAtlas {
-		std::string name;
-		std::vector<std::string> paths;
+		oak::string name;
+		oak::vector<oak::string> paths;
 		glm::vec2 extent{ 0.0f };
 		uint32_t flags = 0;
 	};
@@ -55,9 +55,9 @@ namespace oak::luah {
 	}
 
 	struct LuaMaterial {
-		std::string name;
-		std::string shader;
-		std::string texture;
+		oak::string name;
+		oak::string shader;
+		oak::string texture;
 	};
 
 	static void pup(Puper &puper, LuaMaterial &data, const ObjInfo &info) {
@@ -67,9 +67,9 @@ namespace oak::luah {
 	}
 
 	struct LuaFont {
-		std::string name;
-		std::string material;
-		std::string path;
+		oak::string name;
+		oak::string material;
+		oak::string path;
 	};
 
 	static void pup(Puper &puper, LuaFont &data, const ObjInfo &info) {
@@ -79,11 +79,11 @@ namespace oak::luah {
 	}
 
 	struct LuaSprite {
-		std::string name;
-		std::string material;
+		oak::string name;
+		oak::string material;
 		glm::vec2 center{ 0.0f }, extent{ 0.0f }, draw{ 0.0f }, drawExtent{ 1.0f };
-		std::string atlas;
-		std::string path;
+		oak::string atlas;
+		oak::string path;
 		int animFramesX = 1, animFramesY = 1;
 	};
 
@@ -155,10 +155,10 @@ namespace oak::luah {
 
 		auto &resManager = Engine::inst().getSystem<ResourceManager>();
 
-		auto shader = resManager.try_require<graphics::GLShader>(std::hash<std::string>{}(data.shader));
-		const graphics::GLTexture *texture = resManager.try_require<graphics::GLTextureAtlas>(std::hash<std::string>{}(data.texture));
+		auto shader = resManager.try_require<graphics::GLShader>(std::hash<oak::string>{}(data.shader));
+		const graphics::GLTexture *texture = resManager.try_require<graphics::GLTextureAtlas>(std::hash<oak::string>{}(data.texture));
 		if (texture == nullptr) {
-			texture = resManager.try_require<graphics::GLTexture>(std::hash<std::string>{}(data.texture));
+			texture = resManager.try_require<graphics::GLTexture>(std::hash<oak::string>{}(data.texture));
 		}
 
 		if (shader == nullptr || texture == nullptr) {
@@ -166,7 +166,7 @@ namespace oak::luah {
 			abort();
 		}
 
-		resManager.add<graphics::GLMaterial>(data.name, std::hash<std::string>{}(data.name), shader, texture);
+		resManager.add<graphics::GLMaterial>(data.name, std::hash<oak::string>{}(data.name), shader, texture);
 
 		return 0;
 	}
@@ -179,7 +179,7 @@ namespace oak::luah {
 		puper.setIo(PuperIo::IN);
 		pup(puper, data, {});
 
-		auto &font = Engine::inst().getSystem<ResourceManager>().add<graphics::Font>(data.name, std::hash<std::string>{}(data.material));
+		auto &font = Engine::inst().getSystem<ResourceManager>().add<graphics::Font>(data.name, std::hash<oak::string>{}(data.material));
 		font.create(data.path + "/glyphs.fnt");
 	
 		return 0;
@@ -196,10 +196,10 @@ namespace oak::luah {
 		auto &resManager = Engine::inst().getSystem<ResourceManager>();
 
 		if (data.atlas.empty()) {
-			resManager.add<graphics::Sprite>(data.name, std::hash<std::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, data.draw.x, data.draw.y, data.drawExtent.x, data.drawExtent.y);
+			resManager.add<graphics::Sprite>(data.name, std::hash<oak::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, data.draw.x, data.draw.y, data.drawExtent.x, data.drawExtent.y);
 		} else {
 			const auto &atlas = resManager.require<graphics::GLTextureAtlas>(data.atlas);
-			resManager.add<graphics::Sprite>(data.name, std::hash<std::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, atlas.getTextureRegion(data.path + ".png"), data.animFramesX, data.animFramesY);
+			resManager.add<graphics::Sprite>(data.name, std::hash<oak::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, atlas.getTextureRegion(data.path + ".png"), data.animFramesX, data.animFramesY);
 		}
 
 		return 0;
@@ -208,8 +208,8 @@ namespace oak::luah {
 
 	//void set_uniform(shader, name, value)
 	static int c_resource_set_uniform(lua_State *L) {
-		const std::string shaderName{ lua_tostring(L, 1) };
-		const std::string uniformName{ lua_tostring(L, 2) };
+		const oak::string shaderName{ lua_tostring(L, 1) };
+		const oak::string uniformName{ lua_tostring(L, 2) };
 
 		auto &resManager = Engine::inst().getSystem<ResourceManager>();
 		const auto& shader = resManager.require<graphics::GLShader>(shaderName);
@@ -243,7 +243,7 @@ namespace oak::luah {
 	//void create_prefab(name, table)
 	static int c_create_prefab(lua_State *L) {
 		EntityManager &manager = oak::Engine::inst().getSystem<EntityManager>();
-		std::string name = toValue<std::string>(L, 1);
+		oak::string name = toValue<oak::string>(L, 1);
 		lua_pushvalue(L, 2);
 		auto keys = getKeys(L);
 
@@ -330,9 +330,9 @@ namespace oak::luah {
 	static int c_entityManager_createEntity(lua_State *L) {
 		int argc = lua_gettop(L);
 		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
-		std::string name;
+		oak::string name;
 		if (argc == 3) {
-			name = toValue<std::string>(L, 2);
+			name = toValue<oak::string>(L, 2);
 		}
 		lua_rotate(L, -argc, 1);
 		lua_settop(L, 1);
@@ -377,7 +377,7 @@ namespace oak::luah {
 
 		size_t viewId = toValue<size_t>(L, 1);
 
-		std::vector<uint32_t> layers;
+		oak::vector<uint32_t> layers;
 
 		LuaPuper puper{ L, 2 };
 		puper.setIo(PuperIo::IN);
@@ -464,10 +464,10 @@ namespace oak::luah {
 
 	//int hash(string)
 	static int c_hash(lua_State *L) {
-		std::string str = toValue<std::string>(L, 1);
+		oak::string str = toValue<oak::string>(L, 1);
 		lua_settop(L, 0);
 
-		pushValue(L, std::hash<std::string>{}(str));
+		pushValue(L, std::hash<oak::string>{}(str));
 
 		return 1;
 	}
@@ -495,18 +495,16 @@ namespace oak::luah {
 	static int c_pointer_getString(lua_State *L) {
 		void *data = toValue<void*>(L, 1);
 		lua_settop(L, 0);
-		pushValue(L, *static_cast<std::string*>(data));
+		pushValue(L, *static_cast<oak::string*>(data));
 
 		return 1;
 	}
 
 	//table get_debug_vars()
 	static int c_debug_getVars(lua_State *L) {
-		auto& ds = Engine::inst().getSystem<Debugger>();
-
 		lua_newtable(L);
 		LuaPuper puper{ L, 1 };
-		pup(puper, ds.debugVars, {});
+		pup(puper, debugVars, {});
 
 		return 1;
 	}

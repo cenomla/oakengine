@@ -195,7 +195,7 @@ namespace oak::graphics {
 		//layers
 		uint32_t layerCount = 0;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		std::vector<VkLayerProperties> layers(layerCount);
+		oak::vector<VkLayerProperties> layers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
 
 		log::cout << "avaliable layers: " << std::endl;
@@ -225,7 +225,7 @@ namespace oak::graphics {
 
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-		std::vector<VkExtensionProperties> extensions(extensionCount);
+		oak::vector<VkExtensionProperties> extensions(extensionCount);
 
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
@@ -237,7 +237,7 @@ namespace oak::graphics {
 
 		extensionCount = glfwExtensionCount + 1;
 
-		std::vector<const char*> extensionNames(extensionCount);
+		oak::vector<const char*> extensionNames(extensionCount);
 		for (uint32_t i = 0; i < glfwExtensionCount; i++) {
 			extensionNames[i] = glfwExtensions[i];
 		}
@@ -283,7 +283,7 @@ namespace oak::graphics {
 		func(instance_, &debugInfo, nullptr, debugReport_.replace());
 	}
 
-	VkSurfaceFormatKHR chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &formats) {
+	VkSurfaceFormatKHR chooseSurfaceFormat(const oak::vector<VkSurfaceFormatKHR> &formats) {
 		//if the format doesnt matter then choose the optimal format
 		if (formats.size() == 1 && formats.at(0).format == VK_FORMAT_UNDEFINED) {
 			return { VK_FORMAT_B8G8R8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR };
@@ -298,7 +298,7 @@ namespace oak::graphics {
 		return formats.at(0);
 	}
 
-	VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR> &modes, VkPresentModeKHR preferedMode) {
+	VkPresentModeKHR choosePresentMode(const oak::vector<VkPresentModeKHR> &modes, VkPresentModeKHR preferedMode) {
 		for (const auto& it : modes) {
 			if (it == preferedMode) { return it; }
 		}
@@ -623,7 +623,7 @@ namespace oak::graphics {
 		commandPool_.freeBuffers(1, &commandBuffer);
 	}
 
-	VkFormat VulkanApi::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+	VkFormat VulkanApi::findSupportedFormat(const oak::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 		for (VkFormat format : candidates) {
 			VkFormatProperties props;
 			vkGetPhysicalDeviceFormatProperties(device_, format, &props);

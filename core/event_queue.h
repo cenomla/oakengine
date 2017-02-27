@@ -1,8 +1,9 @@
 #pragma once
 
 #include <functional>
-#include <vector>
 #include <mutex>
+
+#include "memory/container.h"
 
 namespace oak {
 
@@ -37,7 +38,7 @@ namespace oak {
 
 	private:
 		std::function<void (const TEvent&)> callback_;
-		std::array<std::vector<TEvent>, 2> events_;
+		std::array<oak::vector<TEvent>, 2> events_;
 		std::mutex eventsMutex_;
 	};
 

@@ -1,7 +1,6 @@
 #include "vshader.h"
 
-#include <vector>
-
+#include "memory/container.h"
 #include "util/file_util.h"
 #include "log.h"
 
@@ -19,11 +18,11 @@ namespace oak::graphics {
 		other.module_ = VK_NULL_HANDLE;
 	}
 
-	void VShader::load(const std::string &path) {
+	void VShader::load(const oak::string &path) {
 		//if the shader is already loaded do not attemp to load another
 		if (module_ != VK_NULL_HANDLE) { return; }
 		//read code from file
-		const std::vector<char> code = util::readFile(path);
+		const oak::vector<char> code = util::readFile(path);
 
 		VkShaderModuleCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

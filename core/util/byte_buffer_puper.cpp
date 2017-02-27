@@ -94,7 +94,7 @@ namespace oak {
 		}
 	}
 
-	void ByteBufferPuper::pup(std::string &data, const ObjInfo &info) {
+	void ByteBufferPuper::pup(oak::string &data, const ObjInfo &info) {
 		if (io_ == PuperIo::OUT) {
 			buffer_->write(data.size());
 			for (size_t i = 0; i < data.size(); i++) {

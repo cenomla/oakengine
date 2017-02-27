@@ -12,7 +12,7 @@ namespace oak::graphics {
 		destroy();
 	}
 
-	void VFramebuffer::create(std::vector<VkImageView> &&imageViews, VkRenderPass renderPass, size_t width, size_t height) {
+	void VFramebuffer::create(oak::vector<VkImageView> &&imageViews, VkRenderPass renderPass, size_t width, size_t height) {
 		if (framebuffer_ != VK_NULL_HANDLE) { return; }
 
 		VkFramebufferCreateInfo framebufferInfo = {};

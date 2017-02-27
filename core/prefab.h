@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
+#include "memory/container.h"
 #include "memory/memory_manager.h"
 #include "util/typeid.h"
 #include "engine.h"
@@ -45,7 +43,7 @@ namespace oak {
 
 		void clear();
 	private:
-		std::vector<std::pair<bool, void*>> storage_;
+		oak::vector<std::pair<bool, void*>> storage_;
 		EntityManager *manager_;
 	};
 

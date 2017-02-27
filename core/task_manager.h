@@ -1,13 +1,12 @@
 #pragma once
 
-#include <experimental/optional> 
 #include <array>
-#include <vector>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
 
+#include "memory/container.h"
 #include "event_queue.h"
 #include "events.h"
 #include "worker.h"
@@ -46,7 +45,7 @@ namespace oak {
 
 	private:
 		std::mutex tasksMutex_;
-		std::array<std::vector<Task>, 2> tasks_;
+		std::array<oak::vector<Task>, 2> tasks_;
 		std::atomic<TaskId> taskId_;
 		std::atomic<size_t> taskCount_;
 		std::atomic<bool> isDone_;
@@ -54,7 +53,7 @@ namespace oak {
 		std::mutex cvMutex_;
 		std::condition_variable taskCv_;
 
-		std::vector<Worker> workers_;
+		oak::vector<Worker> workers_;
 	};
 
 }

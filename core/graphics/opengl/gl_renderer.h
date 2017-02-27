@@ -2,9 +2,9 @@
 
 #include "system.h"
 
-#include <vector>
 #include <functional>
 
+#include "memory/container.h"
 #include "graphics/renderable.h"
 #include "graphics/sprite.h"
 #include "gl_buffer.h"
@@ -45,9 +45,9 @@ namespace oak::graphics {
 			}
 		};
 
-		std::vector<ObjectPos> objects_;
-		std::vector<Batch> batches_;
-		std::vector<std::function<void(const GLVertexArray&, const Batch&)>> drawOperations_;
+		oak::vector<ObjectPos> objects_;
+		oak::vector<Batch> batches_;
+		oak::vector<std::function<void(const GLVertexArray&, const Batch&)>> drawOperations_;
 
 		GLVertexArray vao_;
 		GLBuffer vbo_;

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
-
 #include "oak_assert.h"
+#include "container.h"
 #include "memory_literals.h"
 #include "block.h"
 #include "alloc.h"
@@ -12,7 +11,7 @@ namespace oak {
 	class MemoryManager {
 	public:
 		inline static MemoryManager& inst() { oak_assert(INST != nullptr); return *INST; }
-		static std::string memoryString(size_t byte);
+		static oak::string memoryString(size_t byte);
 
 		MemoryManager();
 		~MemoryManager();

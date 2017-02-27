@@ -3,7 +3,8 @@
 #include <sstream>
 #include <streambuf>
 #include <iostream>
-#include <vector>
+
+#include "memory/container.h"
 
 namespace oak::log {
 

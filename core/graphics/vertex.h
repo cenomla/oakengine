@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "memory/container.h"
 
 namespace oak::graphics {
 
@@ -21,7 +21,7 @@ namespace oak::graphics {
 		glm::mat4 model;
 	};
 
-	const std::vector<Vertex> vertices = {
+	const oak::vector<Vertex> vertices = {
 		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
 		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
 		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
@@ -33,7 +33,7 @@ namespace oak::graphics {
 		{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 	};
 
-	const std::vector<uint16_t> indices = {
+	const oak::vector<uint16_t> indices = {
 		0, 1, 2, 2, 3, 0,
 		4, 5, 6, 6, 7, 4
 	};

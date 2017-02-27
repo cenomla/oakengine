@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "memory/container.h"
 
 namespace oak {
 
@@ -13,12 +13,12 @@ namespace oak {
 		virtual void init();
 		virtual void destroy();
 
-		const std::string& getName() const { return name_; }
+		const oak::string& getName() const { return name_; }
 	protected:
-		System(Engine &engine, const std::string &name);
+		System(Engine &engine, const oak::string &name);
 
 		Engine &engine_;
-		std::string name_;
+		oak::string name_;
 	};
 
 

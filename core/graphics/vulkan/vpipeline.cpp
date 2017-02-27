@@ -57,12 +57,12 @@ namespace oak::graphics {
 		}
 
 		//get shader module create infos
-		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+		oak::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 		for (const auto &module : modules_) {
 			shaderStages.push_back(module);
 		}
 
-		std::vector<VkVertexInputBindingDescription> bindings;
+		oak::vector<VkVertexInputBindingDescription> bindings;
 		bindings.reserve(bindingDescriptions_.size());
 		for (const auto &description : bindingDescriptions_) {
 			VkVertexInputBindingDescription binding;
@@ -72,7 +72,7 @@ namespace oak::graphics {
 			bindings.push_back(binding);
 		}
 
-		std::vector<VkVertexInputAttributeDescription> attribs;
+		oak::vector<VkVertexInputAttributeDescription> attribs;
 		attribs.reserve(attributeDescriptions_.size());
 		for (const auto &description : attributeDescriptions_) {
 			VkVertexInputAttributeDescription attrib;

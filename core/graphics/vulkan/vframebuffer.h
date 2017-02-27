@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <vulkan/vulkan.h>
 
+#include "memory/container.h"
 #include "vdevice.h"
 
 namespace oak::graphics {
@@ -12,7 +12,7 @@ namespace oak::graphics {
 		VFramebuffer(const VDevice *device);
 		~VFramebuffer();
 
-		void create(std::vector<VkImageView> &&views, VkRenderPass renderPass, size_t width, size_t height);
+		void create(oak::vector<VkImageView> &&views, VkRenderPass renderPass, size_t width, size_t height);
 		void destroy();
 
 		inline operator const VkFramebuffer() const { return framebuffer_; }

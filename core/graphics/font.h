@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "memory/container.h"
 
 namespace oak::graphics {
 
@@ -9,9 +8,9 @@ namespace oak::graphics {
 	public:
 		Font(size_t mat);	
 
-		void draw(void *buffer, const std::string &text, float x, float y, float rotation, float size) const;
+		void draw(void *buffer, const oak::string &text, float x, float y, float rotation, float size) const;
 	
-		void create(const std::string &path);
+		void create(const oak::string &path);
 
 		size_t getMaterialId() const { return materialId_; }
 	private:
@@ -22,7 +21,7 @@ namespace oak::graphics {
 
 		size_t materialId_;
 		size_t fontSize_;
-		std::vector<Glyph> glyphs_;
+		oak::vector<Glyph> glyphs_;
 	};
 
 }

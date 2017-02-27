@@ -7,7 +7,7 @@
 struct LightComponent : public oak::graphics::Renderable {
 	float size = 256.0f;
 	glm::vec3 color{ 1.0f, 1.0f, 1.0f };
-	size_t matId = std::hash<std::string>{}("mat_light");
+	size_t matId = std::hash<oak::string>{}("mat_light");
 
 	void draw(void *buffer, float x, float y, float rotation, float scale) const override {
 		struct LV {

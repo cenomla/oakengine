@@ -1,7 +1,8 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <string>
+
+#include "memory/container.h"
 
 namespace oak::graphics {
 
@@ -13,7 +14,7 @@ namespace oak::graphics {
 		void bind(GLenum slot) const;
 		void unbind() const;
 
-		void create(const std::string &path);
+		void create(const oak::string &path);
 		void create(int width, int height, void *data);
 		void destroy();
 

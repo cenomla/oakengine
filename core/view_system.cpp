@@ -6,9 +6,9 @@
 
 namespace oak {
 	
-	ViewSystem::ViewSystem(Engine &engine) : System{ engine, "view_system" } {}
+	ViewSystem::ViewSystem(Engine &engine) : System{ engine, "view_system" }, layerToView_{ oalloc<size_t>{} }, views_{ oalloc<ViewBlock>{} } {}
 
-	void ViewSystem::defineView(size_t viewId, const std::vector<uint32_t>& layers) {
+	void ViewSystem::defineView(size_t viewId, const oak::vector<uint32_t>& layers) {
 		for (auto layer : layers) {
 			if (layer >= layerToView_.size()) {
 				layerToView_.resize(layer + 1);

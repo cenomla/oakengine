@@ -1,9 +1,7 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-
 #include "util/typeid.h"
+#include "memory/container.h"
 #include "memory/memory_manager.h"
 #include "system.h"
 #include "log.h"
@@ -33,7 +31,7 @@ namespace oak {
 			}
 		}
 	private:
-		std::unordered_map<size_t, T> resources_;
+		oak::unordered_map<size_t, T> resources_;
 	};
 
 	class ResourceManager : public System {
@@ -54,7 +52,7 @@ namespace oak {
 		}
 
 		template<class T, class... TArgs>
-		T& add(const std::string &name, TArgs&&... args) {
+		T& add(const oak::string &name, TArgs&&... args) {
 			size_t tid = util::type_id<Resource, T>::id;
 
 			if (tid >= resourceHandles_.size()) { resourceHandles_.resize(tid+1); }
@@ -65,7 +63,7 @@ namespace oak {
 			}
 
 			auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
-			return *plh->addResource(std::hash<std::string>{}(name), std::forward<TArgs>(args)...);
+			return *plh->addResource(std::hash<oak::string>{}(name), std::forward<TArgs>(args)...);
 		}
 
 		template<class T>
@@ -97,14 +95,14 @@ namespace oak {
 		}
 
 		template<class T>
-		const T& require(const std::string &name) {
-			return require<T>(std::hash<std::string>{}(name));
+		const T& require(const oak::string &name) {
+			return require<T>(std::hash<oak::string>{}(name));
 		}
 
 	private:
 		struct Resource {};
 
-		std::vector<Block> resourceHandles_;
+		oak::vector<Block> resourceHandles_;
 	};
 
 

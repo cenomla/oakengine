@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <vulkan/vulkan.h>
 
+#include "memory/container.h"
 #include "vdevice.h"
 
 namespace oak::graphics {
@@ -12,7 +12,7 @@ namespace oak::graphics {
 		VDescriptorPool(const VDevice &device);
 		~VDescriptorPool();
 
-		void create(const std::vector<VkDescriptorPoolSize> &poolSizes);
+		void create(const oak::vector<VkDescriptorPoolSize> &poolSizes);
 		void destroy();
 
 		inline operator const VkDescriptorPool() const { return pool_; }

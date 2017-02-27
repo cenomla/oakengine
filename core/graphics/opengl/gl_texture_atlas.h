@@ -1,10 +1,9 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include <stb_image.h>
 
 #include "gl_texture.h"
+#include "memory/container.h"
 #include "graphics/texture_region.h"
 
 namespace oak::graphics {
@@ -14,20 +13,20 @@ namespace oak::graphics {
 		GLTextureAtlas(GLenum type, GLenum filter = GL_NEAREST);
 		~GLTextureAtlas();
 
-		void addTexture(const std::string &name);
+		void addTexture(const oak::string &name);
 		
 		void bake(int width, int height);
 		void clear();
 
-		const TextureRegion& getTextureRegion(const std::string &name) const;
+		const TextureRegion& getTextureRegion(const oak::string &name) const;
 	private:
 		struct TextureImage {
-			std::string name;
+			oak::string name;
 			int width, height, comp;
 			stbi_uc* data;
 		};
 
-		std::vector<std::pair<TextureImage, TextureRegion>> regions_;
+		oak::vector<std::pair<TextureImage, TextureRegion>> regions_;
 	};
 
 }

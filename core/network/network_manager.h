@@ -2,9 +2,9 @@
 
 #include <mutex>
 #include <atomic>
-#include <vector>
 #include <enet/enet.h>
 
+#include "memory/container.h"
 #include "util/byte_buffer.h"
 #include "util/byte_buffer_puper.h"
 #include "system.h"
@@ -51,7 +51,7 @@ namespace oak::network {
 
 	private:
 		ENetHost *host_;
-		std::vector<ENetPeer*> peers_;
+		oak::vector<ENetPeer*> peers_;
 		std::mutex peerLock_;
 		std::atomic<bool> running_;
 		util::ByteBuffer packetBuffer_;

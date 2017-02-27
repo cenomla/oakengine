@@ -104,8 +104,8 @@ namespace oak {
 		lua_pup<bool>(io_, L_, index_, data, info);
 	}
 
-	void LuaPuper::pup(std::string &data, const ObjInfo &info) {
-		lua_pup<std::string>(io_, L_, index_, data, info);
+	void LuaPuper::pup(oak::string &data, const ObjInfo &info) {
+		lua_pup<oak::string>(io_, L_, index_, data, info);
 	}
 
 	void LuaPuper::pup(Entity &data, const ObjInfo &info) {

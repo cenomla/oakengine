@@ -10,7 +10,7 @@ namespace oak::graphics {
 		destroy();
 	}
 
-	void VDescriptorPool::create(const std::vector<VkDescriptorPoolSize> &poolSizes) {
+	void VDescriptorPool::create(const oak::vector<VkDescriptorPoolSize> &poolSizes) {
 		if (pool_ != VK_NULL_HANDLE) { return; }
 
 		VkDescriptorPoolCreateInfo poolInfo = {};

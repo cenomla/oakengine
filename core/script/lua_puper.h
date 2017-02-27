@@ -23,7 +23,7 @@ namespace oak {
 		void pup(float &data, const ObjInfo &info) override;
 		void pup(double &data, const ObjInfo &info) override;
 		void pup(bool &data, const ObjInfo &info) override;
-		void pup(std::string &data, const ObjInfo &info) override;
+		void pup(oak::string &data, const ObjInfo &info) override;
 		void pup(Entity &data, const ObjInfo &info) override;
 
 		inline void setIndex(int index) { index_ = index; }

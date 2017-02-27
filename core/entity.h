@@ -1,14 +1,12 @@
 #pragma once
 
 #include <functional>
-#include <vector>
-#include <deque>
 #include <array>
-#include <unordered_map>
 #include <bitset>
 
 #include "config.h"
 #include "memory/memory_manager.h"
+#include "memory/container.h"
 #include "util/type_handle_storage.h"
 #include "system.h"
 
@@ -59,10 +57,10 @@ namespace oak {
 		inline size_t getEntityCount() const { return entities_.alive.size(); }
 	private:
 		struct {
-			std::vector<Entity> alive;
-			std::vector<Entity> activated;
-			std::vector<Entity> deactivated;
-			std::vector<Entity> killed;
+			oak::vector<Entity> alive;
+			oak::vector<Entity> activated;
+			oak::vector<Entity> deactivated;
+			oak::vector<Entity> killed;
 
 			inline void clear() {
 				activated.clear();
@@ -82,16 +80,16 @@ namespace oak {
 			std::bitset<config::MAX_COMPONENTS> componentMask;
 			std::bitset<config::MAX_COMPONENTS> ownsMask;
 			std::bitset<2> flags;
-			std::vector<bool> caches;
+			oak::vector<bool> caches;
 		};
 		//stores the generation of each entity
-		std::vector<uint32_t> generation_;
+		oak::vector<uint32_t> generation_;
 		//stores the indices free for reuse
-		std::deque<uint32_t> freeIndices_;
+		oak::deque<uint32_t> freeIndices_;
 		//stores all of the entities metadata
-		std::vector<EntityAttribute> entityAttributes_;
+		oak::vector<EntityAttribute> entityAttributes_;
 		//stores all the systems for entity caching
-		std::unordered_map<uint32_t, EntityCache*> caches_;
+		oak::unordered_map<uint32_t, EntityCache*> caches_;
 	};
 
 	class Entity {
@@ -158,8 +156,8 @@ namespace oak {
 		void addEntity(const Entity &e);
 		void removeEntity(const Entity &e);
 
-		inline std::vector<Entity>& entities() { return entities_; }
-		inline const std::vector<Entity>& entities() const { return entities_; }
+		inline oak::vector<Entity>& entities() { return entities_; }
+		inline const oak::vector<Entity>& entities() const { return entities_; }
 
 		void sort();
 		inline const std::bitset<config::MAX_COMPONENTS>& getFilter() const { return filter_; }
@@ -172,7 +170,7 @@ namespace oak {
 		}
 	private:
 
-		std::vector<Entity> entities_;
+		oak::vector<Entity> entities_;
 		std::function<void (const Entity &e)> onAdd_;
 		std::function<void (const Entity &e)> onRemove_;
 

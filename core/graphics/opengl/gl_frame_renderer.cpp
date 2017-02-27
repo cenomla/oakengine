@@ -22,7 +22,7 @@ namespace oak::graphics {
 	void GLFrameRenderer::create(GLFWwindow *window) {
 		//load opengl stuff
 		glfwMakeContextCurrent(window);
-		glfwSwapInterval(0);
+		glfwSwapInterval(1);
 
 		if (!gladLoadGL()) {
 			log::cout << "cannot load gl" << std::endl;

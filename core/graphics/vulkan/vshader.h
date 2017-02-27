@@ -14,7 +14,7 @@ namespace oak::graphics {
 
 		VShader(VShader &&other);
 
-		void load(const std::string &path);
+		void load(const oak::string &path);
 		void destroy();
 
 		operator const VkPipelineShaderStageCreateInfo() const;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
 #include <functional>
 #include <glm/glm.hpp>
 
 #include <system.h>
 #include <entity.h>
+#include <memory/container.h>
 #include <graphics/opengl/gl_renderer.h>
 #include <graphics/opengl/gl_vertex_array.h>
 #include <graphics/opengl/gl_material.h>
@@ -39,5 +39,5 @@ private:
 	oak::graphics::GLBuffer fvbo_;
 	oak::graphics::GLShader fullscreenShader_;
 
-	std::vector<Line> lines_;
+	oak::vector<Line> lines_;
 };

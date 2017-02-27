@@ -92,31 +92,28 @@ int main(int argc, char** argv) {
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
 	//physics accum for frame independent physics
 	float accum = 0.0f;
-	//debug vars
-	float delta_time;
-	float fps;
-	size_t usedMemory;
-	size_t allocatedMemory;
-	debugger.debugVars = {
-		&delta_time,
-		&fps,
-		&usedMemory,
-		&allocatedMemory,
-	};
+	float fpsCount = 0.0f;
+	float fpsAccum = 0.0f;
 
 	//main game loop
 	while (engine.isRunning()) {
 		//set debug vars
-		delta_time = dt.count();
-		fps = 1.0f / delta_time;
-		usedMemory = oak::MemoryManager::inst().getUsedMemory();
-		allocatedMemory = oak::MemoryManager::inst().getAllocatedMemory();
+		oak::debugVars.dt = dt.count();
+		fpsAccum += dt.count();
+		fpsCount ++;
+		if (fpsAccum > 1.0f) {
+			fpsAccum -= 1.0f;
+			oak::debugVars.fps = fpsCount;
+			fpsCount = 0.0f;
+		}
+		oak::debugVars.usedMemory = oak::MemoryManager::inst().getUsedMemory();
+		oak::debugVars.allocatedMemory = oak::MemoryManager::inst().getAllocatedMemory();
 
 		//emit update event in scripts (game logic)
 		oak::luah::getGlobal(L, "oak.es.emit_event");
 		oak::luah::getGlobal(L, "oak.es");
 		oak::luah::pushValue(L, "on_update");
-		oak::luah::pushValue(L, delta_time);
+		oak::luah::pushValue(L, dt.count());
 		oak::luah::call(L, 3, 0);
 
 		oak::luah::getGlobal(L, "oak.es.process_events");
@@ -130,7 +127,7 @@ int main(int argc, char** argv) {
 		collisionSystem.update();
 
 		//update physics
-		accum += delta_time;
+		accum += dt.count();
 		while (accum >= 1.0f/60.0f) {
 			//physicsSystem.update(1.0f/60.0f);
 			accum -= 1.0f/60.0f; 

@@ -4,16 +4,18 @@
 
 namespace oak {
 
+	DebugVars debugVars;
+
 	void pup(Puper& puper, DebugVars& data, const ObjInfo& info) {
-		pup(puper, *data.dt, ObjInfo{ "delta_time" } + info);
-		pup(puper, *data.fps, ObjInfo{ "fps" } + info);
-		pup(puper, *data.usedMemory, ObjInfo{ "used_memory" } + info);
-		pup(puper, *data.allocatedMemory, ObjInfo{ "allocated_memory" } + info);
+		pup(puper, data.dt, ObjInfo{ "delta_time" } + info);
+		pup(puper, data.fps, ObjInfo{ "fps" } + info);
+		pup(puper, data.usedMemory, ObjInfo{ "used_memory" } + info);
+		pup(puper, data.allocatedMemory, ObjInfo{ "allocated_memory" } + info);
 	}
 
 	Debugger::Debugger(Engine &engine) : System{ engine, "debugger" } {}
 
-	size_t Debugger::createProfile(const std::string& name) {
+	size_t Debugger::createProfile(const oak::string& name) {
 		size_t id = profiles_.size();
 
 		PerformanceProfile prof;

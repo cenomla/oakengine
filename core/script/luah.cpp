@@ -14,7 +14,7 @@ namespace oak {
 		lua_State *L = luaL_newstate();
 		luaL_openlibs(L);
 
-		static const std::string luaFun = R"(function getKeys(t) 
+		static const oak::string luaFun = R"(function getKeys(t) 
 				local s = {}
 				for k, v in pairs(t) do
 					table.insert(s, k)
@@ -32,12 +32,12 @@ namespace oak {
 		lua_close(L);
 	}
 
-	void luah::setMetatable(lua_State *L, const std::string& tableName) {
+	void luah::setMetatable(lua_State *L, const oak::string& tableName) {
 		luah::getMetatable(L, tableName);
 		lua_setmetatable(L, -2);
 	}
 
-	void luah::getMetatable(lua_State *L, const std::string& tableName) {
+	void luah::getMetatable(lua_State *L, const oak::string& tableName) {
 		int isNewTable = luaL_newmetatable(L, tableName.c_str());
 		if (isNewTable != 0) {
 			//if the table is a new table then set it's index value to itself 
@@ -47,12 +47,12 @@ namespace oak {
 		}
 	}
 
-	void luah::addFunctionToTable(lua_State *L, int idx, const std::string& funcName, lua_CFunction func) {
+	void luah::addFunctionToTable(lua_State *L, int idx, const oak::string& funcName, lua_CFunction func) {
 		lua_pushcfunction(L, func);
 		lua_setfield(L, idx, funcName.c_str());
 	}
 
-	void luah::addFunctionToMetatable(lua_State *L, const std::string& tableName, const std::string& funcName, lua_CFunction func) {
+	void luah::addFunctionToMetatable(lua_State *L, const oak::string& tableName, const oak::string& funcName, lua_CFunction func) {
 		luah::getMetatable(L, tableName);
 		//add the function to the metatable 
 		lua_pushcfunction(L, func);
@@ -61,20 +61,20 @@ namespace oak {
 		lua_pop(L, 1);
 	}
 
-	void luah::loadScript(lua_State *L, const std::string& path) {
+	void luah::loadScript(lua_State *L, const oak::string& path) {
 		log::cout << "loading script: " << path << std::endl;
 		luaL_loadfile(L, path.c_str());
 		int err = lua_pcall(L, 0, LUA_MULTRET, 0);
 
 		if (err != LUA_OK) {
-			std::string errMsg = lua_tostring(L, -1);
+			oak::string errMsg = lua_tostring(L, -1);
 			log::cout << "lua error in script " << path << " : " << err << ", " << errMsg << std::endl;
 			lua_pop(L, 1);
 		}
 	}
 
-	std::vector<std::string> luah::getKeys(lua_State *L) {
-		std::vector<std::string> keys;
+	oak::vector<oak::string> luah::getKeys(lua_State *L) {
+		oak::vector<oak::string> keys;
 		//L: table
 		lua_getglobal(L, "getKeys");
 		lua_rotate(L, -2, 1);
@@ -94,9 +94,9 @@ namespace oak {
 		return keys;
 	}
 
-	void luah::getField(lua_State *L, int idx, const std::string& field) {
-		std::vector<std::string> tokens;
-		std::string delimeters = ".[]";
+	void luah::getField(lua_State *L, int idx, const oak::string& field) {
+		oak::vector<oak::string> tokens;
+		oak::string delimeters = ".[]";
 
 		oak::util::splitstr(field, delimeters, tokens);
 
@@ -119,9 +119,9 @@ namespace oak {
 		lua_pop(L, i);
 	}
 
-	void luah::setField(lua_State *L, int idx, const std::string& field) {
-		std::vector<std::string> tokens;
-		std::string delimeters = ".[]";
+	void luah::setField(lua_State *L, int idx, const oak::string& field) {
+		oak::vector<oak::string> tokens;
+		oak::string delimeters = ".[]";
 
 		oak::util::splitstr(field, delimeters, tokens);
 		
@@ -164,14 +164,14 @@ namespace oak {
 		lua_pop(L, i);
 	}
 
-	void luah::getGlobal(lua_State *L, const std::string& field) {
+	void luah::getGlobal(lua_State *L, const oak::string& field) {
 		lua_geti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
 		getField(L, -1, field);
 		lua_rotate(L, -2, -1);
 		lua_pop(L, 1);
 	}
 
-	void luah::setGlobal(lua_State *L, const std::string& field) {
+	void luah::setGlobal(lua_State *L, const oak::string& field) {
 		lua_geti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
 		lua_rotate(L, -2, -1);
 		setField(L, -2, field);
@@ -182,7 +182,7 @@ namespace oak {
 		int err = lua_pcall(L, nargs, nreturns, 0);
 
 		if (err != LUA_OK) {
-			std::string errMsg = lua_tostring(L, -1);
+			oak::string errMsg = lua_tostring(L, -1);
 			log::cout << "lua error: " << err << ", " << errMsg << std::endl;
 			lua_pop(L, 1);
 		}
@@ -212,7 +212,7 @@ namespace oak {
 		lua_pushnumber(L, v);
 	}
 
-	void luah::pushValue(lua_State *L, const std::string &v) {
+	void luah::pushValue(lua_State *L, const oak::string &v) {
 		lua_pushstring(L, v.c_str());
 	}
 
@@ -244,8 +244,8 @@ namespace oak {
 		return static_cast<bool>(lua_toboolean(L, idx));
 	}
 
-	template<> std::string luah::toValue(lua_State *L, int idx) {
-		return std::string{ lua_tostring(L, idx) };
+	template<> oak::string luah::toValue(lua_State *L, int idx) {
+		return oak::string{ lua_tostring(L, idx) };
 	}
 
 	bool luah::isNil(lua_State *L, int idx) {

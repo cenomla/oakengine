@@ -33,7 +33,7 @@ namespace oak {
 		}
 	}
 
-	void Engine::removeSystem(const std::string &name) {
+	void Engine::removeSystem(const oak::string &name) {
 		for (auto it = std::begin(systems_); it != std::end(systems_); ++it) {
 			if (it->second->getName() == name) {
 				it->second->destroy();
@@ -43,7 +43,7 @@ namespace oak {
 		}
 	}
 
-	System* Engine::getSystem(const std::string &name) {
+	System* Engine::getSystem(const oak::string &name) {
 		for (auto it = std::begin(systems_); it != std::end(systems_); ++it) {
 			if (it->second->getName() == name) {
 				return it->second;

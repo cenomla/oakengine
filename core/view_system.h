@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <glm/glm.hpp>
 
+#include "memory/container.h"
 #include "graphics/opengl/gl_buffer.h"
 #include "view.h"
 #include "system.h"
@@ -13,7 +13,7 @@ namespace oak {
 	public:
 		ViewSystem(Engine &engine);
 
-		void defineView(size_t viewId, const std::vector<uint32_t>& layers);
+		void defineView(size_t viewId, const oak::vector<uint32_t>& layers);
 		void setView(size_t viewId, const View& view);
 
 		glm::vec2 transformPoint(size_t viewId, const glm::vec2& point);
@@ -34,8 +34,8 @@ namespace oak {
 			graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
 		};
 
-		std::vector<size_t> layerToView_;
-		std::vector<ViewBlock> views_;
+		oak::vector<size_t> layerToView_;
+		oak::vector<ViewBlock> views_;
 	};
 
 }

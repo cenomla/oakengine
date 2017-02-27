@@ -112,7 +112,7 @@ namespace oak {
 	}
 
 	void EntityManager::update() {
-		std::unordered_map<size_t, EntityCache*> cachesToSort;
+		oak::unordered_map<size_t, EntityCache*> cachesToSort;
 		//remove all entities to remove
 		for (auto &e : entities_.activated) {
 			auto &attribute = entityAttributes_[e.index()];

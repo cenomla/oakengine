@@ -1,8 +1,9 @@
 #pragma once
 
 #include <fstream>
-#include <vector>
 #include <vulkan/vulkan.h>
+
+#include "memory/container.h"
 
 #include "vhandle.h"
 #include "vdevice.h"
@@ -49,14 +50,14 @@ namespace oak::graphics {
 		VHandle<VkSurfaceKHR> surface_;
 		VDevice device_;
 		VHandle<VkSwapchainKHR> swapchain_;
-		std::vector<VkImage> swapchainImages_;
+		oak::vector<VkImage> swapchainImages_;
 		VkFormat swapchainImageFormat_;
 		VkExtent2D swapchainExtent_;
-		std::vector<VHandle<VkImageView>> swapchainImageViews_;
+		oak::vector<VHandle<VkImageView>> swapchainImageViews_;
 		VRenderPass renderPass_;
 		VHandle<VkDescriptorSetLayout> descriptorSetLayout_;
 		VPipeline graphicsPipeline_;
-		std::vector<VFramebuffer> swapchainFramebuffers_;
+		oak::vector<VFramebuffer> swapchainFramebuffers_;
 
 		VImage depthImage_;
 		VMemory depthImageMemory_;
@@ -80,7 +81,7 @@ namespace oak::graphics {
 		VDescriptorPool descriptorPool_;
 		VkDescriptorSet descriptorSet_;
 		VCommandPool commandPool_;
-		std::vector<VkCommandBuffer> commandBuffers_;
+		oak::vector<VkCommandBuffer> commandBuffers_;
 		VSemaphore imageAvaliableSemaphore_;
 		VSemaphore renderFinishedSemaphore_;
 
@@ -91,7 +92,7 @@ namespace oak::graphics {
 		void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
 		void copyImage(VkImage srcImage, VkImage dstImage, uint32_t width, uint32_t height);
 		void transitionImageLayout(VkImage image, VkImageAspectFlags aspectFlags, VkImageLayout oldLayout, VkImageLayout newLayout);
-		VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		VkFormat findSupportedFormat(const oak::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 		void initInstance();
 		void initDebugReport();

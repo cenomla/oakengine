@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unordered_map>
 #include <mutex>
 
 #include "util/typeid.h"
+#include "memory/container.h"
 #include "memory/memory_manager.h"
 #include "event_channel.h"
 
@@ -55,7 +55,7 @@ namespace oak {
 		struct BaseEvt {};
 
 		std::mutex channelsMutex_;
-		std::unordered_map<size_t, Block> channels_;
+		oak::unordered_map<size_t, Block> channels_;
 	};
 
 }
