@@ -25,7 +25,7 @@ namespace oak::util {
 	void ByteBuffer::operator=(const ByteBuffer &other) {
 		destroy();
 		capacity_ = other.capacity_;
-		buffer_ = static_cast<char*>(MemoryManager::inst().allocate(capacity_, 3));
+		buffer_ = static_cast<char*>(MemoryManager::inst().allocate(capacity_));
 		pos_ = other.pos_;
 		mark_ = other.mark_;
 		owns_ = other.owns_;
@@ -66,15 +66,14 @@ namespace oak::util {
 	}
 
 	void ByteBuffer::init() {
-		MemoryManager::inst().createPool(3, 512_kb);
 		if (buffer_ == nullptr) {
-			buffer_ = static_cast<char*>(MemoryManager::inst().allocate(capacity_, 3));
+			buffer_ = static_cast<char*>(MemoryManager::inst().allocate(capacity_));
 		}
 	}
 
 	void ByteBuffer::destroy() {
 		if (buffer_ != nullptr && owns_) {
-			MemoryManager::inst().deallocate(buffer_, capacity_, 3);
+			MemoryManager::inst().deallocate(buffer_, capacity_);
 			buffer_ = nullptr;
 		}
 	}

@@ -38,15 +38,11 @@ namespace oak {
 	public:
 		ResourceManager(Engine &engine) : System(engine, "resource_manager") {}
 
-		void init() override {
-			MemoryManager::inst().createPool(1, 512_kb);
-		}
-
 		void destroy() override {
 			for (auto block : resourceHandles_) {
 				if (block.ptr != nullptr) {
 					static_cast<ResourceListHandlerBase*>(block.ptr)->~ResourceListHandlerBase();
-					MemoryManager::inst().deallocate(block.ptr, block.size, 1);
+					MemoryManager::inst().deallocate(block.ptr, block.size);
 				}
 			}
 		}
@@ -57,7 +53,7 @@ namespace oak {
 
 			if (tid >= resourceHandles_.size()) { resourceHandles_.resize(tid+1); }
 			if (resourceHandles_.at(tid).ptr == nullptr) { 
-				auto ptr = static_cast<ResourceListHandler<T>*>(MemoryManager::inst().allocate(sizeof(ResourceListHandler<T>), 1));
+				auto ptr = static_cast<ResourceListHandler<T>*>(MemoryManager::inst().allocate(sizeof(ResourceListHandler<T>)));
 				new (ptr) ResourceListHandler<T>{};
 				resourceHandles_[tid] = { ptr, sizeof(ResourceListHandler<T>) }; 
 			}
