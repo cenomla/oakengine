@@ -19,8 +19,24 @@ namespace oak {
 	template<class T>
 	using deque = std::deque<T, oalloc<T>>;
 
-	using string = std::string;
-	
+	using string = std::basic_string<char, std::char_traits<char>, oalloc<char>>;
+}
+
+
+namespace std {
+
+	template<>
+	struct hash<oak::string> {
+		size_t operator()(const oak::string& value) const {
+			return std::hash<std::string>{}(value.c_str());
+		}
+	};
+
+}
+
+
+namespace oak {
+
 	template<class U, class T>
 	using unordered_map = std::unordered_map<U, T, std::hash<U>, std::equal_to<U>, oalloc<std::pair<const U, T>>>;
 }

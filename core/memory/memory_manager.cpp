@@ -8,9 +8,9 @@ namespace oak {
 
 	MemoryManager* MemoryManager::INST = nullptr;
 
-	oak::string MemoryManager::memoryString(size_t bytes) {
+	std::string MemoryManager::memoryString(size_t bytes) {
 		double mem = static_cast<double>(bytes);
-		oak::string abr = "B";
+		std::string abr = "B";
 		if (bytes > 1_tb) {
 			mem /= 1e12f;
 			abr = "TB";
@@ -33,7 +33,6 @@ namespace oak {
 	}
 
 	MemoryManager::~MemoryManager() {
-		INST = nullptr;
 
 		log::cout << "total memory allocated: " << memoryString(getAllocatedMemory()) << std::endl;
 		log::cout << "memory still in use: " << memoryString(getUsedMemory()) << std::endl;
@@ -45,6 +44,7 @@ namespace oak {
 			pool.blocks_.clear();
 		}
 		pools_.clear();
+		INST = nullptr;
 	}
 
 	void MemoryManager::createPool(uint32_t id, size_t size) {

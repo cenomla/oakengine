@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 
 		engine.getTaskManager().wait();
 
-		workFun("eof" + std::to_string(i));
+		workFun(oak::string{ "eof" } + std::to_string(i).c_str());
 		i++;
 
 		if (i > 128000) {

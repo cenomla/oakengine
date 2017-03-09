@@ -14,7 +14,7 @@ namespace oak {
 		lua_State *L = luaL_newstate();
 		luaL_openlibs(L);
 
-		static const oak::string luaFun = R"(function getKeys(t) 
+		const oak::string luaFun = R"(function getKeys(t) 
 				local s = {}
 				for k, v in pairs(t) do
 					table.insert(s, k)
@@ -95,73 +95,81 @@ namespace oak {
 	}
 
 	void luah::getField(lua_State *L, int idx, const oak::string& field) {
-		oak::vector<oak::string> tokens;
-		oak::string delimeters = ".[]";
-
-		oak::util::splitstr(field, delimeters, tokens);
+		const oak::string delimeters = ".[]";
 
 		lua_pushvalue(L, idx);
 
 		int i = 0;
-		for (const auto& t : tokens) {
-			if (strspn(t.c_str(), "0123456789") == t.size()) {
-				lua_geti(L, -1, stoi(t));
-			} else {
-				lua_getfield(L, -1, t.c_str());
+		size_t prev = 0, pos;
+		do {
+			pos = field.find_first_of(delimeters, prev);
+			if (pos > prev) {
+				const auto& t = field.substr(prev, pos-prev);
+				if (strspn(t.c_str(), "0123456789") == t.size()) {
+					lua_geti(L, -1, atoi(t.c_str()));
+				} else {
+					lua_getfield(L, -1, t.c_str());
+				}
+				i++;
+				if (isNil(L, -1)) {
+					break;
+				}
 			}
-			i++;
-			if (isNil(L, -1)) {
-				break;
-			}
-		}
+			prev = pos + 1;
+		} while(pos != oak::string::npos);
 		
 		lua_rotate(L, -(i+1), 1);
 		lua_pop(L, i);
 	}
 
 	void luah::setField(lua_State *L, int idx, const oak::string& field) {
-		oak::vector<oak::string> tokens;
 		oak::string delimeters = ".[]";
-
-		oak::util::splitstr(field, delimeters, tokens);
 		
 		lua_pushvalue(L, idx);
 
 		int i = 0;
-		for (const auto& t : tokens) {
-			if (strspn(t.c_str(), "0123456789") == t.size()) {
-				lua_geti(L, -1, stoi(t));
-			} else {
-				lua_getfield(L, -1, t.c_str());
-			}
-			i++;
-
-			if (isNil(L, -1)) {
-				lua_pop(L, 1);
-				lua_newtable(L);
+		size_t prev = 0, pos;
+		do {
+			pos = field.find_first_of(delimeters, prev);
+			if (pos > prev) {
+				const auto& t = field.substr(prev, pos-prev);
 				if (strspn(t.c_str(), "0123456789") == t.size()) {
-					lua_seti(L, -2, stoi(t));
-				} else {
-					lua_setfield(L, -2, t.c_str());
-				}
-				if (strspn(t.c_str(), "0123456789") == t.size()) {
-					lua_geti(L, -1, stoi(t));
+					lua_geti(L, -1, atoi(t.c_str()));
 				} else {
 					lua_getfield(L, -1, t.c_str());
 				}
+				i++;
 
+				if (isNil(L, -1)) {
+					lua_pop(L, 1);
+					lua_newtable(L);
+					if (strspn(t.c_str(), "0123456789") == t.size()) {
+						lua_seti(L, -2, atoi(t.c_str()));
+					} else {
+						lua_setfield(L, -2, t.c_str());
+					}
+					if (strspn(t.c_str(), "0123456789") == t.size()) {
+						lua_geti(L, -1, atoi(t.c_str()));
+					} else {
+						lua_getfield(L, -1, t.c_str());
+					}
+
+				}
 			}
-		}
-
-		lua_pop(L, 1);
-		const auto& t = tokens.back();
-		lua_rotate(L, -(i + 1), -1);
-		if (strspn(t.c_str(), "0123456789") == t.size()) {
-			lua_seti(L, -2, stoi(t));
-		} else {
-			lua_setfield(L, -2, t.c_str());
-		}
-		lua_pop(L, i);
+			if (pos == oak::string::npos) {
+				lua_pop(L, 1);
+				const auto& t = field.substr(prev, pos-prev);
+				lua_rotate(L, -(i + 1), -1);
+				if (strspn(t.c_str(), "0123456789") == t.size()) {
+					lua_seti(L, -2, atoi(t.c_str()));
+				} else {
+					lua_setfield(L, -2, t.c_str());
+				}
+				lua_pop(L, i);
+			}
+			prev = pos + 1;
+		} while(pos != oak::string::npos);
+		
 	}
 
 	void luah::getGlobal(lua_State *L, const oak::string& field) {

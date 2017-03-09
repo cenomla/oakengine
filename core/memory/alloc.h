@@ -60,6 +60,7 @@ namespace oak {
 
 	private:
 		struct AllocationHeader {
+			size_t size;
 			uint32_t adjustment;
 		};
 

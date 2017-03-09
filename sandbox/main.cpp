@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
 	oak::ComponentHandleStorage chstorage{ engine };
 
 	//add the systems to the engine and therefore initilize them
+	engine.addSystem(&luam);
 	engine.addSystem(&resManager);
 	engine.addSystem(&networkManager);
 	engine.addSystem(&entityManager);
@@ -64,7 +65,6 @@ int main(int argc, char** argv) {
 	engine.addSystem(&debugger);
 	engine.addSystem(&window);
 	engine.addSystem(&frameRenderer);
-	engine.addSystem(&luam);
 	engine.addSystem(&collisionSystem);
 	engine.addSystem(&spriteSystem);
 	engine.addSystem(&textSystem);

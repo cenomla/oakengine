@@ -137,6 +137,7 @@ namespace oak {
 			uintptr_t aligned_address = reinterpret_cast<uintptr_t>(free_block) + adjustment;
 
 			AllocationHeader* header = (AllocationHeader*)(aligned_address - sizeof(AllocationHeader));
+			header->size = total_size;
 			header->adjustment = adjustment;
 
 			usedMemory_ += total_size;
@@ -156,7 +157,8 @@ namespace oak {
 		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(ptr, sizeof(AllocationHeader)));
 
 		uintptr_t   block_start = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
-		uintptr_t   block_end = block_start + size;
+		size_t block_size = header->size;
+		uintptr_t   block_end = block_start + block_size;
 
 		FreeBlock* prev_free_block = nullptr;
 		FreeBlock* free_block = freeList_;
@@ -174,19 +176,19 @@ namespace oak {
 		if (prev_free_block == nullptr)
 		{
 			prev_free_block = reinterpret_cast<FreeBlock*>(block_start);
-			prev_free_block->size = size;
+			prev_free_block->size = block_size;
 			prev_free_block->next = freeList_;
 
 			freeList_ = prev_free_block;
 		}
 		else if (reinterpret_cast<uintptr_t>(prev_free_block) + prev_free_block->size == block_start)
 		{
-			prev_free_block->size += size;
+			prev_free_block->size += block_size;
 		}
 		else
 		{
 			FreeBlock* temp = reinterpret_cast<FreeBlock*>(block_start);
-			temp->size = size;
+			temp->size = block_size;
 			temp->next = prev_free_block->next;
 			prev_free_block->next = temp;
 
@@ -200,7 +202,7 @@ namespace oak {
 		}
 
 		numAllocs_--;
-		usedMemory_ -= size;
+		usedMemory_ -= block_size;
 	}
 
 	PoolAllocator::PoolAllocator(void *start, size_t objectSize, size_t count, size_t alignment)

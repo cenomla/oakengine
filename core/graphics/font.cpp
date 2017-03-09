@@ -50,12 +50,12 @@ namespace oak::graphics {
 			const oak::string &token = file.substr(pos, len - pos);
 			
 			if (token.compare(0, 4, "size") == 0) {
-				fhi.size = std::stoull(token.substr(5));
+				fhi.size = std::stoull(token.substr(5).c_str());
 				fontSize_ = fhi.size;
 			} else if (token.compare(0, 6, "scaleW") == 0) {
-				fhi.width = std::stoull(token.substr(7));
+				fhi.width = std::stoull(token.substr(7).c_str());
 			} else if (token.compare(0, 6, "scaleH") == 0) {
-				fhi.height = std::stoull(token.substr(7));
+				fhi.height = std::stoull(token.substr(7).c_str());
 			} else if (token.compare(0, 5, "count") == 0) {
 				break;
 			}
@@ -70,16 +70,16 @@ namespace oak::graphics {
 			if (token.compare(0, 4, "char") == 0) {
 				Glyph glyph;
 
-				glyph.id = std::stoi(token.substr(8, 7));
-				glyph.dx = std::stof(token.substr(18, 4)) * (1.0f / fhi.width);
-				glyph.dy = std::stof(token.substr(25, 4)) * (1.0f / fhi.height);
-				glyph.dw = std::stof(token.substr(36, 4)) * (1.0f / fhi.width);
-				glyph.dh = std::stof(token.substr(48, 4)) * (1.0f / fhi.height);
-				glyph.xoffset = std::stof(token.substr(61, 4));
-				glyph.yoffset = std::stof(token.substr(74, 4));
-				glyph.width = std::stof(token.substr(36, 4));
-				glyph.height = std::stof(token.substr(48, 4));
-				glyph.advance = std::stof(token.substr(88, 4));
+				glyph.id = std::stoi(token.substr(8, 7).c_str());
+				glyph.dx = std::stof(token.substr(18, 4).c_str()) * (1.0f / fhi.width);
+				glyph.dy = std::stof(token.substr(25, 4).c_str()) * (1.0f / fhi.height);
+				glyph.dw = std::stof(token.substr(36, 4).c_str()) * (1.0f / fhi.width);
+				glyph.dh = std::stof(token.substr(48, 4).c_str()) * (1.0f / fhi.height);
+				glyph.xoffset = std::stof(token.substr(61, 4).c_str());
+				glyph.yoffset = std::stof(token.substr(74, 4).c_str());
+				glyph.width = std::stof(token.substr(36, 4).c_str());
+				glyph.height = std::stof(token.substr(48, 4).c_str());
+				glyph.advance = std::stof(token.substr(88, 4).c_str());
 				//ensure size
 				if (static_cast<size_t>(glyph.id) >= glyphs_.size()) {
 					glyphs_.resize(static_cast<size_t>(glyph.id)+1);
