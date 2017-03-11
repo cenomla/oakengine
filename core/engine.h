@@ -20,7 +20,7 @@ namespace oak {
 		void init();
 		void destroy();
 
-		template<typename T>
+		template<class T>
 		void addSystem(T *sys) {
 			size_t tid = util::type_id<System, T>::id;
 			const auto it = systems_.find(tid);
@@ -31,7 +31,7 @@ namespace oak {
 			}
 		}
 
-		template<typename T>
+		template<class T>
 		void removeSystem() {
 			size_t tid = util::type_id<System, T>::id;
 			const auto it = systems_.find(tid);
@@ -43,7 +43,7 @@ namespace oak {
 
 		void removeSystem(const oak::string &name);
 
-		template<typename T>
+		template<class T>
 		T& getSystem() {
 			size_t tid = util::type_id<System, T>::id;
 			const auto it = systems_.find(tid);
@@ -54,6 +54,13 @@ namespace oak {
 				log::cout << "system does not exist" << std::endl;
 				abort();
 			}
+		}
+
+		template<class T>
+		bool hasSystem() {
+			size_t tid = util::type_id<System, T>::id;
+			const auto it = systems_.find(tid);
+			return it != std::end(systems_);
 		}
 
 		System* getSystem(const oak::string &name);

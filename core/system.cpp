@@ -6,10 +6,6 @@ namespace oak {
 
 	}
 
-	System::~System() {
-
-	}
-
 	void System::init() {
 
 	}
