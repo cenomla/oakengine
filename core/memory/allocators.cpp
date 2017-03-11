@@ -1,11 +1,14 @@
 #include "allocators.h"
 
 #include "util/ptr_util.h"
+#include "debug_vars.h"
 #include "oak_assert.h"
 
 namespace oak {
 
 	Allocator::Allocator(void *start, size_t size) : start_{start}, size_{size} {}
+
+	LinearAllocator::LinearAllocator() : Allocator{ nullptr, 0 } {}
 
 	LinearAllocator::LinearAllocator(void *start, size_t size) : Allocator{ start, size }, blockStart_{ start_ }, currentPos_{ ptrutil::add(start_, sizeof(AllocationHeader)) } {
 		AllocationHeader *header = static_cast<AllocationHeader*>(start_);
@@ -88,6 +91,8 @@ namespace oak {
 		}
 	}
 
+	FreelistAllocator::FreelistAllocator() : Allocator{ nullptr, 0 } {}
+
 	FreelistAllocator::FreelistAllocator(void *start, size_t size) : Allocator{ start, size }, freeList_{ static_cast<FreeBlock*>(start) } {
 		oak_assert(size > sizeof(FreeBlock));
 
@@ -148,6 +153,8 @@ namespace oak {
 			header->size = total_size;
 			header->adjustment = adjustment;
 
+			debugVars.usedMemory += total_size;
+
 			oak_assert(ptrutil::alignForwardAdjustment((void*)aligned_address, alignment) == 0);
 
 			return reinterpret_cast<void*>(aligned_address);
@@ -164,6 +171,8 @@ namespace oak {
 		uintptr_t   block_start = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
 		size_t block_size = header->size;
 		uintptr_t   block_end = block_start + block_size;
+
+		debugVars.usedMemory -= block_size;
 
 		FreeBlock* prev_free_block = nullptr;
 		FreeBlock* free_block = freeList_;
@@ -228,12 +237,16 @@ namespace oak {
 		}
 	}
 
-	PoolAllocator::PoolAllocator(void *start, size_t objectSize, size_t count, size_t alignment)
-		: Allocator{ start, ptrutil::alignSize(objectSize) * count }
-		, objectSize_{ ptrutil::alignSize(objectSize) }
+	PoolAllocator::PoolAllocator() : Allocator{ nullptr, 0 } {}
+
+	PoolAllocator::PoolAllocator(void *start, size_t size, size_t objectSize, uint32_t alignment)
+		: Allocator{ start, size }
+		, objectSize_{ ptrutil::alignSize(objectSize, alignment) }
 		, alignment_{ alignment } {
 
 		size_t adjustment = ptrutil::alignForwardAdjustment(start_, alignment);
+		//maximum number of objects that can fit within the allocated size
+		size_t count = ((size - adjustment) & ~(alignment-1)) / objectSize_;
 
 		freeList_ = static_cast<void**>(ptrutil::add(start_, adjustment));
 
@@ -255,12 +268,42 @@ namespace oak {
 		void *p = freeList_;
 		freeList_ = static_cast<void**>(*freeList_);
 
+		debugVars.usedMemory += objectSize_;
+
 		return p;
 	}
 
 	void PoolAllocator::deallocate(void *p, size_t size) {
 		*static_cast<void**>(p) = freeList_;
 		freeList_ = static_cast<void**>(p);
+		debugVars.usedMemory -= objectSize_;
+	}
+
+	void PoolAllocator::append(void *ptr, size_t size) {
+		//find end of freelist
+		size_t adjustment = ptrutil::alignForwardAdjustment(start_, alignment_);
+		void **prevBlock = nullptr;
+		void **block = static_cast<void**>(ptrutil::add(start_, adjustment));
+
+		while (block != nullptr) {
+			prevBlock = block;
+			block = static_cast<void**>(*block);
+		}
+		//append new linked list that fills empty memory block 
+		adjustment = ptrutil::alignForwardAdjustment(ptr, alignment_);
+		//maximum number of objects that can fit within the allocated size
+		size_t count = ((size - adjustment) & ~(alignment_-1)) / objectSize_;
+
+		*prevBlock = ptrutil::add(ptr, adjustment);
+
+		void** p = static_cast<void**>(*prevBlock);
+
+		for (size_t i = 0; i < count-1; i++) {
+			*p = ptrutil::add(p, objectSize_);
+			p = static_cast<void**>(*p);
+		}
+
+		*p = nullptr;
 	}
 
 }

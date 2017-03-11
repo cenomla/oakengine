@@ -10,6 +10,6 @@ namespace oak::config {
 	constexpr int GL_VERSION_MINOR = 3;
 	constexpr size_t GLOBAL_MEMORY_PAGE_SIZE = 64e6;
 	constexpr size_t FRAME_MEMORY_PAGE_SIZE = 8e6;
-	constexpr size_t DEFAULT_MEMORY_ALIGNMENT = 8;
+	constexpr uint32_t DEFAULT_MEMORY_ALIGNMENT = 8;
 
 }

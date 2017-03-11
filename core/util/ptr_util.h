@@ -5,12 +5,8 @@
 
 namespace oak::ptrutil {
 
-	constexpr inline size_t alignSize(size_t size, uint32_t alignment = 8) {
+	constexpr inline size_t alignSize(size_t size, uint32_t alignment) {
 		return (size + alignment-1) & (~(alignment-1));
-	}
-
-	constexpr inline void* alignForward(const void *address, uint32_t alignment) {
-		return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(address) + static_cast<uintptr_t>(alignment - 1)) & static_cast<uintptr_t>(~(alignment - 1)));
 	}
 
 	constexpr inline uint32_t alignForwardAdjustment(const void *address, uint32_t alignment) {

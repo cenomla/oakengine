@@ -36,6 +36,9 @@ namespace oak::network {
 	}
 
 	void NetworkManager::destroy() {
+		if (host_ != nullptr) {
+			enet_host_destroy(host_);
+		}
 		enet_deinitialize();
 	}
 

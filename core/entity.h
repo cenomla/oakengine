@@ -54,6 +54,14 @@ namespace oak {
 
 		void addCache(EntityCache *system);
 
+		template<class T>
+		void initComponentPool() {
+			size_t tid = util::type_id<Component, T>::id;
+			auto &pool = componentPools_[tid];
+			pool.allocator = { MemoryManager::inst().allocate(4000000), 4000000, sizeof(T) };
+			pool.proxy = { &pool.allocator, 4000000 };
+		}
+
 		inline size_t getEntityCount() const { return entities_.alive.size(); }
 	private:
 		struct {
@@ -90,6 +98,12 @@ namespace oak {
 		oak::vector<EntityAttribute> entityAttributes_;
 		//stores all the systems for entity caching
 		oak::unordered_map<uint32_t, EntityCache*> caches_;
+
+		struct ComponentPool {
+			OakAllocator<void> proxy{ nullptr };
+			PoolAllocator allocator;
+		};
+		std::array<ComponentPool, config::MAX_COMPONENTS> componentPools_;
 	};
 
 	class Entity {

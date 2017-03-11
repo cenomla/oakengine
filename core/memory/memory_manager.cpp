@@ -1,6 +1,7 @@
 #include "memory_manager.h"
 
 #include <cmath>
+#include <iostream>
 
 #include "memory_literals.h"
 #include "util/ptr_util.h"
@@ -32,14 +33,13 @@ namespace oak {
 	}
 
 	MemoryManager::MemoryManager()
-	: memList_{ nullptr }, 
-	allocator_{ allocate(config::GLOBAL_MEMORY_PAGE_SIZE), config::GLOBAL_MEMORY_PAGE_SIZE - headerSize }, 
-	frameAllocator_{ allocate(config::FRAME_MEMORY_PAGE_SIZE), config::FRAME_MEMORY_PAGE_SIZE - headerSize } {
+	: memList_{ nullptr },
+	numAllocs_{ 0 }, 
+	allocator_{ allocate(config::GLOBAL_MEMORY_PAGE_SIZE), config::GLOBAL_MEMORY_PAGE_SIZE }, 
+	frameAllocator_{ allocate(config::FRAME_MEMORY_PAGE_SIZE), config::FRAME_MEMORY_PAGE_SIZE } {
 		INST = this;
 		oak::proxyAllocator = { &allocator_ };
 		oak::frameAllocator = { &frameAllocator_ };
-
-		debugVars.allocatedMemory += config::GLOBAL_MEMORY_PAGE_SIZE + config::FRAME_MEMORY_PAGE_SIZE;
 	}
 
 	MemoryManager::~MemoryManager() {
@@ -50,17 +50,24 @@ namespace oak {
 			next = p->next;
 			free(p);
 			p = next;
+			numAllocs_ --;
 		}
+
+		std::cout << "used memory: " << debugVars.usedMemory << std::endl;
+		std::cout << "num allocs: " << numAllocs_ << std::endl;
 		
 		INST = nullptr;
 	}
 
 	void* MemoryManager::allocate(size_t size) {
-		void *ptr = aligned_alloc(headerSize, size);
+		void *ptr = aligned_alloc(sizeof(MemList), size + sizeof(MemList));
 		MemList *l = static_cast<MemList*>(ptr);
-		l->size = size;
 		l->next = memList_;
+		l->size = size;
 		memList_ = l;
+
+		numAllocs_ ++;
+		debugVars.allocatedMemory += size + sizeof(MemList);
 
 		return ptrutil::add(ptr, sizeof(MemList));
 	}
@@ -78,6 +85,8 @@ namespace oak {
 				} else {
 					memList_ = p->next;
 				}
+				numAllocs_--;
+				debugVars.allocatedMemory -= p->size + sizeof(MemList);
 				free(p);
 				break;
 			}

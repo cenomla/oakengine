@@ -4,7 +4,6 @@
 
 #include "memory_manager.h"
 #include "config.h"
-#include "debug_vars.h"
 
 namespace oak {
 
@@ -48,17 +47,14 @@ namespace oak {
 			size_t size = count * value_size;
 			void *ptr = allocator_->allocate(size, align);
 			if (ptr == nullptr) {
-				allocator_->append(MemoryManager::inst().allocate(pageSize_), pageSize_ - MemoryManager::headerSize);
-				debugVars.allocatedMemory += pageSize_;
+				allocator_->append(MemoryManager::inst().allocate(pageSize_), pageSize_);
 				ptr = allocator_->allocate(size, align);
 			}
-			debugVars.usedMemory += size;
 			return static_cast<pointer>(ptr);
 		}
 
 		void deallocate(void *ptr, size_t count) {
 			size_t size = count * value_size;
-			debugVars.usedMemory -= size;
 			allocator_->deallocate(ptr, size);
 		}
 

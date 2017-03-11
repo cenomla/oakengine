@@ -82,6 +82,14 @@ int main(int argc, char** argv) {
 	chstorage.addHandle<OccluderComponent>("occluder");
 	chstorage.addHandle<LightComponent>("light");
 
+	entityManager.initComponentPool<oak::TransformComponent>();
+	entityManager.initComponentPool<oak::SpriteComponent>();
+	entityManager.initComponentPool<oak::TextComponent>();
+	entityManager.initComponentPool<oak::AABB2dComponent>();
+	entityManager.initComponentPool<oak::PhysicsBody2dComponent>();
+	entityManager.initComponentPool<OccluderComponent>();
+	entityManager.initComponentPool<LightComponent>();
+
 	//setup lua bindings
 	lua_State *L = luam.getState();
 	initBindings(L);

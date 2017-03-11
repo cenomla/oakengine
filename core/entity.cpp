@@ -53,7 +53,7 @@ namespace oak {
 		if (attribute.ownsMask[tid]) {
 			removeComponent(idx, tid);
 		} else {
-			attribute.components[tid] = proxyAllocator.allocate(Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->size());
+			attribute.components[tid] = componentPools_[tid].proxy.allocate(0);
 			attribute.ownsMask[tid] = true;
 		}
 
@@ -82,7 +82,7 @@ namespace oak {
 	void EntityManager::deleteComponent(uint32_t idx, uint32_t tid) {
 		auto& attribute = entityAttributes_[idx];
 		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
-			proxyAllocator.deallocate(attribute.components[tid], Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->size());
+			componentPools_[tid].proxy.deallocate(attribute.components[tid], 0);
 			attribute.components[tid] = nullptr;
 			attribute.ownsMask[tid] = false;
 		}

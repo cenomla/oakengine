@@ -25,6 +25,7 @@ namespace oak {
 
 	class LinearAllocator : public Allocator {
 	public:
+		LinearAllocator();
 		LinearAllocator(void *start, size_t size);
 		
 		void* allocate(size_t size, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT) override;
@@ -59,12 +60,13 @@ namespace oak {
 
 	class FreelistAllocator : public Allocator {
 	public:
+		FreelistAllocator();
 		FreelistAllocator(void *start, size_t size);
 
-		void* allocate(size_t size, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT);
-		void deallocate(void *ptr, size_t size);
+		void* allocate(size_t size, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT) override;
+		void deallocate(void *ptr, size_t size) override;
 
-		void append(void *ptr, size_t size);
+		void append(void *ptr, size_t size) override;
 
 	private:
 		struct AllocationHeader {
@@ -81,10 +83,13 @@ namespace oak {
 
 	class PoolAllocator : public Allocator {
 	public:
-		PoolAllocator(void *start, size_t objectSize, size_t count, size_t alignment = config::DEFAULT_MEMORY_ALIGNMENT);
+		PoolAllocator();
+		PoolAllocator(void *start, size_t size, size_t objectSize, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT);
 
 		void* allocate(size_t size, uint32_t alignment) override;
 		void deallocate(void *ptr, size_t size) override;
+
+		void append(void *ptr, size_t size) override;
 
 	private:
 		void** freeList_;

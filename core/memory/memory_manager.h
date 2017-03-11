@@ -21,16 +21,15 @@ namespace oak {
 		LinearAllocator& getFrameAllocator() { return frameAllocator_; }
 	private:
 		static MemoryManager *INST;
-		struct MemList {
-			size_t size;
-			MemList *next;
-		};
 
+		struct MemList {
+			MemList *next;
+			size_t size;
+		};
 		MemList *memList_;
+		size_t numAllocs_;
 		FreelistAllocator allocator_;
 		LinearAllocator frameAllocator_;
-	public:
-		static constexpr size_t headerSize = sizeof(MemList);
 	};
 
 }
