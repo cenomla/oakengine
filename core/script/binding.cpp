@@ -1,7 +1,7 @@
 #include "binding.h"
 
 
-#include "memory/container.h"
+#include "container.h"
 #include "graphics/opengl/gl_shader.h"
 #include "graphics/opengl/gl_texture.h"
 #include "graphics/opengl/gl_texture_atlas.h"
@@ -591,9 +591,9 @@ namespace oak::luah {
 
 		//setup event listeners
 		engine.getEventManager().add<oak::KeyEvent>([L](oak::KeyEvent evt) {
-			oak::luah::getGlobal(L, "oak.es.emit_event");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_key_press");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.emit_event", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_key_press", oak::frameAllocator });
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -601,9 +601,9 @@ namespace oak::luah {
 		});
 
 		engine.getEventManager().add<oak::ButtonEvent>([L](oak::ButtonEvent evt){
-			oak::luah::getGlobal(L, "oak.es.emit_event");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_button_press");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.emit_event", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_button_press", oak::frameAllocator });
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -611,9 +611,9 @@ namespace oak::luah {
 		});
 		
 		engine.getEventManager().add<oak::MouseMoveEvent>([L](oak::MouseMoveEvent evt) {
-			oak::luah::getGlobal(L, "oak.es.emit_event");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_mouse_move");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.emit_event", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_mouse_move", oak::frameAllocator });
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -621,9 +621,9 @@ namespace oak::luah {
 		});
 
 		engine.getEventManager().add<oak::CharEvent>([L](oak::CharEvent evt) {
-			oak::luah::getGlobal(L, "oak.es.emit_event");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_char_press");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.emit_event", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_char_press", oak::frameAllocator });
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };
 			pup(puper, evt, {});
@@ -631,25 +631,25 @@ namespace oak::luah {
 		});
 
 		engine.getEventManager().add<oak::EntityActivateEvent>([L](const oak::EntityActivateEvent &evt) {
-			oak::luah::getGlobal(L, "oak.es.send_message");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_activate");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.send_message", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_activate", oak::frameAllocator });
 			oak::luah::pushValue(L, evt.entity.index());
 			oak::luah::call(L, 3, 0);
 		});
 
 		engine.getEventManager().add<oak::EntityDeactivateEvent>([L](const oak::EntityDeactivateEvent &evt) {
-			oak::luah::getGlobal(L, "oak.es.send_message");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_deactivate");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.send_message", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_deactivate", oak::frameAllocator });
 			oak::luah::pushValue(L, evt.entity.index());
 			oak::luah::call(L, 3, 0);
 		});
 
 		engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
-			oak::luah::getGlobal(L, "oak.es.send_event");
-			oak::luah::getGlobal(L, "oak.es");
-			oak::luah::pushValue(L, "on_entity_collide");
+			oak::luah::getGlobal(L, oak::string{ "oak.es.send_event", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+			oak::luah::pushValue(L, oak::string{ "on_entity_collide", oak::frameAllocator });
 
 			lua_newtable(L);
 			oak::LuaPuper puper{ L, -2 };

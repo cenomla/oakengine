@@ -108,14 +108,14 @@ int main(int argc, char** argv) {
 		}
 
 		//emit update event in scripts (game logic)
-		oak::luah::getGlobal(L, "oak.es.emit_event");
-		oak::luah::getGlobal(L, "oak.es");
-		oak::luah::pushValue(L, "on_update");
+		oak::luah::getGlobal(L, oak::string{ "oak.es.emit_event", oak::frameAllocator });
+		oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
+		oak::luah::pushValue(L, oak::string{ "on_update", oak::frameAllocator });
 		oak::luah::pushValue(L, dt.count());
 		oak::luah::call(L, 3, 0);
 
-		oak::luah::getGlobal(L, "oak.es.process_events");
-		oak::luah::getGlobal(L, "oak.es");
+		oak::luah::getGlobal(L, oak::string{ "oak.es.process_events", oak::frameAllocator });
+		oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
 		oak::luah::call(L, 1, 0);
 
 

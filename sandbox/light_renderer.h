@@ -5,7 +5,7 @@
 
 #include <system.h>
 #include <entity.h>
-#include <memory/container.h>
+#include <container.h>
 #include <graphics/opengl/gl_renderer.h>
 #include <graphics/opengl/gl_vertex_array.h>
 #include <graphics/opengl/gl_material.h>

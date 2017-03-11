@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory/container.h>
 #include <graphics/opengl/gl_vertex_array.h>
 #include <graphics/opengl/gl_buffer.h>
 #include <graphics/opengl/gl_material.h>
+#include <container.h>
 #include <system.h>
 
 #include "chunk.h"

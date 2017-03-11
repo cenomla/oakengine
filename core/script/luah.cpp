@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cctype>
 
+#include "memory/alloc.h"
 #include "util/string_util.h"
 #include "log.h"
 
@@ -14,7 +15,7 @@ namespace oak {
 		lua_State *L = luaL_newstate();
 		luaL_openlibs(L);
 
-		const oak::string luaFun = R"(function getKeys(t) 
+		const char* luaRun = R"(function getKeys(t) 
 				local s = {}
 				for k, v in pairs(t) do
 					table.insert(s, k)
@@ -22,7 +23,7 @@ namespace oak {
 				return s
 			end)";
 
-		luaL_dostring(L, luaFun.c_str());
+		luaL_dostring(L, luaRun);
 
 		return L;
 	}
@@ -74,7 +75,7 @@ namespace oak {
 	}
 
 	oak::vector<oak::string> luah::getKeys(lua_State *L) {
-		oak::vector<oak::string> keys;
+		oak::vector<oak::string> keys{ oak::frameAllocator };
 		//L: table
 		lua_getglobal(L, "getKeys");
 		lua_rotate(L, -2, 1);
@@ -84,7 +85,7 @@ namespace oak {
 		//L: table nil
 		while (lua_next(L, -2)) {
 			if (lua_type(L, -1) == LUA_TSTRING) {
-				keys.push_back(lua_tostring(L, -1));
+				keys.push_back({ lua_tostring(L, -1), oak::frameAllocator });
 			}
 			lua_pop(L, 1);
 		}
@@ -95,7 +96,7 @@ namespace oak {
 	}
 
 	void luah::getField(lua_State *L, int idx, const oak::string& field) {
-		const oak::string delimeters = ".[]";
+		const oak::string delimeters{ ".[]", oak::frameAllocator };
 
 		lua_pushvalue(L, idx);
 
@@ -123,7 +124,7 @@ namespace oak {
 	}
 
 	void luah::setField(lua_State *L, int idx, const oak::string& field) {
-		oak::string delimeters = ".[]";
+		oak::string delimeters{ ".[]", oak::frameAllocator };
 		
 		lua_pushvalue(L, idx);
 

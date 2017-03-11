@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "memory/container.h"
+#include "container.h"
 #include "util/typeid.h"
 
 namespace oak {

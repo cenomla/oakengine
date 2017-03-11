@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <scoped_allocator>
 
-#include "block.h"
-#include "alloc.h"
+#include "memory/block.h"
+#include "memory/alloc.h"
 
 namespace oak {
 

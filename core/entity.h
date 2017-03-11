@@ -6,7 +6,7 @@
 
 #include "config.h"
 #include "memory/alloc.h"
-#include "memory/container.h"
+#include "container.h"
 #include "util/type_handle_storage.h"
 #include "system.h"
 

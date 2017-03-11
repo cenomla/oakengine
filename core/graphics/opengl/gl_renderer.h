@@ -4,7 +4,7 @@
 
 #include <functional>
 
-#include "memory/container.h"
+#include "container.h"
 #include "graphics/renderable.h"
 #include "graphics/sprite.h"
 #include "gl_buffer.h"
