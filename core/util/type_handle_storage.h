@@ -5,7 +5,7 @@
 #include "typeid.h"
 #include "type_handle.h"
 #include "memory/container.h"
-#include "memory/memory_manager.h"
+#include "memory/alloc.h"
 #include "system.h"
 
 namespace oak {
@@ -20,7 +20,7 @@ namespace oak {
 			for (auto &block : handles_) {
 				if (block.ptr != nullptr) {
 					static_cast<TypeHandleBase*>(block.ptr)->~TypeHandleBase();
-					MemoryManager::inst().deallocate(block.ptr, block.size);
+					proxyAllocator.deallocate(block.ptr, block.size);
 					block.ptr = nullptr;
 				}
 			}
@@ -31,7 +31,7 @@ namespace oak {
 			size_t tid = util::type_id<U, T>::id;
 			if (handles_[tid].ptr != nullptr) { return; }
 			size_t hsize = sizeof(TypeHandle<T>);
-			TBlock<TypeHandleBase> block = { static_cast<TypeHandleBase*>(MemoryManager::inst().allocate(hsize)), hsize };
+			TBlock<TypeHandleBase> block = { static_cast<TypeHandleBase*>(proxyAllocator.allocate(hsize)), hsize };
 			new (block.ptr) TypeHandle<T>{ name };
 			handles_[tid] = block;
 			nameMap_[name] = tid;

@@ -4,7 +4,7 @@
 
 #include "util/typeid.h"
 #include "memory/container.h"
-#include "memory/memory_manager.h"
+#include "memory/alloc.h"
 #include "event_channel.h"
 
 namespace oak {
@@ -15,7 +15,7 @@ namespace oak {
 		~EventManager() {
 			for (auto &it : channels_) {
 				static_cast<EventChannelBase*>(it.second.ptr)->~EventChannelBase();
-				MemoryManager::inst().deallocate(it.second.ptr, it.second.size);
+				proxyAllocator.deallocate(it.second.ptr, it.second.size);
 			}
 		}
 
@@ -25,7 +25,7 @@ namespace oak {
 			auto it = channels_.find(tid);
 			if (it == std::end(channels_)) {
 				size_t size = sizeof(EventChannel<TEvent>);
-				const Block &block = { MemoryManager::inst().allocate(size), size };
+				const Block &block = { proxyAllocator.allocate(size), size };
 				auto *channel = new (block.ptr) EventChannel<TEvent>();
 				channel->add(listener);
 				std::lock_guard<std::mutex> guard{ channelsMutex_ };

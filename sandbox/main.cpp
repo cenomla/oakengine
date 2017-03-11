@@ -106,8 +106,6 @@ int main(int argc, char** argv) {
 			oak::debugVars.fps = fpsCount;
 			fpsCount = 0.0f;
 		}
-		oak::debugVars.usedMemory = oak::MemoryManager::inst().getUsedMemory();
-		oak::debugVars.allocatedMemory = oak::MemoryManager::inst().getAllocatedMemory();
 
 		//emit update event in scripts (game logic)
 		oak::luah::getGlobal(L, "oak.es.emit_event");
@@ -152,6 +150,8 @@ int main(int argc, char** argv) {
 		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
 		lastFrame = currentFrame;
+		//clear frame allocator
+		oak::MemoryManager::inst().getFrameAllocator().clear();
 	}
 
 	//clean up

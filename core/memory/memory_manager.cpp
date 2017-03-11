@@ -2,7 +2,11 @@
 
 #include <cmath>
 
-#include "log.h"
+#include "memory_literals.h"
+#include "util/ptr_util.h"
+#include "alloc.h"
+#include "config.h"
+#include "debug_vars.h"
 
 namespace oak {
 
@@ -27,32 +31,59 @@ namespace oak {
 		return std::to_string(static_cast<size_t>(std::round(mem))) + abr;
 	}
 
-	MemoryManager::MemoryManager() : allocator_{ malloc(4_mb), 4_mb }, usedMemory_{ 0 }, allocatedMemory_{ 4_mb } {
+	MemoryManager::MemoryManager()
+	: memList_{ nullptr }, 
+	allocator_{ allocate(config::GLOBAL_MEMORY_PAGE_SIZE), config::GLOBAL_MEMORY_PAGE_SIZE - headerSize }, 
+	frameAllocator_{ allocate(config::FRAME_MEMORY_PAGE_SIZE), config::FRAME_MEMORY_PAGE_SIZE - headerSize } {
 		INST = this;
+		oak::proxyAllocator = { &allocator_ };
+		oak::frameAllocator = { &frameAllocator_ };
+
+		debugVars.allocatedMemory += config::GLOBAL_MEMORY_PAGE_SIZE + config::FRAME_MEMORY_PAGE_SIZE;
 	}
 
 	MemoryManager::~MemoryManager() {
-
-		log::cout << "total memory allocated: " << memoryString(allocatedMemory_) << std::endl;
-		log::cout << "memory still in use: " << memoryString(usedMemory_) << std::endl;
+		//free memory
+		MemList *p = memList_;
+		MemList *next = nullptr;
+		while (p != nullptr) {
+			next = p->next;
+			free(p);
+			p = next;
+		}
 		
 		INST = nullptr;
 	}
 
-	void* MemoryManager::allocate(size_t size, uint32_t alignment) {
-		usedMemory_ += size;
-		void *ptr = allocator_.allocate(size, alignment);
-		if (ptr == nullptr) {
-			allocator_.append(malloc(4_mb), 4_mb);
-			allocatedMemory_ += 4_mb;
-			ptr = allocator_.allocate(size, alignment);
-		}
-		return ptr;
+	void* MemoryManager::allocate(size_t size) {
+		void *ptr = aligned_alloc(headerSize, size);
+		MemList *l = static_cast<MemList*>(ptr);
+		l->size = size;
+		l->next = memList_;
+		memList_ = l;
+
+		return ptrutil::add(ptr, sizeof(MemList));
 	}
 
-	void MemoryManager::deallocate(void *ptr, size_t size) {
-		allocator_.deallocate(ptr, size);
-		usedMemory_ -= size;
+	void MemoryManager::deallocate(void *ptr) {
+		//search through linked list for ptr - sizeof(memList) then remove from list and deallocate
+		ptr = ptrutil::subtract(ptr, sizeof(MemList));
+		
+		MemList *p = memList_;
+		MemList *prev = nullptr;
+		while (p != nullptr) {
+			if (p == ptr) {
+				if (prev != nullptr) {
+					prev->next = p->next;
+				} else {
+					memList_ = p->next;
+				}
+				free(p);
+				break;
+			}
+			prev = p;
+			p = p->next;
+		}
 	}
 
 }

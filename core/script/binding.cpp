@@ -509,6 +509,14 @@ namespace oak::luah {
 		return 1;
 	}
 
+	//string memory_string(bytes)
+	static int c_memory_getString(lua_State *L) {
+		size_t data = luah::toValue<size_t>(L, 1);
+		lua_settop(L, 0);
+		luah::pushValue(L, MemoryManager::memoryString(data).c_str());
+		return 1;
+	}
+
 	void registerBindings(lua_State *L) {
 		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
@@ -558,6 +566,7 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_sprite", c_resource_load_sprite);
 		addFunctionToMetatable(L, "oak", "set_uniform", c_resource_set_uniform);
 		addFunctionToMetatable(L, "oak", "debug_get_vars", c_debug_getVars);
+		addFunctionToMetatable(L, "oak", "memory_string", c_memory_getString);
 
 		addFunctionToMetatable(L, "view_system", "transform_point", c_view_transformPoint);
 		addFunctionToMetatable(L, "view_system", "get_id", c_view_getId);

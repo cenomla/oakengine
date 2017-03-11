@@ -2,7 +2,7 @@
 
 #include "util/typeid.h"
 #include "memory/container.h"
-#include "memory/memory_manager.h"
+#include "memory/alloc.h"
 #include "system.h"
 #include "log.h"
 
@@ -42,7 +42,7 @@ namespace oak {
 			for (auto block : resourceHandles_) {
 				if (block.ptr != nullptr) {
 					static_cast<ResourceListHandlerBase*>(block.ptr)->~ResourceListHandlerBase();
-					MemoryManager::inst().deallocate(block.ptr, block.size);
+					proxyAllocator.deallocate(block.ptr, block.size);
 				}
 			}
 		}
@@ -53,7 +53,7 @@ namespace oak {
 
 			if (tid >= resourceHandles_.size()) { resourceHandles_.resize(tid+1); }
 			if (resourceHandles_.at(tid).ptr == nullptr) { 
-				auto ptr = static_cast<ResourceListHandler<T>*>(MemoryManager::inst().allocate(sizeof(ResourceListHandler<T>)));
+				auto ptr = static_cast<ResourceListHandler<T>*>(proxyAllocator.allocate(sizeof(ResourceListHandler<T>)));
 				new (ptr) ResourceListHandler<T>{};
 				resourceHandles_[tid] = { ptr, sizeof(ResourceListHandler<T>) }; 
 			}

@@ -34,7 +34,7 @@ namespace oak {
 			if (it.second != nullptr) {
 				const auto& ch = chs.getHandle(i);
 				ch->destruct(it.second);
-				MemoryManager::inst().deallocate(it.second, ch->size());
+				proxyAllocator.deallocate(it.second, ch->size());
 			}
 		}
 		storage_.clear();

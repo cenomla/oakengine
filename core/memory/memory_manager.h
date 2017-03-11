@@ -1,8 +1,8 @@
 #pragma once
 
-#include "oak_assert.h"
-#include "memory_literals.h"
-#include "alloc.h"
+#include <string>
+
+#include "allocators.h"
 
 namespace oak {
 
@@ -14,16 +14,23 @@ namespace oak {
 		MemoryManager();
 		~MemoryManager();
 
-		void* allocate(size_t size, uint32_t alignment = 8);
-		void deallocate(void *ptr, size_t size);
+		void* allocate(size_t size);
+		void deallocate(void *ptr);
 
-		size_t getUsedMemory() const { return usedMemory_; }
-		size_t getAllocatedMemory() const { return allocatedMemory_; }
+		FreelistAllocator& getGlobalAllocator() { return allocator_; }
+		LinearAllocator& getFrameAllocator() { return frameAllocator_; }
 	private:
 		static MemoryManager *INST;
+		struct MemList {
+			size_t size;
+			MemList *next;
+		};
+
+		MemList *memList_;
 		FreelistAllocator allocator_;
-		size_t usedMemory_;
-		size_t allocatedMemory_;
+		LinearAllocator frameAllocator_;
+	public:
+		static constexpr size_t headerSize = sizeof(MemList);
 	};
 
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "memory/container.h"
-#include "memory/memory_manager.h"
+#include "memory/alloc.h"
 #include "util/typeid.h"
 #include "engine.h"
 #include "entity.h"
@@ -19,7 +19,7 @@ namespace oak {
 		template <class T, typename... TArgs>
 		T* addComponent(bool shared, TArgs&&... args) {
 			size_t tid = util::type_id<Component, T>::id;
-			void* comp = MemoryManager::inst().allocate(sizeof(T));
+			void* comp = proxyAllocator.allocate(sizeof(T));
 			new (comp) T{ std::forward<TArgs>(args)...};
 			//ensure size
 			if (tid >= storage_.size()) {
@@ -31,7 +31,7 @@ namespace oak {
 
 		void* addComponent(bool shared, size_t tid) {
 			const auto *thandle = Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid);
-			void *comp = MemoryManager::inst().allocate(thandle->size());
+			void *comp = proxyAllocator.allocate(thandle->size());
 			thandle->construct(comp);
 			//ensure size
 			if (tid >= storage_.size()) {

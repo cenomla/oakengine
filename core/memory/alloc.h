@@ -1,150 +1,79 @@
 #pragma once
 
 #include <utility>
-#include <cstddef>
-#include <cinttypes>
 
-#include "util/pointer_util.h"
-#include "memory_literals.h"
-#include "oak_assert.h"
-#include "block.h"
+#include "memory_manager.h"
+#include "config.h"
+#include "debug_vars.h"
 
 namespace oak {
 
-	class Allocator {
-	public:
-		Allocator(void* start, size_t size);
-
-		virtual void* allocate(size_t size, uint32_t alignment) = 0;
-		virtual void deallocate(void *ptr, size_t size) = 0;
-		inline void* getStart() { return start_; }
-		inline const void* getStart() const { return start_; }
-		inline size_t getSize() const { return size_; }
-
-	protected:
-		void *start_;
-		size_t size_;
+	template<class T>
+	struct size_of_void {
+		static constexpr size_t value = sizeof(T);
 	};
 
-	class LinearAllocator : public Allocator {
-	public:
-		LinearAllocator(void *start, size_t size);
-		
-		void* allocate(size_t size, uint32_t alignment = 8) override;
-		void deallocate(void *ptr, size_t size) override;
-		void clear();
-	private:
-		void *currentPos_;
+	template<>
+	struct size_of_void<void> {
+		static constexpr size_t value = 1;
 	};
 
-	class StackAllocator : public Allocator {
-	public:
-		StackAllocator(void *start, size_t size);
-
-		void* allocate(size_t size, uint32_t alignment = 8) override;
-		void deallocate(void *p, size_t size) override;
-
-		inline void* getTop() { return previousPos_; }
-	private:
-		struct AllocationHeader {
-			void *prevAddress;
-			size_t adjustment;
-		};
-		void *currentPos_;
-		void *previousPos_;
-	};
-
-	class FreelistAllocator : public Allocator {
-	public:
-		FreelistAllocator(void *start, size_t size);
-
-		void* allocate(size_t size, uint32_t alignment = 8);
-		void deallocate(void *ptr, size_t size);
-
-		void append(void *ptr, size_t size);
-
-	private:
-		struct AllocationHeader {
-			size_t size;
-			uint32_t adjustment;
-		};
-
-		struct FreeBlock {
-			size_t size;
-			FreeBlock *next;
-		};
-		FreeBlock* freeList_;
-	};
-
-	class PoolAllocator : public Allocator {
-	public:
-		PoolAllocator(void *start, size_t objectSize, size_t count, size_t alignment = 8);
-
-		void* allocate(size_t size, uint32_t alignment) override;
-		void deallocate(void *ptr, size_t size) override;
-
-	private:
-		void** freeList_;
-		size_t objectSize_;
-		size_t alignment_;
-	};
-
-	namespace detail {
-		void* allocate(Allocator *allocator, size_t size, uint32_t align);
-		void deallocate(Allocator *allocator, void *ptr, size_t size);
-	}
-
-	template<class T, size_t A = 8>
+	//base allocator
+	template<class T, size_t A = config::DEFAULT_MEMORY_ALIGNMENT>
 	class OakAllocator {
 	public:
-		static constexpr uint32_t align = A;
+		template<class U, size_t L>
+		friend class OakAllocator;
 
 		typedef T value_type;
 		typedef T* pointer;
 		typedef const T* const_pointer;
-		typedef T& reference;
-		typedef const T& const_reference;
 		typedef size_t size_type;
 		typedef ptrdiff_t difference_type;
+		
+		static constexpr uint32_t align = A;
+		static constexpr size_type value_size = size_of_void<T>::value;
 
-		template<class U, size_t L = 8>
+		template<class U, size_t L = align>
 		struct rebind {
 			typedef OakAllocator<U, L> other;	
 		};
 
-		OakAllocator(Allocator *allocator = nullptr) : allocator_{ allocator } {}
+		OakAllocator(Allocator *allocator = &MemoryManager::inst().getGlobalAllocator(), size_t pageSize = config::GLOBAL_MEMORY_PAGE_SIZE) : allocator_{ allocator }, pageSize_{ pageSize } {}
 
-		template<class U, size_t L = 8>
-		OakAllocator(const OakAllocator<U, L> &other) {}
+		template<class U, size_t L = align>
+		OakAllocator(const OakAllocator<U, L> &other) : allocator_{ other.allocator_ }, pageSize_{ other.pageSize_ } {}
 
-		pointer allocate(size_t size, const_pointer locality = nullptr) {
-			return static_cast<pointer>(detail::allocate(allocator_, size * sizeof(value_type), align));
+		pointer allocate(size_t count, const_pointer locality = nullptr) {
+			size_t size = count * value_size;
+			void *ptr = allocator_->allocate(size, align);
+			if (ptr == nullptr) {
+				allocator_->append(MemoryManager::inst().allocate(pageSize_), pageSize_ - MemoryManager::headerSize);
+				debugVars.allocatedMemory += pageSize_;
+				ptr = allocator_->allocate(size, align);
+			}
+			debugVars.usedMemory += size;
+			return static_cast<pointer>(ptr);
 		}
 
-		void deallocate(void *ptr, size_t size) {
-			detail::deallocate(allocator_, ptr, size * sizeof(value_type));
-		}
-
-		template<class... TArgs>
-		inline void construct(pointer ptr, TArgs&&... args) {
-			new (ptr) value_type{ std::forward<TArgs>(args)... };
-		}
-
-		inline void destroy(pointer ptr) {
-			ptr->~value_type();
+		void deallocate(void *ptr, size_t count) {
+			size_t size = count * value_size;
+			debugVars.usedMemory -= size;
+			allocator_->deallocate(ptr, size);
 		}
 
 		size_type max_size() const {
-			return 4_mb / sizeof(value_type);
+			return allocator_ == nullptr ? config::GLOBAL_MEMORY_PAGE_SIZE / value_size : allocator_->getSize() / value_size;
 		}
 
 		template<class U, size_t L>
 		inline bool equals(const OakAllocator<U, L> &second) const {
-			return allocator_ == second.allocator_;
+			return allocator_ == second.allocator_ && pageSize_ == second.pageSize_;
 		}
 
 	private:
-		Allocator *allocator_ = nullptr;
+		Allocator *allocator_;
+		size_t pageSize_;
 	};
 
 	template<class T, size_t A, class U, size_t L>
@@ -157,4 +86,7 @@ namespace oak {
 		return !(first == second);
 	}
 	
+	extern OakAllocator<void> proxyAllocator;
+	extern OakAllocator<void> frameAllocator;
+
 }
