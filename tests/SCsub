@@ -1,9 +1,12 @@
 Import('*')
 
 module_targets = dict()
-unit_libs = ['oak', 'vulkan', 'GL', 'glad', 'lua', 'enet', 'glfw3', 'wayland-cursor', 'wayland-client', 'wayland-egl', 'xkbcommon', 'm', 'pthread', 'dl']
+unit_libs = ['oak', 'vulkan', 'GL', 'glad', 'lua', 'enet', 'glfw3', 'X11', 'Xrandr', 'Xinerama', 'Xcursor', 'Xxf86vm', 'Xi', 'm', 'pthread', 'dl']
 
 tm_sources = ['task.cpp']
 module_targets['task_manager'] = env.Program(target = 'taskmanager', source = tm_sources, LIBS = unit_libs)
+
+tm_sources = ['voxel.cpp']
+module_targets['voxel'] = env.Program(target = 'voxel', source = tm_sources, LIBS = unit_libs)
 
 Return('module_targets')
