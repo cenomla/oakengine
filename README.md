@@ -1,21 +1,21 @@
 # Oak Engine
 ### Overview:
  
-Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine uses modern c++ (currently c++14 with the use of nested namespaces) with lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small test demo detailing the use of the engine and a very simple physics system. 
+Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine is written using modern c++ (c++1z) and uses lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small demo detailing the use of the engine and a few additional systems. The goal of this engine is not to provide everything a game may need (physically based rendering, rigid body physics, etc..), as so many engines do this already, but rather to provide a solid framework to build a game off of.
 
 ### Features:
 - Multi-threaded task manager
 - Event/Messaging system
-- Custom memory allocation
+- Efficent custom memory allocation
 - Component based entity system
-- Script binding for lua
+- Lua binding for scripting
+- Prefab system with shared components
 - Simple opengl sprite batcher
 - Easily extendable
-- Can render a triangle using vulkan
 
 ### Building:
  
-Oak engine relies on glfw, glad, glm, lua, enet, and the stb_image.h header that are inside the lib folder to compile. On linux it should be as simple as running the SConstruct script. 
+Oak engine depends on glfw, glad, glm, lua, enet, and stb. SConstruct is used for the build process.
 
 #####Linux instructions:
 ~~~~
@@ -23,10 +23,15 @@ sudo apt-get install scons
 ~~~~
 Or your distros equivalent command.
 
-Then from there you just cd to the root directory where Oak engine is located and
+Then from there you just cd to the directory where the source is located and
 ~~~~
 scons
 ~~~~
+or
+~~~~
+scons debug | release
+~~~~
+for flavor specific builds.
 
 #####Windows/Mac:
  
