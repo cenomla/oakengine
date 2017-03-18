@@ -16,6 +16,7 @@
 #include <lua_manager.h>
 #include <components.h>
 #include <resource_manager.h>
+#include <file_manager.h>
 #include <view_system.h>
 #include <debugger.h>
 
@@ -45,6 +46,7 @@ int main(int argc, char** argv) {
 	oak::graphics::GLFrameRenderer frameRenderer{ engine };
 	oak::graphics::GLRenderer entityRenderer{ engine };
 	oak::ResourceManager resManager{ engine };
+	oak::FileManager fileManager{ engine };
 	oak::network::NetworkManager networkManager{ engine };
 	oak::EntityManager entityManager{ engine };
 	oak::ViewSystem viewSystem{ engine };
@@ -56,9 +58,10 @@ int main(int argc, char** argv) {
 	LightRenderer lightRenderer{ engine };
 	oak::ComponentHandleStorage chstorage{ engine };
 
-	//add the systems to the engine and therefore initilize them
+	//add the systems to the engine, this initializes the systems and makes them avaliable to be accessed by other systems
 	engine.addSystem(&luam);
 	engine.addSystem(&resManager);
+	engine.addSystem(&fileManager);
 	engine.addSystem(&networkManager);
 	engine.addSystem(&entityManager);
 	engine.addSystem(&viewSystem);
@@ -72,6 +75,8 @@ int main(int argc, char** argv) {
 	engine.addSystem(&entityRenderer);
 	engine.addSystem(&lightRenderer);
 	engine.addSystem(&chstorage);
+
+	fileManager.mount("sandbox/res/", "res");
 
 	//register components with the entity manager
 	chstorage.addHandle<oak::TransformComponent>("transform");
@@ -94,7 +99,7 @@ int main(int argc, char** argv) {
 	lua_State *L = luam.getState();
 	initBindings(L);
 	//load main lua script
-	oak::luah::loadScript(L, "res/scripts/main.lua");
+	oak::luah::loadScript(L, "sandbox/res/scripts/main.lua");
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();

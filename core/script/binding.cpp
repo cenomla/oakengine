@@ -9,6 +9,7 @@
 #include "util/puper.h"
 #include "script/lua_puper.h"
 #include "resource_manager.h"
+#include "file_manager.h"
 #include "view_system.h"
 #include "debugger.h"
 #include "events.h"
@@ -109,7 +110,8 @@ namespace oak::luah {
 		pup(puper, data, {});
 
 		auto &shader = Engine::inst().getSystem<ResourceManager>().add<graphics::GLShader>(data.name);
-		shader.create(data.path + "/opengl.vert", data.path + "/opengl.frag");
+		oak::string path = Engine::inst().getSystem<FileManager>().resolve(data.path);
+		shader.create(path + "/opengl.vert", path + "/opengl.frag");
 
 		return 0;
 	}
@@ -123,7 +125,8 @@ namespace oak::luah {
 		pup(puper, data, {});
 
 		auto &texture = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTexture>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_NEAREST });
-		texture.create(data.path + ".png");
+		oak::string path = Engine::inst().getSystem<FileManager>().resolve(data.path);
+		texture.create(path + ".png");
 	
 		return 0;
 	}
@@ -137,8 +140,10 @@ namespace oak::luah {
 		pup(puper, data, {});
 
 		auto &atlas = Engine::inst().getSystem<ResourceManager>().add<graphics::GLTextureAtlas>(data.name, GLenum{ GL_TEXTURE_2D }, (data.flags & 0x1 ) == 0x1 ? GLenum{ GL_LINEAR } : GLenum{ GL_NEAREST });
+		oak::string path;
 		for (auto &it : data.paths) {
-			atlas.addTexture(it + ".png");
+			path = Engine::inst().getSystem<FileManager>().resolve(it);
+			atlas.addTexture(path + ".png");
 		}
 		atlas.bake(static_cast<int>(data.extent.x), static_cast<int>(data.extent.y));
 	
@@ -180,7 +185,8 @@ namespace oak::luah {
 		pup(puper, data, {});
 
 		auto &font = Engine::inst().getSystem<ResourceManager>().add<graphics::Font>(data.name, std::hash<oak::string>{}(data.material));
-		font.create(data.path + "/glyphs.fnt");
+		oak::string path = Engine::inst().getSystem<FileManager>().resolve(data.path);
+		font.create(path + "/glyphs.fnt");
 	
 		return 0;
 	}
@@ -199,7 +205,8 @@ namespace oak::luah {
 			resManager.add<graphics::Sprite>(data.name, std::hash<oak::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, data.draw.x, data.draw.y, data.drawExtent.x, data.drawExtent.y);
 		} else {
 			const auto &atlas = resManager.require<graphics::GLTextureAtlas>(data.atlas);
-			resManager.add<graphics::Sprite>(data.name, std::hash<oak::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, atlas.getTextureRegion(data.path + ".png"), data.animFramesX, data.animFramesY);
+			oak::string path = Engine::inst().getSystem<FileManager>().resolve(data.path);
+			resManager.add<graphics::Sprite>(data.name, std::hash<oak::string>{}(data.material), data.center.x, data.center.y, data.extent.x, data.extent.y, atlas.getTextureRegion(path + ".png"), data.animFramesX, data.animFramesY);
 		}
 
 		return 0;

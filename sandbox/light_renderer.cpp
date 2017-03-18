@@ -42,7 +42,7 @@ void LightRenderer::init() {
 
 	tex_.create(160, 90, nullptr);
 	fbo_.create(tex_, 160, 90);
-	shadowShader_.create("res/shaders/shadow/opengl.vert", "res/shaders/shadow/opengl.frag");
+	shadowShader_.create("sandbox/res/shaders/shadow/opengl.vert", "sandbox/res/shaders/shadow/opengl.frag");
 
 	fvao_.create();
 	fvao_.bind();

@@ -41,7 +41,7 @@ namespace oak {
 			}
 		}
 
-		void removeSystem(const oak::string &name);
+		void removeSystem(const oak::string& name);
 
 		template<class T>
 		T& getSystem() {
@@ -56,14 +56,16 @@ namespace oak {
 			}
 		}
 
+		System* getSystem(const oak::string& name);
+
 		template<class T>
 		bool hasSystem() {
 			size_t tid = util::type_id<System, T>::id;
 			const auto it = systems_.find(tid);
 			return it != std::end(systems_);
 		}
-
-		System* getSystem(const oak::string &name);
+		
+		bool hasSystem(const oak::string& name);
 
 		inline EventManager& getEventManager() { return eventManager_; }
 		inline const EventManager& getEventManager() const { return eventManager_; }
