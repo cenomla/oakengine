@@ -8,24 +8,27 @@
 namespace oak {
 
 	struct ObjInfo {
-		constexpr static uint32_t HAS_NAME = 0x00000001;
-		constexpr static uint32_t HAS_INDEX = 0x00000002;
-		constexpr static uint32_t SIZE_VAR = 0x00000004;
+		constexpr static uint32_t SIZE_VAR = 0x00000001;
 
 		oak::string name;
-		int index = -1;
 		uint32_t flags = 0;
 
 		inline const ObjInfo& combine(const ObjInfo &other) {
-			if (!other.name.empty()) {
-				name = other.name + "." + name;
+			if (!name.empty()) {
+				if (!other.name.empty()) {
+					name = other.name + "." + name;
+				}
+			} else {
+				name = other.name;
 			}
+			flags |= other.flags;
+			
 			return *this;
 		}
 	};
 
-	inline const ObjInfo& operator+(ObjInfo &&lhs, const ObjInfo &rhs) {
-		return lhs.combine(rhs);
+	inline const ObjInfo& operator+(const ObjInfo& lhs, ObjInfo&& rhs) {
+		return rhs.combine(lhs);
 	}
 
 	enum class PuperIo {

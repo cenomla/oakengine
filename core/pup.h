@@ -26,16 +26,16 @@ namespace oak {
 	void pup(Puper &puper, oak::vector<T> &data, const ObjInfo &info) {
 		if (puper.getIo() == PuperIo::OUT) {
 			size_t size = data.size();
-			pup(puper, size, ObjInfo{ "size" } + info);
+			pup(puper, size, info + ObjInfo{ "", ObjInfo::SIZE_VAR });
 			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], ObjInfo{ std::to_string(i + 1).c_str() } + info);
+				pup(puper, data[i], info + ObjInfo{ std::to_string(i + 1).c_str() });
 			}
 		} else {
 			size_t size = 0;
-			pup(puper, size, ObjInfo{ "size" } + info);
+			pup(puper, size, info + ObjInfo{ "", ObjInfo::SIZE_VAR });
 			data.resize(size);
 			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], ObjInfo{ std::to_string(i + 1).c_str() } + info);
+				pup(puper, data[i], info + ObjInfo{ std::to_string(i + 1).c_str() });
 			}
 		}
 	}

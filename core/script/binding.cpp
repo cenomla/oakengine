@@ -25,8 +25,8 @@ namespace oak::luah {
 	};
 
 	static void pup(Puper &puper, LuaShader &data, const ObjInfo &info) {
-		pup(puper, data.name, ObjInfo{ "name" } + info);
-		pup(puper, data.path, ObjInfo{ "path" } + info);
+		pup(puper, data.name, info + ObjInfo{ "name" });
+		pup(puper, data.path, info + ObjInfo{ "path" });
 	}
 
 	struct LuaTexture {
@@ -36,9 +36,9 @@ namespace oak::luah {
 	};
 
 	static void pup(Puper &puper, LuaTexture &data, const ObjInfo &info) {
-		pup(puper, data.name, ObjInfo{ "name" } + info);
-		pup(puper, data.path, ObjInfo{ "path" } + info);
-		pup(puper, data.flags, ObjInfo{ "flags" } + info);
+		pup(puper, data.name, info + ObjInfo{ "name" });
+		pup(puper, data.path, info + ObjInfo{ "path" });
+		pup(puper, data.flags, info + ObjInfo{ "flags" });
 	}
 
 	struct LuaAtlas {
@@ -49,10 +49,10 @@ namespace oak::luah {
 	};
 
 	static void pup(Puper &puper, LuaAtlas &data, const ObjInfo &info) {
-		pup(puper, data.name, ObjInfo{ "name" } + info);
-		pup(puper, data.paths, ObjInfo{ "textures" } + info);
-		pup(puper, data.extent, ObjInfo{ "extent" } + info);
-		pup(puper, data.flags, ObjInfo{ "flags" } + info);
+		pup(puper, data.name, info + ObjInfo{ "name" });
+		pup(puper, data.paths, info + ObjInfo{ "textures" });
+		pup(puper, data.extent, info + ObjInfo{ "extent" });
+		pup(puper, data.flags, info + ObjInfo{ "flags" });
 	}
 
 	struct LuaMaterial {
@@ -62,9 +62,9 @@ namespace oak::luah {
 	};
 
 	static void pup(Puper &puper, LuaMaterial &data, const ObjInfo &info) {
-		pup(puper, data.name, ObjInfo{ "name" } + info);
-		pup(puper, data.shader, ObjInfo{ "shader" } + info);
-		pup(puper, data.texture, ObjInfo{ "texture" } + info);
+		pup(puper, data.name, info + ObjInfo{ "name" });
+		pup(puper, data.shader, info + ObjInfo{ "shader" });
+		pup(puper, data.texture, info + ObjInfo{ "texture" });
 	}
 
 	struct LuaFont {
@@ -74,9 +74,9 @@ namespace oak::luah {
 	};
 
 	static void pup(Puper &puper, LuaFont &data, const ObjInfo &info) {
-		pup(puper, data.name, ObjInfo{ "name" } + info);
-		pup(puper, data.material, ObjInfo{ "material" } + info);
-		pup(puper, data.path, ObjInfo{ "path" } + info);
+		pup(puper, data.name, info + ObjInfo{ "name" });
+		pup(puper, data.material, info + ObjInfo{ "material" });
+		pup(puper, data.path, info + ObjInfo{ "path" });
 	}
 
 	struct LuaSprite {
@@ -89,16 +89,16 @@ namespace oak::luah {
 	};
 
 	static void pup(Puper &puper, LuaSprite &data, const ObjInfo &info) {
-		pup(puper, data.name, ObjInfo{ "name" } + info);
-		pup(puper, data.material, ObjInfo{ "material" } + info);
-		pup(puper, data.center, ObjInfo{ "center" } + info);
-		pup(puper, data.extent, ObjInfo{ "extent" } + info);
-		pup(puper, data.draw, ObjInfo{ "draw_position" } + info);
-		pup(puper, data.drawExtent, ObjInfo{ "draw_extent" } + info);
-		pup(puper, data.atlas, ObjInfo{ "atlas" } + info);
-		pup(puper, data.path, ObjInfo{ "path" } + info);
-		pup(puper, data.animFramesX, ObjInfo{ "animframes_x" } + info);
-		pup(puper, data.animFramesY, ObjInfo{ "animframes_y" } + info);
+		pup(puper, data.name, info + ObjInfo{ "name" });
+		pup(puper, data.material, info + ObjInfo{ "material" });
+		pup(puper, data.center, info + ObjInfo{ "center" });
+		pup(puper, data.extent, info + ObjInfo{ "extent" });
+		pup(puper, data.draw, info + ObjInfo{ "draw_position" });
+		pup(puper, data.drawExtent, info + ObjInfo{ "draw_extent" });
+		pup(puper, data.atlas, info + ObjInfo{ "atlas" });
+		pup(puper, data.path, info + ObjInfo{ "path" });
+		pup(puper, data.animFramesX, info + ObjInfo{ "animframes_x" });
+		pup(puper, data.animFramesY, info + ObjInfo{ "animframes_y" });
 	}
 
 	//void load_shader(table)

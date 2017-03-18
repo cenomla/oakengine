@@ -13,38 +13,38 @@ namespace oak {
 	}
 
 	void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info) {
-		pup(puper, comp.position, ObjInfo{ "position" } + info);
-		pup(puper, comp.scale, ObjInfo{ "scale" } + info);
-		pup(puper, comp.rotationAxis, ObjInfo{ "rotation_axis" } + info);
-		pup(puper, comp.rotationAngle, ObjInfo{ "rotation_angle" } + info);
+		pup(puper, comp.position, info + ObjInfo{ "position" });
+		pup(puper, comp.scale, info + ObjInfo{ "scale" });
+		pup(puper, comp.rotationAxis, info + ObjInfo{ "rotation_axis" });
+		pup(puper, comp.rotationAngle, info + ObjInfo{ "rotation_angle" });
 	}
 
 	void pup(Puper &puper, TextComponent &comp, const ObjInfo &info) {
-		pup(puper, comp.font, ObjInfo{ "font" } + info);
-		pup(puper, comp.text, ObjInfo{ "text" } + info);
-		pup(puper, comp.offset, ObjInfo{ "offset" } + info);
-		pup(puper, comp.size, ObjInfo{ "size" } + info);
+		pup(puper, comp.font, info + ObjInfo{ "font" });
+		pup(puper, comp.text, info + ObjInfo{ "text" });
+		pup(puper, comp.offset, info + ObjInfo{ "offset" });
+		pup(puper, comp.size, info + ObjInfo{ "size" });
 	}
 
 	void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info) {
-		pup(puper, comp.halfExtent, ObjInfo{ "half_extent" } + info);
-		pup(puper, comp.offset, ObjInfo{ "offset" } + info);
+		pup(puper, comp.halfExtent, info + ObjInfo{ "half_extent" });
+		pup(puper, comp.offset, info + ObjInfo{ "offset" });
 	}
 
 	void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info) {
-		pup(puper, comp.sprite, ObjInfo{ "sprite" } + info);
-		pup(puper, comp.animFrameX, ObjInfo{ "animframe_x" } + info);
-		pup(puper, comp.animFrameY, ObjInfo{ "animframe_y" } + info);
+		pup(puper, comp.sprite, info + ObjInfo{ "sprite" });
+		pup(puper, comp.animFrameX, info + ObjInfo{ "animframe_x" });
+		pup(puper, comp.animFrameY, info + ObjInfo{ "animframe_y" });
 	}
 
 	void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info) {
-		pup(puper, comp.velocity, ObjInfo{ "velocity" } + info);
-		pup(puper, comp.force, ObjInfo{ "force" } + info);
-		pup(puper, comp.mass, ObjInfo{ "mass" } + info);
-		pup(puper, comp.invMass, ObjInfo{ "inv_mass" } + info);
-		pup(puper, comp.restitution, ObjInfo{ "restitution" } + info);
-		pup(puper, comp.staticFriction, ObjInfo{ "static_friction" } + info);
-		pup(puper, comp.dynamicFriction, ObjInfo{ "dynamic_friction" } + info);
+		pup(puper, comp.velocity, info + ObjInfo{ "velocity" });
+		pup(puper, comp.force, info + ObjInfo{ "force" });
+		pup(puper, comp.mass, info + ObjInfo{ "mass" });
+		pup(puper, comp.invMass, info + ObjInfo{ "inv_mass" });
+		pup(puper, comp.restitution, info + ObjInfo{ "restitution" });
+		pup(puper, comp.staticFriction, info + ObjInfo{ "static_friction" });
+		pup(puper, comp.dynamicFriction, info + ObjInfo{ "dynamic_friction" });
 	}
 
 }

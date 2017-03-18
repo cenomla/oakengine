@@ -29,7 +29,7 @@ namespace oak::network {
 			//write the packet id
 			packetBuffer_.write(packetId);
 			//call serialization function
-			pup(puper, data, ObjInfo{});
+			pup(puper, data, {});
 
 			//send a packet to every peer
 			ENetPacket *packet;

@@ -28,7 +28,7 @@ oak.load_texture({
 oak.load_atlas({
 	name = "atlas_entity",
 	textures = {
-		"res::textures/character", "res::textures/block", size = 2
+		"res::textures/character", "res::textures/block"
 	},
 	extent = {
 		x = 512,
@@ -40,7 +40,7 @@ oak.load_atlas({
 oak.load_atlas({
 	name = "atlas_tiles",
 	textures = {
-		"res::textures/tiles/geometric_wall_1", size = 1
+		"res::textures/tiles/geometric_wall_1"
 	},
 	extent = {
 		x = 8000, 
@@ -62,8 +62,7 @@ oak.load_atlas({
 		"res::textures/gui/tool_bar/background",
 		"res::textures/gui/tool_bar/icons",
 		"res::textures/gui/console/background",
-		"res::textures/gui/debug_menu/background",
-		size = 11
+		"res::textures/gui/debug_menu/background"
 	},
 	extent = {
 		x = 1024,
@@ -384,8 +383,8 @@ oak.es:create_prefab("tool_bar", {
 })
 
 
-oak.vs.define_view(0, { 0, 1, size = 2 })
-oak.vs.define_view(1, { 2, size = 1 })
+oak.vs.define_view(0, { 0, 1 })
+oak.vs.define_view(1, { 2 })
 oak.vs.set_view(0, { x = 0, y = 0, width = 1280, height = 720 })
 oak.vs.set_view(1, { x = 0, y = 0, width = 1280, height = 720 })
 

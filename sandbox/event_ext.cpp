@@ -5,10 +5,10 @@
 namespace oak {
 
 	void pup(Puper &puper, TileCollisionEvent &data, const ObjInfo &info) {
-		pup(puper, data.entity, ObjInfo{ "entity" } + info);
-		pup(puper, data.tile, ObjInfo{ "tile" } + info);
-		pup(puper, data.normal, ObjInfo{ "normal" } + info);
-		pup(puper, data.depth, ObjInfo{ "depth" } + info);
+		pup(puper, data.entity, info + ObjInfo{ "entity" });
+		pup(puper, data.tile, info + ObjInfo{ "tile" });
+		pup(puper, data.normal, info + ObjInfo{ "normal" });
+		pup(puper, data.depth, info + ObjInfo{ "depth" });
 	}
 
 }

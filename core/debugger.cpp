@@ -7,10 +7,10 @@ namespace oak {
 	DebugVars debugVars;
 
 	void pup(Puper& puper, DebugVars& data, const ObjInfo& info) {
-		pup(puper, data.dt, ObjInfo{ "delta_time" } + info);
-		pup(puper, data.fps, ObjInfo{ "fps" } + info);
-		pup(puper, data.usedMemory, ObjInfo{ "used_memory" } + info);
-		pup(puper, data.allocatedMemory, ObjInfo{ "allocated_memory" } + info);
+		pup(puper, data.dt, info + ObjInfo{ "delta_time" });
+		pup(puper, data.fps, info + ObjInfo{ "fps" });
+		pup(puper, data.usedMemory, info + ObjInfo{ "used_memory" });
+		pup(puper, data.allocatedMemory, info + ObjInfo{ "allocated_memory" });
 	}
 
 	Debugger::Debugger(Engine &engine) : System{ engine, "debugger" } {}

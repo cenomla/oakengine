@@ -3,10 +3,10 @@
 namespace oak {
 	
 	void pup(Puper& puper, View& view, const ObjInfo& info) {
-		pup(puper, view.x, ObjInfo{ "x" } + info);
-		pup(puper, view.y, ObjInfo{ "y" } + info);
-		pup(puper, view.width, ObjInfo{ "width" } + info);
-		pup(puper, view.height, ObjInfo{ "height" } + info);
+		pup(puper, view.x, info + ObjInfo{ "x" });
+		pup(puper, view.y, info + ObjInfo{ "y" });
+		pup(puper, view.width, info + ObjInfo{ "width" });
+		pup(puper, view.height, info + ObjInfo{ "height" });
 	}
 
 

@@ -13,11 +13,20 @@ namespace oak {
 	template<class T>
 	void lua_pup(PuperIo io, lua_State *L, int index, T &data, const ObjInfo &info) {
 		if (io == PuperIo::IN) {
+			int p = 1;
 			luah::getField(L, index, info.name);
 			if (!luah::isNil(L, -1)) {
+				if ((info.flags & ObjInfo::SIZE_VAR) == ObjInfo::SIZE_VAR) {
+					lua_len(L, -1);
+					p = 2;
+				}
+				data = luah::toValue<T>(L, -1);
+			} else if ((info.flags & ObjInfo::SIZE_VAR) == ObjInfo::SIZE_VAR) {
+				lua_len(L, index);
+				p = 2;
 				data = luah::toValue<T>(L, -1);
 			}
-			lua_pop(L, 1);
+			lua_pop(L, p);
 		} else {
 			luah::pushValue(L, data);
 			luah::setField(L, index, info.name);
@@ -25,29 +34,15 @@ namespace oak {
 	}
 
 	void LuaPuper::pup(int8_t &data, const ObjInfo &info) {
-		if (io_ == PuperIo::IN) {
-			luah::getField(L_, index_, info.name);
-			if (!luah::isNil(L_, -1)) {
-				data = static_cast<int8_t>(luah::toValue<int32_t>(L_, -1));
-			}
-			lua_pop(L_, 1);
-		} else {
-			luah::pushValue(L_, data);
-			luah::setField(L_, index_, info.name);
-		}
+		int32_t var = data;
+		lua_pup<int32_t>(io_, L_, index_, var, info);
+		data = static_cast<int8_t>(var);
 	}
 
 	void LuaPuper::pup(int16_t &data, const ObjInfo &info) {
-		if (io_ == PuperIo::IN) {
-			luah::getField(L_, index_, info.name);
-			if (!luah::isNil(L_, -1)) {
-				data = static_cast<int16_t>(luah::toValue<int32_t>(L_, -1));
-			}
-			lua_pop(L_, 1);
-		} else {
-			luah::pushValue(L_, data);
-			luah::setField(L_, index_, info.name);
-		}
+		int32_t var = data;
+		lua_pup<int32_t>(io_, L_, index_, var, info);
+		data = static_cast<int16_t>(var);
 	}
 
 	void LuaPuper::pup(int32_t &data, const ObjInfo &info) {
@@ -59,29 +54,15 @@ namespace oak {
 	}
 
 	void LuaPuper::pup(uint8_t &data, const ObjInfo &info) {
-		if (io_ == PuperIo::IN) {
-			luah::getField(L_, index_, info.name);
-			if (!luah::isNil(L_, -1)) {
-				data = static_cast<uint8_t>(luah::toValue<uint32_t>(L_, -1));
-			}
-			lua_pop(L_, 1);
-		} else {
-			luah::pushValue(L_, data);
-			luah::setField(L_, index_, info.name);
-		}
+		uint32_t var = data;
+		lua_pup<uint32_t>(io_, L_, index_, var, info);
+		data = static_cast<uint8_t>(var);
 	}
 
 	void LuaPuper::pup(uint16_t &data, const ObjInfo &info) {
-		if (io_ == PuperIo::IN) {
-			luah::getField(L_, index_, info.name);
-			if (!luah::isNil(L_, -1)) {
-				data = static_cast<uint16_t>(luah::toValue<uint32_t>(L_, -1));
-			}
-			lua_pop(L_, 1);
-		} else {
-			luah::pushValue(L_, data);
-			luah::setField(L_, index_, info.name);
-		}
+		uint32_t var = data;
+		lua_pup<uint32_t>(io_, L_, index_, var, info);
+		data = static_cast<uint16_t>(var);
 	}
 
 	void LuaPuper::pup(uint32_t &data, const ObjInfo &info) {

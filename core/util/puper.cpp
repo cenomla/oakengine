@@ -21,19 +21,19 @@ namespace oak {
 	void pup(Puper &puper, Entity &data, const ObjInfo &info) { puper.pup(data, info); }
 	
 	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info) {
-		puper.pup(data.x, ObjInfo{ "x" } + info);
-		puper.pup(data.y, ObjInfo{ "y" } + info);
+		puper.pup(data.x, info + ObjInfo{ "x" });
+		puper.pup(data.y, info + ObjInfo{ "y" });
 	}
 	void pup(Puper &puper, glm::vec3 &data, const ObjInfo &info) {
-		puper.pup(data.x, ObjInfo{ "x" } + info);
-		puper.pup(data.y, ObjInfo{ "y" } + info);
-		puper.pup(data.z, ObjInfo{ "z" } + info);
+		puper.pup(data.x, info + ObjInfo{ "x" });
+		puper.pup(data.y, info + ObjInfo{ "y" });
+		puper.pup(data.z, info + ObjInfo{ "z" });
 	}
 	void pup(Puper &puper, glm::vec4 &data, const ObjInfo &info) {
-		puper.pup(data.x, ObjInfo{ "x" } + info);
-		puper.pup(data.y, ObjInfo{ "y" } + info);
-		puper.pup(data.z, ObjInfo{ "z" } + info);
-		puper.pup(data.w, ObjInfo{ "w" } + info);
+		puper.pup(data.x, info + ObjInfo{ "x" });
+		puper.pup(data.y, info + ObjInfo{ "y" });
+		puper.pup(data.z, info + ObjInfo{ "z" });
+		puper.pup(data.w, info + ObjInfo{ "w" });
 	}
 
 }
