@@ -17,7 +17,7 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
  
 Oak engine depends on glfw, glad, glm, lua, enet, and stb. SConstruct is used for the build process.
 
-#####Linux instructions:
+##### Linux instructions:
 ~~~~
 sudo apt-get install scons
 ~~~~
@@ -33,7 +33,7 @@ scons debug | release
 ~~~~
 for flavor specific builds.
 
-#####Windows/Mac:
+##### Windows/Mac:
  
 I currently don't have access to one of these platform for testing the build on so I dont have a build system for them. However Oak engine is coded using completely crossplatform code and librarys so it should build without too much trouble. 
 
