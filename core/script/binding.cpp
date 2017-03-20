@@ -479,34 +479,6 @@ namespace oak::luah {
 		return 1;
 	}
 
-
-	//int get_int(void*)
-	static int c_pointer_getInt(lua_State *L) {
-		void *data = toValue<void*>(L, 1);
-		lua_settop(L, 0);
-		pushValue(L, *static_cast<int*>(data));
-
-		return 1;
-	}
-
-	//float get_number(void*)
-	static int c_pointer_getNumber(lua_State *L) {
-		void *data = toValue<void*>(L, 1);
-		lua_settop(L, 0);
-		pushValue(L, *static_cast<float*>(data));
-
-		return 1;
-	}
-
-	//string get_string(void*)
-	static int c_pointer_getString(lua_State *L) {
-		void *data = toValue<void*>(L, 1);
-		lua_settop(L, 0);
-		pushValue(L, *static_cast<oak::string*>(data));
-
-		return 1;
-	}
-
 	//table get_debug_vars()
 	static int c_debug_getVars(lua_State *L) {
 		lua_newtable(L);
@@ -580,10 +552,6 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "view_system", "define_view", c_view_defineView);
 		addFunctionToMetatable(L, "view_system", "set_view", c_view_setView);
 		addFunctionToMetatable(L, "view_system", "get_view", c_view_getView);
-
-		addFunctionToMetatable(L, "pointer", "get_int", c_pointer_getInt);
-		addFunctionToMetatable(L, "pointer", "get_number", c_pointer_getNumber);
-		addFunctionToMetatable(L, "pointer", "get_string", c_pointer_getString);
 
 		lua_getglobal(L, "oak");
 		lua_newtable(L);

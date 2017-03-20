@@ -40,8 +40,8 @@ void LightRenderer::init() {
 	vbo_.unbind();
 	vao_.unbind();
 
-	tex_.create(160, 90, nullptr);
-	fbo_.create(tex_, 160, 90);
+	tex_.create(320, 180, nullptr);
+	fbo_.create(tex_, 320, 180);
 	shadowShader_.create("sandbox/res/shaders/shadow/opengl.vert", "sandbox/res/shaders/shadow/opengl.frag");
 
 	fvao_.create();
@@ -83,7 +83,7 @@ void LightRenderer::update() {
 
 void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::graphics::Batch& batch) {
 	fbo_.bind();
-	glViewport(0, 0, 160, 90);
+	glViewport(0, 0, 320, 180);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_STENCIL_TEST);
@@ -141,9 +141,9 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 
 				buffer[0] = line.start;
 				buffer[1] = line.end;
-				buffer[2] = glm::vec2{ line.end + lightToEnd * llc.size };
+				buffer[2] = glm::vec2{ line.end + lightToEnd * llc.size * 2.0f };
 				buffer[3] = buffer[2];
-				buffer[4] = glm::vec2{ line.start + lightToStart * llc.size };
+				buffer[4] = glm::vec2{ line.start + lightToStart * llc.size * 2.0f };
 				buffer[5] = buffer[0];
 
 				buffer += 6;

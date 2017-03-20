@@ -77,6 +77,7 @@ int main(int argc, char** argv) {
 	engine.addSystem(&chstorage);
 
 	fileManager.mount("sandbox/res/", "res");
+	fileManager.mount("sandbox/save/", "save");
 
 	//register components with the entity manager
 	chstorage.addHandle<oak::TransformComponent>("transform");
