@@ -241,157 +241,16 @@ oak.load_sprite({
 	path = "res::textures/gui/debug_menu/background"
 })
 
-oak.es:create_prefab("player", {
-	transform = {
-		position = {
-			x = 216.0,
-			y = 128.0
-		},
-		scale = 1.0
-	},
-	sprite = {
-		shared = true,
-		sprite = hash("spr_player")
-	},
-	light = {
-		size = 512
-	},
-	aabb2d = {
-		shared = true,
-		half_extent = {
-			x = 8.0, 
-			y = 8.0	
-		}
-	},
-	physics_body_2d = {
-		mass = 0.025 * 0.2,
-		inv_mass = 0.0,
-		restitution = 0.4,
-		static_friction = 0.5,
-		dynamic_friction = 0.4	
-	},
-	text = {
-		font = hash("fnt_dejavu"),
-		text = "This be the Player!",
-		offset = { x = -96.0, y = 8.0 },
-		size = 12.0
-	}
-})
-
-oak.es:create_prefab("block", {
-	transform = {
-		position = {
-			x = 256.0,
-			y = 512.0
-		},
-		scale = 2.0
-	},
-	sprite = {
-		shared = true,
-		sprite = hash("spr_block")
-	},
-	occluder = {
-
-	},
-	aabb2d = {
-		shared = true,
-		half_extent = { x = 128.0, y = 32.0 }
-	}, 
-	physics_body_2d = {
-		mass = 0.0, inv_mass = 0.0,
-		restitution = 0.4,
-		static_friction = 0.5,
-		dynamic_friction = 0.4
-	}
-})
-
-oak.es:create_prefab("gui_button", {
-	transform = {
-		position = { z = 1.0 }
-	},
-	sprite = {
-		sprite = hash("spr_gui_button")
-	}
-})
-
-oak.es:create_prefab("gui_arrow", {
-	transform = {
-		position = { z = 1.0 }
-	},
-	sprite = {
-		sprite = hash("spr_gui_arrows")
-	}
-})
-
-oak.es:create_prefab("gui_text_box", {
-	transform = {
-		position = { z = 1.0 }
-	},
-	sprite = {
-		sprite = hash("spr_gui_text_box")
-	},
-	aabb2d = {
-		half_extent = { x = 32.0, y = 8.0 },
-		offset = { x = 32.0, y = 8.0 }
-	},
-	text = {
-		font = hash("fnt_dejavu"),
-		offset = { x = 2.0, y = 2.0 },
-		size = 12.0
-	}
-})
-
-oak.es:create_prefab("tile_editor", {
-	transform = {
-		position = { y = 32.0 }
-	},
-	sprite = {
-		sprite = hash("spr_tile_editor")
-	}
-})
-
-oak.es:create_prefab("entity_editor", {
-	transform = {
-		position = { y = 32.0 }
-	}
-})
-
-oak.es:create_prefab("console", {
-	transform = {
-		position = { y = 32.0 }
-	},
-	sprite = {
-		sprite = hash("spr_console")
-	}
-})
-
-oak.es:create_prefab("debug", {
-	transform = {
-		position = { y = 32.0 }
-	},
-	sprite = {
-		sprite = hash("spr_debug_menu")
-	}
-})
-
-oak.es:create_prefab("tool_bar", {
-	transform = {
-	},
-	sprite = {
-		sprite = hash("spr_tool_bar")
-	}
-})
-
+oak.es:create_prefab("player")
+oak.es:create_prefab("block")
 
 oak.vs.define_view(0, { 0, 1 })
 oak.vs.define_view(1, { 2 })
 oak.vs.set_view(0, { x = 0, y = 0, width = 1280, height = 720 })
 oak.vs.set_view(1, { x = 0, y = 0, width = 1280, height = 720 })
 
-oak.es:create_entity(0, "player", require("player"))
-oak.es:create_entity(0, "block", {})
+oak.es:create_entity(0, "player")
+oak.es:create_entity(0, "block")
 
-local e = oak.es:create_entity(0, "block", {})
+local e = oak.es:create_entity(0, "block")
 e:set_transform({ position = { x = 512, y = 496 } })
-
-oak.es:create_entity(2, "tool_bar", require("gui/tool_bar"))

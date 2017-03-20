@@ -56,7 +56,7 @@ namespace oak {
 		void addFunctionToMetatable(lua_State *L, const oak::string& tableName, const oak::string& funcName, lua_CFunction func);
 
 		void loadScript(lua_State *L, const oak::string& path);
-		oak::vector<oak::string> getKeys(lua_State *L);
+		void getKeys(lua_State *L, int idx, oak::vector<oak::string>& keys);
 
 		void getField(lua_State *L, int idx, const oak::string& field);
 		void setField(lua_State *L, int idx, const oak::string& field);

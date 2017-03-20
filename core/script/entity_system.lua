@@ -14,21 +14,15 @@ local entity_system = {
 	entities = {},
 	events = {},
 
-	create_prefab = function(self, name, prefab)
-		self.manager.create_prefab(name, prefab)
+	create_prefab = function(self, name)
+		self.manager.create_prefab(name, table.unpack(require("prefabs/"..name)))
 	end,
 
-	create_entity = function(self, ...)
-		local e = self.manager.create_entity(...)
-		if self.entity_metatable == nil then
-			local mt = getmetatable(e)
-			if mt ~= nil then
-				self.entity_metatable = getmetatable(mt)
-			end
-		end
+	create_entity = function(self, layer, thing)
+		local e = self.manager.create_entity(layer, thing)
 		self.entities[e:index() + 1] = e
-		self:send_message("on_create", e)
 		e:activate()
+		self:send_message("on_create", e)
 		return e
 	end,
 
@@ -48,17 +42,10 @@ local entity_system = {
 	end,
 
 	get_entity = function(self, e)
-		local index = nil
 		if type(e) == "number" then
-			index = e
-		elseif type(e) == "userdata" and self.entity_metatable ~= nil then
-			local t = { _id = e }
-			setmetatable(t, self.entity_metatable)
-			index = t:index()
-		else 
-			return nil
+			return self.entities[e + 1]
 		end
-		return self.entities[index + 1]
+		return e
 	end,
 
 	is_valid = function(e)
@@ -73,14 +60,10 @@ local entity_system = {
 	end,
 
 	send_message = function(self, event_name, e, ...)
-		if type(e) ~= "table" then e = self:get_entity(e) end
+		e = self:get_entity(e)
 		if self.is_valid(e) and e[event_name] then 
 			e[event_name](e, ...) 
 		end
-	end,
-
-	send_event = function(self, event_name, event)
-		self:send_message(event_name, event.entity, event)
 	end,
 
 	process_events = function(self)

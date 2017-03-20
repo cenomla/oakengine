@@ -247,14 +247,31 @@ namespace oak::luah {
 	}
 
 
-	//void create_prefab(name, table)
+	//void create_prefab(name, prefab, script)
 	static int c_create_prefab(lua_State *L) {
 		EntityManager &manager = oak::Engine::inst().getSystem<EntityManager>();
 		oak::string name = toValue<oak::string>(L, 1);
-		lua_pushvalue(L, 2);
-		auto keys = getKeys(L);
+		oak::vector<oak::string> keys{ oak::frameAllocator };
+		getKeys(L, 2, keys);
 
-		Prefab &prefab = Engine::inst().getSystem<ResourceManager>().add<Prefab>(name, &manager);
+		//setup script metatable
+		//script script
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -2, "__index");
+		//script
+		//script entity
+		lua_getfield(L, LUA_REGISTRYINDEX, "entity");
+		lua_setmetatable(L, -2);
+		//script 
+		//script _prefabs_
+		lua_getfield(L, LUA_REGISTRYINDEX, "_prefabs_");
+		lua_rotate(L, -2, 1);
+		//_prefabs_ script
+		lua_setfield(L, -2, name.c_str());
+		lua_pop(L, 1);
+		
+		//create a prefab from the table data
+		auto &prefab = Engine::inst().getSystem<ResourceManager>().add<Prefab>(name, &manager);
 		auto &chs = Engine::inst().getSystem<ComponentHandleStorage>();
 
 		for (const auto &k : keys) {
@@ -333,37 +350,29 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//entity create_entity(layer, name, table)
+	//entity_table create_entity(layer, name/table)
 	static int c_entityManager_createEntity(lua_State *L) {
-		int argc = lua_gettop(L);
 		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
-		oak::string name;
-		if (argc == 3) {
-			name = toValue<oak::string>(L, 2);
-		}
-		lua_rotate(L, -argc, 1);
-		lua_settop(L, 1);
+		lua_remove(L, 1);
 		
-		lua_newtable(L);
-		lua_rotate(L, -2, 1);
-		//newtable table
+		if (lua_isstring(L, 1)) { //create prefab instance
+			oak::string name = toValue<oak::string>(L, 1);
+			lua_settop(L, 0);
+			lua_newtable(L);
+			getField(L, LUA_REGISTRYINDEX, oak::string{ "_prefabs_." + name, oak::frameAllocator });
+			lua_setmetatable(L, -2);
 
-		lua_pushvalue(L, -1);
-		lua_setfield(L, -2, "__index");
+			pushValue(L, Engine::inst().getSystem<ResourceManager>().require<Prefab>(name).createInstance(layer));
 
-		lua_getfield(L, LUA_REGISTRYINDEX, "entity");
-		lua_setmetatable(L, -2);
-		lua_setmetatable(L, -2);
+			lua_setfield(L, -2, "_id");
+		} else { //create prefabless entity
+			getField(L, LUA_REGISTRYINDEX, oak::string{ "entity", oak::frameAllocator });
+			lua_setmetatable(L, -2);
 
-		Entity e{ 0, nullptr };
-		if (argc == 3) {
-			e = Engine::inst().getSystem<ResourceManager>().require<Prefab>(name).createInstance(layer);
-		} else {
-			e = Engine::inst().getSystem<EntityManager>().createEntity(layer);
+			pushValue(L, Engine::inst().getSystem<EntityManager>().createEntity(layer));
+
+			lua_setfield(L, -2, "_id");
 		}
-		pushValue(L, e);
-
-		lua_setfield(L, -2, "_id");
 
 		return 1;
 	}
@@ -620,9 +629,9 @@ namespace oak::luah {
 			oak::luah::pushValue(L, evt.entity.index());
 			oak::luah::call(L, 3, 0);
 		});
-
+		/*
 		engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
-			oak::luah::getGlobal(L, oak::string{ "oak.es.send_event", oak::frameAllocator });
+			oak::luah::getGlobal(L, oak::string{ "oak.es.send_message", oak::frameAllocator });
 			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
 			oak::luah::pushValue(L, oak::string{ "on_entity_collide", oak::frameAllocator });
 
@@ -632,6 +641,7 @@ namespace oak::luah {
 
 			oak::luah::call(L, 3, 0);
 		});
+		*/
 	}
 
 	void pushValue(lua_State *L, const Entity& e) {

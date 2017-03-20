@@ -74,25 +74,20 @@ namespace oak {
 		}
 	}
 
-	oak::vector<oak::string> luah::getKeys(lua_State *L) {
-		oak::vector<oak::string> keys{ oak::frameAllocator };
-		//L: table
+	void luah::getKeys(lua_State *L, int idx, oak::vector<oak::string>& keys) {
+		lua_pushvalue(L, idx);
 		lua_getglobal(L, "getKeys");
 		lua_rotate(L, -2, 1);
-		//L: getKeys() entityTable
 		lua_pcall(L, 1, 1, 0);
 		lua_pushnil(L);
-		//L: table nil
 		while (lua_next(L, -2)) {
 			if (lua_type(L, -1) == LUA_TSTRING) {
-				keys.push_back({ lua_tostring(L, -1), oak::frameAllocator });
+				keys.push_back({ lua_tostring(L, -1), keys.get_allocator() });
 			}
 			lua_pop(L, 1);
 		}
 
 		lua_pop(L, 1);
-
-		return keys;
 	}
 
 	void luah::getField(lua_State *L, int idx, const oak::string& field) {
