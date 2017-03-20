@@ -646,14 +646,4 @@ namespace oak::luah {
 		return *e;
 	}
 
-	void pushValue(lua_State *L, void *data) {
-		void **ptr = reinterpret_cast<void**>(lua_newuserdata(L, sizeof(void*)));
-		*ptr = data;
-		setMetatable(L, "pointer");
-	}
-
-	template<> void* toValue(lua_State *L, int idx) {
-		return *reinterpret_cast<void**>(lua_touserdata(L, idx));
-	}
-
 }
