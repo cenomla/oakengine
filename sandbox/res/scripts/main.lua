@@ -1,7 +1,6 @@
 package.path = "sandbox/res/scripts/?.lua;sandbox/res/scripts/?/init.lua" .. package.path
-print(package.path)
 
-oak.input = oak.es:create_entity(255, require("input"))
+function load_resources()
 
 oak.load_shader({
 	name = "shd_pass",
@@ -241,16 +240,47 @@ oak.load_sprite({
 	path = "res::textures/gui/debug_menu/background"
 })
 
-oak.es:create_prefab("player")
-oak.es:create_prefab("block")
+oak.load_prefab("player", table.unpack(require("prefabs/player")))
+oak.load_prefab("block", table.unpack(require("prefabs/block")))
+oak.load_prefab("button", table.unpack(require("prefabs/gui/button")))
+
+end
+
+load_resources()
 
 oak.vs.define_view(0, { 0, 1 })
 oak.vs.define_view(1, { 2 })
 oak.vs.set_view(0, { x = 0, y = 0, width = 1280, height = 720 })
 oak.vs.set_view(1, { x = 0, y = 0, width = 1280, height = 720 })
 
-oak.es:create_entity(0, "player")
-oak.es:create_entity(0, "block")
 
-local e = oak.es:create_entity(0, "block")
-e:set_transform({ position = { x = 512, y = 496 } })
+--game states
+oak.sm = {
+	states = {},
+	push = function(self, state)
+		table.insert(self.states, state)
+		state:on_start()
+	end,
+	pop = function(self)
+		if #self.states > 0 then
+			self.states[#self.states]:on_end()
+			table.remove(self.states)
+		end
+	end,
+	switch = function(self, state)
+		--pop all states then switch to new state
+		for i = 0, #self.states do
+			self:pop()
+		end
+		if self.current_state ~= nil then
+			self.current_state:on_end()
+		end
+		self.current_state = state
+		if state ~= nil then
+			state:on_start()
+		end
+	end
+}
+oak.sm.menu = require("states/menu")
+oak.sm.game = require("states/game")
+oak.sm:switch(oak.sm.menu)

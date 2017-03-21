@@ -12,17 +12,16 @@ end
 local entity_system = {
 
 	entities = {},
+	sorted_entities = {},
+	needs_sort = false,
 	events = {},
-
-	create_prefab = function(self, name)
-		self.manager.create_prefab(name, table.unpack(require("prefabs/"..name)))
-	end,
 
 	create_entity = function(self, layer, thing)
 		local e = self.manager.create_entity(layer, thing)
 		self.entities[e:index() + 1] = e
 		e:activate()
 		self:send_message("on_create", e)
+		self.needs_sort = true
 		return e
 	end,
 
@@ -32,6 +31,7 @@ local entity_system = {
 
 			self.entities[e:index() + 1] = nil
 			self.manager.destroy_entity(e)
+			self.needs_sort = false
 		end
 	end,
 
@@ -66,23 +66,32 @@ local entity_system = {
 		end
 	end,
 
-	process_events = function(self)
-		--create a list of entities that can be sorted
-		local sorted = {}
-		for k, v in pairs(self.entities) do
-			if v ~= nil then
-				table.insert(sorted, v)
+	sort_entities = function(self)
+		--sort entities is needed
+		if self.needs_sort then
+			--clear sorted entity list
+			self.sorted_entities = {}
+			--populate it
+			for k, v in pairs(self.entities) do
+				if v ~= nil then
+					table.insert(self.sorted_entities, v)
+				end
 			end
-		end
 
-		--sort entities
-		table.sort(sorted, function(e, o) 
-			return e:layer() > o:layer() 
-		end)
+			--sort entities
+			table.sort(self.sorted_entities, function(e, o) 
+				return e:layer() > o:layer() 
+			end)
+			self.needs_sort = false
+		end
+	end,
+
+	process_events = function(self)
+		self:sort_entities()
 		--process events
 		for name, v in pairs(self.events) do
 			for k, evt in pairs(v) do
-				self:process_event(sorted, name, table.unpack(evt))
+				self:process_event(self.sorted_entities, name, table.unpack(evt))
 			end
 			self.events[name] = {}
 		end

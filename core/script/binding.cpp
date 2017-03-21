@@ -245,10 +245,9 @@ namespace oak::luah {
 		lua_settop(L, 0);
 		return 0;
 	}
-
-
-	//void create_prefab(name, prefab, script)
-	static int c_create_prefab(lua_State *L) {
+	
+	//void load_prefab(name, prefab, script)
+	static int c_resource_load_prefab(lua_State *L) {
 		EntityManager &manager = oak::Engine::inst().getSystem<EntityManager>();
 		oak::string name = toValue<oak::string>(L, 1);
 		oak::vector<oak::string> keys{ oak::frameAllocator };
@@ -542,7 +541,6 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "set_text", c_entity_setComponent<TextComponent>);
 		addFunctionToMetatable(L, "entity", "has_text", c_entity_hasComponent<TextComponent>);
 
-		addFunctionToMetatable(L, "entity_manager", "create_prefab", c_create_prefab);
 		addFunctionToMetatable(L, "entity_manager", "create_entity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroy_entity", c_entityManager_destroyEntity);
 
@@ -553,6 +551,7 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_font", c_resource_load_font);
 		addFunctionToMetatable(L, "oak", "load_sprite", c_resource_load_sprite);
 		addFunctionToMetatable(L, "oak", "set_uniform", c_resource_set_uniform);
+		addFunctionToMetatable(L, "oak", "load_prefab", c_resource_load_prefab);
 		addFunctionToMetatable(L, "oak", "debug_get_vars", c_debug_getVars);
 		addFunctionToMetatable(L, "oak", "memory_string", c_memory_getString);
 

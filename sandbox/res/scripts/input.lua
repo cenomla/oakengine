@@ -15,6 +15,9 @@ local input = {
 
 	on_key_press = function(self, evt)
 		self.keys[evt.key] = evt.action
+		if evt.key == 82 and evt.action == 0 then
+			load_resources()
+		end
 	end,
 
 	on_button_press = function(self, evt)
