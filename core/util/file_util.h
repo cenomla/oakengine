@@ -12,7 +12,7 @@ namespace oak::util {
 		std::ifstream file{ path.c_str(), std::ios::ate | std::ios::binary };
 
 		if (!file.is_open()) {
-			log::cout << "couldnt open file: " << path << std::endl;
+			log_print_err("couldnt open file: %s", path.c_str());
 			abort();
 		}
 
@@ -30,7 +30,7 @@ namespace oak::util {
 		std::ifstream file{ path.c_str(), std::ios::binary | std::ios::ate };
 
 		if (!file.is_open()) {
-			log::cout << "couldnt open file: " << path << std::endl;
+			log_print_err("couldnt open file: %s", path.c_str());
 			abort();
 		}
 

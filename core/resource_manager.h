@@ -86,7 +86,7 @@ namespace oak {
 				return *ptr;
 			}
 
-			log::cout << "failed to find resource: " << id << std::endl;
+			log_print_out("failed to find resource: %u", id);
 			abort();
 		}
 

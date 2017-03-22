@@ -169,7 +169,7 @@ namespace oak::luah {
 		}
 
 		if (shader == nullptr || texture == nullptr) {
-			log::cout << "invalid material: " << data.name << std::endl;
+			log_print_err("invalid material: %s", data.name.c_str());
 			abort();
 		}
 

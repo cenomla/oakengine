@@ -14,7 +14,7 @@ namespace oak::network {
 	void NetworkManager::init() {
 		//start up enet
 		if (enet_initialize() != 0) {
-			log::cout << "failed to startup enet" << std::endl;
+			log_print_err("failed to startup enet");
 			abort();
 		}
 
@@ -22,14 +22,14 @@ namespace oak::network {
 		address.port = 4099;
 		address.host = ENET_HOST_ANY;
 
-		log::cout << "network manager creating host..." << std::endl;
+		log_print_out("network manager creating host...");
 		host_ = enet_host_create(&address, 32, 2, 0, 0);
 		if (host_ == nullptr) {
-			log::cout << "failed to create host" << std::endl;
+			log_print_err("failed to create host");
 			abort();
 		}
 
-		log::cout << "successfully created host" << std::endl;
+		log_print_out("successfully created host");
 
 		engine_.getEventManager().add<QuitEvent>(std::ref(*this));
 		//engine_.getTaskManager().addTask({ [this](){ run(); }, Task::MULTI_THREAD_BIT });
@@ -48,14 +48,14 @@ namespace oak::network {
 		while (running_ && enet_host_service(host_, &event, 1000) >= 0) {
 			switch(event.type) {
 			case ENET_EVENT_TYPE_CONNECT:
-				log::cout << "peer connected" << std::endl;
+				log_print_out("peer connected");
 				{
 					std::lock_guard<std::mutex> lock{ peerLock_ };
 					peers_.push_back(event.peer);
 				}
 			break;
 			case ENET_EVENT_TYPE_DISCONNECT:
-				log::cout << "peer disconnected" << std::endl;
+				log_print_out("peer disconnected");
 				{
 					std::lock_guard<std::mutex> lock{ peerLock_ };
 					peers_.erase(std::remove(std::begin(peers_), std::end(peers_), event.peer), std::end(peers_));
@@ -74,7 +74,7 @@ namespace oak::network {
 	void NetworkManager::proccessPacket(const ENetEvent &event) {
 		util::ByteBuffer buffer{ event.packet->data, event.packet->dataLength };
 		uint32_t packetId = buffer.read<uint32_t>();
-		log::cout << "packet id: " << packetId << ", packet size: " << buffer.capacity() << std::endl;
+		log_print_out("packet id: %u, packet size: %u", packetId, buffer.capacity());
 	}
 
 }

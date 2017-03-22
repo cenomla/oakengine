@@ -11,7 +11,7 @@
 namespace oak {
 
 	lua_State* luah::createState() {
-		log::cout << "creating the lua state" << std::endl;
+		log_print_out("creating the lua state");
 		lua_State *L = luaL_newstate();
 		luaL_openlibs(L);
 
@@ -40,7 +40,7 @@ namespace oak {
 	}
 
 	void luah::destroyState(lua_State *L) {
-		log::cout << "closing the Lua state : " << lua_gettop(L) << std::endl;
+		log_print_out("closing the Lua state: %i", lua_gettop(L));
 		lua_close(L);
 	}
 
@@ -74,13 +74,13 @@ namespace oak {
 	}
 
 	void luah::loadScript(lua_State *L, const oak::string& path) {
-		log::cout << "loading script: " << path << std::endl;
+		log_print_out("loading script: %s", path.c_str());
 		luaL_loadfile(L, path.c_str());
 		int err = lua_pcall(L, 0, LUA_MULTRET, 0);
 
 		if (err != LUA_OK) {
-			oak::string errMsg = lua_tostring(L, -1);
-			log::cout << "lua error in script " << path << " : " << err << ", " << errMsg << std::endl;
+			const char* errMsg = lua_tostring(L, -1);
+			log_print_warn("lua error in script %s : %i, %s", path.c_str(), err, errMsg);
 			lua_pop(L, 1);
 		}
 	}
@@ -197,8 +197,8 @@ namespace oak {
 		int err = lua_pcall(L, nargs, nreturns, 0);
 
 		if (err != LUA_OK) {
-			oak::string errMsg = lua_tostring(L, -1);
-			log::cout << "lua error: " << err << ", " << errMsg << std::endl;
+			const char* errMsg = lua_tostring(L, -1);
+			log_print_warn("lua error: %i, %s", err, errMsg);
 			lua_pop(L, 1);
 		}
 	}

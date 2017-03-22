@@ -16,7 +16,7 @@ namespace oak {
 	TaskManager::~TaskManager() {}
 
 	void TaskManager::init() {
-		std::cout << "num workers: " << workers_.size() << std::endl;
+		log_print_out("num workers: %u", workers_.size());
 
 		Engine::inst().getEventManager().add<TaskCompleteEvent>(std::ref(*this));
 		for (auto&& worker : workers_) {

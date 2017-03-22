@@ -22,7 +22,7 @@ namespace fs = std::experimental::filesystem;
 			if (it != std::end(mounts_)) {
 				return it->second + path.substr(pos+2);
 			} else {
-				log::cout << "failed to resolve file path: " << path << std::endl;
+				log_print_err("failed to resolve file path: %s", path.c_str());
 				abort();
 			}
 		} else {

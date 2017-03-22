@@ -1,7 +1,5 @@
 #include "debugger.h"
 
-#include "log.h"
-
 namespace oak {
 
 	DebugVars debugVars;

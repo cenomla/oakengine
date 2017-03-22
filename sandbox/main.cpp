@@ -30,12 +30,44 @@
 
 std::chrono::duration<float> dt;
 
+struct stdoutstream : public oak::log::Stream {
+	void open() {}
+	void close() {}
+	void write(const void *source, size_t size) {
+		fwrite(source, 1, size, stdout);
+	}
+	void read(void *, size_t) {}
+};
+
+struct logfilestream : public oak::log::Stream {
+	void open() {
+		file = fopen("log", "w");
+	}
+
+	void close() {
+		if (file != nullptr) {
+			fclose(file);
+		}
+	}
+
+	void write(const void *source, size_t size) {
+		if (file != nullptr) {
+			fwrite(source, 1, size, file);
+			fflush(file);
+		}
+	}
+
+	void read(void*, size_t) {}
+
+	FILE *file = nullptr;
+};
+
 int main(int argc, char** argv) {
 	//setup log
-	std::ofstream file{ "log" };
-	//std::ostream log{ std::cout.rdbuf(&oak::log::cout_stream) };
-	oak::log::cout_stream.addStream(file);
-	oak::log::cout_stream.addStream(std::cout);
+	stdoutstream sos;
+	logfilestream lfs;
+	oak::log::cout.addStream(&sos);
+	oak::log::cout.addStream(&lfs);
 
 	//create the engine
 	oak::Engine engine;

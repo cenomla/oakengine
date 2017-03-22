@@ -25,11 +25,11 @@ namespace oak::graphics {
 		glfwSwapInterval(1);
 
 		if (!gladLoadGL()) {
-			log::cout << "cannot load gl" << std::endl;
+			log_print_err("cannot load gl");
 			abort();
 		}
 
-		log::cout << "opengl version: " << glGetString(GL_VERSION) << std::endl;
+		log_print_out("opengl version: %s", glGetString(GL_VERSION));
 
 		glfwGetWindowSize(window, &windowWidth_, &windowHeight_);
 		window_ = window;
@@ -43,7 +43,7 @@ namespace oak::graphics {
 
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
-			log::cout << "opengl error: " << error << std::endl;
+			log_print_warn("opengl error: %i", error);
 		}
 	}
 

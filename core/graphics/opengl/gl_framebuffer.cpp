@@ -31,7 +31,7 @@ namespace oak::graphics {
 		glDrawBuffers(1, drawBuffers);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			log::cout << "ruuun!!! the world is ending.... FRAMEBUFFER EXPLODING!!.!.!..!" << std::endl;
+			log_print_warn("ruuun!!! the world is ending.... FRAMEBUFFER EXPLODING!!.!.!..!");
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

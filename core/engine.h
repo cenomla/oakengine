@@ -51,7 +51,7 @@ namespace oak {
 			if (it != std::end(systems_)) {
 				return *static_cast<T*>(it->second);
 			} else {
-				log::cout << "system does not exist" << std::endl;
+				log_print_out("failed to find system");
 				abort();
 			}
 		}

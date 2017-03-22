@@ -17,7 +17,7 @@ namespace oak {
 	}
 
 	void Engine::init() {
-		log::cout << "oak engine version: 0.1.0" << std::endl;
+		log_print_out("oak engine version: 0.1.0");
 		taskManager_.init();
 		eventManager_.add<QuitEvent>(std::ref(*this));
 		isRunning_ = true;
@@ -49,7 +49,7 @@ namespace oak {
 				return it->second;
 			}
 		}
-		log::cout << "system does not exist: " << name << std::endl;
+		log_print_err("system does not exist: %s", name.c_str());
 		abort();
 	}
 

@@ -33,7 +33,7 @@ namespace oak::graphics {
 		stbi_uc *data = stbi_load(path.c_str(), &w, &h, &comp, 4);
 
 		if (data == nullptr) {
-			log::cout << "failed to load texture: " << path << std::endl;
+			log_print_warn("failed to load texture: %s", path.c_str());
 		}
 
 		create(w, h, data);

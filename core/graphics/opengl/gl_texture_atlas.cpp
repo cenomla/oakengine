@@ -20,7 +20,7 @@ namespace oak::graphics {
 		image.data = stbi_load(name.c_str(), &image.width, &image.height, &image.comp, 4);
 
 		if (image.data == nullptr) {
-			log::cout << "failed to load texture: " << name << std::endl;
+			log_print_err("failed to load texture: %s", name.c_str());
 			abort();
 		}
 

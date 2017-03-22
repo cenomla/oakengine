@@ -105,11 +105,11 @@ namespace oak::graphics {
 		oak::vector<char> log(length + 1);
 		glGetShaderInfoLog(shader, length, &length, log.data());
 		if (length > 1) {
-			log::cout << log.data() << std::endl;
+			log_print_out(log.data());
 		}
 		//log a failure
 		if (result == GL_FALSE) {
-			log::cout << "failed to compile shader: " << path << std::endl;
+			log_print_warn("failed to compile shader: %s", path.c_str());
 		}
 
 		return shader;

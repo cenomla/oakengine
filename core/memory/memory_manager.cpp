@@ -6,6 +6,7 @@
 #include "memory_literals.h"
 #include "util/ptr_util.h"
 #include "alloc.h"
+#include "log.h"
 #include "config.h"
 #include "debug_vars.h"
 
@@ -53,8 +54,8 @@ namespace oak {
 			numAllocs_ --;
 		}
 
-		std::cout << "used memory: " << debugVars.usedMemory << std::endl;
-		std::cout << "num allocs: " << numAllocs_ << std::endl;
+		log_print_out("used memory: %u", debugVars.usedMemory);
+		log_print_out("num allocs: %u", numAllocs_);
 		
 		INST = nullptr;
 	}

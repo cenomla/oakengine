@@ -1,47 +1,47 @@
 #include "log.h"
 
+#include <cstring>
+
 namespace oak::log {
 
-	Logger cout_stream{ 64 };
-	std::ostream cout(&cout_stream);
+	Logger cout{ "stdout" };
+	Logger cwarn{ "stdwarn" };
+	Logger cerr{ "stderr" };
 
-	Logger::Logger(size_t buffSize) : buff_(buffSize) {
-		setp(buff_.data(), buff_.data() + buffSize-1);
+	Logger::Logger(const char* name) : name_{ name } {
+
 	}
 
-	bool Logger::writeAndFlush() {
-		std::ptrdiff_t n = pptr() - pbase();
-
-		pbump(-n);
-
-		bool success = true;
-		std::ios_base::iostate s;
-
-		for (auto it : ostreams_) {
-			s = it->write(pbase(), n).rdstate();
-			if (s != std::ios_base::goodbit) {
-				success = false;
-			}
+	Logger::~Logger() {
+		for (auto& stream : streams_) {
+			stream->close();
 		}
-
-		return success;
 	}
 
-	int Logger::sync() {
-		return writeAndFlush() ? 0 : -1;
+	void Logger::addStream(Stream *stream) {
+		stream->open();
+		streams_.push_back(stream);
 	}
 
-	std::streambuf::int_type Logger::overflow( std::streambuf::int_type ch ) {
-		//std::cout << "overflow: " << ch << std::endl;
-		if (ostreams_.size() > 0 && ch != traits_type::eof()) {
-			*pptr() = ch;
-			pbump(1);
-			if (writeAndFlush()) {
-				return ch;
-			}
+	void Logger::print(const char* text, Level level, const char* file, int line) {
+		switch (level) {
+		case Level::MINIMAL:
+			sprintf(buffer_, "[%s]: %s\n", name_, text);
+		break;
+		case Level::NORMAL:
+			sprintf(buffer_, "[%s]: %s\n", name_, text);
+		break;
+		case Level::VERBOSE:
+			sprintf(buffer_, "file: %s, line: %i [%s]: %s\n", file, line, name_, text);
+		break;
 		}
+		flush();
+	}
 
-		return traits_type::eof();
+	void Logger::flush() {
+		for (auto& stream : streams_) {
+			stream->write(buffer_, strlen(buffer_));
+		}
 	}
 
 }

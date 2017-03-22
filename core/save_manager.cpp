@@ -18,7 +18,7 @@ namespace oak {
 		}
 		file_ = fopen(Engine::inst().getSystem<FileManager>().resolve(path).c_str(), str);
 		if (file_ == nullptr) { //file failed to open file
-			std::cout << "failed to open file: " << path << std::endl;
+			log_print_out("failed to open file: %s", path.c_str());
 			return;
 		}
 		//find file size

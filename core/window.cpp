@@ -38,7 +38,7 @@ namespace oak {
 
 	void Window::createWindow() {
 		if (!glfwInit()) {
-			log::cout << "cannot init glfw" << std::endl;
+			log_print_err("cannot init glfw");
 			abort();
 		}
 
@@ -53,7 +53,7 @@ namespace oak {
 
 		window_ = glfwCreateWindow(1280, 720, "Oak Engine", 0, 0);
 		if (window_ == nullptr) {
-			log::cout << "cannot create window" << std::endl;
+			log_print_err("cannot create window");
 			abort();
 		}
 
