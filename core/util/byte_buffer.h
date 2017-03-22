@@ -1,7 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include <cinttypes>
 #include <cstring>
+
+#include "container.h"
 
 namespace oak::util {
 
@@ -11,25 +14,14 @@ namespace oak::util {
 		ByteBuffer(void *data, size_t size);
 		~ByteBuffer();
 		
-		ByteBuffer(const ByteBuffer &other);
-		void operator=(const ByteBuffer &oter);
+		ByteBuffer(const ByteBuffer& other);
+		void operator=(const ByteBuffer& oter);
 
-		ByteBuffer(ByteBuffer &&other);
-		void operator=(ByteBuffer &&other);
+		ByteBuffer(ByteBuffer&& other);
+		void operator=(ByteBuffer&& other);
 
-		template<class T>
-		void write(T&& data) {
-			memcpy(buffer_ + pos_, &data, sizeof(T));
-			pos_ += sizeof(T);
-		}
-
-		template<class T>
-		T read() {
-			T data;
-			memcpy(&data, buffer_ + pos_, sizeof(T));
-			pos_ += sizeof(T);
-			return data;
-		}
+		template<class T> void write(T data);
+		template<class T> T read();
 
 		void set();
 		void reset();
@@ -50,5 +42,31 @@ namespace oak::util {
 		void init();
 		void destroy();
 	};
+
+	template<> void ByteBuffer::write(int8_t data);
+	template<> void ByteBuffer::write(int16_t data);
+	template<> void ByteBuffer::write(int32_t data);
+	template<> void ByteBuffer::write(int64_t data);
+
+	template<> void ByteBuffer::write(uint8_t data);
+	template<> void ByteBuffer::write(uint16_t data);
+	template<> void ByteBuffer::write(uint32_t data);
+	template<> void ByteBuffer::write(uint64_t data);
+
+	template<> void ByteBuffer::write(float data);
+	template<> void ByteBuffer::write(const char* data);
+
+	template<> int8_t ByteBuffer::read();
+	template<> int16_t ByteBuffer::read();
+	template<> int32_t ByteBuffer::read();
+	template<> int64_t ByteBuffer::read();
+
+	template<> uint8_t ByteBuffer::read();
+	template<> uint16_t ByteBuffer::read();
+	template<> uint32_t ByteBuffer::read();
+	template<> uint64_t ByteBuffer::read();
+
+	template<> float ByteBuffer::read();
+	template<> oak::string ByteBuffer::read();
 
 }

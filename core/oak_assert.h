@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#ifdef _DEBUG
+#ifdef DEBUG
 
 #define oak_assert(x) \
 	do {\
@@ -13,4 +13,4 @@
 
 #define oak_assert(x) (void)sizeof(x)
 
-#endif //_DEBUG
+#endif //DEBUG
