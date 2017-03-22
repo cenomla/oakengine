@@ -5,7 +5,11 @@
 #include "util/byte_buffer.h"
 #include "container.h"
 
+#ifdef DEBUG
+#define log_level oak::log::Level::VERBOSE
+#else
 #define log_level oak::log::Level::NORMAL
+#endif
 #define log_print_out(t, ...) oak::log::cout.printf(t, log_level, __FILE__, __LINE__, ##__VA_ARGS__)
 #define log_print_warn(t, ...) oak::log::cwarn.printf(t, log_level, __FILE__, __LINE__, ##__VA_ARGS__)
 #define log_print_err(t, ...) oak::log::cerr.printf(t, log_level, __FILE__, __LINE__, ##__VA_ARGS__)
