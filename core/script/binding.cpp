@@ -259,6 +259,9 @@ namespace oak::luah {
 		//script script
 		lua_pushvalue(L, -1);
 		lua_setfield(L, -2, "__index");
+		lua_getglobal(L, "prefab_newindex");
+		lua_setfield(L, -2, "__newindex");
+
 		//script
 		//script entity
 		lua_getfield(L, LUA_REGISTRYINDEX, "entity");

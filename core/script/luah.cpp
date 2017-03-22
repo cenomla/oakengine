@@ -15,7 +15,7 @@ namespace oak {
 		lua_State *L = luaL_newstate();
 		luaL_openlibs(L);
 
-		const char* luaRun = R"(function getKeys(t) 
+		const char* luaFun0 = R"(function getKeys(t) 
 				local s = {}
 				for k, v in pairs(t) do
 					table.insert(s, k)
@@ -23,7 +23,18 @@ namespace oak {
 				return s
 			end)";
 
-		luaL_dostring(L, luaRun);
+		luaL_dostring(L, luaFun0);
+
+		const char* luaFun1 = R"(function prefab_newindex(table, key, value)
+			local mt = getmetatable(table)
+			if mt[key] ~= nil then
+				mt[key] = value
+			else
+				rawset(table, key, value)
+			end
+		end)";
+
+		luaL_dostring(L, luaFun1);
 
 		return L;
 	}

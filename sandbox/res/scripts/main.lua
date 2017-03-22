@@ -254,6 +254,10 @@ oak.load_sprite({
 	path = "res::textures/gui/debug_menu/background"
 })
 
+package.loaded['prefabs/player'] = nil
+package.loaded['prefabs/block'] = nil
+package.loaded['prefabs/gui/button'] = nil
+
 oak.load_prefab("player", table.unpack(require("prefabs/player")))
 oak.load_prefab("block", table.unpack(require("prefabs/block")))
 oak.load_prefab("button", table.unpack(require("prefabs/gui/button")))

@@ -2,4 +2,5 @@
 .vscode
 bin/obj
 log
+sandbox/save
 TODO

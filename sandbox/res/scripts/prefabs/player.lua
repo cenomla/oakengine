@@ -28,15 +28,16 @@ local prefab = {
 		dynamic_friction = 0.4	
 	},
 	text = {
+		shared = true,
 		font = hash("fnt_dejavu"),
-		text = "This be the Player!",
-		offset = { x = -96.0, y = 8.0 },
+		text = "Player",
+		offset = { x = -24.0, y = -24.0 },
 		size = 12.0
 	}
 }
 
 local player = {
-	max_speed = 400.0,
+	max_speed = 800.0,
 	on_update = function(self, dt)
 		local tc = self:get_transform()
 

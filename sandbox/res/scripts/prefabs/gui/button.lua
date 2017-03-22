@@ -13,10 +13,9 @@ local prefab = {
 }
 
 local button = {
-	active = false,
-	callback = function(self, button, action) end,
 	on_create = function(self)
-		
+		self.active = false
+		self.callback = function(self, button, action) end
 	end,
 
 	on_mouse_move = function(self, evt)
