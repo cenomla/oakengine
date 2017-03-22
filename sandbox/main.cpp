@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
 	engine.addSystem(&lightRenderer);
 	engine.addSystem(&chstorage);
 
+	//mount points
 	fileManager.mount("sandbox/res/", "res");
 	fileManager.mount("sandbox/save/", "save");
 

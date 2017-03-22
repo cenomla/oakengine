@@ -1,5 +1,8 @@
 package.path = "sandbox/res/scripts/?.lua;sandbox/res/scripts/?/init.lua" .. package.path
 
+
+oak.input = oak.es:create_entity(255, require("input"))
+
 function load_resources()
 
 oak.load_shader({

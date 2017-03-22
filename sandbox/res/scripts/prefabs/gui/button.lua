@@ -40,7 +40,7 @@ local button = {
 		if evt.action == 0 then
 			self:set_sprite({ animframe_x = 0 })
 		end
-		if point_intersects(tc, aabb, { x = vmx.x, y = vmx.y }) then
+		if point_intersects(tc, aabb, vmx) then
 			if evt.action ~= 0 then
 				self:set_sprite({ animframe_x = 1 })
 			end

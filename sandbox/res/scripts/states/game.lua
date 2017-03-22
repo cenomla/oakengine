@@ -1,7 +1,6 @@
 local game = {
 
 	on_start = function(self)
-		oak.input = oak.es:create_entity(255, require("input"))
 		oak.es:create_entity(0, "player")
 		oak.es:create_entity(0, "block")
 

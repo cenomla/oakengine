@@ -37,7 +37,9 @@ local entity_system = {
 
 	destroy_all = function(self)
 		for k, v in pairs(self.entities) do
-			self:destroy_entity(v)
+			if v ~= oak.input then
+				self:destroy_entity(v)
+			end
 		end
 	end,
 
