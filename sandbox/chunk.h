@@ -3,6 +3,18 @@
 #include <glm/glm.hpp>
 #include <graphics/renderable.h>
 
+class Chunk;
+struct Tile;
+
+namespace oak {
+
+	class Puper;
+	struct ObjInfo;
+
+	void pup(Puper& puper, Tile& tile, const ObjInfo& info);
+	void pup(Puper& puper, Chunk& chunk, const ObjInfo& info);
+}
+
 struct Tile {
 	static constexpr uint64_t VISIBLE = 0x00000001;
 	static constexpr uint64_t SOLID = 0x00000002;
@@ -16,16 +28,10 @@ struct Tile {
 	};
 };
 
-namespace oak {
-
-	class Puper;
-	struct ObjInfo;
-
-	void pup(Puper &puper, Tile &tile, const ObjInfo &info);
-}
-
 class Chunk : public oak::graphics::Renderable {
 public:
+	friend void oak::pup(Puper& puper, Chunk& chunk, const ObjInfo& info);
+
 	Chunk(size_t materialId, int x, int y, int width, int height);
 
 	void draw(void *buffer, float x, float y, float rotation, float scale) const override;

@@ -65,6 +65,25 @@ namespace oak::util {
 		pos_ = 0;
 	}
 
+	void ByteBuffer::resize(size_t nsize) {
+		if (owns_ && buffer_ != nullptr) {
+			if (nsize > capacity_) {
+				char *temp = static_cast<char*>(proxyAllocator.allocate(nsize));
+				memcpy(temp, buffer_, capacity_);
+				proxyAllocator.deallocate(buffer_, capacity_);
+				buffer_ = temp;
+				capacity_ = nsize;
+
+			}
+		}
+	}
+
+	void ByteBuffer::checkResize(size_t size) {
+		if (pos_ + size > capacity_) {
+			resize(capacity_ * 2);
+		}
+	}
+
 	void ByteBuffer::init() {
 		if (buffer_ == nullptr) {
 			buffer_ = static_cast<char*>(proxyAllocator.allocate(capacity_));
@@ -75,19 +94,25 @@ namespace oak::util {
 		if (buffer_ != nullptr && owns_) {
 			proxyAllocator.deallocate(buffer_, capacity_);
 			buffer_ = nullptr;
+			capacity_ = 0;
+			pos_ = 0;
+			mark_ = 0;
 		}
 	}
 
 	template<> void ByteBuffer::write(int8_t data) {
+		checkResize(sizeof(int8_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data);
 		pos_ += 1;
 	}
 	template<> void ByteBuffer::write(int16_t data) {
+		checkResize(sizeof(int16_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data & 0xFF);
 		(buffer_ + pos_)[1] = static_cast<char>((data >> 8) & 0xFF);
 		pos_ += 2;
 	}
 	template<> void ByteBuffer::write(int32_t data) {
+		checkResize(sizeof(int32_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data & 0xFF);
 		(buffer_ + pos_)[1] = static_cast<char>((data >> 8) & 0xFF);
 		(buffer_ + pos_)[2] = static_cast<char>((data >> 16) & 0xFF);
@@ -95,6 +120,7 @@ namespace oak::util {
 		pos_ += 4;
 	}
 	template<> void ByteBuffer::write(int64_t data) {
+		checkResize(sizeof(int64_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data & 0xFF);
 		(buffer_ + pos_)[1] = static_cast<char>((data >> 8) & 0xFF);
 		(buffer_ + pos_)[2] = static_cast<char>((data >> 16) & 0xFF);
@@ -107,15 +133,18 @@ namespace oak::util {
 	}
 
 	template<> void ByteBuffer::write(uint8_t data) {
+		checkResize(sizeof(uint8_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data);
 		pos_ += 1;
 	}
 	template<> void ByteBuffer::write(uint16_t data) {
+		checkResize(sizeof(uint16_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data & 0xFF);
 		(buffer_ + pos_)[1] = static_cast<char>((data >> 8) & 0xFF);
 		pos_ += 2;
 	}
 	template<> void ByteBuffer::write(uint32_t data) {
+		checkResize(sizeof(uint32_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data & 0xFF);
 		(buffer_ + pos_)[1] = static_cast<char>((data >> 8) & 0xFF);
 		(buffer_ + pos_)[2] = static_cast<char>((data >> 16) & 0xFF);
@@ -123,6 +152,7 @@ namespace oak::util {
 		pos_ += 4;
 	}
 	template<> void ByteBuffer::write(uint64_t data) {
+		checkResize(sizeof(uint64_t));
 		(buffer_ + pos_)[0] = static_cast<char>(data & 0xFF);
 		(buffer_ + pos_)[1] = static_cast<char>((data >> 8) & 0xFF);
 		(buffer_ + pos_)[2] = static_cast<char>((data >> 16) & 0xFF);
@@ -135,15 +165,17 @@ namespace oak::util {
 	}
 
 	template<> void ByteBuffer::write(float data) {
+		checkResize(sizeof(float));
 		float *buff = reinterpret_cast<float*>(buffer_ + pos_);
 		*buff = data;
 		pos_ += 4;
 	}
 
 	template<> void ByteBuffer::write(const char * data) {
-		const char *str = data;
-		strcpy(buffer_ + pos_, str);
-		pos_ += strlen(str) + 1;
+		size_t size = strlen(data) + 1;
+		checkResize(size);
+		strcpy(buffer_ + pos_, data);
+		pos_ += size;
 	}
 
 	template<> int8_t ByteBuffer::read() {

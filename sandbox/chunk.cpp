@@ -3,7 +3,7 @@
 #include <pup.h>
 
 namespace oak {
-	void pup(Puper &puper, Tile &tile, const ObjInfo &info) {
+	void pup(Puper& puper, Tile& tile, const ObjInfo& info) {
 
 		pup(puper, tile.dx, info + ObjInfo{ "dx" });
 		pup(puper, tile.dy, info + ObjInfo{ "dy" });
@@ -20,6 +20,16 @@ namespace oak {
 
 		pup(puper, tile.material, info + ObjInfo{"material"});
 		pup(puper, tile.flags, info + ObjInfo{"flags"});
+	}
+
+	void pup(Puper& puper, Chunk& chunk, const ObjInfo& info) {
+		for (size_t i = 0; i < 256; i++) {
+			pup(puper, chunk.tiles_[i], info + ObjInfo{ std::to_string(i).c_str() });
+		}
+		pup(puper, chunk.materialId_, info + ObjInfo{ "material_id" });
+		pup(puper, chunk.tileCount_, info + ObjInfo{ "tile_count" });
+		pup(puper, chunk.position_, info + ObjInfo{ "position" });
+		pup(puper, chunk.extent_, info + ObjInfo{ "extent" });
 	}
 }
 

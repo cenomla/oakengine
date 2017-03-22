@@ -26,6 +26,9 @@ namespace oak::util {
 		void set();
 		void reset();
 		void rewind();
+		void resize(size_t nsize);
+
+		void checkResize(size_t size);
 
 		inline size_t capacity() const { return capacity_; }
 		inline size_t pos() const { return pos_; }
