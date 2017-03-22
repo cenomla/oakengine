@@ -6,7 +6,7 @@
 
 #include "container.h"
 #include "util/byte_buffer.h"
-#include "util/byte_buffer_puper.h"
+#include "util/buffer_puper.h"
 #include "system.h"
 #include "events.h"
 #include "pup.h"
@@ -25,7 +25,7 @@ namespace oak::network {
 		template<class T>
 		void broadcast(uint32_t packetId, const T& data) {
 			//create a byte buffer puper to serialize the data
-			ByteBufferPuper puper{ &packetBuffer_ };
+			BufferPuper puper{ &packetBuffer_ };
 			//write the packet id
 			packetBuffer_.write(packetId);
 			//call serialization function

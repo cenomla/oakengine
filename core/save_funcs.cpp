@@ -1,6 +1,6 @@
 #include "save_funcs.h"
 
-#include "util/byte_buffer_puper.h"
+#include "util/file_puper.h"
 #include "config.h"
 #include "entity.h"
 #include "engine.h"
@@ -10,9 +10,8 @@ namespace oak::save {
 	void streamEntity(SaveManager& sm, Entity& data) {
 		EntityManager& manager = Engine::inst().getSystem<EntityManager>();
 		ComponentHandleStorage& storage = Engine::inst().getSystem<ComponentHandleStorage>();
-		auto byteBuffer = sm.getBuffer();
 
-		ByteBufferPuper puper{ byteBuffer };
+		FilePuper puper{ sm.getFile() };
 
 		if ((sm.flags() & SaveManager::LOAD) == SaveManager::LOAD) {
 			puper.setIo(PuperIo::IN);
@@ -24,7 +23,7 @@ namespace oak::save {
 		//calculate number of components and stream it
 		size_t ncomp = 0;
 		for (size_t i = 0; i < config::MAX_COMPONENTS; i++) {
-			if (manager.hasComponent(data.index(), i)) {
+			if (manager.hasComponent(data.index(), i) && manager.ownsComponent(data.index(), i)) {
 				ncomp ++;
 			}
 		}
@@ -34,7 +33,7 @@ namespace oak::save {
 		if ((sm.flags() & SaveManager::SAVE) == SaveManager::SAVE) {
 			comps.reserve(ncomp);
 			for (size_t i = 0; i < config::MAX_COMPONENTS; i++) {
-				if (manager.hasComponent(data.index(), i)) {
+				if (manager.hasComponent(data.index(), i) && manager.ownsComponent(data.index(), i)) {
 					comps.push_back(i);
 				}
 			}
