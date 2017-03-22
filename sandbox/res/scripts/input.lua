@@ -18,6 +18,9 @@ local input = {
 		if evt.key == 82 and evt.action == 0 then
 			load_resources()
 		end
+		if evt.key == 256 and evt.action == 0 then
+			oak.sm:switch(oak.sm.menu)
+		end
 	end,
 
 	on_button_press = function(self, evt)

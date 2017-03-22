@@ -19,6 +19,7 @@
 #include <file_manager.h>
 #include <view_system.h>
 #include <debugger.h>
+#include <save_manager.h>
 
 #include "component_ext.h"
 #include "event_ext.h"
@@ -51,12 +52,13 @@ int main(int argc, char** argv) {
 	oak::EntityManager entityManager{ engine };
 	oak::ViewSystem viewSystem{ engine };
 	oak::Debugger debugger{ engine };
+	oak::ComponentHandleStorage chstorage{ engine };
+	oak::SaveManager saveManager{ engine };
 	CollisionSystem collisionSystem{ engine };
 	TileSystem tileSystem{ engine, 8, 16 };
 	SpriteSystem spriteSystem{ engine };
 	TextSystem textSystem{ engine };
 	LightRenderer lightRenderer{ engine };
-	oak::ComponentHandleStorage chstorage{ engine };
 
 	//add the systems to the engine, this initializes the systems and makes them avaliable to be accessed by other systems
 	engine.addSystem(&luam);
@@ -68,13 +70,14 @@ int main(int argc, char** argv) {
 	engine.addSystem(&debugger);
 	engine.addSystem(&window);
 	engine.addSystem(&frameRenderer);
+	engine.addSystem(&chstorage);
+	engine.addSystem(&saveManager);
 	engine.addSystem(&collisionSystem);
 	engine.addSystem(&spriteSystem);
 	engine.addSystem(&textSystem);
 	engine.addSystem(&tileSystem);
 	engine.addSystem(&entityRenderer);
 	engine.addSystem(&lightRenderer);
-	engine.addSystem(&chstorage);
 
 	//mount points
 	fileManager.mount("sandbox/res/", "res");

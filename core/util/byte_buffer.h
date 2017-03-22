@@ -57,6 +57,8 @@ namespace oak::util {
 	template<> void ByteBuffer::write(uint64_t data);
 
 	template<> void ByteBuffer::write(float data);
+	template<> void ByteBuffer::write(double data);
+	template<> void ByteBuffer::write(oak::string data);
 	template<> void ByteBuffer::write(const char* data);
 
 	template<> int8_t ByteBuffer::read();
@@ -70,6 +72,7 @@ namespace oak::util {
 	template<> uint64_t ByteBuffer::read();
 
 	template<> float ByteBuffer::read();
+	template<> double ByteBuffer::read();
 	template<> oak::string ByteBuffer::read();
 
 }

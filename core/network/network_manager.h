@@ -25,7 +25,7 @@ namespace oak::network {
 		template<class T>
 		void broadcast(uint32_t packetId, const T& data) {
 			//create a byte buffer puper to serialize the data
-			ByteBufferPuper puper{ packetBuffer_ };
+			ByteBufferPuper puper{ &packetBuffer_ };
 			//write the packet id
 			packetBuffer_.write(packetId);
 			//call serialization function

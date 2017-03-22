@@ -10,7 +10,7 @@ namespace oak {
 
 	class ByteBufferPuper : public Puper {
 	public:
-		ByteBufferPuper(util::ByteBuffer& buffer);
+		ByteBufferPuper(util::ByteBuffer *buffer);
 
 		void pup(int8_t& data, const ObjInfo& info) override;
 		void pup(int16_t& data, const ObjInfo& info) override;

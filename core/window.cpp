@@ -68,9 +68,6 @@ namespace oak {
 
 	static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 		Engine::inst().getEventManager().emitEvent(KeyEvent{ key, scancode, action, mods });
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
 	}
 
 	static void buttonCallback(GLFWwindow *window, int button, int action, int mods) {

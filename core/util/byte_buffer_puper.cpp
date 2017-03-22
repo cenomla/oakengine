@@ -5,7 +5,7 @@
 
 namespace oak {
 
-	ByteBufferPuper::ByteBufferPuper(util::ByteBuffer& buffer) : buffer_{ &buffer } {}
+	ByteBufferPuper::ByteBufferPuper(util::ByteBuffer *buffer) : buffer_{ buffer } {}
 
 	void ByteBufferPuper::pup(int8_t& data, const ObjInfo& info) {
 		if (io_ == PuperIo::OUT) {

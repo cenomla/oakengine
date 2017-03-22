@@ -58,6 +58,7 @@ oak.load_atlas({
 		"res::textures/gui/arrows",
 		"res::textures/gui/text_box",
 		"res::textures/gui/cursor",
+		"res::textures/gui/menu/button",
 		"res::textures/gui/tile_editor/background",
 		"res::textures/gui/tile_editor/icons",
 		"res::textures/gui/tile_editor/selector",
@@ -99,9 +100,9 @@ oak.load_material({
 
 oak.set_uniform("shd_font", "text_width", 0.4)
 oak.set_uniform("shd_font", "text_edge", 0.4)
-oak.set_uniform("shd_font", "text_color", { 1.0, 1.0, 1.0 })
-oak.set_uniform("shd_font", "border_width", 0.6)
-oak.set_uniform("shd_font", "border_edge", 0.4)
+oak.set_uniform("shd_font", "text_color", { 0.0, 0.0, 0.0 })
+oak.set_uniform("shd_font", "border_width", 0.0)
+oak.set_uniform("shd_font", "border_edge", 0.0)
 oak.set_uniform("shd_font", "border_color", { 0.0, 0.0, 0.0 })
 
 oak.load_material({
@@ -132,6 +133,16 @@ oak.load_sprite({
 	extent = { x = 128.0, y = 32.0 },
 	atlas = "atlas_entity",
 	path = "res::textures/block"
+})
+
+oak.load_sprite({
+	name = "spr_menu_button",
+	material = "mat_gui",
+	extent = { x = 32.0, y = 32.0 },
+	atlas = "atlas_gui",
+	path = "res::textures/gui/menu/button",
+	animframes_x = 3,
+	animframes_y = 2
 })
 
 oak.load_sprite({
@@ -270,7 +281,7 @@ oak.sm = {
 			table.remove(self.states)
 		end
 	end,
-	switch = function(self, state)
+	switch = function(self, state, ...)
 		--pop all states then switch to new state
 		for i = 0, #self.states do
 			self:pop()
@@ -280,7 +291,7 @@ oak.sm = {
 		end
 		self.current_state = state
 		if state ~= nil then
-			state:on_start()
+			state:on_start(...)
 		end
 	end
 }

@@ -171,10 +171,25 @@ namespace oak::util {
 		pos_ += 4;
 	}
 
+	template<> void ByteBuffer::write(double data) {
+		checkResize(sizeof(double));
+		double *buff = reinterpret_cast<double*>(buffer_ + pos_);
+		*buff = data;
+		pos_ += 8;
+	}
+
 	template<> void ByteBuffer::write(const char * data) {
 		size_t size = strlen(data) + 1;
 		checkResize(size);
 		strcpy(buffer_ + pos_, data);
+		pos_ += size;
+	}
+
+	template<> void ByteBuffer::write(oak::string data) {
+		const char* str = data.c_str();
+		size_t size = strlen(str) + 1;
+		checkResize(size);
+		strcpy(buffer_ + pos_, str);
 		pos_ += size;
 	}
 
@@ -251,6 +266,12 @@ namespace oak::util {
 	template<> float ByteBuffer::read() {
 		float data = *reinterpret_cast<float*>(buffer_ + pos_);
 		pos_ += 4;
+		return data;
+	}
+
+	template<> double ByteBuffer::read() {
+		double data = *reinterpret_cast<double*>(buffer_ + pos_);
+		pos_ += 8;
 		return data;
 	}
 

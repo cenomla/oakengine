@@ -15,7 +15,7 @@ namespace oak {
 		virtual void destruct(void *comp) const = 0;
 		virtual void pupObject(Puper &puper, void *data, const ObjInfo &info) const = 0;
 		inline size_t size() const { return size_; }
-		inline const oak::string& name() const { return name_; }
+		inline const oak::string& getName() const { return name_; }
 	protected:
 		oak::string name_;
 		size_t size_;

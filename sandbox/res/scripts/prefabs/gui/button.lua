@@ -26,9 +26,13 @@ local button = {
 	
 
 		if point_intersects(tc, aabb, vmx) then
-			self:set_transform({ scale = 1.5 })
-		else 
-			self:set_transform({ scale = 1.0 })
+			if oak.input.buttons[0] ~= 0 or oak.input.buttons[1] ~= 0 then
+				self:set_sprite({ animframe_x = 1 })
+			else
+				self:set_sprite({ animframe_x = 2 })
+			end
+		else
+			self:set_sprite({ animframe_x = 0 })
 		end
 	end,
 	on_button_press = function(self, evt)

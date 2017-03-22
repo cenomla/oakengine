@@ -12,10 +12,12 @@
 #include "file_manager.h"
 #include "view_system.h"
 #include "debugger.h"
+#include "save_manager.h"
 #include "events.h"
 #include "components.h"
 #include "engine.h"
 #include "prefab.h"
+#include "save_funcs.h"
 
 namespace oak::luah {
 
@@ -504,6 +506,45 @@ namespace oak::luah {
 		return 1;
 	}
 
+	//void open(path, flags)
+	static int c_save_open(lua_State *L) {
+		oak::string path = toValue<oak::string>(L, 1);
+		uint32_t flags = toValue<uint32_t>(L, 2);
+		lua_settop(L, 0);
+
+		Engine::inst().getSystem<SaveManager>().open(path, flags);
+
+		return 0;
+	}
+
+	//void close()
+	static int c_save_close(lua_State *L) {
+		Engine::inst().getSystem<SaveManager>().close();
+		return 0;
+	}
+
+	//bool is_open()
+	static int c_save_isOpen(lua_State *L) {
+		lua_pushboolean(L, Engine::inst().getSystem<SaveManager>().isOpen());
+		return 1;
+	}
+
+	//void stream_entity(entity)
+	static int c_save_streamEntity(lua_State *L) {
+		Entity e = toValue<Entity>(L, 1);
+		lua_settop(L, 0);
+
+		save::streamEntity(Engine::inst().getSystem<SaveManager>(), e);
+
+		return 0;
+	}
+
+	//void quit()
+	static int c_quit(lua_State *L) {
+		Engine::inst().getEventManager().emitEvent(QuitEvent{});
+		return 0;
+	}
+
 	void registerBindings(lua_State *L) {
 		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
@@ -544,6 +585,11 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity_manager", "create_entity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroy_entity", c_entityManager_destroyEntity);
 
+		addFunctionToMetatable(L, "save_manager", "open", c_save_open);
+		addFunctionToMetatable(L, "save_manager", "is_open", c_save_isOpen);
+		addFunctionToMetatable(L, "save_manager", "close", c_save_close);
+		addFunctionToMetatable(L, "save_manager", "stream_entity", c_save_streamEntity);
+
 		addFunctionToMetatable(L, "oak", "load_shader", c_resource_load_shader);
 		addFunctionToMetatable(L, "oak", "load_texture", c_resource_load_texture);
 		addFunctionToMetatable(L, "oak", "load_atlas", c_resource_load_atlas);
@@ -554,6 +600,7 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_prefab", c_resource_load_prefab);
 		addFunctionToMetatable(L, "oak", "debug_get_vars", c_debug_getVars);
 		addFunctionToMetatable(L, "oak", "memory_string", c_memory_getString);
+		addFunctionToMetatable(L, "oak", "quit", c_quit);
 
 		addFunctionToMetatable(L, "view_system", "transform_point", c_view_transformPoint);
 		addFunctionToMetatable(L, "view_system", "get_id", c_view_getId);
@@ -562,9 +609,15 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "view_system", "get_view", c_view_getView);
 
 		lua_getglobal(L, "oak");
+		//view system
 		lua_newtable(L);
 		setMetatable(L, "view_system");
 		lua_setfield(L, -2, "vs");
+		//save manager
+		lua_newtable(L);
+		setMetatable(L, "save_manager");
+		lua_setfield(L, -2, "save");
+
 		lua_pop(L, 1);
 
 		lua_pushcfunction(L, c_hash);

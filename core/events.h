@@ -75,12 +75,13 @@ namespace oak {
 		glm::vec2 force;
 	};
 
-	void pup(Puper &puper, KeyEvent &data, const ObjInfo &info);
-	void pup(Puper &puper, ButtonEvent &data, const ObjInfo &info);
-	void pup(Puper &puper, MouseMoveEvent &data, const ObjInfo &info);
-	void pup(Puper &puper, CharEvent &data, const ObjInfo &info);
-	void pup(Puper &puper, EntityActivateEvent &data, const ObjInfo &info);
-	void pup(Puper &puper, EntityDeactivateEvent &data, const ObjInfo &info);
-	void pup(Puper &puper, EntityCollisionEvent &data, const ObjInfo &info);
+	void pup(Puper& puper, QuitEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, KeyEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, ButtonEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, MouseMoveEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, CharEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, EntityActivateEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, EntityDeactivateEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, EntityCollisionEvent& data, const ObjInfo& info);
 
 }
