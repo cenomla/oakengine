@@ -13,14 +13,16 @@ local entity_system = {
 
 	entities = {},
 	sorted_entities = {},
+	depths = {},
 	needs_sort = false,
 	events = {},
 
-	create_entity = function(self, layer, thing)
+	create_entity = function(self, layer, depth, thing)
 		local e = self.manager.create_entity(layer, thing)
 		self.entities[e:index() + 1] = e
-		e:activate()
+		self.depths[e:index() + 1] = depth
 		self:send_message("on_create", e)
+		e:activate()
 		self.needs_sort = true
 		return e
 	end,
@@ -30,6 +32,7 @@ local entity_system = {
 			self:send_message("on_destroy", e)
 
 			self.entities[e:index() + 1] = nil
+			self.depths[e:index() + 1] = 0.0
 			self.manager.destroy_entity(e)
 			self.needs_sort = false
 		end
@@ -68,6 +71,11 @@ local entity_system = {
 		end
 	end,
 
+	set_depth = function(self, entity, depth)
+		self.depths[entity:index() + 1] = depth
+		self.needs_sort = true
+	end,
+
 	sort_entities = function(self)
 		--sort entities is needed
 		if self.needs_sort then
@@ -82,7 +90,7 @@ local entity_system = {
 
 			--sort entities
 			table.sort(self.sorted_entities, function(e, o) 
-				return e:layer() > o:layer() 
+				return (e:layer() > o:layer()) or ((self.depths[e:index() + 1] > self.depths[o:index() + 1]) and e:layer() == o:layer())
 			end)
 			self.needs_sort = false
 		end

@@ -1,7 +1,7 @@
 package.path = "sandbox/res/scripts/?.lua;sandbox/res/scripts/?/init.lua" .. package.path
 
 
-oak.input = oak.es:create_entity(255, require("input"))
+oak.input = oak.es:create_entity(2, 100000000.0, require("input"))
 
 function load_resources()
 
@@ -55,7 +55,8 @@ oak.load_atlas({
 	name = "atlas_gui",
 	textures = {
 		"res::textures/gui/button",
-		"res::textures/gui/window"
+		"res::textures/gui/window",
+		"res::textures/gui/title_bar"
 	},
 	extent = {
 		x = 1024,
@@ -138,20 +139,30 @@ oak.load_sprite({
 oak.load_sprite({
 	name = "spr_window",
 	material = "mat_gui",
-	extent = { x = 512.0, y = 288.0 },
+	extent = { x = 1.0, y = 1.0 },
 	atlas = "atlas_gui",
 	path = "res::textures/gui/window"
+})
+
+oak.load_sprite({
+	name = "spr_title_bar",
+	material = "mat_gui",
+	extent = { x = 512, y = 16.0 },
+	atlas = "atlas_gui",
+	path = "res::textures/gui/title_bar"
 })
 
 package.loaded['prefabs/player'] = nil
 package.loaded['prefabs/block'] = nil
 package.loaded['prefabs/gui/button'] = nil
 package.loaded['prefabs/gui/window'] = nil
+package.loaded['prefabs/gui/title_bar'] = nil
 
 oak.load_prefab("player", table.unpack(require("prefabs/player")))
 oak.load_prefab("block", table.unpack(require("prefabs/block")))
 oak.load_prefab("button", table.unpack(require("prefabs/gui/button")))
 oak.load_prefab("window", table.unpack(require("prefabs/gui/window")))
+oak.load_prefab("title_bar", table.unpack(require("prefabs/gui/title_bar")))
 
 end
 
@@ -190,6 +201,7 @@ oak.sm = {
 		end
 	end
 }
+
 oak.sm.menu = require("states/menu")
 oak.sm.game = require("states/game")
 oak.sm:switch(oak.sm.menu)

@@ -1,6 +1,6 @@
 local debug_menu = {
 	on_create = function(self)
-		self.text = oak.es:create_entity(self:layer(), {})
+		self.text = oak.es:create_entity(self:layer(), 0.0, {})
 		self.text:add_transform({
 			position = {
 				x = 16.0,

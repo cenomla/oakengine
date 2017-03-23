@@ -2,20 +2,23 @@ require("util/io")
 local game = {
 
 	on_start = function(self, load)
-		self.window = oak.es:create_entity(2, "window")
-		table.insert(self.window.children, make_button(2, 0, 0, "spr_button", 128, 32, "Reload", 
+		self.window = oak.es:create_entity(2, 10.0, "window")
+		local win = oak.es:create_entity(2, 20.0, "window")
+		win:set_transform({ position = { x = 128.0, y = 64.0, z = 20.0 } })
+		win:update_children()
+		table.insert(self.window.children, make_button(2, 0.0, 0, 0, "spr_button", 128, 32, "Reload", 
 			function(b, button, action) if action == 0 then load_resources() end end))
-		table.insert(self.window.children, make_button(2, 0, 0, "spr_button", 96, 32, "Save",
+		table.insert(self.window.children, make_button(2, 0.0, 0, 0, "spr_button", 96, 32, "Save",
 			function(b, button, action) if action == 0 then self:save() end end))
-		table.insert(self.window.children, make_button(2, 0, 0, "spr_button", 96, 32, "Load",
+		table.insert(self.window.children, make_button(2, 0.0, 0, 0, "spr_button", 96, 32, "Load",
 			function(b, button, action) if action == 0 then self:load() end end))
-		table.insert(self.window.children, make_button(2, 0, 0, "spr_button", 128, 32, "Pause"))
-		table.insert(self.window.children, make_button(2, 0, 0, "spr_button", 96, 32, "Exit",
+		table.insert(self.window.children, make_button(2, 0.0, 0, 0, "spr_button", 128, 32, "Pause"))
+		table.insert(self.window.children, make_button(2, 0.0, 0, 0, "spr_button", 96, 32, "Exit",
 			function(b, button, action) if action == 0 then oak.sm:switch(oak.sm.menu) end end))
 		self.window:update_children()
-		self.player = oak.es:create_entity(0, "player")
-		self.block1 = oak.es:create_entity(0, "block")
-		self.block2 = oak.es:create_entity(0, "block")
+		self.player = oak.es:create_entity(0, 0.0, "player")
+		self.block1 = oak.es:create_entity(0, 0.0, "block")
+		self.block2 = oak.es:create_entity(0, 0.0, "block")
 		if load then
 			self:load()
 		else

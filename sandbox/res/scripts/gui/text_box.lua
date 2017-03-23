@@ -4,7 +4,7 @@ local text_box = {
 	on_create = function(self)
 		self.value = {}
 		self.text = {}
-		self.cursor = oak.es:create_entity(self:layer(), {})
+		self.cursor = oak.es:create_entity(self:layer(), 0.0, {})
 		self.cursor:add_transform({})
 		self.cursor:add_sprite({
 			sprite = hash("spr_gui_cursor")

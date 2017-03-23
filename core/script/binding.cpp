@@ -256,7 +256,11 @@ namespace oak::luah {
 		getKeys(L, 2, keys);
 
 		//setup script metatable
-		//script script
+		if (lua_gettop(L) < 3) {
+			lua_newtable(L);
+		}
+
+		//name prefab script script
 		lua_pushvalue(L, -1);
 		lua_setfield(L, -2, "__index");
 		lua_getglobal(L, "prefab_newindex");

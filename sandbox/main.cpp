@@ -41,12 +41,15 @@ struct stdoutstream : public oak::log::Stream {
 
 struct logfilestream : public oak::log::Stream {
 	void open() {
-		file = fopen("log", "w");
+		if (file == nullptr) {
+			file = fopen("log", "w");
+		}
 	}
 
 	void close() {
 		if (file != nullptr) {
 			fclose(file);
+			file = nullptr;
 		}
 	}
 
@@ -68,6 +71,10 @@ int main(int argc, char** argv) {
 	logfilestream lfs;
 	oak::log::cout.addStream(&sos);
 	oak::log::cout.addStream(&lfs);
+	oak::log::cwarn.addStream(&sos);
+	oak::log::cwarn.addStream(&lfs);
+	oak::log::cerr.addStream(&sos);
+	oak::log::cerr.addStream(&lfs);
 
 	//create the engine
 	oak::Engine engine;
