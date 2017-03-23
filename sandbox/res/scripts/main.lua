@@ -42,11 +42,11 @@ oak.load_atlas({
 oak.load_atlas({
 	name = "atlas_tiles",
 	textures = {
-		"res::textures/tiles/geometric_wall_1"
+		"res::textures/tiles"
 	},
 	extent = {
-		x = 8000, 
-		y = 6400
+		x = 80, 
+		y = 64
 	},
 	flags = 0
 })
@@ -55,17 +55,7 @@ oak.load_atlas({
 	name = "atlas_gui",
 	textures = {
 		"res::textures/gui/button",
-		"res::textures/gui/arrows",
-		"res::textures/gui/text_box",
-		"res::textures/gui/cursor",
-		"res::textures/gui/menu/button",
-		"res::textures/gui/tile_editor/background",
-		"res::textures/gui/tile_editor/icons",
-		"res::textures/gui/tile_editor/selector",
-		"res::textures/gui/tool_bar/background",
-		"res::textures/gui/tool_bar/icons",
-		"res::textures/gui/console/background",
-		"res::textures/gui/debug_menu/background"
+		"res::textures/gui/window"
 	},
 	extent = {
 		x = 1024,
@@ -100,9 +90,9 @@ oak.load_material({
 
 oak.set_uniform("shd_font", "text_width", 0.4)
 oak.set_uniform("shd_font", "text_edge", 0.4)
-oak.set_uniform("shd_font", "text_color", { 0.0, 0.0, 0.0 })
-oak.set_uniform("shd_font", "border_width", 0.0)
-oak.set_uniform("shd_font", "border_edge", 0.0)
+oak.set_uniform("shd_font", "text_color", { 1.0, 1.0, 1.0 })
+oak.set_uniform("shd_font", "border_width", 0.6)
+oak.set_uniform("shd_font", "border_edge", 0.4)
 oak.set_uniform("shd_font", "border_color", { 0.0, 0.0, 0.0 })
 
 oak.load_material({
@@ -136,131 +126,32 @@ oak.load_sprite({
 })
 
 oak.load_sprite({
-	name = "spr_menu_button",
+	name = "spr_button",
 	material = "mat_gui",
 	extent = { x = 32.0, y = 32.0 },
 	atlas = "atlas_gui",
-	path = "res::textures/gui/menu/button",
+	path = "res::textures/gui/button",
 	animframes_x = 3,
 	animframes_y = 2
 })
 
 oak.load_sprite({
-	name = "spr_gui_button",
+	name = "spr_window",
 	material = "mat_gui",
-	center = { x = 0.0, y = 0.0 },
-	extent = { x = 32.0, y = 32.0 },
+	extent = { x = 512.0, y = 288.0 },
 	atlas = "atlas_gui",
-	path = "res::textures/gui/button",
-	animframes_x = 2,
-	animframes_y = 2
-})
-
-oak.load_sprite({
-	name = "spr_tile_editor",
-	material = "mat_gui",
-	center = { x = 0.0, y = 0.0 },
-	extent = { x = 256.0, y = 512.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/tile_editor/background"
-})
-
-oak.load_sprite({
-	name = "spr_tile_editor_icons",
-	material = "mat_gui",
-	extent = { x = 32.0, y = 32.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/tile_editor/icons",
-	animframes_x = 5,
-	animframes_y = 4
-})
-
-oak.load_sprite({
-	name = "spr_gui_arrows",
-	material = "mat_gui",
-	extent = { x = 32.0, y = 32.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/arrows",
-	animframes_x = 2,
-	animframes_y = 2
-})
-
-oak.load_sprite({
-	name = "spr_gui_text_box",
-	material = "mat_gui",
-	extent = { x = 224.0, y = 24.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/text_box",
-	animframes_x = 2,
-	animframes_y = 2
-})
-
-oak.load_sprite({
-	name = "spr_gui_cursor",
-	material = "mat_gui",
-	extent = { x = 2.0, y = 18.0 },
-	center = { x = -1.0, y = -2.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/cursor"
-})
-
-oak.load_sprite({
-	name = "spr_tile_editor_tilemap",
-	material = "mat_tiles",
-	extent = { x = 8000.0, y = 6400.0 },
-	draw_position = { x = 0.0, y = 0.0 },
-	draw_extent = { x = 1.0, y = 1.0 }
-})
-
-oak.load_sprite({
-	name = "spr_tile_editor_selector",
-	material = "mat_gui",
-	extent = { x = 32.0, y = 32.0 },
-	center = { x = 8.0, y = 8.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/tile_editor/selector"
-})
-
-oak.load_sprite({
-	name = "spr_tool_bar",
-	material = "mat_gui",
-	extent = { x = 176.0, y = 32.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/tool_bar/background"
-})
-
-oak.load_sprite({
-	name = "spr_tool_bar_icons",
-	material = "mat_gui",
-	extent = { x = 32.0, y = 32.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/tool_bar/icons",
-	animframes_x = 4
-})
-
-oak.load_sprite({
-	name = "spr_console",
-	material = "mat_gui",
-	extent = { x = 512.0, y = 256.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/console/background"
-})
-
-oak.load_sprite({
-	name = "spr_debug_menu",
-	material = "mat_gui",
-	extent = { x = 256.0, y = 512.0 },
-	atlas = "atlas_gui",
-	path = "res::textures/gui/debug_menu/background"
+	path = "res::textures/gui/window"
 })
 
 package.loaded['prefabs/player'] = nil
 package.loaded['prefabs/block'] = nil
 package.loaded['prefabs/gui/button'] = nil
+package.loaded['prefabs/gui/window'] = nil
 
 oak.load_prefab("player", table.unpack(require("prefabs/player")))
 oak.load_prefab("block", table.unpack(require("prefabs/block")))
 oak.load_prefab("button", table.unpack(require("prefabs/gui/button")))
+oak.load_prefab("window", table.unpack(require("prefabs/gui/window")))
 
 end
 

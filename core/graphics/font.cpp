@@ -4,7 +4,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "util/file_util.h"
-#include "sprite.h"
+#include "vertex.h"
 
 namespace oak::graphics {
 
@@ -21,12 +21,12 @@ namespace oak::graphics {
 			const Glyph& g = glyphs_[static_cast<size_t>(c)];
 			
 			glm::vec2 pos{ x, y };
-			static_cast<Sprite::Vertex*>(buffer)[0] = { glm::rotate(glm::vec2{ g.xoffset, g.yoffset } * scale, rotation) + pos, glm::vec2{ g.dx, g.dy } };
-			static_cast<Sprite::Vertex*>(buffer)[1] = { glm::rotate(glm::vec2{ g.xoffset + g.width, g.yoffset } * scale, rotation) + pos, glm::vec2{ g.dx + g.dw, g.dy } };
-			static_cast<Sprite::Vertex*>(buffer)[2] = { glm::rotate(glm::vec2{ g.xoffset + g.width, g.yoffset + g.height } * scale, rotation) + pos, glm::vec2{ g.dx + g.dw, g.dy + g.dh } };
-			static_cast<Sprite::Vertex*>(buffer)[3] = { glm::rotate(glm::vec2{ g.xoffset, g.yoffset + g.height } * scale, rotation) + pos, glm::vec2{ g.dx, g.dy + g.dh } };
+			static_cast<Vertex*>(buffer)[0] = { glm::rotate(glm::vec2{ g.xoffset, g.yoffset } * scale, rotation) + pos, glm::vec2{ g.dx, g.dy } };
+			static_cast<Vertex*>(buffer)[1] = { glm::rotate(glm::vec2{ g.xoffset + g.width, g.yoffset } * scale, rotation) + pos, glm::vec2{ g.dx + g.dw, g.dy } };
+			static_cast<Vertex*>(buffer)[2] = { glm::rotate(glm::vec2{ g.xoffset + g.width, g.yoffset + g.height } * scale, rotation) + pos, glm::vec2{ g.dx + g.dw, g.dy + g.dh } };
+			static_cast<Vertex*>(buffer)[3] = { glm::rotate(glm::vec2{ g.xoffset, g.yoffset + g.height } * scale, rotation) + pos, glm::vec2{ g.dx, g.dy + g.dh } };
 
-			buffer = static_cast<Sprite::Vertex*>(buffer) + 4;
+			buffer = static_cast<Vertex*>(buffer) + 4;
 			x += g.advance * scale;
 			if (c == '\n') {
 				x = sx;

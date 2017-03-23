@@ -3,6 +3,8 @@ local input = {
 	on_create = function(self)
 		self.mx = 0
 		self.my = 0
+		self.dmx = 0
+		self.dmy = 0
 		self.buttons = {}
 		for i = 0, 31 do
 			self.buttons[i] = 0
@@ -15,9 +17,6 @@ local input = {
 
 	on_key_press = function(self, evt)
 		self.keys[evt.key] = evt.action
-		if evt.key == 82 and evt.action == 0 then
-			load_resources()
-		end
 		if evt.key == 256 and evt.action == 0 then
 			oak.sm:switch(oak.sm.menu)
 		end
@@ -28,6 +27,8 @@ local input = {
 	end,
 
 	on_mouse_move = function(self, evt)
+		self.dmx = evt.x - self.mx
+		self.dmy = evt.y - self.my
 		self.mx = evt.x
 		self.my = evt.y
 	end

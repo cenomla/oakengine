@@ -6,7 +6,7 @@
 
 #include "container.h"
 #include "graphics/renderable.h"
-#include "graphics/sprite.h"
+#include "graphics/vertex.h"
 #include "gl_buffer.h"
 #include "gl_material.h"
 #include "gl_vertex_array.h"

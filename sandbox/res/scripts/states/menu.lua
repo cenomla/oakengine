@@ -1,4 +1,4 @@
-local function make_button(layer, x, y, sprite, width, height, text)
+function make_button(layer, x, y, sprite, width, height, text, callback)
 	local b = oak.es:create_entity(layer, "button")
 	b:set_transform({ position = { x = x, y = y } })
 	b:set_sprite({ sprite = hash(sprite) })
@@ -11,6 +11,9 @@ local function make_button(layer, x, y, sprite, width, height, text)
 			offset = { x = 32.0, y = 6.0 }
 		})
 	end
+	if callback ~= nil then
+		b.callback = callback
+	end
 	return b
 end
 
@@ -18,20 +21,20 @@ local menu = {
 
 	on_start = function(self)
 		local e
-		e = make_button(2, 128.0, 128.0, "spr_menu_button", 160.0, 32.0, "Start Game")
+		e = make_button(2, 128.0, 128.0, "spr_button", 160.0, 32.0, "Start Game")
 		e.callback = function(b, button, action)
 			if action == 0 then
 				oak.sm:switch(oak.sm.game, false)
 			end
 		end
-		e = make_button(2, 128.0, 180.0, "spr_menu_button", 160.0, 32.0, "Load Game")
+		e = make_button(2, 128.0, 180.0, "spr_button", 160.0, 32.0, "Load Game")
 		e.callback = function(b, button, action)
 			if action == 0 then
 				oak.sm:switch(oak.sm.game, true)
 			end
 		end
-		e = make_button(2, 128.0, 232.0, "spr_menu_button", 160.0, 32.0, "Settings")
-		e = make_button(2, 128.0, 284.0, "spr_menu_button", 160.0, 32.0, "Quit Game")
+		e = make_button(2, 128.0, 232.0, "spr_button", 160.0, 32.0, "Settings")
+		e = make_button(2, 128.0, 284.0, "spr_button", 160.0, 32.0, "Quit Game")
 		e.callback = function(b, button, action)
 			if action == 0 then
 				oak.sm:switch(nil)

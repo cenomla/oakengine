@@ -16,6 +16,7 @@ local button = {
 	on_create = function(self)
 		self.active = false
 		self.callback = function(self, button, action) end
+		self.hover = false
 	end,
 
 	on_mouse_move = function(self, evt)
@@ -25,12 +26,14 @@ local button = {
 	
 
 		if point_intersects(tc, aabb, vmx) then
+			self.hover = true
 			if oak.input.buttons[0] ~= 0 or oak.input.buttons[1] ~= 0 then
 				self:set_sprite({ animframe_x = 1 })
 			else
 				self:set_sprite({ animframe_x = 2 })
 			end
 		else
+			self.hover = false
 			self:set_sprite({ animframe_x = 0 })
 		end
 	end,
@@ -41,7 +44,11 @@ local button = {
 		local vmx = oak.vs.transform_point(oak.vs.get_id(self:layer()), { x = oak.input.mx, y = oak.input.my })
 
 		if evt.action == 0 then
-			self:set_sprite({ animframe_x = 0 })
+			if self.hover then
+				self:set_sprite({ animframe_x = 2 })
+			else
+				self:set_sprite({ animframe_x = 0 })
+			end
 		end
 		if point_intersects(tc, aabb, vmx) then
 			if evt.action ~= 0 then

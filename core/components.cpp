@@ -35,6 +35,8 @@ namespace oak {
 		pup(puper, comp.sprite, info + ObjInfo{ "sprite" });
 		pup(puper, comp.animFrameX, info + ObjInfo{ "animframe_x" });
 		pup(puper, comp.animFrameY, info + ObjInfo{ "animframe_y" });
+		pup(puper, comp.scaleX, info + ObjInfo{ "scale_x" });
+		pup(puper, comp.scaleY, info + ObjInfo{ "scale_y" });
 	}
 
 	void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info) {

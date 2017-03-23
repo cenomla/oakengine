@@ -5,9 +5,9 @@
 #include <glm/glm.hpp>
 
 #include "config.h"
-#include "graphics/sprite.h"
 #include "graphics/font.h"
 #include "graphics/renderable.h"
+#include "graphics/sprite.h"
 #include "prefab.h"
 #include "resource.h"
 #include "entity.h"
@@ -33,13 +33,15 @@ namespace oak {
 	};
 
 	struct SpriteComponent : public graphics::Renderable {
+
 		Resource<graphics::Sprite> sprite{ 0 };
-		int animFrameX = 0;
-		int animFrameY = 0;
+		int animFrameX = 0, animFrameY = 0;
+		float scaleX = 1.0f, scaleY = 1.0f;
 
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 
-			sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale); 
+			sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scaleX * scale, scaleY * scale);
 		}
+
 		size_t getMaterialId() const override { return sprite.get().getMaterialId(); }
 		size_t getVertexCount() const override { return 4; }
 	};

@@ -20,9 +20,9 @@ namespace oak::graphics {
 		vbo_.create();
 		vbo_.bind();
 		vao_.attributeDescription(
-			{0, 0, sizeof(graphics::Sprite::Vertex)}, {
-				{0, 0, 2, offsetof(graphics::Sprite::Vertex, graphics::Sprite::Vertex::position)},
-				{0, 1, 2, offsetof(graphics::Sprite::Vertex, graphics::Sprite::Vertex::texCoords)},
+			{0, 0, sizeof(graphics::Vertex)}, {
+				{0, 0, 2, offsetof(graphics::Vertex, graphics::Vertex::position)},
+				{0, 1, 2, offsetof(graphics::Vertex, graphics::Vertex::texCoords)},
 			});
 		vbo_.unbind();
 
@@ -56,7 +56,7 @@ namespace oak::graphics {
 		//stream buffer
 		{
 			vbo_.bind();
-			vbo_.bufferData(glm::max(maxVertices_, vertexCount_) * sizeof(Sprite::Vertex), nullptr, GL_STREAM_DRAW);
+			vbo_.bufferData(glm::max(maxVertices_, vertexCount_) * sizeof(Vertex), nullptr, GL_STREAM_DRAW);
 			void *buffer = vbo_.map(GL_WRITE_ONLY);
 			//a batch is a range of object with the same material
 			size_t index = 0;
@@ -77,7 +77,7 @@ namespace oak::graphics {
 				}
 				//stream data
 				it.object->draw(buffer, it.position.x, it.position.y, it.rotation, it.scale);
-				buffer = static_cast<char*>(buffer) + it.object->getVertexCount() * sizeof(Sprite::Vertex);
+				buffer = static_cast<char*>(buffer) + it.object->getVertexCount() * sizeof(Vertex);
 
 				currentBatch.count += it.object->getVertexCount() / 4;
 				currentBatch.objectCount++;
