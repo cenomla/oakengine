@@ -8,7 +8,8 @@ local prefab = {
 	},
 	sprite = {
 		shared = true,
-		sprite = hash("spr_block")
+		sprite = hash("spr_block"),
+		layer = 0
 	},
 	occluder = {
 

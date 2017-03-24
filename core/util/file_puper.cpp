@@ -112,15 +112,10 @@ namespace oak {
 	}
 
 	void FilePuper::pup(Entity& data, const ObjInfo& info) {
-		uint64_t id = data.id();
-		uintptr_t m = reinterpret_cast<uintptr_t>(data.getManager());
 		if (io_ == PuperIo::OUT) {
-			fwrite(&id, sizeof(id), 1, file_);
-			fwrite(&m, sizeof(m), 1, file_);
+			fwrite(&data, sizeof(data), 1, file_);
 		} else {
-			fread(&id, sizeof(id), 1, file_);
-			fread(&m, sizeof(m), 1, file_);
-			data = { id, reinterpret_cast<EntityManager*>(m) };
+			fread(&data, sizeof(data), 1, file_);
 		}
 	}
 

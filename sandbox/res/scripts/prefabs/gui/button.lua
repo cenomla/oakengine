@@ -1,14 +1,15 @@
 require("util/collision")
 local prefab = {
 	transform = {
-		position = { z = 1.0 }
+		position = { }
 	},
 	aabb2d = {
 		offset = { x = 16.0, y = 16.0 },
 		half_extent = { x = 16.0, y = 16.0 }
 	},
 	sprite = {
-		sprite = hash("spr_gui_button")
+		sprite = hash("spr_gui_button"),
+		layer = 2
 	}
 }
 
@@ -22,7 +23,7 @@ local button = {
 	on_mouse_move = function(self, evt)
 		local tc = self:get_transform()
 		local aabb = self:get_aabb2d()
-		local vmx = oak.vs.transform_point(oak.vs.get_id(self:layer()), evt)
+		local vmx = oak.vs.transform_point(oak.vs.get_id(2), evt)
 	
 
 		if point_intersects(tc, aabb, vmx) then
@@ -41,7 +42,7 @@ local button = {
 		local tc = self:get_transform()
 		local aabb = self:get_aabb2d()
 
-		local vmx = oak.vs.transform_point(oak.vs.get_id(self:layer()), { x = oak.input.mx, y = oak.input.my })
+		local vmx = oak.vs.transform_point(oak.vs.get_id(2), { x = oak.input.mx, y = oak.input.my })
 
 		if evt.action == 0 then
 			if self.hover then

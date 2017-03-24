@@ -22,18 +22,21 @@ namespace oak {
 
 	class EntityManager : public System {
 	public:
-		EntityManager(Engine &engine);
+		EntityManager(Engine& engine);
 		
 		void destroy() override;
 
 		EntityManager(const EntityManager& other) = delete;
 		void operator=(const EntityManager& other) = delete;
 
-		Entity createEntity(uint8_t layer);
-		void destroyEntity(const Entity &entity);
-		void activateEntity(const Entity &entity);
-		void deactivateEntity(const Entity &entity);
-		bool isEntityActive(const Entity &entity) const;
+		Entity createEntity(float depth);
+		void destroyEntity(const Entity& entity);
+		void activateEntity(const Entity& entity);
+		void deactivateEntity(const Entity& entity);
+		bool isEntityActive(const Entity& entity) const;
+
+		float getEntityDepth(const Entity& entity) const;
+		void setEntityDepth(const Entity& entity, float depth);
 
 		void* addComponent(uint32_t idx, uint32_t tid);
 		void addComponent(uint32_t idx, uint32_t tid, void* ptr);
@@ -57,7 +60,7 @@ namespace oak {
 		template<class T>
 		void initComponentPool() {
 			size_t tid = util::type_id<Component, T>::id;
-			auto &pool = componentPools_[tid];
+			auto& pool = componentPools_[tid];
 			pool.allocator = { MemoryManager::inst().allocate(4000000), 4000000, sizeof(T) };
 			pool.proxy = { &pool.allocator, 4000000 };
 		}
@@ -85,10 +88,11 @@ namespace oak {
 
 		struct EntityAttribute {
 			std::array<void*, config::MAX_COMPONENTS> components{ nullptr };
+			oak::vector<bool> caches;
 			std::bitset<config::MAX_COMPONENTS> componentMask;
 			std::bitset<config::MAX_COMPONENTS> ownsMask;
 			std::bitset<2> flags;
-			oak::vector<bool> caches;
+			float depth;
 		};
 		//stores the generation of each entity
 		oak::vector<uint32_t> generation_;
@@ -108,18 +112,16 @@ namespace oak {
 
 	class Entity {
 	public:
-		Entity(uint64_t id, EntityManager *manager) 
-			: id_{ id }, manager_{ manager } {}
-		Entity(uint32_t index, uint32_t generation, uint8_t layer, EntityManager *manager) 
-			: id_{ static_cast<uint64_t>(index) | (static_cast<uint64_t>(generation) << 32) | (static_cast<uint64_t>(layer) << 56) }, manager_{ manager } {}
+		Entity(uint32_t index, uint32_t layer, EntityManager *manager)
+			: index_{ index }, layer_{ layer }, manager_{ manager } {}
 
-		bool operator==(const Entity& other) const { return id_ == other.id_ && manager_ == other.manager_; }
+		bool operator==(const Entity& other) const { return index_ == other.index_ && layer_ == other.layer_ && manager_ == other.manager_; }
 		bool operator!=(const Entity& other) const { return !operator==(other); }
 
-		inline uint32_t index() const { return static_cast<uint32_t>(id_ & ~(uint64_t{ 1 } << 32)); }
-		inline uint32_t generation() const { return static_cast<uint32_t>((id_ >> 32) & ~(uint64_t{ 1 } << 24)); }
-		inline uint32_t layer() const { return static_cast<uint32_t>((id_ >> 56) & ~(uint64_t{ 1 } << 8)); }
-		inline uint64_t id() const { return id_; }
+		inline uint32_t index() const { return index_; }
+		inline uint32_t layer() const { return layer_; }
+		inline float depth() const { return manager_->getEntityDepth(*this); }
+		inline void set_depth(float depth) { manager_->setEntityDepth(*this, depth); }
 
 		inline void activate() { manager_->activateEntity(*this); }
 		inline void deactivate() { manager_->deactivateEntity(*this); }
@@ -128,29 +130,29 @@ namespace oak {
 
 		template<typename T, typename... TArgs>
 		inline T& addComponent(TArgs&&... args) {
-			T* comp = static_cast<T*>(manager_->addComponent(index(), util::type_id<Component, T>::id));
+			T* comp = static_cast<T*>(manager_->addComponent(index_, util::type_id<Component, T>::id));
 			new (comp) T{std::forward<TArgs>(args)...};
 			return *static_cast<T*>(comp);
 		}
 
 		template<typename T>
 		inline void removeComponent() {
-			manager_->removeComponent(index(), util::type_id<Component, T>::id);
+			manager_->removeComponent(index_, util::type_id<Component, T>::id);
 		}
 
 		template<typename T>
 		inline T& getComponent() {
-			return *static_cast<T*>(manager_->getComponent(index(), util::type_id<Component, T>::id));
+			return *static_cast<T*>(manager_->getComponent(index_, util::type_id<Component, T>::id));
 		}
 
 		template<typename T>
 		inline const T& getComponent() const {
-			return *static_cast<const T*>(manager_->getComponent(index(), util::type_id<Component, T>::id));
+			return *static_cast<const T*>(manager_->getComponent(index_, util::type_id<Component, T>::id));
 		}
 
 		template<typename T>
 		inline bool hasComponent() const {
-			return manager_->hasComponent(index(), util::type_id<Component, T>::id);
+			return manager_->hasComponent(index_, util::type_id<Component, T>::id);
 		}
 
 		inline EntityManager* getManager() { return manager_; }
@@ -158,17 +160,18 @@ namespace oak {
 
 		
 	private:
-		uint64_t id_;
+		uint32_t index_;
+		uint32_t layer_;
 		EntityManager *manager_;
 	};
 
 	class EntityCache {
 	public:
-		void setOnAdd(const std::function<void (const Entity &e)> &func);
-		void setOnRemove(const std::function<void (const Entity &e)> &func);
+		void setOnAdd(const std::function<void (const Entity& e)>& func);
+		void setOnRemove(const std::function<void (const Entity& e)>& func);
 
-		void addEntity(const Entity &e);
-		void removeEntity(const Entity &e);
+		void addEntity(const Entity& e);
+		void removeEntity(const Entity& e);
 
 		inline oak::vector<Entity>& entities() { return entities_; }
 		inline const oak::vector<Entity>& entities() const { return entities_; }
@@ -185,8 +188,8 @@ namespace oak {
 	private:
 
 		oak::vector<Entity> entities_;
-		std::function<void (const Entity &e)> onAdd_;
-		std::function<void (const Entity &e)> onRemove_;
+		std::function<void (const Entity& e)> onAdd_;
+		std::function<void (const Entity& e)> onRemove_;
 
 		std::bitset<config::MAX_COMPONENTS> filter_;
 	};

@@ -338,14 +338,25 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//uint layer(entity)
-	static int c_entity_layer(lua_State *L) {
+	//float depth(entity)
+	static int c_entity_depth(lua_State *L) {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
-		pushValue(L, entity.layer());
+		pushValue(L, entity.depth());
 
 		return 1;
+	}
+
+	//void set_depth(entity, depth)
+	static int c_entity_setDepth(lua_State *L) {
+		Entity entity = toValue<Entity>(L, 1);
+		float depth = toValue<float>(L, 2);
+		lua_settop(L, 0);
+
+		entity.set_depth(depth);
+
+		return 0;
 	}
 
 	//bool active(entity)
@@ -358,9 +369,9 @@ namespace oak::luah {
 		return 1;
 	}
 
-	//entity_table create_entity(layer, name/table)
+	//entity_table create_entity(depth, name/table)
 	static int c_entityManager_createEntity(lua_State *L) {
-		uint8_t layer = static_cast<uint8_t>(toValue<uint32_t>(L, 1));
+		float depth = toValue<float>(L, 1);
 		lua_remove(L, 1);
 		
 		if (lua_isstring(L, 1)) { //create prefab instance
@@ -370,14 +381,14 @@ namespace oak::luah {
 			getField(L, LUA_REGISTRYINDEX, oak::string{ "_prefabs_." + name, oak::frameAllocator });
 			lua_setmetatable(L, -2);
 
-			pushValue(L, Engine::inst().getSystem<ResourceManager>().require<Prefab>(name).createInstance(layer));
+			pushValue(L, Engine::inst().getSystem<ResourceManager>().require<Prefab>(name).createInstance(depth));
 
 			lua_setfield(L, -2, "_id");
 		} else { //create prefabless entity
 			getField(L, LUA_REGISTRYINDEX, oak::string{ "entity", oak::frameAllocator });
 			lua_setmetatable(L, -2);
 
-			pushValue(L, Engine::inst().getSystem<EntityManager>().createEntity(layer));
+			pushValue(L, Engine::inst().getSystem<EntityManager>().createEntity(depth));
 
 			lua_setfield(L, -2, "_id");
 		}
@@ -556,7 +567,8 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
 		addFunctionToMetatable(L, "entity", "index", c_entity_index);
-		addFunctionToMetatable(L, "entity", "layer", c_entity_layer);
+		addFunctionToMetatable(L, "entity", "depth", c_entity_depth);
+		addFunctionToMetatable(L, "entity", "set_depth", c_entity_setDepth);
 		addFunctionToMetatable(L, "entity", "is_active", c_entity_active);
 
 		addFunctionToMetatable(L, "entity", "add_transform", c_entity_addComponent<TransformComponent>);

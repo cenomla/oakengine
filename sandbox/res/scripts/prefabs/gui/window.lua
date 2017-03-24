@@ -8,8 +8,8 @@ local prefab = {
 	},
 	sprite = {
 		sprite = hash("spr_window"),
-		scale_x = 512.0,
-		scale_y = 288.0
+		scale = { x = 512.0, y = 288.0 },
+		layer = 2
 	}
 }
 
@@ -17,18 +17,18 @@ local window = {
 	active = {},
 	on_create = function(self)
 		self.children = {}
-		self.title = oak.es:create_entity(2, oak.es.depths[self:index() + 1] + 0.1, "title_bar")
-		self.close = make_button(2, oak.es.depths[self:index() + 1] + 0.2, 520.0, 8.0, "spr_button", 32.0, 32.0, nil, 
+		self.title = oak.es:create_entity(self:depth() + 0.1, "title_bar")
+		self.close = make_button(self:depth() + 0.2, 520.0, 8.0, "spr_button", 32.0, 32.0, nil, 
 			function(b, button, action) if button == 0 and action == 0 then self:deactivate() end end)
 		self.padding = 8
 	end,
 	update_children = function(self)
 		local tc = self:get_transform()
 		local aabb = self:get_aabb2d()
-		self.title:set_transform({ position = { x = tc.position.x, y = tc.position.y, z = tc.position.z + 1.0 } })
-		self.close:set_transform({ position = { x = tc.position.x + 488.0, y = tc.position.y - 8.0, z = tc.position.z + 1.0 } })
-		oak.es:set_depth(self.title, oak.es.depths[self:index() + 1] + 0.1)
-		oak.es:set_depth(self.close, oak.es.depths[self:index() + 1] + 0.2)
+		self.title:set_transform({ position = { x = tc.position.x, y = tc.position.y } })
+		self.close:set_transform({ position = { x = tc.position.x + 488.0, y = tc.position.y - 8.0 } })
+		self.title:set_depth(self:depth() + 0.1)
+		self.close:set_depth(self:depth() + 0.2)
 		local x = self.padding
 		local y = self.padding + 16.0
 		local lh = 0
@@ -48,9 +48,8 @@ local window = {
 
 			ctc.position.x = tc.position.x + x
 			ctc.position.y = tc.position.y + y
-			ctc.position.z = tc.position.z + 1.0
 			v:set_transform(ctc)
-			oak.es:set_depth(v, oak.es.depths[self:index() + 1] + 0.1)
+			v:set_depth(self:depth() + 0.1)
 
 			x = x + caabb.half_extent.x * 2 + self.padding
 
@@ -61,7 +60,7 @@ local window = {
 		if oak.input.buttons[0] ~= 0 then
 			local tc = self.title:get_transform()
 			local aabb = self.title:get_aabb2d()
-			local vmx = oak.vs.transform_point(oak.vs.get_id(self:layer()), { x = evt.x - oak.input.dmx, y = evt.y - oak.input.dmy })
+			local vmx = oak.vs.transform_point(oak.vs.get_id(2), { x = evt.x - oak.input.dmx, y = evt.y - oak.input.dmy })
 
 			if point_intersects(tc, aabb, vmx) then
 				tc = self:get_transform()
@@ -74,7 +73,7 @@ local window = {
 	on_button_press = function(self, evt)
 		local tc = self:get_transform()
 		local aabb = self:get_aabb2d()
-		local vmx = oak.vs.transform_point(oak.vs.get_id(self:layer()), { x = oak.input.mx, y = oak.input.my })
+		local vmx = oak.vs.transform_point(oak.vs.get_id(2), { x = oak.input.mx, y = oak.input.my })
 		if point_intersects(tc, aabb, vmx) then
 			self.active = self
 			return true --capture event

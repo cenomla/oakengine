@@ -8,8 +8,8 @@ namespace oak {
 		clear();
 	}
 
-	Entity Prefab::createInstance(uint8_t layer) const {
-		Entity entity = manager_->createEntity(layer);
+	Entity Prefab::createInstance(float depth) const {
+		Entity entity = manager_->createEntity(depth);
 		const auto& chs = Engine::inst().getSystem<ComponentHandleStorage>();
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];

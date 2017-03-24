@@ -7,13 +7,13 @@
 
 namespace oak {
 
-	EntityManager::EntityManager(Engine &engine) : System{ engine, "entity_manager" } {}
+	EntityManager::EntityManager(Engine& engine) : System{ engine, "entity_manager" } {}
 
 	void EntityManager::destroy() {
 		reset();
 	}
 
-	Entity EntityManager::createEntity(uint8_t layer) {
+	Entity EntityManager::createEntity(float depth) {
 		uint32_t idx;
 		if (freeIndices_.size() > 1024) {
 			idx = freeIndices_.front();
@@ -23,32 +23,41 @@ namespace oak {
 			generation_.push_back(0);
 		}
 
-		entities_.alive.emplace_back(idx, generation_[idx], layer, this);
+		entities_.alive.emplace_back(idx, 0, this);
 		entityAttributes_.resize(idx + 1);
+		entityAttributes_[idx].depth = depth;
 		return entities_.alive.back();
 	}
 
-	void EntityManager::destroyEntity(const Entity &entity) {
+	void EntityManager::destroyEntity(const Entity& entity) {
 		entities_.deactivated.push_back(entity);
 		entities_.killed.push_back(entity);
 	}
 
-	void EntityManager::activateEntity(const Entity &entity) {
+	void EntityManager::activateEntity(const Entity& entity) {
 		Engine::inst().getEventManager().emitEvent(EntityActivateEvent{ entity });
 		entities_.activated.push_back(entity);
 	}
 
-	void EntityManager::deactivateEntity(const Entity &entity) {
+	void EntityManager::deactivateEntity(const Entity& entity) {
 		Engine::inst().getEventManager().emitEvent(EntityDeactivateEvent{ entity });
 		entities_.deactivated.push_back(entity);
 	}
 
-	bool EntityManager::isEntityActive(const Entity &entity) const {
+	bool EntityManager::isEntityActive(const Entity& entity) const {
 		return entityAttributes_[entity.index()].flags[0];
 	}
 
+	float EntityManager::getEntityDepth(const Entity& entity) const {
+		return entityAttributes_[entity.index()].depth;
+	}
+
+	void EntityManager::setEntityDepth(const Entity& entity, float depth) {
+		entityAttributes_[entity.index()].depth = depth;
+	}
+
 	void* EntityManager::addComponent(uint32_t idx, uint32_t tid) {
-		auto &attribute = entityAttributes_[idx];
+		auto& attribute = entityAttributes_[idx];
 		
 		if (attribute.ownsMask[tid]) {
 			removeComponent(idx, tid);
@@ -62,7 +71,7 @@ namespace oak {
 	}
 
 	void EntityManager::addComponent(uint32_t idx, uint32_t tid, void *ptr) {
-		auto &attribute = entityAttributes_[idx];
+		auto& attribute = entityAttributes_[idx];
 		if (attribute.ownsMask[tid]) {
 			removeComponent(idx, tid);
 			deleteComponent(idx, tid);
@@ -72,7 +81,7 @@ namespace oak {
 	}
 
 	void EntityManager::removeComponent(uint32_t idx, uint32_t tid) {
-		auto &attribute = entityAttributes_[idx];
+		auto& attribute = entityAttributes_[idx];
 		if (attribute.componentMask[tid] && attribute.ownsMask[tid]) {
 			Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->destruct(attribute.components[tid]);
 		}
@@ -114,15 +123,15 @@ namespace oak {
 	void EntityManager::update() {
 		oak::unordered_map<size_t, EntityCache*> cachesToSort;
 		//remove all entities to remove
-		for (auto &e : entities_.activated) {
-			auto &attribute = entityAttributes_[e.index()];
+		for (auto& e : entities_.activated) {
+			auto& attribute = entityAttributes_[e.index()];
 			attribute.flags[0] = true;
 
 			//add entity to relavent caches
-			for (auto &s : caches_) {
+			for (auto& s : caches_) {
 				size_t sysType = s.first;
 
-				EntityCache &sys = *s.second;
+				EntityCache& sys = *s.second;
 				//if the entity has all the components that the system requires then add it to the system
 				if ((sys.getFilter() & attribute.componentMask) == sys.getFilter()) {
 					if (sysType >= attribute.caches.size() || !attribute.caches[sysType]) {
@@ -143,18 +152,18 @@ namespace oak {
 
 		}
 
-		for (auto &sys : cachesToSort) {
+		for (auto& sys : cachesToSort) {
 			sys.second->sort();
 		}
 
-		for (auto &e : entities_.deactivated) {
-			auto &attribute = entityAttributes_[e.index()];
+		for (auto& e : entities_.deactivated) {
+			auto& attribute = entityAttributes_[e.index()];
 			attribute.flags[0] = false;
 
-			for (auto &s : caches_) {
+			for (auto& s : caches_) {
 				size_t sysType = s.first;
 
-				EntityCache &sys = *s.second;
+				EntityCache& sys = *s.second;
 				//if the entity is apart of a system then remove it
 				if (attribute.caches.size() > sysType && attribute.caches[sysType]) {
 					sys.removeEntity(e);
@@ -163,7 +172,7 @@ namespace oak {
 			}
 		}
 
-		for (auto &e : entities_.killed) {
+		for (auto& e : entities_.killed) {
 			size_t idx = e.index();
 			//remove all the entities components
 			removeAllComponents(idx);
@@ -180,13 +189,13 @@ namespace oak {
 	}
 
 	void EntityManager::reset() {
-		for (auto &e : entities_.alive) {
+		for (auto& e : entities_.alive) {
 			removeAllComponents(e.index());
 		}
-		for (auto &s : caches_) {
+		for (auto& s : caches_) {
 			s.second->clearEntities();
 		}
-		for (auto &a : entityAttributes_) {
+		for (auto& a : entityAttributes_) {
 			a.flags.reset();
 			a.caches.clear();
 		}
@@ -196,11 +205,11 @@ namespace oak {
 	}
 
 	void EntityManager::enable() {
-		for (auto &entity : entities_.alive) {
-			auto &attribute = entityAttributes_[entity.index()];
+		for (auto& entity : entities_.alive) {
+			auto& attribute = entityAttributes_[entity.index()];
 			//if the entity is supposed to be active then add it to the appropriate caches
 			if (attribute.flags[0]) {
-				for (auto &system : caches_) {
+				for (auto& system : caches_) {
 					if (attribute.caches[system.first]) {
 						system.second->addEntity(entity);
 					}
@@ -210,9 +219,9 @@ namespace oak {
 	}
 
 	void EntityManager::disable() {
-		for (auto &entity : entities_.alive) {
-			auto &attribute = entityAttributes_[entity.index()];
-			for (auto &system : caches_) {
+		for (auto& entity : entities_.alive) {
+			auto& attribute = entityAttributes_[entity.index()];
+			for (auto& system : caches_) {
 				//if the entity is apart of the system remove it but do not set its inactive flag
 				if (attribute.caches[system.first]) {
 					system.second->removeEntity(entity);
@@ -225,22 +234,22 @@ namespace oak {
 		caches_.insert({caches_.size(), cache});
 	}
 
-	void EntityCache::setOnAdd(const std::function<void (const Entity &e)> &func) {
+	void EntityCache::setOnAdd(const std::function<void (const Entity& e)>& func) {
 		onAdd_ = func;
 	}
 
-	void EntityCache::setOnRemove(const std::function<void (const Entity &e)> &func) {
+	void EntityCache::setOnRemove(const std::function<void (const Entity& e)>& func) {
 		onRemove_ = func;
 	}
 
-	void EntityCache::addEntity(const Entity &e) {
+	void EntityCache::addEntity(const Entity& e) {
 		entities_.push_back(e);
 		if (onAdd_) {
 			onAdd_(e);
 		}
 	}
 
-	void EntityCache::removeEntity(const Entity &e) {
+	void EntityCache::removeEntity(const Entity& e) {
 		if (onRemove_) {
 			onRemove_(e);
 		}
@@ -248,7 +257,7 @@ namespace oak {
 	}
 
 	void EntityCache::sort() {
-		std::sort(std::begin(entities_), std::end(entities_), [](const Entity &first, const Entity &second) -> bool {
+		std::sort(std::begin(entities_), std::end(entities_), [](const Entity& first, const Entity& second) -> bool {
 			return first.index() < second.index();
 		});
 	}

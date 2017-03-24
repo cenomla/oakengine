@@ -23,6 +23,7 @@ namespace oak {
 		pup(puper, comp.font, info + ObjInfo{ "font" });
 		pup(puper, comp.text, info + ObjInfo{ "text" });
 		pup(puper, comp.offset, info + ObjInfo{ "offset" });
+		pup(puper, comp.layer, info + ObjInfo{ "layer" });
 		pup(puper, comp.size, info + ObjInfo{ "size" });
 	}
 
@@ -33,10 +34,10 @@ namespace oak {
 
 	void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info) {
 		pup(puper, comp.sprite, info + ObjInfo{ "sprite" });
+		pup(puper, comp.scale, info + ObjInfo{ "scale" });
 		pup(puper, comp.animFrameX, info + ObjInfo{ "animframe_x" });
 		pup(puper, comp.animFrameY, info + ObjInfo{ "animframe_y" });
-		pup(puper, comp.scaleX, info + ObjInfo{ "scale_x" });
-		pup(puper, comp.scaleY, info + ObjInfo{ "scale_y" });
+		pup(puper, comp.layer, info + ObjInfo{ "layer" });
 	}
 
 	void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info) {

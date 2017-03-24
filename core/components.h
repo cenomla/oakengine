@@ -35,11 +35,12 @@ namespace oak {
 	struct SpriteComponent : public graphics::Renderable {
 
 		Resource<graphics::Sprite> sprite{ 0 };
+		glm::vec2 scale{ 1.0f };
 		int animFrameX = 0, animFrameY = 0;
-		float scaleX = 1.0f, scaleY = 1.0f;
+		uint32_t layer = 0;
 
-		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 
-			sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scaleX * scale, scaleY * scale);
+		void draw(void *buffer, float x, float y, float rotation, float s) const override { 
+			sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale.x * s, scale.y * s);
 		}
 
 		size_t getMaterialId() const override { return sprite.get().getMaterialId(); }
@@ -50,6 +51,7 @@ namespace oak {
 		Resource<graphics::Font> font{ 0 };
 		oak::string text{ "" };
 		glm::vec2 offset{ 0.0f };
+		uint32_t layer = 0;
 		float size = 24.0f;
 
 		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 

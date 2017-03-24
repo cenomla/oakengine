@@ -14,7 +14,7 @@ namespace oak {
 		Prefab(EntityManager *manager);
 		~Prefab();
 
-		Entity createInstance(uint8_t layer) const;
+		Entity createInstance(float depth) const;
 
 		template <class T, typename... TArgs>
 		T* addComponent(bool shared, TArgs&&... args) {

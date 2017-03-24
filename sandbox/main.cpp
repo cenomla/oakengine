@@ -80,6 +80,8 @@ int main(int argc, char** argv) {
 	oak::Engine engine;
 	engine.init();
 
+	log_print_out("sizeof(Entity): %u", sizeof(oak::Entity));
+
 	//create all the systems
 	oak::Window window{ engine, oak::Window::GL_CONTEXT };
 	oak::LuaManager luam{ engine };

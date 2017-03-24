@@ -7,7 +7,8 @@ local prefab = {
 		offset = { x = 256.0, y = 8.0 }
 	},
 	sprite = {
-		sprite = hash("spr_title_bar")
+		sprite = hash("spr_title_bar"),
+		layer = 2
 	}
 }
 

@@ -17,9 +17,10 @@ namespace oak::save {
 			puper.setIo(PuperIo::IN);
 		}
 
-		//stream entity id
-		uint64_t id = data.id();
-		pup(puper, id, ObjInfo{ "id" });
+		//stream entity depth
+		float depth = data.depth();
+		pup(puper, depth, ObjInfo{ "depth" });
+		data.set_depth(depth);
 		//calculate number of components and stream it
 		size_t ncomp = 0;
 		for (size_t i = 0; i < config::MAX_COMPONENTS; i++) {

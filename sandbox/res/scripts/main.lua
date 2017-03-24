@@ -1,7 +1,7 @@
 package.path = "sandbox/res/scripts/?.lua;sandbox/res/scripts/?/init.lua" .. package.path
 
 
-oak.input = oak.es:create_entity(2, 100000000.0, require("input"))
+oak.input = oak.es:create_entity(100000000.0, require("input"))
 
 function load_resources()
 

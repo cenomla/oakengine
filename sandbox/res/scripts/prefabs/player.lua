@@ -8,7 +8,8 @@ local prefab = {
 	},
 	sprite = {
 		shared = true,
-		sprite = hash("spr_player")
+		sprite = hash("spr_player"),
+		layer = 0
 	},
 	light = {
 		size = 512
@@ -32,7 +33,8 @@ local prefab = {
 		font = hash("fnt_dejavu"),
 		text = "Player",
 		offset = { x = -24.0, y = -24.0 },
-		size = 12.0
+		size = 12.0,
+		layer = 0
 	}
 }
 
