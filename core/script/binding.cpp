@@ -619,7 +619,17 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "oak", "load_prefab", c_resource_load_prefab);
 		addFunctionToMetatable(L, "oak", "debug_get_vars", c_debug_getVars);
 		addFunctionToMetatable(L, "oak", "memory_string", c_memory_getString);
-		addFunctionToMetatable(L, "oak", "quit", c_quit);
+
+		addFunctionToMetatable(L, "oak", "emit_quit_event", c_emitEvent<QuitEvent>);
+		addFunctionToMetatable(L, "oak", "emit_key_event", c_emitEvent<KeyEvent>);
+		addFunctionToMetatable(L, "oak", "emit_button_event", c_emitEvent<ButtonEvent>);
+		addFunctionToMetatable(L, "oak", "emit_mouse_move_event", c_emitEvent<MouseMoveEvent>);
+		addFunctionToMetatable(L, "oak", "emit_character_event", c_emitEvent<CharEvent>);
+
+		addFunctionToMetatable(L, "oak", "emit_entity_create_event", c_emitEvent<EntityCreateEvent>);
+		addFunctionToMetatable(L, "oak", "emit_entity_destroy_event", c_emitEvent<EntityDestroyEvent>);
+		addFunctionToMetatable(L, "oak", "emit_entity_activate_event", c_emitEvent<EntityActivateEvent>);
+		addFunctionToMetatable(L, "oak", "emit_entity_deactivate_event", c_emitEvent<EntityDeactivateEvent>);		
 
 		addFunctionToMetatable(L, "view_system", "transform_point", c_view_transformPoint);
 		addFunctionToMetatable(L, "view_system", "get_id", c_view_getId);

@@ -3,6 +3,7 @@
 #include "script/luah.h"
 #include "script/lua_puper.h"
 #include "entity.h"
+#include "engine.h"
 
 namespace oak {
 namespace luah {
@@ -76,6 +77,21 @@ namespace luah {
 		lua_pushboolean(L, has);
 
 		return 1;
+	}
+
+	template<class T>
+	int c_emitEvent(lua_State *L) {
+		T evt;
+
+		LuaPuper puper{ L, 1 };
+		puper.setIo(PuperIo::IN);
+		pup(puper, evt, {});
+
+		lua_settop(L, 0);
+
+		Engine::inst().getEventManager().emitEvent(evt);
+
+		return 0;
 	}
 
 

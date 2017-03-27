@@ -10,6 +10,8 @@
 
 namespace oak {
 
+	struct QuitEvent;
+
 	class Engine {
 	public:
 		inline static Engine& inst() { oak_assert(INST != nullptr); return *INST; }

@@ -8,11 +8,12 @@
 
 #include "container.h"
 #include "event_queue.h"
-#include "events.h"
 #include "worker.h"
 #include "task.h"
 
 namespace oak {
+
+	struct TaskCompleteEvent;
 
 	class TaskManager {
 	public:

@@ -4,6 +4,7 @@
 #include <task_manager.h>
 #include <worker.h>
 #include <task.h>
+#include <events.h>
 
 using namespace oak;
 

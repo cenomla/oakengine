@@ -19,7 +19,7 @@ local menu = {
 		function(b, button, action)
 			if action == 0 then
 				oak.sm:switch(nil)
-				oak.quit()
+				oak.emit_quit_event()
 			end
 		end)
 	end,

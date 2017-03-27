@@ -45,6 +45,14 @@ namespace oak {
 		int height;
 	};
 
+	struct EntityCreateEvent {
+		Entity entity;
+	};
+
+	struct EntityDestroyEvent {
+		Entity entity;
+	};
+
 	struct EntityActivateEvent {
 		Entity entity;
 	};
@@ -80,6 +88,8 @@ namespace oak {
 	void pup(Puper& puper, ButtonEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, MouseMoveEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, CharEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, EntityCreateEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, EntityDestroyEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, EntityActivateEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, EntityDeactivateEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, EntityCollisionEvent& data, const ObjInfo& info);

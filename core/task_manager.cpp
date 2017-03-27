@@ -6,6 +6,7 @@
 #include <limits>
 
 #include "engine.h"
+#include "events.h"
 
 namespace oak {
 

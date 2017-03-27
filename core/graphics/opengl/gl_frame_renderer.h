@@ -1,9 +1,12 @@
 #pragma once
 
 #include "system.h"
-#include "events.h"
 
 struct GLFWwindow;
+
+namespace oak {
+	struct WindowResizeEvent;
+}
 
 namespace oak::graphics {
 

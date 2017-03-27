@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include "engine.h"
+#include "events.h"
 #include "log.h"
 
 namespace oak::graphics {

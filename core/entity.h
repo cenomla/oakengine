@@ -116,6 +116,7 @@ namespace oak {
 
 	class Entity {
 	public:
+		Entity() = default;
 		Entity(uint64_t index, EntityManager *manager)
 			: index_{ index }, manager_{ manager } {}
 
