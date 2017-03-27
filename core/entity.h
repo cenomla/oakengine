@@ -29,7 +29,11 @@ namespace oak {
 		EntityManager(const EntityManager& other) = delete;
 		void operator=(const EntityManager& other) = delete;
 
+		Entity createEntity(uint64_t idx);
+		Entity convertEntity(const Entity& entity);
+
 		Entity createEntity(float depth);
+
 		void destroyEntity(const Entity& entity);
 		void activateEntity(const Entity& entity);
 		void deactivateEntity(const Entity& entity);
@@ -38,22 +42,19 @@ namespace oak {
 		float getEntityDepth(const Entity& entity) const;
 		void setEntityDepth(const Entity& entity, float depth);
 
-		void* addComponent(uint32_t idx, uint32_t tid);
-		void addComponent(uint32_t idx, uint32_t tid, void* ptr);
-		void removeComponent(uint32_t idx, uint32_t tid);
-		void deleteComponent(uint32_t idx, uint32_t tid);
-		void removeAllComponents(uint32_t idx);
+		void* addComponent(uint64_t idx, size_t tid);
+		void addComponent(uint64_t idx, size_t tid, void* ptr);
+		void removeComponent(uint64_t idx, size_t tid);
+		void deleteComponent(uint64_t idx, size_t tid);
+		void removeAllComponents(uint64_t idx);
 
-		void* getComponent(uint32_t idx, uint32_t tid);
-		const void* getComponent(uint32_t idx, uint32_t tid) const;
-		bool hasComponent(uint32_t idx, uint32_t tid) const;
-		bool ownsComponent(uint32_t idx, uint32_t tid) const;
+		void* getComponent(uint64_t idx, size_t tid);
+		const void* getComponent(uint64_t idx, size_t tid) const;
+		bool hasComponent(uint64_t idx, size_t tid) const;
+		bool ownsComponent(uint64_t idx, size_t tid) const;
 
 		void update();
 		void reset();
-
-		void disable();
-		void enable();
 
 		void addCache(EntityCache *system);
 
@@ -91,17 +92,20 @@ namespace oak {
 			oak::vector<bool> caches;
 			std::bitset<config::MAX_COMPONENTS> componentMask;
 			std::bitset<config::MAX_COMPONENTS> ownsMask;
-			std::bitset<2> flags;
-			float depth;
+			std::bitset<2> flags; //active, alive
+			uint32_t layer = 0;
+			float depth = 0.0f;
 		};
 		//stores the generation of each entity
-		oak::vector<uint32_t> generation_;
+		oak::vector<uint64_t> generation_;
 		//stores the indices free for reuse
-		oak::deque<uint32_t> freeIndices_;
+		oak::deque<uint64_t> freeIndices_;
 		//stores all of the entities metadata
 		oak::vector<EntityAttribute> entityAttributes_;
 		//stores all the systems for entity caching
 		oak::unordered_map<uint32_t, EntityCache*> caches_;
+		//converting of previous indices to current onces
+		oak::vector<uint64_t> idxConverter_;
 
 		struct ComponentPool {
 			OakAllocator<void> proxy{ nullptr };
@@ -112,15 +116,15 @@ namespace oak {
 
 	class Entity {
 	public:
-		Entity(uint32_t index, uint32_t layer, EntityManager *manager)
-			: index_{ index }, layer_{ layer }, manager_{ manager } {}
+		Entity(uint64_t index, EntityManager *manager)
+			: index_{ index }, manager_{ manager } {}
 
-		bool operator==(const Entity& other) const { return index_ == other.index_ && layer_ == other.layer_ && manager_ == other.manager_; }
+		bool operator==(const Entity& other) const { return index_ == other.index_ && manager_ == other.manager_; }
 		bool operator!=(const Entity& other) const { return !operator==(other); }
 
-		inline uint32_t index() const { return index_; }
-		inline uint32_t layer() const { return layer_; }
-		inline float depth() const { return manager_->getEntityDepth(*this); }
+		inline uint64_t index() const { return index_; }
+		
+		inline float get_depth() const { return manager_->getEntityDepth(*this); }
 		inline void set_depth(float depth) { manager_->setEntityDepth(*this, depth); }
 
 		inline void activate() { manager_->activateEntity(*this); }
@@ -160,8 +164,7 @@ namespace oak {
 
 		
 	private:
-		uint32_t index_;
-		uint32_t layer_;
+		uint64_t index_;
 		EntityManager *manager_;
 	};
 

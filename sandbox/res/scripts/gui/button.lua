@@ -7,14 +7,14 @@ local button = {
 		if active then ay = 1 end
 		self:set_sprite({ animframe_y = ay })
 		self.active = active
-		if self.callback ~= nil then 
+		if self.callback ~= nil then
 			self:callback(active)
 		end
 	end,
 	toggle_active = function(self, active)
 		if not self.active then
 			self:set_active(true)
-		else 
+		else
 			self:set_active(false)
 		end
 	end,
@@ -39,7 +39,6 @@ local button = {
 				return true
 			end
 		end
-		
 	end
 
 }

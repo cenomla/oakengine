@@ -45,7 +45,7 @@ oak.load_atlas({
 		"res::textures/tiles"
 	},
 	extent = {
-		x = 80, 
+		x = 80,
 		y = 64
 	},
 	flags = 0
@@ -56,7 +56,8 @@ oak.load_atlas({
 	textures = {
 		"res::textures/gui/button",
 		"res::textures/gui/window",
-		"res::textures/gui/title_bar"
+		"res::textures/gui/title_bar",
+		"res::textures/gui/pencil"
 	},
 	extent = {
 		x = 1024,
@@ -137,6 +138,16 @@ oak.load_sprite({
 })
 
 oak.load_sprite({
+	name = "spr_pencil",
+	material = "mat_gui",
+	extent = { x = 32.0, y = 32.0 },
+	atlas = "atlas_gui",
+	path = "res::textures/gui/pencil",
+	animframes_x = 3,
+	animframes_y = 2
+})
+
+oak.load_sprite({
 	name = "spr_window",
 	material = "mat_gui",
 	extent = { x = 1.0, y = 1.0 },
@@ -147,10 +158,12 @@ oak.load_sprite({
 oak.load_sprite({
 	name = "spr_title_bar",
 	material = "mat_gui",
-	extent = { x = 512, y = 16.0 },
+	extent = { x = 1.0, y = 1.0 },
 	atlas = "atlas_gui",
 	path = "res::textures/gui/title_bar"
 })
+
+
 
 package.loaded['prefabs/player'] = nil
 package.loaded['prefabs/block'] = nil

@@ -63,8 +63,8 @@ local entity_system = {
 
 	send_message = function(self, event_name, e, ...)
 		e = self:get_entity(e)
-		if self.is_valid(e) and e[event_name] then 
-			e[event_name](e, ...) 
+		if self.is_valid(e) and e[event_name] then
+			e[event_name](e, ...)
 		end
 	end,
 
@@ -81,7 +81,7 @@ local entity_system = {
 			end
 
 			--sort entities
-			table.sort(self.sorted_entities, function(e, o) 
+			table.sort(self.sorted_entities, function(e, o)
 				return e:depth() > o:depth()
 			end)
 			self.needs_sort = true

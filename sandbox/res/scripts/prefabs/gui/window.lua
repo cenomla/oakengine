@@ -14,20 +14,26 @@ local prefab = {
 }
 
 local window = {
-	active = {},
+	active = false,
 	on_create = function(self)
 		self.children = {}
 		self.title = oak.es:create_entity(self:depth() + 0.1, "title_bar")
-		self.close = make_button(self:depth() + 0.2, 520.0, 8.0, "spr_button", 32.0, 32.0, nil, 
+		self.close = make_button(self:depth() + 0.2, 520.0, 8.0, "spr_button", 32.0, 32.0, nil,
 			function(b, button, action) if button == 0 and action == 0 then self:deactivate() end end)
 		self.padding = 8
 	end,
 	update_children = function(self)
 		local tc = self:get_transform()
 		local aabb = self:get_aabb2d()
+		local sprite = self:get_sprite()
+		local width = sprite.scale.x
+		local height = sprite.scale.y
+		self:set_aabb2d({ offset = { x = width / 2, y = height / 2 }, half_extent = { x = width / 2, y = height / 2 } })
 		self.title:set_transform({ position = { x = tc.position.x, y = tc.position.y } })
-		self.close:set_transform({ position = { x = tc.position.x + 488.0, y = tc.position.y - 8.0 } })
+		self.title:set_aabb2d({ offset = { x = width / 2 }, half_extent = { x = width / 2 } })
+		self.title:set_sprite({ scale = { x = width } })
 		self.title:set_depth(self:depth() + 0.1)
+		self.close:set_transform({ position = { x = tc.position.x + width - 24.0, y = tc.position.y - 8.0 } })
 		self.close:set_depth(self:depth() + 0.2)
 		local x = self.padding
 		local y = self.padding + 16.0
@@ -75,6 +81,14 @@ local window = {
 		local aabb = self:get_aabb2d()
 		local vmx = oak.vs.transform_point(oak.vs.get_id(2), { x = oak.input.mx, y = oak.input.my })
 		if point_intersects(tc, aabb, vmx) then
+			if evt.action ~= 0 and self.active ~= self then
+				--swap depth
+				local d = self:depth()
+				self:set_depth(self.active:depth())
+				self.active:set_depth(d)
+				self.active:update_children()
+				self:update_children()
+			end
 			self.active = self
 			return true --capture event
 		end

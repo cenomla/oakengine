@@ -2,11 +2,10 @@ require("util/io")
 local game = {
 
 	on_start = function(self, load)
-		self.window = oak.es:create_entity(10.0, "window")
-		local win = oak.es:create_entity(20.0, "window")
-		win:set_transform({ position = { x = 128.0, y = 64.0 } })
-		win:update_children()
-		table.insert(self.window.children, make_button(0.0, 0, 0, "spr_button", 128, 32, "Reload", 
+		self.window = make_window(10.0, 32.0, 32.0, 160.0, 256.0, "Things")
+		self.window.active = make_tile_editor(make_window(20.0, 64.0, 256.0, 256.0, 256.0, "Tile Editor"))
+
+		table.insert(self.window.children, make_button(0.0, 0, 0, "spr_button", 128, 32, "Reload",
 			function(b, button, action) if action == 0 then load_resources() end end))
 		table.insert(self.window.children, make_button(0.0, 0, 0, "spr_button", 96, 32, "Save",
 			function(b, button, action) if action == 0 then self:save() end end))
@@ -16,13 +15,14 @@ local game = {
 		table.insert(self.window.children, make_button(0.0, 0, 0, "spr_button", 96, 32, "Exit",
 			function(b, button, action) if action == 0 then oak.sm:switch(oak.sm.menu) end end))
 		self.window:update_children()
+
 		self.player = oak.es:create_entity(0.0, "player")
 		self.block1 = oak.es:create_entity(0.0, "block")
 		self.block2 = oak.es:create_entity(0.0, "block")
 		if load then
 			self:load()
 		else
-			self.block2:set_transform({ position = { x = 512, y = 496 } }) 
+			self.block2:set_transform({ position = { x = 512, y = 496 } })
 		end
 	end,
 
@@ -52,7 +52,7 @@ local game = {
 		if oak.save.is_open() then
 			print("loading save")
 			oak.save.close()
-		else 
+		else
 			print("save doesnt exist")
 			return
 		end

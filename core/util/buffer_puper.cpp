@@ -106,10 +106,9 @@ namespace oak {
 	void BufferPuper::pup(Entity& data, const ObjInfo& info) {
 		if (io_ == PuperIo::OUT) {
 			buffer_->write(data.index());
-			buffer_->write(data.layer());
 			buffer_->write(reinterpret_cast<uintptr_t>(data.getManager()));
 		} else {
-			data = { buffer_->read<uint32_t>(), buffer_->read<uint32_t>(), reinterpret_cast<EntityManager*>(buffer_->read<uintptr_t>()) };
+			data = { buffer_->read<uint64_t>(), reinterpret_cast<EntityManager*>(buffer_->read<uintptr_t>()) };
 		}
 	}
 

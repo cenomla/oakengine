@@ -18,7 +18,7 @@ namespace oak::save {
 		}
 
 		//stream entity depth
-		float depth = data.depth();
+		float depth = data.get_depth();
 		pup(puper, depth, ObjInfo{ "depth" });
 		data.set_depth(depth);
 		//calculate number of components and stream it

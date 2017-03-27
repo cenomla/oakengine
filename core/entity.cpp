@@ -13,8 +13,32 @@ namespace oak {
 		reset();
 	}
 
+	Entity EntityManager::createEntity(uint64_t idx) {
+		if (idx < idxConverter_.size()) {
+			uint64_t nidx = idxConverter_[idx];
+			//is the entity alive?
+			if (entityAttributes_[nidx].flags[1]) {
+				return { nidx, this };
+			}
+		}
+		//create a new entity and add its idx to the converter
+		idxConverter_.resize(idx + 1);
+		const auto& e = createEntity(0.0f);
+		idxConverter_[idx] = e.index();
+
+		return e;
+	}
+
+	Entity EntityManager::convertEntity(const Entity& entity) {
+		if (entity.index() >= idxConverter_.size()) {
+			return entity;
+		} else {
+			return { idxConverter_[entity.index()], this };
+		}
+	}
+
 	Entity EntityManager::createEntity(float depth) {
-		uint32_t idx;
+		uint64_t idx;
 		if (freeIndices_.size() > 1024) {
 			idx = freeIndices_.front();
 			freeIndices_.pop_front();
@@ -23,13 +47,18 @@ namespace oak {
 			generation_.push_back(0);
 		}
 
-		entities_.alive.emplace_back(idx, 0, this);
 		entityAttributes_.resize(idx + 1);
-		entityAttributes_[idx].depth = depth;
+		
+		auto& attribute = entityAttributes_[idx];
+		attribute.depth = depth;
+		attribute.flags[1] = true;
+
+		entities_.alive.emplace_back(idx, this);
 		return entities_.alive.back();
 	}
 
 	void EntityManager::destroyEntity(const Entity& entity) {
+		entityAttributes_[entity.index()].flags[1] = false;
 		entities_.deactivated.push_back(entity);
 		entities_.killed.push_back(entity);
 	}
@@ -56,7 +85,7 @@ namespace oak {
 		entityAttributes_[entity.index()].depth = depth;
 	}
 
-	void* EntityManager::addComponent(uint32_t idx, uint32_t tid) {
+	void* EntityManager::addComponent(uint64_t idx, size_t tid) {
 		auto& attribute = entityAttributes_[idx];
 		
 		if (attribute.ownsMask[tid]) {
@@ -70,7 +99,7 @@ namespace oak {
 		return attribute.components[tid];
 	}
 
-	void EntityManager::addComponent(uint32_t idx, uint32_t tid, void *ptr) {
+	void EntityManager::addComponent(uint64_t idx, size_t tid, void *ptr) {
 		auto& attribute = entityAttributes_[idx];
 		if (attribute.ownsMask[tid]) {
 			removeComponent(idx, tid);
@@ -80,7 +109,7 @@ namespace oak {
 		attribute.components[tid] = ptr;
 	}
 
-	void EntityManager::removeComponent(uint32_t idx, uint32_t tid) {
+	void EntityManager::removeComponent(uint64_t idx, size_t tid) {
 		auto& attribute = entityAttributes_[idx];
 		if (attribute.componentMask[tid] && attribute.ownsMask[tid]) {
 			Engine::inst().getSystem<ComponentHandleStorage>().getHandle(tid)->destruct(attribute.components[tid]);
@@ -88,7 +117,7 @@ namespace oak {
 		attribute.componentMask[tid] = false;
 	}
 
-	void EntityManager::deleteComponent(uint32_t idx, uint32_t tid) {
+	void EntityManager::deleteComponent(uint64_t idx, size_t tid) {
 		auto& attribute = entityAttributes_[idx];
 		if (attribute.components[tid] != nullptr && attribute.ownsMask[tid]) {
 			componentPools_[tid].proxy.deallocate(attribute.components[tid], 0);
@@ -97,26 +126,26 @@ namespace oak {
 		}
 	}
 
-	void EntityManager::removeAllComponents(uint32_t idx) {
+	void EntityManager::removeAllComponents(uint64_t idx) {
 		for (size_t i = 0; i < config::MAX_COMPONENTS; i++) {
 			removeComponent(idx, i);
 			deleteComponent(idx, i);
 		}
 	}
 
-	void* EntityManager::getComponent(uint32_t idx, uint32_t tid) {
+	void* EntityManager::getComponent(uint64_t idx, size_t tid) {
 		return entityAttributes_[idx].components[tid];
 	}
 
-	const void* EntityManager::getComponent(uint32_t idx, uint32_t tid) const {
+	const void* EntityManager::getComponent(uint64_t idx, size_t tid) const {
 		return entityAttributes_[idx].components[tid];
 	}
 
-	bool EntityManager::hasComponent(uint32_t idx, uint32_t tid) const {
+	bool EntityManager::hasComponent(uint64_t idx, size_t tid) const {
 		return entityAttributes_[idx].componentMask[tid];
 	}
 
-	bool EntityManager::ownsComponent(uint32_t idx, uint32_t tid) const {
+	bool EntityManager::ownsComponent(uint64_t idx, size_t tid) const {
 		return entityAttributes_[idx].ownsMask[tid];
 	}
 
@@ -202,32 +231,6 @@ namespace oak {
 		entities_.reset();
 		generation_.clear();
 		freeIndices_.clear();
-	}
-
-	void EntityManager::enable() {
-		for (auto& entity : entities_.alive) {
-			auto& attribute = entityAttributes_[entity.index()];
-			//if the entity is supposed to be active then add it to the appropriate caches
-			if (attribute.flags[0]) {
-				for (auto& system : caches_) {
-					if (attribute.caches[system.first]) {
-						system.second->addEntity(entity);
-					}
-				}
-			}
-		}
-	}
-
-	void EntityManager::disable() {
-		for (auto& entity : entities_.alive) {
-			auto& attribute = entityAttributes_[entity.index()];
-			for (auto& system : caches_) {
-				//if the entity is apart of the system remove it but do not set its inactive flag
-				if (attribute.caches[system.first]) {
-					system.second->removeEntity(entity);
-				}
-			}
-		}
 	}
 
 	void EntityManager::addCache(EntityCache *cache) {

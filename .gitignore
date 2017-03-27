@@ -1,5 +1,6 @@
 .sconsign.dblite
 .vscode
+.luacheckrc
 bin/obj
 log
 sandbox/save

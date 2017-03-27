@@ -343,7 +343,7 @@ namespace oak::luah {
 		Entity entity = toValue<Entity>(L, 1);
 		lua_settop(L, 0);
 
-		pushValue(L, entity.depth());
+		pushValue(L, entity.get_depth());
 
 		return 1;
 	}

@@ -8,6 +8,7 @@ local prefab = {
 	},
 	sprite = {
 		sprite = hash("spr_title_bar"),
+		scale = { x = 512.0, y = 16.0 },
 		layer = 2
 	}
 }
