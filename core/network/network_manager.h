@@ -8,9 +8,9 @@
 #include "util/byte_buffer.h"
 #include "util/buffer_puper.h"
 #include "system.h"
-#include "events.h"
 #include "pup.h"
 
+namespace oak { struct QuitEvent; }
 namespace oak::network {
 
 	class NetworkManager : public System {

@@ -81,16 +81,18 @@ local window = {
 		local aabb = self:get_aabb2d()
 		local vmx = oak.vs.transform_point(oak.vs.get_id(2), { x = oak.input.mx, y = oak.input.my })
 		if point_intersects(tc, aabb, vmx) then
-			if evt.action ~= 0 and self.active ~= self then
-				--swap depth
-				local d = self:depth()
-				self:set_depth(self.active:depth())
-				self.active:set_depth(d)
-				self.active:update_children()
-				self:update_children()
+			if evt.action ~= 0 then
+				if self.active ~= self then
+					--swap depth
+					local d = self:depth()
+					self:set_depth(self.active:depth())
+					self.active:set_depth(d)
+					self.active:update_children()
+					self:update_children()
+				end
+				self.active = self
+				return true --capture event
 			end
-			self.active = self
-			return true --capture event
 		end
 	end,
 	on_activate = function(self)
