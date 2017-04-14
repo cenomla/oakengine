@@ -222,7 +222,7 @@ namespace oak {
 			removeAllComponents(e.index());
 		}
 		for (auto& s : caches_) {
-			s.second->clearEntities();
+			s.second->clear();
 		}
 		for (auto& a : entityAttributes_) {
 			a.flags.reset();

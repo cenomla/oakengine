@@ -183,7 +183,7 @@ namespace oak {
 		void sort();
 		inline const std::bitset<config::MAX_COMPONENTS>& getFilter() const { return filter_; }
 
-		inline void clearEntities() { entities_.clear(); };
+		inline void clear() { entities_.clear(); };
 		
 		template<typename T>
 		inline void requireComponent() {
