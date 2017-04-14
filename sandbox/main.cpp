@@ -28,15 +28,10 @@
 #include "tile_system.h"
 #include "light_renderer.h"
 
-std::chrono::duration<float> dt;
-
 struct stdoutstream : public oak::log::Stream {
-	void open() {}
-	void close() {}
-	void write(const void *source, size_t size) {
+	void write(const void *source, size_t size) override {
 		fwrite(source, 1, size, stdout);
 	}
-	void read(void *, size_t) {}
 };
 
 struct logfilestream : public oak::log::Stream {
@@ -53,14 +48,12 @@ struct logfilestream : public oak::log::Stream {
 		}
 	}
 
-	void write(const void *source, size_t size) {
+	void write(const void *source, size_t size) override {
 		if (file != nullptr) {
 			fwrite(source, 1, size, file);
 			fflush(file);
 		}
 	}
-
-	void read(void*, size_t) {}
 
 	FILE *file = nullptr;
 };
@@ -69,6 +62,7 @@ int main(int argc, char** argv) {
 	//setup log
 	stdoutstream sos;
 	logfilestream lfs;
+	lfs.open();
 	oak::log::cout.addStream(&sos);
 	oak::log::cout.addStream(&lfs);
 	oak::log::cwarn.addStream(&sos);
@@ -79,8 +73,6 @@ int main(int argc, char** argv) {
 	//create the engine
 	oak::Engine engine;
 	engine.init();
-
-	log_print_out("sizeof(Entity): %u", sizeof(oak::Entity));
 
 	//create all the systems
 	oak::Window window{ engine, oak::Window::GL_CONTEXT };
@@ -149,6 +141,7 @@ int main(int argc, char** argv) {
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<float> dt;
 	//physics accum for frame independent physics
 	float accum = 0.0f;
 	float fpsCount = 0.0f;
@@ -215,6 +208,8 @@ int main(int argc, char** argv) {
 
 	//clean up
 	engine.destroy();
+
+	lfs.close();
 
 	return 0;
 }

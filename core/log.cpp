@@ -13,15 +13,12 @@ namespace oak::log {
 
 	}
 
-	Logger::~Logger() {
-		for (auto& stream : streams_) {
-			stream->close();
-		}
+	void Logger::addStream(Stream *stream) {
+		streams_.push_back(stream);
 	}
 
-	void Logger::addStream(Stream *stream) {
-		stream->open();
-		streams_.push_back(stream);
+	void Logger::removeStream(Stream *stream) {
+		streams_.erase(std::remove(std::begin(streams_), std::end(streams_), stream), std::end(streams_));
 	}
 
 	void Logger::print(const char* text, Level level, const char* file, int line) {

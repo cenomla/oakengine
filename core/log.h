@@ -17,10 +17,7 @@
 namespace oak::log {
 
 	struct Stream {
-		virtual void open() = 0;
-		virtual void close() = 0;
 		virtual void write(const void *source, size_t size) = 0;
-		virtual void read(void *dest, size_t size) = 0;
 	};
 
 	enum class Level {
@@ -32,9 +29,9 @@ namespace oak::log {
 	class Logger {
 	public:
 		Logger(const char* name);
-		~Logger();
 
 		void addStream(Stream *stream);
+		void removeStream(Stream *stream);
 
 		template<typename... TArgs>
 		void printf(const oak::string& text, Level level, const char* file, int line, TArgs&&... args) {
@@ -53,7 +50,7 @@ namespace oak::log {
 	};
 
 	extern Logger cout;
-	extern Logger cwarn; 
+	extern Logger cwarn;
 	extern Logger cerr;
 
 }
