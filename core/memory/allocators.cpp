@@ -47,6 +47,7 @@ namespace oak {
 		AllocationHeader *nHeader = static_cast<AllocationHeader*>(ptr);
 		nHeader->nextBlock = nullptr;
 		nHeader->size = size;
+		size_ += size;
 	}
 
 	void LinearAllocator::clear() {
@@ -235,6 +236,7 @@ namespace oak {
 		} else {
 			freeList_->next = newBlock;
 		}
+		size_ += size;
 	}
 
 	PoolAllocator::PoolAllocator() : Allocator{ nullptr, 0 } {}
@@ -261,7 +263,7 @@ namespace oak {
 	}
 
 	void* PoolAllocator::allocate(size_t size, uint32_t alignment) {
-		if (freeList_ == nullptr) {
+		if (*freeList_ == nullptr) {
 			return nullptr;
 		}
 
@@ -281,16 +283,15 @@ namespace oak {
 
 	void PoolAllocator::append(void *ptr, size_t size) {
 		//find end of freelist
-		size_t adjustment = ptrutil::alignForwardAdjustment(start_, alignment_);
 		void **prevBlock = nullptr;
-		void **block = static_cast<void**>(ptrutil::add(start_, adjustment));
+		void **block = freeList_;
 
 		while (block != nullptr) {
 			prevBlock = block;
 			block = static_cast<void**>(*block);
 		}
 		//append new linked list that fills empty memory block 
-		adjustment = ptrutil::alignForwardAdjustment(ptr, alignment_);
+		size_t adjustment = ptrutil::alignForwardAdjustment(ptr, alignment_);
 		//maximum number of objects that can fit within the allocated size
 		size_t count = ((size - adjustment) & ~(alignment_-1)) / objectSize_;
 
@@ -304,6 +305,7 @@ namespace oak {
 		}
 
 		*p = nullptr;
+		size_ += size;
 	}
 
 }
