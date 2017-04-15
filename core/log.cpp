@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <cstring>
+#include <algorithm>
 
 namespace oak::log {
 

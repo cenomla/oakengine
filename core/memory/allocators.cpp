@@ -23,7 +23,7 @@ namespace oak {
 		uintptr_t alignedAddress = reinterpret_cast<uintptr_t>(currentPos_) + adjustment;
 		AllocationHeader *header = static_cast<AllocationHeader*>(blockStart_);
 
-		if (alignedAddress - reinterpret_cast<uintptr_t>(blockStart_) + sizeof(AllocationHeader) + size > header->size) {
+		if (alignedAddress - reinterpret_cast<uintptr_t>(blockStart_) + size > header->size) {
 			if (header->nextBlock != nullptr) {
 				blockStart_ = header->nextBlock;
 				currentPos_ = ptrutil::add(blockStart_, sizeof(AllocationHeader));

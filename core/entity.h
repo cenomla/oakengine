@@ -5,7 +5,7 @@
 #include <bitset>
 
 #include "config.h"
-#include "memory/alloc.h"
+#include "memory/oak_alloc.h"
 #include "container.h"
 #include "util/type_handle_storage.h"
 #include "system.h"
@@ -63,7 +63,7 @@ namespace oak {
 			size_t tid = util::type_id<Component, T>::id;
 			auto& pool = componentPools_[tid];
 			pool.allocator = { MemoryManager::inst().allocate(4000000), 4000000, sizeof(T) };
-			pool.proxy = { &pool.allocator, 4000000 };
+			pool.proxy = oak_allocator<void>{ &pool.allocator, 4000000 };
 		}
 
 		inline size_t getEntityCount() const { return entities_.alive.size(); }
@@ -108,7 +108,7 @@ namespace oak {
 		oak::vector<uint64_t> idxConverter_;
 
 		struct ComponentPool {
-			OakAllocator<void> proxy{ nullptr };
+			oak_allocator<void> proxy{ nullptr };
 			PoolAllocator allocator;
 		};
 		std::array<ComponentPool, config::MAX_COMPONENTS> componentPools_;

@@ -4,7 +4,7 @@
 
 #include "util/typeid.h"
 #include "container.h"
-#include "memory/alloc.h"
+#include "memory/oak_alloc.h"
 #include "event_channel.h"
 
 namespace oak {

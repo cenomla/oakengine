@@ -5,7 +5,7 @@
 
 #include "memory_literals.h"
 #include "util/ptr_util.h"
-#include "alloc.h"
+#include "oak_alloc.h"
 #include "log.h"
 #include "config.h"
 #include "debug_vars.h"
@@ -39,8 +39,8 @@ namespace oak {
 	allocator_{ allocate(config::GLOBAL_MEMORY_PAGE_SIZE), config::GLOBAL_MEMORY_PAGE_SIZE }, 
 	frameAllocator_{ allocate(config::FRAME_MEMORY_PAGE_SIZE), config::FRAME_MEMORY_PAGE_SIZE } {
 		INST = this;
-		oak::proxyAllocator = { &allocator_ };
-		oak::frameAllocator = { &frameAllocator_ };
+		oak::proxyAllocator = oak_allocator<void>{ &allocator_ };
+		oak::frameAllocator = oak_allocator<void>{ &frameAllocator_ };
 	}
 
 	MemoryManager::~MemoryManager() {

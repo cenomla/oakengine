@@ -7,7 +7,6 @@
 #include <atomic>
 
 #include "container.h"
-#include "event_queue.h"
 #include "worker.h"
 #include "task.h"
 

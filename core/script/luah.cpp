@@ -4,7 +4,7 @@
 #include <cstring>
 #include <cctype>
 
-#include "memory/alloc.h"
+#include "memory/oak_alloc.h"
 #include "util/string_util.h"
 #include "log.h"
 

@@ -8,7 +8,7 @@
 namespace oak {
 
 	struct ObjInfo {
-		constexpr static uint32_t SIZE_VAR = 0x00000001;
+		static constexpr uint32_t SIZE_VAR = 0x00000001;
 
 		oak::string name;
 		uint32_t flags = 0;

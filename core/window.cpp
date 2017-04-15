@@ -45,8 +45,8 @@ namespace oak {
 		if (flags_ & GL_CONTEXT) {
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, config::GL_VERSION_MAJOR);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, config::GL_VERSION_MINOR);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 		} else {
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
