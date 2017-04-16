@@ -4,50 +4,50 @@
 
 #include "typeid.h"
 #include "type_handle.h"
-#include "container.h"
+
 #include "memory/oak_alloc.h"
-#include "system.h"
+#include "container.h"
 
 namespace oak {
 
-	template<class U, size_t C>
-	class TypeHandleStorage : public System {
+	template<class U>
+	class TypeHandleStorage {
 	public:
-
-		TypeHandleStorage(Engine &engine) : System{ engine, "type_handle_storage" } {}
+		static constexpr size_t HSize = sizeof(TypeHandle<U>);
 
 		~TypeHandleStorage() {
-			for (auto &block : handles_) {
-				if (block.ptr != nullptr) {
-					static_cast<TypeHandleBase*>(block.ptr)->~TypeHandleBase();
-					proxyAllocator.deallocate(block.ptr, block.size);
-					block.ptr = nullptr;
+			for (auto *ptr : handles_) {
+				if (ptr != nullptr) {
+					static_cast<TypeHandleBase*>(ptr)->~TypeHandleBase();
+					proxyAllocator.deallocate(ptr, HSize);
 				}
 			}
 		}
 
 		template<class T>
-		inline void addHandle(const oak::string &name) {
+		void addHandle(const oak::string &name) {
 			size_t tid = util::type_id<U, T>::id;
+			if (handles_.size() <= tid) {
+				handles_.resize(tid + 1);
+			}
 			if (handles_[tid].ptr != nullptr) { return; }
-			size_t hsize = sizeof(TypeHandle<T>);
-			TBlock<TypeHandleBase> block = { static_cast<TypeHandleBase*>(proxyAllocator.allocate(hsize)), hsize };
+			void *ptr = proxyAllocator.allocate(HSize);
 			new (block.ptr) TypeHandle<T>{ name };
-			handles_[tid] = block;
+			handles_[tid] = ptr;
 			nameMap_[name] = tid;
 		}
 
-		template<typename T>
-		inline const TypeHandle<T>& getHandle() const {
+		template<class T>
+		const TypeHandle<T>& getHandle() const {
 			size_t tid = util::type_id<U, T>::id;
-			return *static_cast<const TypeHandle<T>*>(getHandle(tid));
+			return *static_cast<const TypeHandle<T>*>(handles_[tid]);
 		}
 
-		inline const TypeHandleBase* getHandle(size_t tid) const {
-			return handles_[tid].ptr;
+		const TypeHandleBase* getHandle(size_t tid) const {
+			return static_cast<TypeHandleBase*>(handles_[tid]);
 		}
 
-		inline size_t getId(const oak::string &name) const {
+		size_t getId(const oak::string &name) const {
 			const auto& it = nameMap_.find(name);
 			if (it != std::end(nameMap_)) {
 				return it->second;
@@ -57,7 +57,7 @@ namespace oak {
 
 
 	private:
-		std::array<TBlock<TypeHandleBase>, C> handles_;
+		oak::vector<void*> handles_;
 		oak::unordered_map<oak::string, size_t> nameMap_;
 	};
 

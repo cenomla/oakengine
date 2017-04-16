@@ -2,10 +2,14 @@
 
 #include <utility>
 
-#include "memory_manager.h"
-#include "config.h"
+#include "allocators.h"
+#include "memory_literals.h"
 
 namespace oak {
+
+	extern ProxyAllocator oalloc_proxy;
+	extern FreelistAllocator oalloc_freelist;
+	extern LinearAllocator oalloc_frame;
 
 	template<class T>
 	struct size_of_void {
@@ -18,11 +22,11 @@ namespace oak {
 	};
 
 	//base allocator
-	template<class T, size_t A = config::DEFAULT_MEMORY_ALIGNMENT>
-	class oak_allocator {
+	template<class T>
+	class OakAllocator {
 	public:
-		template<class U, size_t L>
-		friend class oak_allocator;
+		template<class U>
+		friend class OakAllocator;
 
 		typedef T value_type;
 		typedef T* pointer;
@@ -30,59 +34,50 @@ namespace oak {
 		typedef size_t size_type;
 		typedef ptrdiff_t difference_type;
 		
-		static constexpr uint32_t align = A;
 		static constexpr size_type value_size = size_of_void<T>::value;
 
-		template<class U, size_t L = align>
+		template<class U>
 		struct rebind {
-			typedef oak_allocator<U, L> other;	
+			typedef OakAllocator<U> other;	
 		};
 
-		explicit oak_allocator(Allocator *allocator = &MemoryManager::inst().getGlobalAllocator(), size_t pageSize = config::GLOBAL_MEMORY_PAGE_SIZE) : allocator_{ allocator }, pageSize_{ pageSize } {}
+		explicit OakAllocator(Allocator *allocator = &oalloc) : allocator_{ allocator } {}
 
-		template<class U, size_t L = align>
-		oak_allocator(const oak_allocator<U, L> &other) : allocator_{ other.allocator_ }, pageSize_{ other.pageSize_ } {}
+		template<class U>
+		OakAllocator(const OakAllocator<U> &other) : allocator_{ other.allocator_ } {}
 
 		pointer allocate(size_t count, const_pointer locality = nullptr) {
-			size_t size = count * value_size;
-			void *ptr = allocator_->allocate(size, align);
-			if (ptr == nullptr) {
-				allocator_->append(MemoryManager::inst().allocate(pageSize_), pageSize_);
-				ptr = allocator_->allocate(size, align);
-			}
-			return static_cast<pointer>(ptr);
+			return static_cast<pointer>(allocator_->allocate(count * value_size));
 		}
 
 		void deallocate(void *ptr, size_t count) {
-			size_t size = count * value_size;
-			allocator_->deallocate(ptr, size);
+			allocator_->deallocate(ptr, count * value_size);
 		}
 
 		size_type max_size() const {
-			return allocator_ == nullptr ? config::GLOBAL_MEMORY_PAGE_SIZE / value_size : allocator_->getSize() / value_size;
+			return 8_gb;
 		}
 
-		template<class U, size_t L>
-		inline bool equals(const oak_allocator<U, L> &second) const {
-			return allocator_ == second.allocator_ && pageSize_ == second.pageSize_;
+		template<class U>
+		bool equals(const OakAllocator<U> &second) const {
+			return allocator_ == second.allocator_;
 		}
 
 	private:
 		Allocator *allocator_;
-		size_t pageSize_;
 	};
 
-	template<class T, size_t A, class U, size_t L>
-	inline bool operator==(const oak_allocator<T, A> &first, const oak_allocator<U, L> &second) {
+	template<class T, class U>
+	bool operator==(const OakAllocator<T> &first, const OakAllocator<U> &second) {
 		return first.equals(second);
 	}
 
-	template<class T, size_t A, class U, size_t L>
-	inline bool operator!=(const oak_allocator<T, A> &first, const oak_allocator<U, L> &second) {
+	template<class T, class U>
+	bool operator!=(const OakAllocator<T> &first, const OakAllocator<U> &second) {
 		return !(first == second);
 	}
 	
-	extern oak_allocator<void> proxyAllocator;
-	extern oak_allocator<void> frameAllocator;
+	extern OakAllocator<void> oak_allocator;
+	extern OakAllocator<void> frame_allocator;
 
 }

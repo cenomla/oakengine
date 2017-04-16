@@ -3,98 +3,99 @@
 #include <cstddef>
 #include <cinttypes>
 
-#include "config.h"
+#include "memory_literals.h"
 
 namespace oak {
 
+	namespace detail {
+		struct Block {
+			void *next;
+			size_t size;
+		};
+	}
+
 	class Allocator {
 	public:
-		Allocator(void* start, size_t size);
+		Allocator(Allocator *parent, uint32_t alignment);
 
-		virtual void* allocate(size_t size, uint32_t alignment) = 0;
+		virtual void* allocate(size_t size) = 0;
 		virtual void deallocate(void *ptr, size_t size) = 0;
-		virtual void append(void *ptr, size_t size) = 0;
-		inline void* getStart() { return start_; }
-		inline const void* getStart() const { return start_; }
-		inline size_t getSize() const { return size_; }
+
+		Allocator* getParent() { return parent_; }
+		uint32_t getAlignment() const { return alignment_; }
 
 	protected:
-		void *start_;
-		size_t size_;
+		Allocator *parent_;
+		uint32_t alignment_;
+	};
+
+
+	class ProxyAllocator : public Allocator {
+	public:
+		ProxyAllocator();
+		~ProxyAllocator();
+
+		void* allocator(size_t size) override;
+		void deallocate(void *ptr, size_t size) override;
+
+	private:
+		detail::Block *memList_;
+		size_t numAllocs_;
 	};
 
 	class LinearAllocator : public Allocator {
 	public:
-		LinearAllocator();
-		LinearAllocator(void *start, size_t size);
-		
-		void* allocate(size_t size, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT) override;
+		LinearAllocator(Allocator *parent, size_t pageSize = 32_kb, uint32_t alignment = 8);
+		~LinearAllocator();
+
+		void* allocate(size_t size) override;
 		void deallocate(void *ptr, size_t size) override;
-		void append(void *ptr, size_t size) override;
 		void clear();
+
+		const void* getStart() const { return start_; }
 	private:
-		struct AllocationHeader {
-			void *nextBlock;
-			size_t size;
-		};
+		size_t pageSize_;
+		void *start_;
 		void *blockStart_;
 		void *currentPos_;
-	};
-
-	class StackAllocator : public Allocator {
-	public:
-		StackAllocator(void *start, size_t size);
-
-		void* allocate(size_t size, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT) override;
-		void deallocate(void *p, size_t size) override;
-
-		inline void* getTop() { return previousPos_; }
-	private:
-		struct AllocationHeader {
-			void *prevAddress;
-			size_t adjustment;
-		};
-		void *currentPos_;
-		void *previousPos_;
+		
+		void grow();
 	};
 
 	class FreelistAllocator : public Allocator {
 	public:
-		FreelistAllocator();
-		FreelistAllocator(void *start, size_t size);
+		FreelistAllocator(Allocator *parent, size_t pageSize = 32_mb, uint32_t alignment = 8);
+		~FreelistAllocator();
 
-		void* allocate(size_t size, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT) override;
+		void* allocate(size_t size) override;
 		void deallocate(void *ptr, size_t size) override;
-
-		void append(void *ptr, size_t size) override;
-
 	private:
 		struct AllocationHeader {
 			size_t size;
 			uint32_t adjustment;
 		};
 
-		struct FreeBlock {
-			size_t size;
-			FreeBlock *next;
-		};
-		FreeBlock* freeList_;
+		size_t pageSize_;
+		void *start_;
+		detail::Block *freeList_;
+
+		void grow(detail::Block *lastNode);
 	};
 
 	class PoolAllocator : public Allocator {
 	public:
-		PoolAllocator();
-		PoolAllocator(void *start, size_t size, size_t objectSize, uint32_t alignment = config::DEFAULT_MEMORY_ALIGNMENT);
+		PoolAllocator(Allocator *parent, size_t pageSize, size_t objectSize, uint32_t alignment = 8);
+		~PoolAllocator();
 
-		void* allocate(size_t size, uint32_t alignment) override;
+		void* allocate(size_t size) override;
 		void deallocate(void *ptr, size_t size) override;
-
-		void append(void *ptr, size_t size) override;
-
 	private:
-		void** freeList_;
+		size_t pageSize_;
 		size_t objectSize_;
-		size_t alignment_;
+		void *start_;
+		void **freeList_;
+
+		void grow();
 	};
 
 }

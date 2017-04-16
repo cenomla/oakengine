@@ -1,37 +1,105 @@
 #include "allocators.h"
 
 #include "util/ptr_util.h"
-#include "debug_vars.h"
 #include "oak_assert.h"
+#include "log.h"
 
 namespace oak {
 
-	Allocator::Allocator(void *start, size_t size) : start_{start}, size_{size} {}
+	Allocator::Allocator(Allocator *parent, uint32_t alignment) : parent_{ parent }, alignment_{ alignment } {}
 
-	LinearAllocator::LinearAllocator() : Allocator{ nullptr, 0 } {}
+	ProxyAllocator::ProxyAllocator() : Allocator{ nullptr, 64 }, memList_{ nullptr }, numAllocs_{ 0 } {
 
-	LinearAllocator::LinearAllocator(void *start, size_t size) : Allocator{ start, size }, blockStart_{ start_ }, currentPos_{ ptrutil::add(start_, sizeof(AllocationHeader)) } {
-		AllocationHeader *header = static_cast<AllocationHeader*>(start_);
-		header->nextBlock = nullptr;
-		header->size = size_;
 	}
 
-	void* LinearAllocator::allocate(size_t size, uint32_t alignment) {
-		oak_assert(size != 0);
+	ProxyAllocator::~ProxyAllocator() {
+		//free memory
+		if (numAllocs_ > 0) {
+			log_print_warn("memory leak, remaining blocks: %u", numAllocs_);
+		}
 
-		uint32_t adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment);
+		detail::Block *p = memList_;
+		detail::Block *next = nullptr;
+		while (p != nullptr) {
+			next = p->next;
+			free(p);
+			p = next;
+			numAllocs_ --;
+		}
+
+	}
+
+	void* ProxyAllocator::allocate(size_t size) {
+		void *ptr = aligned_alloc(64, size + sizeof(detail::Block));
+		detail::Block *l = static_cast<detail::Block*>(ptr);
+		l->next = memList_;
+		l->size = size;
+		memList_ = l;
+
+		numAllocs_ ++;
+
+		return ptrutil::add(ptr, sizeof(detail::Block));
+	}
+
+	void ProxyAllocator::deallocate(void *ptr, size_t size) {
+		//search through linked list for ptr - sizeof(memList) then remove from list and deallocate
+		ptr = ptrutil::subtract(ptr, sizeof(detail::Block));
+		
+		detail::Block *p = memList_;
+		detail::Block *prev = nullptr;
+		while (p != nullptr) {
+			if (p == ptr) {
+				if (prev != nullptr) {
+					prev->next = p->next;
+				} else {
+					memList_ = p->next;
+				}
+				numAllocs_--;
+				free(p);
+				break;
+			}
+			prev = p;
+			p = p->next;
+		}
+	}
+
+	LinearAllocator::LinearAllocator(Allocator *parent, size_t pageSize, uint32_t alignment) : Allocator{ parent, alignment }, pageSize_{ pageSize } {
+		oak_assert(pageSize_ > sizeof(detail::Block));
+		start_ = parent_->allocate(pageSize_ + sizeof(detail::Block));
+		detail::Block *header = static_cast<detail::Block*>(start_);
+		header->next = nullptr;
+		header->size = pageSize_ + sizeof(detail::Block);
+		blockStart_ = start_;
+		currentPos_ = ptrutil::add(start_, sizeof(detail::Block));
+	}
+
+	LinearAllocator::~LinearAllocator() {
+		//deallocate used memory
+		detail::Block *p = static_cast<detail::Block*>(start_);
+		detail::Block *prev = nullptr;
+		while (p) {
+			prev = p;
+			p = p->next;
+
+			parent_->deallocate(prev->next, prev->size);
+		}
+	}
+
+	void* LinearAllocator::allocate(size_t size) {
+		oak_assert(size != 0 && size <= pageSize_);
+
+		uint32_t adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment_);
 		uintptr_t alignedAddress = reinterpret_cast<uintptr_t>(currentPos_) + adjustment;
-		AllocationHeader *header = static_cast<AllocationHeader*>(blockStart_);
+		detail::Block *header = static_cast<detail::Block*>(blockStart_);
 
 		if (alignedAddress - reinterpret_cast<uintptr_t>(blockStart_) + size > header->size) {
-			if (header->nextBlock != nullptr) {
-				blockStart_ = header->nextBlock;
-				currentPos_ = ptrutil::add(blockStart_, sizeof(AllocationHeader));
-				adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment);
-				alignedAddress = reinterpret_cast<uintptr_t>(currentPos_) + adjustment;
-			} else {
-				return nullptr;
+			if (header->next == nullptr) {
+				grow();
 			}
+			blockStart_ = header->next;
+			currentPos_ = ptrutil::add(blockStart_, sizeof(detail::Block));
+			adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment);
+			alignedAddress = reinterpret_cast<uintptr_t>(currentPos_) + adjustment;
 		}
 
 		currentPos_ = reinterpret_cast<void*>(alignedAddress + size);
@@ -40,123 +108,98 @@ namespace oak {
 
 	void LinearAllocator::deallocate(void *ptr, size_t size) {}
 
-	void LinearAllocator::append(void *ptr, size_t size) {
-		oak_assert(size > sizeof(AllocationHeader));
-		AllocationHeader *header = static_cast<AllocationHeader*>(blockStart_);
-		header->nextBlock = ptr;
-		AllocationHeader *nHeader = static_cast<AllocationHeader*>(ptr);
-		nHeader->nextBlock = nullptr;
-		nHeader->size = size;
-		size_ += size;
-	}
-
 	void LinearAllocator::clear() {
 		blockStart_ = start_;
 		currentPos_ = ptrutil::add(blockStart_, sizeof(AllocationHeader));
 	}
 
-	StackAllocator::StackAllocator(void *start, size_t size) : Allocator{ start, size }, currentPos_{ start_ }, previousPos_{ nullptr } {}
-
-	void* StackAllocator::allocate(size_t size, uint32_t alignment) {
-		oak_assert(size != 0);
-
-		previousPos_ = currentPos_;
-
-		uint32_t adjustment = ptrutil::alignForwardAdjustmentWithHeader(currentPos_, alignment, sizeof(AllocationHeader));
-
-		if (reinterpret_cast<uintptr_t>(currentPos_) - reinterpret_cast<uintptr_t>(start_) + adjustment + size > size_) {
-			return nullptr;
-		}
-
-		void *alignedAddress = ptrutil::add(currentPos_, adjustment);
-
-		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(alignedAddress, sizeof(AllocationHeader)));
-
-		header->adjustment = adjustment;
-		header->prevAddress = previousPos_;
-
-		currentPos_ = ptrutil::add(alignedAddress, size);
-
-		return alignedAddress;
+	void LinearAllocator::grow() {
+		void *ptr = parent_->allocate(pageSize_ + sizeof(detail::Block));
+		oak_assert(ptr != nullptr);
+		detail::Block *header = static_cast<detail::Block*>(blockStart_);
+		header->next = ptr;
+		detail::Block *nHeader = static_cast<detail::Block*>(ptr);
+		nHeader->next = nullptr;
+		nHeader->size = pageSize_ + sizeof(detail::Block);
 	}
 
-	void StackAllocator::deallocate(void *p, size_t size) {
-		if (p != previousPos_) { return; }
+	FreelistAllocator::FreelistAllocator(Allocator *parent, size_t pageSize, uint32_t alignment) : 
+	Allocator{ parent, alignment }, pageSize_{ pageSize } {
+		oak_assert(pageSize_ > sizeof(detail::Block));
+		start_ = parent_->allocate(pageSize_ + sizeof(detail::Block));
+		detail::Block *header = static_cast<detail::Block*>(start_);
+		header->next = nullptr;
+		header->size = pageSize_ + sizeof(detail::Block);
 
-		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(p, sizeof(AllocationHeader)));
-		previousPos_ = header->prevAddress;
-		currentPos_ = ptrutil::subtract(p, header->adjustment);
-
-		if (currentPos_ == start_) {
-			previousPos_ = nullptr;
-		}
-	}
-
-	FreelistAllocator::FreelistAllocator() : Allocator{ nullptr, 0 } {}
-
-	FreelistAllocator::FreelistAllocator(void *start, size_t size) : Allocator{ start, size }, freeList_{ static_cast<FreeBlock*>(start) } {
-		oak_assert(size > sizeof(FreeBlock));
-
-		freeList_->size = size;
+		freeList_ = header + 1;
+		freeList_->size = pageSize_;
 		freeList_->next = nullptr;
 	}
 
-	void* FreelistAllocator::allocate(size_t size, uint32_t alignment) {
-		FreeBlock* prev_free_block = nullptr;
-		FreeBlock* free_block = freeList_;
+	FreelistAllocator::~FreelistAllocator() {
+		//deallocate used memory
+		detail::Block *p = static_cast<detail::Block*>(start_);
+		detail::Block *prev = nullptr;
+		while (p) {
+			prev = p;
+			p = p->next;
 
-		while (free_block != nullptr)
-		{
+			parent_->deallocate(prev->next, prev->size);
+		}
+	}
+
+	void* FreelistAllocator::allocate(size_t size) {
+		oak_assert(size != 0 && size <= pageSize_);
+		detail::Block *prev = nullptr;
+		detail::Block *p = freeList_;
+
+		while (p) {
 			//Calculate adjustment needed to keep object correctly aligned
-			uint32_t adjustment = ptrutil::alignForwardAdjustmentWithHeader(free_block, alignment, sizeof(AllocationHeader));
+			uint32_t adjustment = ptrutil::alignForwardAdjustmentWithHeader(p, alignment_, sizeof(AllocationHeader));
 
-			size_t total_size = size + adjustment;
+			size_t totalSize = size + adjustment;
 
 			//If allocation doesn't fit in this FreeBlock, try the next
-			if (free_block->size < total_size)
-			{
-				prev_free_block = free_block;
-				free_block = free_block->next;
+			if (p->size < totalSize) {
+				prev = p;
+				p = p->next;
+				if (p->next == nullptr) {
+					grow(p);
+				}
 				continue;
 			}
 
-			//static_assert(sizeof(AllocationHeader) >= sizeof(FreeBlock), "sizeof(AllocationHeader) < sizeof(FreeBlock)");
-
 			//If allocations in the remaining memory will be impossible
-			if (free_block->size - total_size <= sizeof(AllocationHeader))
-			{
+			if (p->size - totalSize <= sizeof(AllocationHeader)) {
 				//Increase allocation size instead of creating a new FreeBlock
-				total_size = free_block->size;
+				totalSize = p->size;
 
-				if (prev_free_block != nullptr)
-					prev_free_block->next = free_block->next;
-				else
-					freeList_ = free_block->next;
-			}
-			else
-			{
-				//Else create a new FreeBlock containing remaining memory
-				FreeBlock* next_block = static_cast<FreeBlock*>(ptrutil::add(free_block, total_size));
-				next_block->size = free_block->size - total_size;
-				next_block->next = free_block->next;
+				if (prev != nullptr) {
+					prev->next = p->next;
+				} else {
+					freeList_ = p->next;
+				}
+			} else {
+				//else create a new FreeBlock containing remaining memory
+				detail::Block* next = static_cast<detail::Block*>(ptrutil::add(p, totalSize));
+				next->size = p->size - totalSize;
+				next->next = p->next;
 
-				if (prev_free_block != nullptr) {
-					prev_free_block->next = next_block;
+				if (prev != nullptr) {
+					prev->next = next;
 				}
 				else {
-					freeList_ = next_block;
+					freeList_ = next;
 				}
 			}
 
-			uintptr_t aligned_address = reinterpret_cast<uintptr_t>(free_block) + adjustment;
+			uintptr_t aligned_address = reinterpret_cast<uintptr_t>(p) + adjustment;
 
-			AllocationHeader* header = (AllocationHeader*)(aligned_address - sizeof(AllocationHeader));
-			header->size = total_size;
+			AllocationHeader* header = reinterpret_cast<AllocationHeader*>(aligned_address - sizeof(AllocationHeader));
+			header->size = totalSize;
 			header->adjustment = adjustment;
 
-			debugVars.usedMemory += total_size;
-
-			oak_assert(ptrutil::alignForwardAdjustment((void*)aligned_address, alignment) == 0);
+			oak_assert(ptrutil::alignForwardAdjustment(reinterpret_cast<void*>(aligned_address), alignment_) == 0);
 
 			return reinterpret_cast<void*>(aligned_address);
 		}
@@ -169,108 +212,115 @@ namespace oak {
 
 		AllocationHeader* header = static_cast<AllocationHeader*>(ptrutil::subtract(ptr, sizeof(AllocationHeader)));
 
-		uintptr_t   block_start = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
-		size_t block_size = header->size;
-		uintptr_t   block_end = block_start + block_size;
+		uintptr_t   blockStart = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
+		size_t blockSize = header->size;
+		uintptr_t   blockEnd = blockStart + blockSize;
 
-		debugVars.usedMemory -= block_size;
+		detail::Block *prev = nullptr;
+		detail::Block *p = freeList_;
 
-		FreeBlock* prev_free_block = nullptr;
-		FreeBlock* free_block = freeList_;
-
-		while (free_block != nullptr)
-		{
-			if (reinterpret_cast<uintptr_t>(free_block) >= block_end) {
+		while (p) {
+			if (reinterpret_cast<uintptr_t>(p) >= blockEnd) {
 				break;
 			}
 
-			prev_free_block = free_block;
-			free_block = free_block->next;
+			prev = p;
+			p = p->next;
 		}
 
-		if (prev_free_block == nullptr)
-		{
-			prev_free_block = reinterpret_cast<FreeBlock*>(block_start);
-			prev_free_block->size = block_size;
-			prev_free_block->next = freeList_;
+		if (prev == nullptr) {
+			prev = reinterpret_cast<detail::Block*>(blockStart);
+			prev->size = blockSize;
+			prev->next = freeList_;
 
-			freeList_ = prev_free_block;
-		}
-		else if (reinterpret_cast<uintptr_t>(prev_free_block) + prev_free_block->size == block_start)
-		{
-			prev_free_block->size += block_size;
-		}
-		else
-		{
-			FreeBlock* temp = reinterpret_cast<FreeBlock*>(block_start);
-			temp->size = block_size;
-			temp->next = prev_free_block->next;
-			prev_free_block->next = temp;
+			freeList_ = prev;
+		} else if (reinterpret_cast<uintptr_t>(prev) + prev->size == blockStart) {
+			prev->size += block_size;
+		} else {
+			Block *temp = reinterpret_cast<Block*>(blockStart);
+			temp->size = blockSize;
+			temp->next = prev->next;
+			prev->next = temp;
 
-			prev_free_block = temp;
+			prev = temp;
 		}
 
-		if (free_block != nullptr && reinterpret_cast<uintptr_t>(free_block) == block_end)
-		{
-			prev_free_block->size += free_block->size;
-			prev_free_block->next = free_block->next;
+		if (p != nullptr && reinterpret_cast<uintptr_t>(p) == blockEnd) {
+			prev->size += p->size;
+			prev->next = p->next;
 		}
 	}
 
-	void FreelistAllocator::append(void* memory, size_t size) {
-		//find last free block
-		FreeBlock *prevBlock = nullptr;
-		FreeBlock *block = freeList_;
+	void FreelistAllocator::grow(detail::Block *lastNode) {
+		
+		//find the end of the used block list
+		detail::Block *prevHeader = nullptr;
+		detail::Block *header = static_cast<detail::Block*>(start_);
 
-		while (block != nullptr) {
-			prevBlock = block;
-			block = block->next;
+		while (header) {
+			prevHeader = header;
+			header = header->next;
 		}
+
+		//after loop prev = end of free list
+
+		//create new memory block and append it to the used block list
+		void *ptr = parent_->allocate(pageSize_ + sizeof(detail::Block));
+		oak_assert(ptr != nullptr);
+		prevHeader->next = ptr;
+		header = static_cast<detail::Block*>(ptr);
+		header->next = nullptr;
+		header->size = pageSize_ + sizeof(detail::Block);
+
 		//create new free block with the added size
-		FreeBlock *newBlock = static_cast<FreeBlock*>(memory);
+		detail::Block *newBlock = header + 1;
 		newBlock->size = size;
 		newBlock->next = nullptr;
 		
-		if (prevBlock != nullptr) {
-			prevBlock->next = newBlock;
-		} else {
-			freeList_->next = newBlock;
-		}
-		size_ += size;
+		lastNode->next = newBlock;
 	}
 
-	PoolAllocator::PoolAllocator() : Allocator{ nullptr, 0 } {}
+	PoolAllocator::PoolAllocator(Allocator *parent, size_t pageSize, size_t objectSize, uint32_t alignment) : 
+	Allocator{ parent, alignment }, pageSize_{ pageSize }, objectSize_{ ptrutil::alignSize(objectSize, alignment_) } {
+		start_ = parent_->allocate(pageSize_ + sizeof(detail::Block));
+		detail::Block *header = static_cast<detail::Block*>(start_);
+		header->next = nullptr;
+		header->size = pageSize_ + sizeof(detail::Block);
 
-	PoolAllocator::PoolAllocator(void *start, size_t size, size_t objectSize, uint32_t alignment)
-		: Allocator{ start, size }
-		, objectSize_{ ptrutil::alignSize(objectSize, alignment) }
-		, alignment_{ alignment } {
+		size_t count = (pageSize_ & ~(alignment_-1)) / objectSize_;
 
-		size_t adjustment = ptrutil::alignForwardAdjustment(start_, alignment);
-		//maximum number of objects that can fit within the allocated size
-		size_t count = ((size - adjustment) & ~(alignment-1)) / objectSize_;
+		freeList_ = static_cast<void**>(ptrutil::add(start_, sizeof(detail::Block)));
 
-		freeList_ = static_cast<void**>(ptrutil::add(start_, adjustment));
+		void **p = freeList_;
 
-		void** p = freeList_;
-
-		for (size_t i = 0; i < count-1; i++) {
+		for (size_t i = 0; i < count - 1; i++) {
 			*p = ptrutil::add(p, objectSize_);
 			p = static_cast<void**>(*p);
 		}
 
 		*p = nullptr;
+
 	}
 
-	void* PoolAllocator::allocate(size_t size, uint32_t alignment) {
+	PoolAllocator::~PoolAllocator() {
+		//deallocate used memory
+		detail::Block *p = static_cast<detail::Block*>(start_);
+		detail::Block *prev = nullptr;
+		while (p) {
+			prev = p;
+			p = p->next;
+
+			parent_->deallocate(prev->next, prev->size);
+		}
+	}
+
+	void* PoolAllocator::allocate(size_t size) {
 		if (*freeList_ == nullptr) {
-			return nullptr;
+			grow();
 		}
 
 		void *p = freeList_;
 		freeList_ = static_cast<void**>(*freeList_);
-
-		debugVars.usedMemory += objectSize_;
 
 		return p;
 	}
@@ -278,34 +328,49 @@ namespace oak {
 	void PoolAllocator::deallocate(void *p, size_t size) {
 		*static_cast<void**>(p) = freeList_;
 		freeList_ = static_cast<void**>(p);
-		debugVars.usedMemory -= objectSize_;
 	}
 
-	void PoolAllocator::append(void *ptr, size_t size) {
+	void PoolAllocator::grow() {
 		//find end of freelist
-		void **prevBlock = nullptr;
-		void **block = freeList_;
+		void **prev = nullptr;
+		void **p = freeList_;
 
-		while (block != nullptr) {
-			prevBlock = block;
-			block = static_cast<void**>(*block);
+		while (p) {
+			prev = p;
+			p = static_cast<void**>(*p);
 		}
-		//append new linked list that fills empty memory block 
-		size_t adjustment = ptrutil::alignForwardAdjustment(ptr, alignment_);
-		//maximum number of objects that can fit within the allocated size
-		size_t count = ((size - adjustment) & ~(alignment_-1)) / objectSize_;
 
-		*prevBlock = ptrutil::add(ptr, adjustment);
+		//find the end of the used block list
+		detail::Block *prevHeader = nullptr;
+		detail::Block *header = static_cast<detail::Block*>(start_);
 
-		void** p = static_cast<void**>(*prevBlock);
+		while (header) {
+			prevHeader = header;
+			header = header->next;
+		}
 
-		for (size_t i = 0; i < count-1; i++) {
+		//after loop prev = end of free list
+
+		//create new memory block and append it to the used block list
+		void *ptr = parent_->allocate(pageSize_ + sizeof(detail::Block));
+		oak_assert(ptr != nullptr);
+		prevHeader->next = ptr;
+		header = static_cast<detail::Block*>(ptr);
+		header->next = nullptr;
+		header->size = pageSize_ + sizeof(detail::Block);
+
+		size_t count = (pageSize_ & ~(alignment_-1)) / objectSize_;
+
+		*prev = ptrutil::add(ptr, sizeof(detail::Block)));
+
+		**p = static_cast<void**>(*prev);
+
+		for (size_t i = 0; i < count - 1; i++) {
 			*p = ptrutil::add(p, objectSize_);
 			p = static_cast<void**>(*p);
 		}
 
 		*p = nullptr;
-		size_ += size;
 	}
 
 }

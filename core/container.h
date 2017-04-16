@@ -6,13 +6,14 @@
 #include <unordered_map>
 #include <scoped_allocator>
 
-#include "memory/block.h"
 #include "memory/oak_alloc.h"
 
 namespace oak {
 
-	template<class T>
-	using oalloc = std::scoped_allocator_adaptor<oak_allocator<T>>;
+	namespace detail {
+		template<class T>
+		using oalloc = std::scoped_allocator_adaptor<OakAllocator<T>>;
+	}
 
 	template<class T>
 	using vector = std::vector<T, oalloc<T>>;
