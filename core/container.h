@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <scoped_allocator>
 
-#include "memory/oak_alloc.h"
+#include "oak_alloc.h"
 
 namespace oak {
 

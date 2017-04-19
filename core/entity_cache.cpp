@@ -1,5 +1,8 @@
 #include "entity_cache.h"
 
+#include "scene_events.h"
+#include "event_manager.h"
+
 namespace oak {
 
 	void EntityCache(const Scene *scene) : scene_{ scene } {}
@@ -7,28 +10,28 @@ namespace oak {
 	void EntityCache::update(const Scene &scene) {
 		bool needsSort = false;
 
-		for (const auto& e : activated) {
-			ensureSize(e.index);
+		for (const auto& evt : EventManager::inst().getQueue<EntityActivateEvent>()) {
+			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
 			const auto& filter = scene_->getComponentFilter()
 			if ((filter & filter_) == filter_) {
-				if (!contains_[e]) {
-					addEntity(e);
+				if (!contains_[evt.entity]) {
+					addEntity(evt.entity);
 					needsSort = true;
 				}
 			} else {
-				if (contains_[e]) {
-					removeEntity(e);
+				if (contains_[evt.entity]) {
+					removeEntity(evt.entity);
 					needsSort = true;
 				}
 			}
 		}
 
-		for (const auto& e : deactivated) {
-			ensureSize(e.index);
+		for (const auto& evt : EventManager::inst().getQueue<EntityDeactivateEvent>()) {
+			ensureSize(evt.entity.index);
 			//if the entity is contained then remove it
-			if (contains_[e]) {
-				removeEntity(e);
+			if (contains_[evt.entity]) {
+				removeEntity(evt.entity);
 				needsSort = true;
 			}
 		}

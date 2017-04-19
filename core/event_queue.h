@@ -1,7 +1,7 @@
 #pragma once
 
-#include "memory/oak_alloc.h"
 #include "util/ptr_util.h"
+#include "oak_alloc.h"
 #include "container.h"
 
 namespace oak {
@@ -9,7 +9,7 @@ namespace oak {
 	template <class TEvent>
 	class EventQueue {
 	public:
-		static constexpr size_t EVENT_SIZE = ptrutil::alignSize(sizeof(TEvent), 8);
+		static constexpr size_t EVENT_SIZE = ptrutil::alignSize(detail::size_of_void<TEvent>::value, 8);
 
 		class const_iterator : public std::iterator<std::forward_iterator_tag, TEvent> {
 		public:

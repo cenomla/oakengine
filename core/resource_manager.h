@@ -2,7 +2,7 @@
 
 #include "util/typeid.h"
 #include "container.h"
-#include "memory/oak_alloc.h"
+#include "oak_alloc.h"
 #include "system.h"
 #include "log.h"
 

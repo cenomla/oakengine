@@ -25,7 +25,6 @@ namespace oak {
 		void addComponent(EntityId entity, size_t tid, const void* ptr);
 		void removeComponent(EntityId entity, size_t tid);
 
-
 		void* getComponent(EntityId entity, size_t tid);
 		const void* getComponent(EntityId entity, size_t tid) const;
 		bool hasComponent(EntityId entity, size_t tid) const;
@@ -46,9 +45,9 @@ namespace oak {
 		oak::vector<EntityId> entities_;
 		oak::vector<EntityId> killed_;
 
-		std::vector<std::array<void*, config::MAX_COMPONENTS>> components_;
-		std::vector<std::bitset<config::MAX_COMPONENTS>> componentMasks_;
-		std::vector<std::bitset<4>> flags_;
+		oak::vector<std::array<void*, config::MAX_COMPONENTS>> components_;
+		oak::vector<std::bitset<config::MAX_COMPONENTS>> componentMasks_;
+		oak::vector<std::bitset<4>> flags_;
 
 		//stores the generation of each entity
 		oak::vector<uint32_t> generations_;

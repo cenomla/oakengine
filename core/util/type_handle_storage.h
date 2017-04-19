@@ -5,7 +5,7 @@
 #include "typeid.h"
 #include "type_handle.h"
 
-#include "memory/oak_alloc.h"
+#include "oak_alloc.h"
 #include "container.h"
 
 namespace oak {

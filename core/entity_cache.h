@@ -1,5 +1,6 @@
 #pragma once
 
+#include "event_queue.h"
 #include "scene.h"
 #include "entity.h"
 
@@ -19,8 +20,8 @@ namespace oak {
 			filter_[util::type_id<detail::BaseComponent, T>::id] = true;
 		}
 	private:
-		oak::vector<Entity> entities_;
-		oak::vector<bool> contains_;
+		oak::vector<Entity> *entities_;
+		oak::vector<bool> *contains_;
 		std::bitset<config::MAX_COMPONENTS> filter_;
 		const Scene *scene_;
 

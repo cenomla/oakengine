@@ -4,8 +4,8 @@
 #include <cstring>
 #include <cctype>
 
-#include "memory/oak_alloc.h"
 #include "util/string_util.h"
+#include "oak_alloc.h"
 #include "log.h"
 
 namespace oak {

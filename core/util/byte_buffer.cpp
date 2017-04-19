@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#include "memory/oak_alloc.h"
+#include "oak_alloc.h"
 
 namespace oak::util {
 

@@ -4,58 +4,42 @@
 
 #include "util/typeid.h"
 #include "container.h"
-#include "memory/oak_alloc.h"
-#include "event_channel.h"
+#include "oak_alloc.h"
+#include "event_queue.h"
 
 namespace oak {
 
+	namespace detail {
+		struct BaseEvent {};
+	}
+
 	class EventManager {
-	public:
-
-		~EventManager() {
-			for (auto &it : channels_) {
-				static_cast<EventChannelBase*>(it.second.ptr)->~EventChannelBase();
-				proxyAllocator.deallocate(it.second.ptr, it.second.size);
-			}
-		}
-
-		template <typename TEvent, typename TListener>
-		void add(TListener&& listener) {
-			size_t tid = util::type_id<BaseEvt, TEvent>::id;
-			auto it = channels_.find(tid);
-			if (it == std::end(channels_)) {
-				size_t size = sizeof(EventChannel<TEvent>);
-				const Block &block = { proxyAllocator.allocate(size), size };
-				auto *channel = new (block.ptr) EventChannel<TEvent>();
-				channel->add(listener);
-				std::lock_guard<std::mutex> guard{ channelsMutex_ };
-				channels_.insert({ tid, block });
-			} else {
-				static_cast<EventChannel<TEvent>*>(it->second.ptr)->add(listener);
-			}
-			
-		}
-
-		template <typename TEvent, typename TListener>
-		void remove(TListener &&listener) {
-			std::lock_guard<std::mutex> guard{ channelsMutex_ };
-			static_cast<EventChannel<TEvent>*>(channels_.at(util::type_id<BaseEvt, TEvent>::id).ptr)->remove(listener);
-		}
-
-		template <typename TEvent>
-		void emitEvent(const TEvent &event) const {
-			size_t tid = util::type_id<BaseEvt, TEvent>::id;
-			auto it = channels_.find(tid);
-			if (it != std::end(channels_)) {
-				static_cast<EventChannel<TEvent>*>(channels_.at(tid).ptr)->emitEvent(event);
-			}
-		}
-
 	private:
-		struct BaseEvt {};
+		static EventManager *instance;
+	public:
+		static EventManager* inst() { return instance; }
 
-		std::mutex channelsMutex_;
-		oak::unordered_map<size_t, Block> channels_;
+		EventManager();
+		~EventManager();
+
+		template<class TEvent>
+		void addQueue() {
+			size_t tid = util::type_id<detail::BaseEvent, TEvent>::id;
+			size_t size = sizeof(EventQueue<TEvent>);
+			void *ptr = oak_allocator.allocate(size);
+			new (ptr) EventQueue<TEvent>{};
+			queues_[tid] = ptr;
+		}
+
+		template<class TEvent>
+		const EventQueue<TEvent>& getQueue() {
+			size_t tid = util::type_id<detail::BaseEvent, TEvent>::id;
+			return *static_cast<EventQueue<TEvent>*>(queues_[tid]);
+		}
+
+		void clear();
+	private:
+		oak::vector<void*> queues_;
 	};
 
 }

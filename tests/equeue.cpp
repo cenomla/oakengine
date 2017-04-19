@@ -1,6 +1,5 @@
 #include <event_queue.h>
 #include <log.h>
-#include <memory/memory_manager.h>
 
 struct TEvent {
 	size_t size = 8;
@@ -9,8 +8,6 @@ struct TEvent {
 };
 
 int main(int argc, char **argv) {
-
-	oak::MemoryManager mm;
 
 	oak::EventQueue<TEvent> queue;
 
