@@ -2,11 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "engine.h"
-
 namespace oak {
-	
-	ViewSystem::ViewSystem(Engine &engine) : System{ engine, "view_system" }, layerToView_{ oalloc<size_t>{} }, views_{ oalloc<ViewBlock>{} } {}
 
 	void ViewSystem::defineView(size_t viewId, const oak::vector<uint32_t>& layers) {
 		for (auto layer : layers) {

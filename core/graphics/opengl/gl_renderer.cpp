@@ -4,12 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "resource_manager.h"
+#include "system_manager.h"
 #include "view_system.h"
-#include "engine.h"
 
 namespace oak::graphics {
 
-	GLRenderer::GLRenderer(Engine &engine) : System{ engine, "gl_sprite_renderer" }, vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, vertexCount_{ 0 }, maxVertices_{ 0 } {
+	GLRenderer::GLRenderer() : vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER }, vertexCount_{ 0 }, maxVertices_{ 0 } {
 
 	}
 
@@ -32,22 +32,7 @@ namespace oak::graphics {
 		vao_.unbind();
 	}
 
-	void GLRenderer::addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object) {
-		size_t vCount = object->getVertexCount();
-		if (vCount > 0) {
-			vertexCount_ += vCount;
-			objects_.push_back({ object, position, depth, layer, rotation, scale });
-		}
-	}
-
-	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void(const GLVertexArray&, const Batch&)> &op) {
-		if (layer >= drawOperations_.size()) {
-			drawOperations_.resize(layer + 1);
-		}
-		drawOperations_[layer] = op;
-	}
-
-	void GLRenderer::render() {
+	void GLRenderer::run() {
 		//if there are no objects dont do anything
 		if (objects_.empty()) { return; }
 		//sort sprites by layer and material
@@ -63,7 +48,7 @@ namespace oak::graphics {
 			size_t id = objects_.at(0).object->getMaterialId();
 			uint32_t layer = objects_.at(0).layer;
 
-			auto& resManager = Engine::inst().getSystem<ResourceManager>();
+			auto& resManager = ResourceManager::inst();
 			Batch currentBatch{ &resManager.require<GLMaterial>(id), index, 0, 0, layer }; //first batch
 			//iterate through the sorted object
 			for (const auto& it : objects_) {
@@ -110,9 +95,9 @@ namespace oak::graphics {
 		}
 
 
-		auto &viewSystem = Engine::inst().getSystem<ViewSystem>();
+		auto& viewSystem = SystemManager::inst().getSystem<ViewSystem>();
 
-		for (const auto &batch : batches_) {
+		for (const auto& batch : batches_) {
 			if (batch.layer < drawOperations_.size() && drawOperations_[batch.layer]) {
 				drawOperations_[batch.layer](vao_, batch);
 			} else {
@@ -132,6 +117,21 @@ namespace oak::graphics {
 
 		objects_.clear();
 		batches_.clear();
+	}
+
+	void GLRenderer::addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object) {
+		size_t vCount = object->getVertexCount();
+		if (vCount > 0) {
+			vertexCount_ += vCount;
+			objects_.push_back({ object, position, depth, layer, rotation, scale });
+		}
+	}
+
+	void GLRenderer::setDrawOp(uint32_t layer, const std::function<void(const GLVertexArray&, const Batch&)> &op) {
+		if (layer >= drawOperations_.size()) {
+			drawOperations_.resize(layer + 1);
+		}
+		drawOperations_[layer] = op;
 	}
 
 }

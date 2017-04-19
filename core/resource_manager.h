@@ -2,10 +2,13 @@
 
 #include "util/typeid.h"
 #include "container.h"
-#include "system.h"
 #include "log.h"
 
 namespace oak {
+
+	namespace detail {
+		struct BaseResource {};
+	}
 
 	class ResourceListHandlerBase {
 	public:
@@ -33,44 +36,42 @@ namespace oak {
 		oak::unordered_map<size_t, T> resources_;
 	};
 
-	class ResourceManager : public System {
+	class ResourceManager {
+	private:
+		static ResourceManager *instance;
 	public:
-		ResourceManager(Engine &engine) : System(engine, "resource_manager") {}
+		static ResourceManager& inst() { return *instance; }
 
-		void destroy() override {
-			for (auto block : resourceHandles_) {
-				if (block.ptr != nullptr) {
-					static_cast<ResourceListHandlerBase*>(block.ptr)->~ResourceListHandlerBase();
-					proxyAllocator.deallocate(block.ptr, block.size);
-				}
-			}
-		}
+		ResourceManager();
+		~ResourceManager();
 
 		template<class T, class... TArgs>
 		T& add(const oak::string &name, TArgs&&... args) {
-			size_t tid = util::type_id<Resource, T>::id;
+			size_t tid = util::type_id<detail::BaseResource, T>::id;
 
-			if (tid >= resourceHandles_.size()) { resourceHandles_.resize(tid+1); }
-			if (resourceHandles_.at(tid).ptr == nullptr) { 
+			if (resourceHandles_.size() <= tid) { 
+				resourceHandles_.resize(tid+1);
+			}
+			if (resourceHandles_[tid] == nullptr) { 
 				auto ptr = static_cast<ResourceListHandler<T>*>(proxyAllocator.allocate(sizeof(ResourceListHandler<T>)));
 				new (ptr) ResourceListHandler<T>{};
-				resourceHandles_[tid] = { ptr, sizeof(ResourceListHandler<T>) }; 
+				resourceHandles_[tid] = ptr;
 			}
 
-			auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
-			return *plh->addResource(std::hash<oak::string>{}(name), std::forward<TArgs>(args)...);
+			auto ptr = static_cast<ResourceListHandler<T>*>(resourceHandles_[tid]);
+			return *ptr->addResource(std::hash<oak::string>{}(name), std::forward<TArgs>(args)...);
 		}
 
 		template<class T>
 		const T* try_require(size_t id) {
-			size_t tid = util::type_id<Resource, T>::id;
+			size_t tid = util::type_id<detail::BaseResource, T>::id;
 			
-			if (tid < resourceHandles_.size() && resourceHandles_.at(tid).ptr != nullptr) {
-				const auto plh = static_cast<ResourceListHandler<T>*>(resourceHandles_.at(tid).ptr);
+			if (tid < resourceHandles_.size() && resourceHandles_[tid] != nullptr) {
+				const auto handle = static_cast<ResourceListHandler<T>*>(resourceHandles_[tid]);
 
-				const auto pres = plh->getResource(id);
-				if (pres != nullptr) {
-					return pres;
+				const auto res = handle->getResource(id);
+				if (res != nullptr) {
+					return res;
 				}
 			}
 
@@ -79,10 +80,10 @@ namespace oak {
 
 		template<class T>
 		const T& require(size_t id) {
-			const auto ptr = try_require<T>(id);
+			const auto res = try_require<T>(id);
 
-			if (ptr != nullptr) {
-				return *ptr;
+			if (res != nullptr) {
+				return *res;
 			}
 
 			log_print_out("failed to find resource: %u", id);
@@ -95,11 +96,7 @@ namespace oak {
 		}
 
 	private:
-		struct Resource {};
-
-		oak::vector<Block> resourceHandles_;
+		oak::vector<ResourceListHandlerBase*> resourceHandles_;
 	};
-
-
 
 }

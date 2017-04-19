@@ -11,7 +11,6 @@ namespace oak {
 
 	class ViewSystem : public System {
 	public:
-		ViewSystem(Engine &engine);
 
 		void defineView(size_t viewId, const oak::vector<uint32_t>& layers);
 		void setView(size_t viewId, const View& view);

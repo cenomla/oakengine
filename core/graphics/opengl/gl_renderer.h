@@ -21,14 +21,14 @@ namespace oak::graphics {
 
 	class GLRenderer : public System {
 	public:
-		GLRenderer(Engine &engine);
+		GLRenderer();
 
 		void init() override;
 
+		void run() override;
+
 		void addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object);
 		void setDrawOp(uint32_t layer, const std::function<void(const GLVertexArray&, const Batch&)> &op);
-
-		void render();
 
 	private:
 		struct ObjectPos {
@@ -38,7 +38,7 @@ namespace oak::graphics {
 			uint32_t layer;
 			float rotation, scale;
 
-			inline bool operator<(const ObjectPos &other) const { 
+			bool operator<(const ObjectPos &other) const { 
 				return layer == other.layer ? 
 					depth < other.depth : 
 					layer < other.layer; 
