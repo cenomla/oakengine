@@ -1,17 +1,16 @@
 #pragma once
 
 #include <cstdio>
+#include <cinttypes>
 
-#include "system.h"
+#include "container.h"
 
 namespace oak {
 
-	class SaveManager : public System {
+	class SaveManager {
 	public:
 		static constexpr uint32_t SAVE = 0x01;
 		static constexpr uint32_t LOAD = 0x02;
-
-		SaveManager(Engine& engine);
 
 		void open(const oak::string& path, uint32_t flags);
 		void close();
@@ -22,7 +21,7 @@ namespace oak {
 		inline bool isOpen() const { return file_ != nullptr; }
 
 	private:
-		FILE *file_;
+		FILE *file_ = nullptr;
 		size_t fsize_;
 		uint32_t flags_;
 	};

@@ -25,7 +25,7 @@ namespace oak::util {
 	void ByteBuffer::operator=(const ByteBuffer& other) {
 		destroy();
 		capacity_ = other.capacity_;
-		buffer_ = static_cast<char*>(proxyAllocator.allocate(capacity_));
+		buffer_ = static_cast<char*>(oak_allocator.allocate(capacity_));
 		pos_ = other.pos_;
 		mark_ = other.mark_;
 		owns_ = other.owns_;
@@ -68,9 +68,9 @@ namespace oak::util {
 	void ByteBuffer::resize(size_t nsize) {
 		if (owns_ && buffer_ != nullptr) {
 			if (nsize > capacity_) {
-				char *temp = static_cast<char*>(proxyAllocator.allocate(nsize));
+				char *temp = static_cast<char*>(oak_allocator.allocate(nsize));
 				memcpy(temp, buffer_, capacity_);
-				proxyAllocator.deallocate(buffer_, capacity_);
+				oak_allocator.deallocate(buffer_, capacity_);
 				buffer_ = temp;
 				capacity_ = nsize;
 
@@ -86,13 +86,13 @@ namespace oak::util {
 
 	void ByteBuffer::init() {
 		if (buffer_ == nullptr) {
-			buffer_ = static_cast<char*>(proxyAllocator.allocate(capacity_));
+			buffer_ = static_cast<char*>(oak_allocator.allocate(capacity_));
 		}
 	}
 
 	void ByteBuffer::destroy() {
 		if (buffer_ != nullptr && owns_) {
-			proxyAllocator.deallocate(buffer_, capacity_);
+			oak_allocator.deallocate(buffer_, capacity_);
 			buffer_ = nullptr;
 			capacity_ = 0;
 			pos_ = 0;

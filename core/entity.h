@@ -2,11 +2,13 @@
 
 #include "util/typeid.h"
 #include "entity_id.h"
+#include "scene.h"
 
 namespace oak {
 
 	class Entity {
 	public:
+		Entity(EntityId id, Scene *scene) : id_{ id }, scene_{ scene } {}
 
 		bool operator==(const Entity& other) const { return id_ == other.id_ && scene_ == other.scene_; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }

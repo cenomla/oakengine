@@ -8,7 +8,7 @@ namespace oak {
 
 	class EntityCache {
 	public:
-		EntityCache(const Scene *scene);
+		EntityCache(Scene *scene);
 
 		void update();
 
@@ -20,10 +20,10 @@ namespace oak {
 			filter_[util::type_id<detail::BaseComponent, T>::id] = true;
 		}
 	private:
-		oak::vector<Entity> *entities_;
-		oak::vector<bool> *contains_;
+		oak::vector<Entity> entities_;
+		oak::vector<bool> contains_;
 		std::bitset<config::MAX_COMPONENTS> filter_;
-		const Scene *scene_;
+		Scene *scene_;
 
 		void addEntity(EntityId entity);
 		void removeEntity(EntityId entity);

@@ -17,12 +17,12 @@ namespace oak {
 	}
 
 	template<class T>
-	using vector = std::vector<T, oalloc<T>>;
+	using vector = std::vector<T, detail::oalloc<T>>;
 
 	template<class T>
-	using deque = std::deque<T, oalloc<T>>;
+	using deque = std::deque<T, detail::oalloc<T>>;
 
-	using string = std::basic_string<char, std::char_traits<char>, oalloc<char>>;
+	using string = std::basic_string<char, std::char_traits<char>, detail::oalloc<char>>;
 }
 
 
@@ -41,5 +41,5 @@ namespace std {
 namespace oak {
 
 	template<class U, class T>
-	using unordered_map = std::unordered_map<U, T, std::hash<U>, std::equal_to<U>, oalloc<std::pair<const U, T>>>;
+	using unordered_map = std::unordered_map<U, T, std::hash<U>, std::equal_to<U>, detail::oalloc<std::pair<const U, T>>>;
 }

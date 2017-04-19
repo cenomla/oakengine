@@ -1,12 +1,9 @@
 #include "save_manager.h"
 
 #include "file_manager.h"
-#include "engine.h"
+#include "log.h"
 
 namespace oak {
-
-	SaveManager::SaveManager(Engine& engine) : System{ engine, "save_manager" }, file_{ nullptr }, fsize_{ 0 }, flags_{ 0 } {}
-
 
 	void SaveManager::open(const oak::string& path, uint32_t flags) {
 		if (file_ != nullptr) { return; }
@@ -16,7 +13,7 @@ namespace oak {
 		} else if ((flags & LOAD) == LOAD) {
 			str = "rb";
 		}
-		file_ = fopen(Engine::inst().getSystem<FileManager>().resolve(path).c_str(), str);
+		file_ = fopen(path.c_str(), str);
 		if (file_ == nullptr) { //file failed to open file
 			log_print_out("failed to open file: %s", path.c_str());
 			return;

@@ -34,8 +34,8 @@ namespace oak {
 		template<class TSystem>
 		void removeSystem() {
 			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
-			system_[tid]->terminate();
-			system_[tid] = nullptr;
+			systems_[tid]->terminate();
+			systems_[tid] = nullptr;
 			names_[tid].clear();
 		}
 

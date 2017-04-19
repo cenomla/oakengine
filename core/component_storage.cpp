@@ -17,9 +17,10 @@ namespace oak {
 		}
 	}
 
-	void ComponentStorage::addComponent(EntityId entity) {
+	void* ComponentStorage::addComponent(EntityId entity) {
 		auto component = makeValid(entity);
 		handle_->construct(component);
+		return component;
 	}
 
 	void ComponentStorage::addComponent(EntityId entity, const void *ptr) {

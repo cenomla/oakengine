@@ -1,8 +1,6 @@
 #include "lua_puper.h"
 
 #include "script/luah.h"
-#include "binding.h"
-#include "entity.h"
 
 namespace oak {
 
@@ -87,10 +85,6 @@ namespace oak {
 
 	void LuaPuper::pup(oak::string &data, const ObjInfo &info) {
 		lua_pup<oak::string>(io_, L_, index_, data, info);
-	}
-
-	void LuaPuper::pup(Entity &data, const ObjInfo &info) {
-		lua_pup<Entity>(io_, L_, index_, data, info);
 	}
 
 }

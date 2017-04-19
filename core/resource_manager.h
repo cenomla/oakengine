@@ -53,7 +53,7 @@ namespace oak {
 				resourceHandles_.resize(tid+1);
 			}
 			if (resourceHandles_[tid] == nullptr) { 
-				auto ptr = static_cast<ResourceListHandler<T>*>(proxyAllocator.allocate(sizeof(ResourceListHandler<T>)));
+				auto ptr = static_cast<ResourceListHandler<T>*>(oak_allocator.allocate(sizeof(ResourceListHandler<T>)));
 				new (ptr) ResourceListHandler<T>{};
 				resourceHandles_[tid] = ptr;
 			}

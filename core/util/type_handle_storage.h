@@ -16,7 +16,7 @@ namespace oak {
 			for (auto& ptr : handles_) {
 				if (ptr != nullptr) {
 					static_cast<TypeHandleBase*>(ptr)->~TypeHandleBase();
-					proxyAllocator.deallocate(ptr, HSize);
+					oak_allocator.deallocate(ptr, HSize);
 				}
 			}
 		}
@@ -27,9 +27,9 @@ namespace oak {
 			if (handles_.size() <= tid) {
 				handles_.resize(tid + 1);
 			}
-			if (handles_[tid].ptr != nullptr) { return; }
-			void *ptr = proxyAllocator.allocate(HSize);
-			new (block.ptr) TypeHandle<T>{ name };
+			if (handles_[tid] != nullptr) { return; }
+			void *ptr = oak_allocator.allocate(HSize);
+			new (ptr) TypeHandle<T>{ name };
 			handles_[tid] = ptr;
 			nameMap_[name] = tid;
 		}

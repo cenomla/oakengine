@@ -1,14 +1,6 @@
-#include "lua_manager.h"
-
-#include "script/binding.h"
-#include "engine.h"
-#include "entity.h"
+#include "lua_system.h"
 
 namespace oak {
-
-	LuaManager::LuaManager(Engine &engine) : System{ engine, "lua_manager" } {
-
-	}
 
 	void LuaManager::init() {
 		L_ = luah::createState();
@@ -33,10 +25,10 @@ namespace oak {
 		luah::setMetatable(L_, "oak");
 		lua_setglobal(L_, "oak");
 		
-		luah::registerBindings(L_);
+		//luah::registerBindings(L_);
 	}
 
-	void LuaManager::destroy() {
+	void LuaManager::terminate() {
 		luah::destroyState(L_);
 	}
 

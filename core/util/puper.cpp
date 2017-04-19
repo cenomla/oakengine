@@ -1,7 +1,5 @@
 #include "puper.h"
 
-#include "byte_buffer.h"
-
 namespace oak {
 
 	Puper::~Puper() {}
@@ -18,7 +16,6 @@ namespace oak {
 	void pup(Puper &puper, double &data, const ObjInfo &info) { puper.pup(data, info); }
 	void pup(Puper &puper, bool &data, const ObjInfo &info) { puper.pup(data, info); }
 	void pup(Puper &puper, oak::string &data, const ObjInfo &info) { puper.pup(data, info); }
-	void pup(Puper &puper, Entity &data, const ObjInfo &info) { puper.pup(data, info); }
 	
 	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info) {
 		puper.pup(data.x, info + ObjInfo{ "x" });

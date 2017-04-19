@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cinttypes>
+#include <cstddef>
+
 namespace oak {
 
 	namespace config {

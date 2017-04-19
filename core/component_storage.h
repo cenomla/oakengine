@@ -10,8 +10,9 @@ namespace oak {
 	class ComponentStorage {
 	public:
 		ComponentStorage(const TypeHandleBase *handle);
+		~ComponentStorage();
 
-		void addComponent(EntityId entity);
+		void* addComponent(EntityId entity);
 		void addComponent(EntityId entity, const void *ptr);
 		void removeComponent(EntityId entity);
 

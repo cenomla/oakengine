@@ -1,14 +1,14 @@
 #pragma once
 
-
 #include <chrono>
 
 #include "debug_vars.h"
 #include "container.h"
-#include "system.h"
-#include "pup.h"
 
 namespace oak {
+
+	class Puper;
+	class ObjInfo;
 
 	struct PerformanceProfile {
 		std::chrono::high_resolution_clock::time_point start;
@@ -21,10 +21,8 @@ namespace oak {
 
 	void pup(Puper& puper, DebugVars& data, const ObjInfo& info);
 
-	class Debugger : public System {
+	class Debugger {
 	public:
-		Debugger(Engine &engine);
-
 		size_t createProfile(const oak::string &name);
 		void startProfile(size_t perfId);
 		void endProfile(size_t perfId);

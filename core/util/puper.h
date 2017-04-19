@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <glm/glm.hpp>
 
 #include "container.h"
@@ -13,7 +12,7 @@ namespace oak {
 		oak::string name;
 		uint32_t flags = 0;
 
-		inline const ObjInfo& combine(const ObjInfo &other) {
+		const ObjInfo& combine(const ObjInfo &other) {
 			if (!name.empty()) {
 				if (!other.name.empty()) {
 					name = other.name + "." + name;
@@ -36,8 +35,6 @@ namespace oak {
 		OUT
 	};
 
-	class Entity;
-
 	class Puper {
 	public:
 		virtual ~Puper();
@@ -54,10 +51,9 @@ namespace oak {
 		virtual void pup(double &data, const ObjInfo &info) = 0;
 		virtual void pup(bool &data, const ObjInfo &info) = 0;
 		virtual void pup(oak::string &data, const ObjInfo &info) = 0;
-		virtual void pup(Entity &data, const ObjInfo &info) = 0;
 	
-		inline void setIo(PuperIo io) { io_ = io; }
-		inline PuperIo getIo() const { return io_; }
+		void setIo(PuperIo io) { io_ = io; }
+		PuperIo getIo() const { return io_; }
 	protected:
 		PuperIo io_ = PuperIo::OUT;
 	};

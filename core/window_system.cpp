@@ -1,28 +1,29 @@
-#include "window.h"
+#include "window_system.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "event_manager.h"
 #include "input_events.h"
 #include "log.h"
 
 namespace oak {
 
-	void WindowSystem::WindowSystem(const oak::string& title) : title_{ title } {}
+	WindowSystem::WindowSystem(const oak::string& title) : title_{ title } {}
 
 	void WindowSystem::init() {
 		createWindow();
 		setCallbacks();
 	}
 
-	void WindowSystem::destroy() {
+	void WindowSystem::terminate() {
 		glfwDestroyWindow(window_);
 		glfwTerminate();
 	}
 
 	void WindowSystem::run() {
 		glfwSwapBuffers(window_);
-		glViewport(0, 0, windowWidth_, windowHeight_);
+		glViewport(0, 0, 1280, 720);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -32,9 +33,6 @@ namespace oak {
 		}
 
 		glfwPollEvents();
-		if (glfwWindowShouldClose(window_)) {
-			engine_.getEventManager().emitEvent(QuitEvent{});
-		}
 	}
 
 	void WindowSystem::createWindow() {
@@ -57,7 +55,7 @@ namespace oak {
 		glfwSetWindowUserPointer(window_, this);
 
 		glfwMakeContextCurrent(window_);
-		glfwSetSwapInterval(1);
+		glfwSwapInterval(1);
 
 		if (!gladLoadGL()) {
 			log_print_err("cannot load gl");

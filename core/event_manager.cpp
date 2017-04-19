@@ -10,17 +10,16 @@ namespace oak {
 	}
 
 	EventManager::~EventManager() {
-		size_t size = sizeof(EventChannel<void>);
 		for (auto& queue : queues_) {
-			queue->~EventQueue<void>();
-			oak_allocator.deallocate(queue, size);
+			queue->~EventQueueBase();
+			oak_allocator.deallocate(queue, sizeof(EventQueueBase));
 		}
 		instance = nullptr;
 	}
 
 	void EventManager::clear() {
 		for (auto& queue : queues_) {
-			static_cast<EventQueue<void>*>(queue)->clear();
+			queue->clear();
 		}
 	}
 

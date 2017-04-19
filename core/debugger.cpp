@@ -1,5 +1,7 @@
 #include "debugger.h"
 
+#include "pup.h"
+
 namespace oak {
 
 	DebugVars debugVars;
@@ -10,8 +12,6 @@ namespace oak {
 		pup(puper, data.usedMemory, info + ObjInfo{ "used_memory" });
 		pup(puper, data.allocatedMemory, info + ObjInfo{ "allocated_memory" });
 	}
-
-	Debugger::Debugger(Engine &engine) : System{ engine, "debugger" } {}
 
 	size_t Debugger::createProfile(const oak::string& name) {
 		size_t id = profiles_.size();

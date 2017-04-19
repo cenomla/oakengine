@@ -1,7 +1,6 @@
 #include "buffer_puper.h"
 
 #include "util/byte_buffer.h"
-#include "entity.h"
 
 namespace oak {
 
@@ -100,15 +99,6 @@ namespace oak {
 			buffer_->write(data);
 		} else {
 			data = buffer_->read<oak::string>();
-		}
-	}
-
-	void BufferPuper::pup(Entity& data, const ObjInfo& info) {
-		if (io_ == PuperIo::OUT) {
-			buffer_->write(data.index());
-			buffer_->write(reinterpret_cast<uintptr_t>(data.getManager()));
-		} else {
-			data = { buffer_->read<uint64_t>(), reinterpret_cast<EntityManager*>(buffer_->read<uintptr_t>()) };
 		}
 	}
 

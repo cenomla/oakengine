@@ -4,14 +4,6 @@
 
 namespace oak {
 
-	void pup(Puper &puper, PrefabComponent &comp, const ObjInfo &info) {
-		pup(puper, comp.prefab, info);
-		//pup std::bitset
-		uint64_t value = comp.ownsMask.to_ullong();
-		pup(puper, value, info);
-		comp.ownsMask = { value };
-	}
-
 	void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info) {
 		pup(puper, comp.position, info + ObjInfo{ "position" });
 		pup(puper, comp.scale, info + ObjInfo{ "scale" });

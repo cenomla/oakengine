@@ -1,19 +1,21 @@
 #include "entity_cache.h"
 
+#include <algorithm>
+
 #include "scene_events.h"
 #include "event_manager.h"
 
 namespace oak {
 
-	void EntityCache(const Scene *scene) : scene_{ scene } {}
+	EntityCache::EntityCache(Scene *scene) : scene_{ scene } {}
 
-	void EntityCache::update(const Scene &scene) {
+	void EntityCache::update() {
 		bool needsSort = false;
 
 		for (const auto& evt : EventManager::inst().getQueue<EntityActivateEvent>()) {
 			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
-			const auto& filter = scene_->getComponentFilter()
+			const auto& filter = scene_->getComponentFilter(evt.entity);
 			if ((filter & filter_) == filter_) {
 				if (!contains_[evt.entity]) {
 					addEntity(evt.entity);

@@ -1,24 +1,18 @@
 #pragma once
 
-#include <string>
-#include <bitset>
 #include <glm/glm.hpp>
 
-#include "config.h"
 #include "graphics/font.h"
 #include "graphics/renderable.h"
 #include "graphics/sprite.h"
-#include "prefab.h"
+#include "container.h"
 #include "resource.h"
 #include "entity.h"
-#include "pup.h"
 
 namespace oak {
 
-	struct PrefabComponent {
-		Resource<Prefab> prefab;
-		std::bitset<config::MAX_COMPONENTS> ownsMask;
-	};
+	class Puper;
+	class ObjInfo;
 
 	struct TransformComponent {
 		glm::vec3 position{ 0.0f };
@@ -49,7 +43,7 @@ namespace oak {
 
 	struct TextComponent : public graphics::Renderable {
 		Resource<graphics::Font> font{ 0 };
-		oak::string text{ "" };
+		oak::string text;
 		glm::vec2 offset{ 0.0f };
 		uint32_t layer = 0;
 		float size = 24.0f;
@@ -81,11 +75,6 @@ namespace oak {
 		float dynamicFriction = 0.0f;
 	};
 
-	struct CallbackComponent {
-		std::function<void (Entity e)> callback;
-	};
-
-	void pup(Puper &puper, PrefabComponent &comp, const ObjInfo &info);
 	void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info);
 	void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info);
 	void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info);

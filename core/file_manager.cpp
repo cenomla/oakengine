@@ -4,11 +4,8 @@
 
 #include "log.h"
 
-
 namespace oak {
 namespace fs = std::experimental::filesystem;
-
-	FileManager::FileManager(Engine &engine) : System{ engine, "file_manager" } {}
 
 	void FileManager::mount(const oak::string& path, const oak::string& mountPoint) {
 		mounts_.insert({ mountPoint, path });

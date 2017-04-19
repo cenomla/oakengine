@@ -1,5 +1,7 @@
 #include "scene.h"
 
+#include <algorithm>
+
 #include "event_manager.h"
 #include "scene_events.h"
 #include "component_storage.h"
@@ -14,7 +16,7 @@ namespace oak {
 			a.reset();
 		}
 		entities_.clear();
-		generation_.clear();
+		generations_.clear();
 		freeIndices_.clear();
 		componentPools_.clear();
 	}
@@ -22,11 +24,11 @@ namespace oak {
 	EntityId Scene::createEntity() {
 		EntityId id;
 		if (freeIndices_.empty()) {
-			id = { static_cast<uint32_t>(generations_.size()), 0) };
-			generation_.push_back(0);
+			id = { static_cast<uint32_t>(generations_.size()), 0 };
+			generations_.push_back(0);
 		} else {
 			uint32_t i = freeIndices_.front();
-			id = { i, generation_[i] };
+			id = { i, generations_[i] };
 			freeIndices_.pop_front();
 		}
 		
@@ -59,9 +61,9 @@ namespace oak {
 		return flags_[entity][0];
 	}
 
-	void Scene::addComponent(EntityId entity, size_t tid) {
+	void* Scene::addComponent(EntityId entity, size_t tid) {
 		componentMasks_[entity][tid] = true;
-		componentPools_[tid]->addComponent(entity);
+		return componentPools_[tid]->addComponent(entity);
 	}
 
 	void Scene::addComponent(EntityId entity, size_t tid, const void *ptr) {
@@ -70,7 +72,7 @@ namespace oak {
 	}
 
 	void Scene::removeComponent(EntityId entity, size_t tid) {
-		componentMask_[entity][tid] = false;
+		componentMasks_[entity][tid] = false;
 		componentPools_[tid]->removeComponent(entity);
 	}
 
@@ -86,12 +88,16 @@ namespace oak {
 		return componentMasks_[entity][tid];
 	}
 
+	const std::bitset<config::MAX_COMPONENTS>& Scene::getComponentFilter(EntityId entity) const {
+		return componentMasks_[entity];
+	}
+
 	void Scene::update() {
 		for (const auto& e : killed_) {
 			//remove all the entities components
 			removeAllComponents(e);
 			//remove the entity from the alive list and recycle the index
-			entities_.alive.erase(std::remove(std::begin(entities_.alive), std::end(entities_.alive), e), std::end(entities_.alive));
+			entities_.erase(std::remove(std::begin(entities_), std::end(entities_), e), std::end(entities_));
 			freeIndices_.push_back(e);
 		}
 

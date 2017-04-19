@@ -9,9 +9,9 @@ namespace oak {
 		TypeHandleBase(const oak::string &name, size_t size) : name_{ name }, size_{ size } {};
 		virtual ~TypeHandleBase() {};
 		virtual void construct(void *object) const = 0;
-		virtual void construct(void *src, void *target) const = 0;
-		virtual void copy(void *src, void *target) const = 0;
-		virtual void destruct(void *comp) const = 0;
+		virtual void construct(void *object, const void *src) const = 0;
+		virtual void copy(void *object, const void *src) const = 0;
+		virtual void destruct(void *object) const = 0;
 		virtual void serialize(Puper &puper, void *data, const ObjInfo &info) const = 0;
 		size_t getSize() const { return size_; }
 		const oak::string& getName() const { return name_; }
@@ -28,11 +28,11 @@ namespace oak {
 			new (object) T{};
 		}
 
-		void construct(void *object, void *src) const override {
+		void construct(void *object, const void *src) const override {
 			new (object) T{ *static_cast<T*>(src) };
 		}
 
-		void copy(void *object, void *src) const override {
+		void copy(void *object, const void *src) const override {
 			*static_cast<T*>(object) = *static_cast<T*>(src);
 		}
 

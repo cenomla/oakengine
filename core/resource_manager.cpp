@@ -5,7 +5,7 @@ namespace oak {
 	ResourceManager *ResourceManager::instance = nullptr;
 
 	ResourceManager::ResourceManager() {
-		instance = this
+		instance = this;
 	}
 
 	ResourceManager::~ResourceManager() {
@@ -13,7 +13,7 @@ namespace oak {
 		for (auto handle : resourceHandles_) {
 			if (handle != nullptr) {
 				handle->~ResourceListHandlerBase();
-				oak_allocator.deallocate(handle, sizeof(ResourceListHandler<void>));
+				oak_allocator.deallocate(handle, sizeof(ResourceListHandler<detail::BaseResource>));
 			}
 		}
 	}

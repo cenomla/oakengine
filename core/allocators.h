@@ -35,7 +35,7 @@ namespace oak {
 		ProxyAllocator();
 		~ProxyAllocator();
 
-		void* allocator(size_t size) override;
+		void* allocate(size_t size) override;
 		void deallocate(void *ptr, size_t size) override;
 
 	private:

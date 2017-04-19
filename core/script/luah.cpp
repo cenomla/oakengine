@@ -102,7 +102,7 @@ namespace oak {
 	}
 
 	void luah::getField(lua_State *L, int idx, const oak::string& field) {
-		const oak::string delimeters{ ".[]", oak::frameAllocator };
+		const oak::string delimeters{ ".[]", oak_allocator };
 
 		lua_pushvalue(L, idx);
 
@@ -130,7 +130,7 @@ namespace oak {
 	}
 
 	void luah::setField(lua_State *L, int idx, const oak::string& field) {
-		oak::string delimeters{ ".[]", oak::frameAllocator };
+		oak::string delimeters{ ".[]", oak_allocator };
 		
 		lua_pushvalue(L, idx);
 

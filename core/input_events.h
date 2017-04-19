@@ -10,7 +10,7 @@ namespace oak {
 	struct WindowCreateEvent {
 	};
 
-	struct WindowDestroyEvent 
+	struct WindowDestroyEvent {
 	};
 
 	struct WindowResizeEvent {

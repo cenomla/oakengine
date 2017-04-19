@@ -111,12 +111,4 @@ namespace oak {
 		}
 	}
 
-	void FilePuper::pup(Entity& data, const ObjInfo& info) {
-		if (io_ == PuperIo::OUT) {
-			fwrite(&data, sizeof(data), 1, file_);
-		} else {
-			fread(&data, sizeof(data), 1, file_);
-		}
-	}
-
 }

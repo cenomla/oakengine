@@ -20,7 +20,6 @@ namespace oak {
 	void pup(Puper &puper, glm::vec2 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec3 &data, const ObjInfo &info);
 	void pup(Puper &puper, glm::vec4 &data, const ObjInfo &info);
-	void pup(Puper &puper, Entity &data, const ObjInfo &info);
 	
 	template<class T>
 	void pup(Puper &puper, oak::vector<T> &data, const ObjInfo &info) {

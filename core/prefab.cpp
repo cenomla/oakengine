@@ -2,39 +2,43 @@
 
 namespace oak {
 
-	Prefab::Prefab(EntityManager *manager) : manager_{ manager } {}
+	Prefab::Prefab(Scene *scene, ComponentHandleStorage *handleStorage) : scene_{ scene }, handleStorage_{ handleStorage } {}
 	
 	Prefab::~Prefab() {
 		clear();
 	}
 
-	Entity Prefab::createInstance(float depth) const {
-		Entity entity = manager_->createEntity(depth);
-		const auto& chs = Engine::inst().getSystem<ComponentHandleStorage>();
+	EntityId Prefab::createInstance() const {
+		EntityId entity = scene_->createEntity();
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];
-			if (it.second != nullptr) {
-				if (it.first) {
-					manager_->addComponent(entity.index(), i, it.second);
-				} else {
-					void *comp = manager_->addComponent(entity.index(), i);
-					const auto& ch = chs.getHandle(i);
-					ch->construct(it.second, comp);
-				}
+			if (it != nullptr) {
+				scene_->addComponent(entity, i, it);
 			}
 		}
 
 		return entity;
 	}
 
+	void* Prefab::addComponent(size_t tid) {
+		const auto& handle = handleStorage_->getHandle(tid);
+		void *comp = oak_allocator.allocate(handle->getSize());
+		handle->construct(comp);
+		//ensure size
+		if (tid >= storage_.size()) {
+			storage_.resize(tid + 1);
+		}
+		storage_[tid] = comp;
+		return comp;
+	}
+
 	void Prefab::clear() {
-		const auto& chs = Engine::inst().getSystem<ComponentHandleStorage>();
 		for (size_t i = 0; i < storage_.size(); i++) {
-			const auto &it = storage_[i];
-			if (it.second != nullptr) {
-				const auto& ch = chs.getHandle(i);
-				ch->destruct(it.second);
-				proxyAllocator.deallocate(it.second, ch->size());
+			const auto& it = storage_[i];
+			if (it != nullptr) {
+				const auto& handle = handleStorage_->getHandle(i);
+				handle->destruct(it);
+				oak_allocator.deallocate(it, handle->getSize());
 			}
 		}
 		storage_.clear();

@@ -21,7 +21,7 @@ namespace oak {
 		detail::Block *p = memList_;
 		detail::Block *next = nullptr;
 		while (p != nullptr) {
-			next = p->next;
+			next = static_cast<detail::Block*>(p->next);
 			free(p);
 			p = next;
 			numAllocs_ --;
@@ -52,14 +52,14 @@ namespace oak {
 				if (prev != nullptr) {
 					prev->next = p->next;
 				} else {
-					memList_ = p->next;
+					memList_ = static_cast<detail::Block*>(p->next);
 				}
 				numAllocs_--;
 				free(p);
 				break;
 			}
 			prev = p;
-			p = p->next;
+			p = static_cast<detail::Block*>(p->next);
 		}
 	}
 
@@ -79,7 +79,7 @@ namespace oak {
 		detail::Block *prev = nullptr;
 		while (p) {
 			prev = p;
-			p = p->next;
+			p = static_cast<detail::Block*>(p->next);
 
 			parent_->deallocate(prev->next, prev->size);
 		}
@@ -98,7 +98,7 @@ namespace oak {
 			}
 			blockStart_ = header->next;
 			currentPos_ = ptrutil::add(blockStart_, sizeof(detail::Block));
-			adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment);
+			adjustment = ptrutil::alignForwardAdjustment(currentPos_, alignment_);
 			alignedAddress = reinterpret_cast<uintptr_t>(currentPos_) + adjustment;
 		}
 
@@ -110,7 +110,7 @@ namespace oak {
 
 	void LinearAllocator::clear() {
 		blockStart_ = start_;
-		currentPos_ = ptrutil::add(blockStart_, sizeof(AllocationHeader));
+		currentPos_ = ptrutil::add(blockStart_, sizeof(detail::Block));
 	}
 
 	void LinearAllocator::grow() {
@@ -142,7 +142,7 @@ namespace oak {
 		detail::Block *prev = nullptr;
 		while (p) {
 			prev = p;
-			p = p->next;
+			p = static_cast<detail::Block*>(p->next);
 
 			parent_->deallocate(prev->next, prev->size);
 		}
@@ -162,7 +162,7 @@ namespace oak {
 			//If allocation doesn't fit in this FreeBlock, try the next
 			if (p->size < totalSize) {
 				prev = p;
-				p = p->next;
+				p = static_cast<detail::Block*>(p->next);
 				if (p->next == nullptr) {
 					grow(p);
 				}
@@ -177,7 +177,7 @@ namespace oak {
 				if (prev != nullptr) {
 					prev->next = p->next;
 				} else {
-					freeList_ = p->next;
+					freeList_ = static_cast<detail::Block*>(p->next);
 				}
 			} else {
 				//else create a new FreeBlock containing remaining memory
@@ -225,7 +225,7 @@ namespace oak {
 			}
 
 			prev = p;
-			p = p->next;
+			p = static_cast<detail::Block*>(p->next);
 		}
 
 		if (prev == nullptr) {
@@ -235,9 +235,9 @@ namespace oak {
 
 			freeList_ = prev;
 		} else if (reinterpret_cast<uintptr_t>(prev) + prev->size == blockStart) {
-			prev->size += block_size;
+			prev->size += blockSize;
 		} else {
-			Block *temp = reinterpret_cast<Block*>(blockStart);
+			detail::Block *temp = reinterpret_cast<detail::Block*>(blockStart);
 			temp->size = blockSize;
 			temp->next = prev->next;
 			prev->next = temp;
@@ -259,7 +259,7 @@ namespace oak {
 
 		while (header) {
 			prevHeader = header;
-			header = header->next;
+			header = static_cast<detail::Block*>(header->next);
 		}
 
 		//after loop prev = end of free list
@@ -274,7 +274,7 @@ namespace oak {
 
 		//create new free block with the added size
 		detail::Block *newBlock = header + 1;
-		newBlock->size = size;
+		newBlock->size = pageSize_;
 		newBlock->next = nullptr;
 		
 		lastNode->next = newBlock;
@@ -308,7 +308,7 @@ namespace oak {
 		detail::Block *prev = nullptr;
 		while (p) {
 			prev = p;
-			p = p->next;
+			p = static_cast<detail::Block*>(p->next);
 
 			parent_->deallocate(prev->next, prev->size);
 		}
@@ -346,7 +346,7 @@ namespace oak {
 
 		while (header) {
 			prevHeader = header;
-			header = header->next;
+			header = static_cast<detail::Block*>(header->next);
 		}
 
 		//after loop prev = end of free list
@@ -361,9 +361,9 @@ namespace oak {
 
 		size_t count = (pageSize_ & ~(alignment_-1)) / objectSize_;
 
-		*prev = ptrutil::add(ptr, sizeof(detail::Block)));
+		*prev = ptrutil::add(ptr, sizeof(detail::Block));
 
-		**p = static_cast<void**>(*prev);
+		p = static_cast<void**>(*prev);
 
 		for (size_t i = 0; i < count - 1; i++) {
 			*p = ptrutil::add(p, objectSize_);

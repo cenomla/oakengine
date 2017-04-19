@@ -1,14 +1,11 @@
 #pragma once
 
 #include "container.h"
-#include "system.h"
 
 namespace oak {
 
-	class FileManager : public System {
+	class FileManager {
 	public:
-		FileManager(Engine &engine);
-
 		void mount(const oak::string& path, const oak::string& mountPoint);
 		oak::string resolve(const oak::string& path);
 	private:

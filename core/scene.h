@@ -1,20 +1,22 @@
 #pragma once
 
+#include <bitset>
+
+#include "util/type_handle_storage.h"
 #include "entity_id.h"
 
 namespace oak {
 
 	class ComponentStorage;
 
-	using ComponentHandleStorage = TypeHandleStorage<detail::BaseComponent, config::MAX_COMPONENTS>;
+	using ComponentHandleStorage = TypeHandleStorage<detail::BaseComponent>;
 
 	class Scene {
 	public:
 
 		void terminate();
 
-		EntityId createEntity(uint64_t idx);
-
+		EntityId createEntity();
 		void destroyEntity(EntityId entity);
 		void activateEntity(EntityId entity);
 		void deactivateEntity(EntityId entity);
@@ -22,14 +24,14 @@ namespace oak {
 		bool isEntityAlive(EntityId entity) const;
 		bool isEntityActive(EntityId entity) const;
 
-		void addComponent(EntityId entity, size_t tid);
+		void* addComponent(EntityId entity, size_t tid);
 		void addComponent(EntityId entity, size_t tid, const void* ptr);
 		void removeComponent(EntityId entity, size_t tid);
 
 		void* getComponent(EntityId entity, size_t tid);
 		const void* getComponent(EntityId entity, size_t tid) const;
 		bool hasComponent(EntityId entity, size_t tid) const;
-		const std::bitset<config::MAX_COMPONENTS>& getComponentFilter(EntityId entity);
+		const std::bitset<config::MAX_COMPONENTS>& getComponentFilter(EntityId entity) const;
 
 		void update();
 

@@ -22,7 +22,6 @@ namespace oak {
 		void pup(double& data, const ObjInfo& info) override;
 		void pup(bool& data, const ObjInfo& info) override;
 		void pup(oak::string& data, const ObjInfo& info) override;
-		void pup(Entity& data, const ObjInfo& info) override;
 
 	private:
 		FILE *file_;
