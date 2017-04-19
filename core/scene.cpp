@@ -1,10 +1,22 @@
 #include "scene.h"
 
+#include "event_manager.h"
+#include "scene_events.h"
+#include "component_storage.h"
 
 namespace oak {
 
-	void Scene::destroy() {
-		reset();
+	void Scene::terminate() {
+		for (const auto& e : entities_) {
+			removeAllComponents(e);
+		}
+		for (auto& a : flags_) {
+			a.reset();
+		}
+		entities_.clear();
+		generation_.clear();
+		freeIndices_.clear();
+		componentPools_.clear();
 	}
 
 	EntityId Scene::createEntity() {
@@ -30,13 +42,13 @@ namespace oak {
 	}
 
 	void Scene::activateEntity(EntityId entity) {
-		Engine::inst().getEventManager().emitEvent(EntityActivateEvent{ entity });
 		flags_[entity][0] = true;
+		EventManager::inst().getQueue<EntityActivateEvent>().emit({ entity });
 	}
 
 	void Scene::deactivateEntity(EntityId entity) {
-		Engine::inst().getEventManager().emitEvent(EntityDeactivateEvent{ entity });
 		flags_[entity][0] = false;
+		EventManager::inst().getQueue<EntityDeactivateEvent>().emit({ entity });
 	}
 
 	bool Scene::isEntityAlive(EntityId entity) const {
@@ -49,23 +61,25 @@ namespace oak {
 
 	void Scene::addComponent(EntityId entity, size_t tid) {
 		componentMasks_[entity][tid] = true;
+		componentPools_[tid]->addComponent(entity);
 	}
 
 	void Scene::addComponent(EntityId entity, size_t tid, const void *ptr) {
 		componentMasks_[entity][tid] = true;
+		componentPools_[tid]->addComponent(entity, ptr);
 	}
 
 	void Scene::removeComponent(EntityId entity, size_t tid) {
 		componentMask_[entity][tid] = false;
-		
+		componentPools_[tid]->removeComponent(entity);
 	}
 
 	void* Scene::getComponent(EntityId entity, size_t tid) {
-		return components_[entity][tid];
+		return componentPools_[tid]->getComponent(entity);
 	}
 
 	const void* Scene::getComponent(EntityId entity, size_t tid) const {
-		return components_[entity][tid];
+		return componentPools_[tid]->getComponent(entity);
 	}
 
 	bool Scene::hasComponent(EntityId entity, size_t tid) const {
@@ -85,10 +99,14 @@ namespace oak {
 		killed_.clear();
 	}
 
-	void Scene::ensureSize(size_t size) {
-		if (components_.size() <= size) {
-			components_.resize(size + 1);
+	void Scene::addComponentStorage(size_t tid, ComponentStorage& storage) {
+		if (componentPools_.size() <= tid) {
+			componentPools_.resize(tid + 1);
 		}
+		componentPools_[tid] = &storage;
+	}
+
+	void Scene::ensureSize(size_t size) {
 		if (componentMasks_.size() <= size) {
 			componentMasks_.resize(size + 1);
 		}
@@ -99,20 +117,10 @@ namespace oak {
 
 	void Scene::removeAllComponents(EntityId entity) {
 		for (size_t i = 0; i < config::MAX_COMPONENTS; i++) {
-			removeComponent(entity, i);
+			if (componentMasks_[entity][i]) {
+				removeComponent(entity, i);
+			}
 		}
-	}
-
-	void Scene::reset() {
-		for (const auto& e : entities_) {
-			removeAllComponents(e);
-		}
-		for (auto& a : flags_) {
-			a.reset();
-		}
-		entities_.clear();
-		generation_.clear();
-		freeIndices_.clear();
 	}
 
 }

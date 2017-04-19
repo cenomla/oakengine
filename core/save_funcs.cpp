@@ -53,7 +53,7 @@ namespace oak::save {
 			}
 
 			auto chandle = storage.getHandle(cid);
-			chandle->pupObject(puper, comp, ObjInfo{ chandle->getName() });
+			chandle->serialize(puper, comp, ObjInfo{ chandle->getName() });
 		}
 	}
 

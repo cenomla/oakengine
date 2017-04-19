@@ -1,11 +1,8 @@
 #pragma once
 
-#include <array>
-
 #include "typeid.h"
 #include "type_handle.h"
 
-#include "oak_alloc.h"
 #include "container.h"
 
 namespace oak {
@@ -16,7 +13,7 @@ namespace oak {
 		static constexpr size_t HSize = sizeof(TypeHandle<U>);
 
 		~TypeHandleStorage() {
-			for (auto *ptr : handles_) {
+			for (auto& ptr : handles_) {
 				if (ptr != nullptr) {
 					static_cast<TypeHandleBase*>(ptr)->~TypeHandleBase();
 					proxyAllocator.deallocate(ptr, HSize);

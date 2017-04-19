@@ -4,7 +4,6 @@
 
 #include "util/typeid.h"
 #include "container.h"
-#include "oak_alloc.h"
 #include "event_queue.h"
 
 namespace oak {

@@ -298,7 +298,7 @@ namespace oak::luah {
 
 			LuaPuper puper{ L, -1 };
 			puper.setIo(PuperIo::IN);
-			chs.getHandle(tid)->pupObject(puper, comp, {});
+			chs.getHandle(tid)->serialize(puper, comp, {});
 			
 			lua_pop(L, 1);
 		}

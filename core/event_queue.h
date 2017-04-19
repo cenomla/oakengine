@@ -1,7 +1,6 @@
 #pragma once
 
 #include "util/ptr_util.h"
-#include "oak_alloc.h"
 #include "container.h"
 
 namespace oak {
@@ -48,7 +47,7 @@ namespace oak {
 		const_iterator begin() const { return const_iterator{ static_cast<const detail::Block*>(allocator_.getStart()) }; }
 		const_iterator end() const { return const_iterator{ nullptr, size_ }; }
 
-		void operator()(const TEvent& event) {
+		void emit(const TEvent& event) {
 			TEvent *ptr = allocator_.allocate(EVENT_SIZE);
 			new (ptr) TEvent{ event };
 			size_++;

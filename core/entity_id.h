@@ -10,7 +10,6 @@ namespace oak {
 		struct BaseComponent {};
 	}
 
-
 	struct EntityId {
 		uint32_t index = 0;
 		uint32_t generation = 0;

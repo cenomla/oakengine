@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-
+#include "container.h"
 #include "pup.h"
 
 namespace oak {
@@ -13,9 +12,9 @@ namespace oak {
 		virtual void construct(void *src, void *target) const = 0;
 		virtual void copy(void *src, void *target) const = 0;
 		virtual void destruct(void *comp) const = 0;
-		virtual void pupObject(Puper &puper, void *data, const ObjInfo &info) const = 0;
-		inline size_t size() const { return size_; }
-		inline const oak::string& getName() const { return name_; }
+		virtual void serialize(Puper &puper, void *data, const ObjInfo &info) const = 0;
+		size_t getSize() const { return size_; }
+		const oak::string& getName() const { return name_; }
 	protected:
 		oak::string name_;
 		size_t size_;
@@ -29,19 +28,19 @@ namespace oak {
 			new (object) T{};
 		}
 
-		void construct(void *src, void *target) const override {
-			new (target) T{ *static_cast<T*>(src) };
+		void construct(void *object, void *src) const override {
+			new (object) T{ *static_cast<T*>(src) };
 		}
 
-		void copy(void *src, void *target) const override {
-			*static_cast<T*>(target) = *static_cast<T*>(src);
+		void copy(void *object, void *src) const override {
+			*static_cast<T*>(object) = *static_cast<T*>(src);
 		}
 
-		void destruct(void *comp) const override {
-			static_cast<T*>(comp)->~T();
+		void destruct(void *object) const override {
+			static_cast<T*>(object)->~T();
 		}
 
-		void pupObject(Puper &puper, void *data, const ObjInfo &info) const override {
+		void serialize(Puper &puper, void *data, const ObjInfo &info) const override {
 			pup(puper, *static_cast<T*>(data), info);
 		}
 	};
