@@ -75,13 +75,13 @@ namespace oak {
 
 	LinearAllocator::~LinearAllocator() {
 		//deallocate used memory
-		detail::Block *p = static_cast<detail::Block*>(start_);
 		detail::Block *prev = nullptr;
+		detail::Block *p = static_cast<detail::Block*>(start_);
 		while (p) {
 			prev = p;
 			p = static_cast<detail::Block*>(p->next);
 
-			parent_->deallocate(prev->next, prev->size);
+			parent_->deallocate(prev, prev->size);
 		}
 	}
 
@@ -138,13 +138,13 @@ namespace oak {
 
 	FreelistAllocator::~FreelistAllocator() {
 		//deallocate used memory
-		detail::Block *p = static_cast<detail::Block*>(start_);
 		detail::Block *prev = nullptr;
+		detail::Block *p = static_cast<detail::Block*>(start_);
 		while (p) {
 			prev = p;
 			p = static_cast<detail::Block*>(p->next);
 
-			parent_->deallocate(prev->next, prev->size);
+			parent_->deallocate(prev, prev->size);
 		}
 	}
 
@@ -304,13 +304,13 @@ namespace oak {
 
 	PoolAllocator::~PoolAllocator() {
 		//deallocate used memory
-		detail::Block *p = static_cast<detail::Block*>(start_);
 		detail::Block *prev = nullptr;
+		detail::Block *p = static_cast<detail::Block*>(start_);
 		while (p) {
 			prev = p;
 			p = static_cast<detail::Block*>(p->next);
 
-			parent_->deallocate(prev->next, prev->size);
+			parent_->deallocate(prev, prev->size);
 		}
 	}
 
