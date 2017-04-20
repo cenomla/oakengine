@@ -12,7 +12,7 @@
 namespace oak {
 
 	class Puper;
-	class ObjInfo;
+	struct ObjInfo;
 
 	struct TransformComponent {
 		glm::vec3 position{ 0.0f };

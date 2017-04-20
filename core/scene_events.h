@@ -5,7 +5,7 @@
 namespace oak {
 
 	class Puper;
-	class ObjInfo;
+	struct ObjInfo;
 
 	struct EntityCreateEvent {
 		EntityId entity;

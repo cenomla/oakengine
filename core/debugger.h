@@ -8,7 +8,7 @@
 namespace oak {
 
 	class Puper;
-	class ObjInfo;
+	struct ObjInfo;
 
 	struct PerformanceProfile {
 		std::chrono::high_resolution_clock::time_point start;
