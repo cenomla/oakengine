@@ -1,14 +1,14 @@
 # Oak Engine
 ### Overview:
  
-Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine is written using modern c++ (c++1z) and uses lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small demo detailing the use of the engine and a few additional systems. The goal of this engine is not to provide everything a game may need (physically based rendering, rigid body physics, etc..), as so many engines do this already, but rather to provide a solid framework to build a game off of.
+Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine is written using modern c++ and uses lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small demo detailing the use of the engine and a few additional systems. The goal of this engine is not to provide everything a game may need (physically based rendering, rigid body physics, etc..), as so many librarys do these things already, but rather to provide a solid framework to build a game off of and extend with additional functionality.
 
 ### Features:
 - Multi-threaded task manager
 - Event/Messaging system
-- Efficent custom memory allocation
+- Efficent memory allocation system
 - Component based entity system
-- Lua binding for scripting
+- Lua scripting
 - Prefab system with shared components
 - Simple opengl sprite batcher
 - Easily extendable
