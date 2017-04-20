@@ -24,7 +24,7 @@ namespace oak::graphics {
 		GLRenderer();
 
 		void init() override;
-
+		
 		void run() override;
 
 		void addObject(const glm::vec2 &position, float depth, uint32_t layer, float rotation, float scale, const Renderable *object);

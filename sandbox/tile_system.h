@@ -1,8 +1,5 @@
 #pragma once
 
-#include <graphics/opengl/gl_vertex_array.h>
-#include <graphics/opengl/gl_buffer.h>
-#include <graphics/opengl/gl_material.h>
 #include <container.h>
 #include <system.h>
 
@@ -10,9 +7,9 @@
 
 class TileSystem : public oak::System {
 public:
-	TileSystem(oak::Engine &engine, int numChunks, int tileSize);
+	TileSystem(int numChunks, int tileSize);
 
-	void update();
+	void run() override;
 
 	Chunk& getChunk(int x, int y, uint32_t layer);
 	const Chunk& getChunk(int x, int y, uint32_t layer) const;

@@ -1,20 +1,14 @@
 #include "tile_system.h"
 
-#include <string>
-#include <glm/gtc/matrix_transform.hpp>
+#include <system_manager.h>
 #include <graphics/opengl/gl_renderer.h>
-#include <resource_manager.h>
-#include <engine.h>
 
 constexpr size_t INVALID_CHUNK = 0xFFFFFFFFFFFFFFFF;
 
-TileSystem::TileSystem(oak::Engine &engine, int numChunks, int tileSize) : 
-	oak::System{ engine, "tile_system" }, numChunks_{ numChunks }, tileSize_{ tileSize } {
+TileSystem::TileSystem(int numChunks, int tileSize) : numChunks_{ numChunks }, tileSize_{ tileSize } {}
 
-}
-
-void TileSystem::update() {
-	auto &renderer = oak::Engine::inst().getSystem<oak::graphics::GLRenderer>();
+void TileSystem::run() {
+	auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
 
 	for (size_t i = 0; i < chunkLayers_.size(); i++) {
 		const size_t cid = chunkLayers_[i];

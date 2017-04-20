@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 	const int16_t i16 = 901;
 	const float f32 = 10.001;
 
-	void *mem = oak_allocator.allocate(512);
+	void *mem = oak::oak_allocator.allocate(512);
 	oak::util::ByteBuffer buffer{ mem, 512 };
 	buffer.write(i32);
 	buffer.write(u64);
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	oak_allocator.deallocate(mem, 512);
+	oak::oak_allocator.deallocate(mem, 512);
 
 	return 0;
 

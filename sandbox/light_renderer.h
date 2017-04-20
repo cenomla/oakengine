@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 #include <system.h>
-#include <entity.h>
+#include <entity_cache.h>
 #include <container.h>
 #include <graphics/opengl/gl_renderer.h>
 #include <graphics/opengl/gl_vertex_array.h>
@@ -14,11 +14,11 @@
 
 class LightRenderer : public oak::System {
 public:
-	LightRenderer(oak::Engine &engine);
-	~LightRenderer();
+	LightRenderer(oak::Scene *scene);
 
-	void init();
-	void update();
+	void init() override;
+	void run() override;
+
 	void render(const oak::graphics::GLVertexArray& vao, const oak::graphics::Batch& batch);
 private:
 	struct Line {

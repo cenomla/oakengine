@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	oak::EventQueue<TEvent> queue;
 
 	for (size_t i = 0; i < 1024; i++) {
-		queue({ i * i * i, i, i % 255 });
+		queue.emit({ i * i * i, i, i % 255 });
 	}
 
 	size_t i = 0;

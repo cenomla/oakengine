@@ -1,19 +1,13 @@
 #include "light_renderer.h"
 
-#include <components.h>
+#include <system_manager.h>
 #include <view_system.h>
-#include <engine.h>
+#include <components.h>
 
 #include "component_ext.h"
 
-LightRenderer::LightRenderer(oak::Engine &engine) : oak::System{ engine, "light_renderer" }, vbo_{ GL_ARRAY_BUFFER }, tex_{ GL_TEXTURE_2D }, fvbo_{ GL_ARRAY_BUFFER } {
-
-
-}
-
-LightRenderer::~LightRenderer() {
-
-}
+LightRenderer::LightRenderer(oak::Scene *scene) : 
+shadowCache_{ scene }, lightCache_{ scene }, vbo_{ GL_ARRAY_BUFFER }, tex_{ GL_TEXTURE_2D }, fvbo_{ GL_ARRAY_BUFFER } {}
 
 void LightRenderer::init() {
 	shadowCache_.requireComponent<oak::TransformComponent>();
@@ -22,9 +16,7 @@ void LightRenderer::init() {
 	lightCache_.requireComponent<oak::TransformComponent>();
 	lightCache_.requireComponent<LightComponent>();
 
-	engine_.getSystem<oak::EntityManager>().addCache(&shadowCache_);
-	engine_.getSystem<oak::EntityManager>().addCache(&lightCache_);
-	engine_.getSystem<oak::graphics::GLRenderer>().setDrawOp(1, [this](auto&&... args) { this->render(std::forward<decltype(args)>(args)...); });
+	oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>().setDrawOp(1, [this](auto&&... args) { this->render(std::forward<decltype(args)>(args)...); });
 
 	//setup rendering stuff
 	vao_.create();
@@ -67,8 +59,11 @@ void LightRenderer::init() {
 	fullscreenShader_.create("core/graphics/shaders/fullscreen/opengl.vert", "core/graphics/shaders/fullscreen/opengl.frag");
 }
 
-void LightRenderer::update() {
-	auto &renderer = engine_.getSystem<oak::graphics::GLRenderer>();
+void LightRenderer::run() {
+	auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
+
+	shadowCache_.update();
+	lightCache_.update();
 
 	//generate shadows
 	const auto& lights = lightCache_.entities();
@@ -89,7 +84,7 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 	glEnable(GL_STENCIL_TEST);
 	glBlendFunc(GL_SRC_COLOR, GL_ONE);//additive blending
 
-	auto& viewSystem = engine_.getSystem<oak::ViewSystem>();
+	auto& viewSystem = oak::SystemManager::inst().getSystem<oak::ViewSystem>();
 
 	glm::vec2 pos;
 

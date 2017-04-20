@@ -1,14 +1,14 @@
 #pragma once
 
 #include <system.h>
-#include <entity.h>
+#include <entity_cache.h>
 
 class SpriteSystem : public oak::System {
 public:
-	SpriteSystem(oak::Engine &engine);
+	SpriteSystem(oak::Scene *scene);
 
 	void init() override;
-	void update();
+	void run() override;
 
 private:
 	oak::EntityCache cache_;
@@ -16,32 +16,11 @@ private:
 
 class TextSystem : public oak::System {
 public:
-	TextSystem(oak::Engine &engine);
+	TextSystem(oak::Scene *scene);
 
 	void init() override;
-	void update();
+	void run() override;
 	
-private:
-	oak::EntityCache cache_;
-};
-
-class CollisionSystem : public oak::System {
-public:
-	CollisionSystem(oak::Engine &engine);
-
-	void init() override;
-	void update();
-
-private:
-	oak::EntityCache cache_;
-};
-
-class PhysicsSystem : public oak::System {
-public:
-	PhysicsSystem(oak::Engine &engine);
-
-	void init() override;
-	void update(float dt);
 private:
 	oak::EntityCache cache_;
 };

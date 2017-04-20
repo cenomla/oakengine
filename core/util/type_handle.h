@@ -29,11 +29,11 @@ namespace oak {
 		}
 
 		void construct(void *object, const void *src) const override {
-			new (object) T{ *static_cast<T*>(src) };
+			new (object) T{ *static_cast<const T*>(src) };
 		}
 
 		void copy(void *object, const void *src) const override {
-			*static_cast<T*>(object) = *static_cast<T*>(src);
+			*static_cast<T*>(object) = *static_cast<const T*>(src);
 		}
 
 		void destruct(void *object) const override {
