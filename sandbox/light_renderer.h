@@ -14,7 +14,7 @@
 
 class LightRenderer : public oak::System {
 public:
-	LightRenderer(oak::Scene *scene);
+	LightRenderer(oak::Scene& scene);
 
 	void init() override;
 	void run() override;
@@ -40,4 +40,6 @@ private:
 	oak::graphics::GLShader fullscreenShader_;
 
 	oak::vector<Line> lines_;
+
+	oak::Scene *scene_;
 };

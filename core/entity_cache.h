@@ -1,18 +1,21 @@
 #pragma once
 
-#include "event_queue.h"
-#include "scene.h"
-#include "entity.h"
+#include <bitset>
+
+#include "util/type_id.h"
+#include "container.h"
+#include "entity_id.h"
 
 namespace oak {
 
+	class Scene;
+
 	class EntityCache {
 	public:
-		EntityCache(Scene *scene);
 
-		void update();
+		void update(const Scene& scene);
 
-		const oak::vector<Entity>& entities() const { return entities_; }
+		const oak::vector<EntityId>& entities() const { return entities_; }
 		void clear() { entities_.clear(); };
 		
 		template<class T>
@@ -20,10 +23,9 @@ namespace oak {
 			filter_[util::type_id<detail::BaseComponent, T>::id] = true;
 		}
 	private:
-		oak::vector<Entity> entities_;
+		oak::vector<EntityId> entities_;
 		oak::vector<bool> contains_;
 		std::bitset<config::MAX_COMPONENTS> filter_;
-		Scene *scene_;
 
 		void addEntity(EntityId entity);
 		void removeEntity(EntityId entity);

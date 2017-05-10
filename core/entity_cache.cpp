@@ -2,20 +2,20 @@
 
 #include <algorithm>
 
-#include "scene_events.h"
 #include "event_manager.h"
+#include "event_queue.h"
+#include "scene.h"
+#include "scene_events.h"
 
 namespace oak {
 
-	EntityCache::EntityCache(Scene *scene) : scene_{ scene } {}
-
-	void EntityCache::update() {
+	void EntityCache::update(const Scene& scene) {
 		bool needsSort = false;
 
 		for (const auto& evt : EventManager::inst().getQueue<EntityActivateEvent>()) {
 			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
-			const auto& filter = scene_->getComponentFilter(evt.entity);
+			const auto& filter = scene.getComponentFilter(evt.entity);
 			if ((filter & filter_) == filter_) {
 				if (!contains_[evt.entity]) {
 					addEntity(evt.entity);
@@ -44,18 +44,18 @@ namespace oak {
 	}
 
 	void EntityCache::addEntity(EntityId entity) {
-		entities_.push_back(Entity{ entity, scene_ });
+		entities_.push_back(entity);
 		contains_[entity] = true;
 	}
 
 	void EntityCache::removeEntity(EntityId entity) {
-		entities_.erase(std::remove_if(std::begin(entities_), std::end(entities_), [&entity](const Entity& elem){ return elem.id() == entity; }), std::end(entities_));
+		entities_.erase(std::remove(std::begin(entities_), std::end(entities_), entity), std::end(entities_));
 		contains_[entity] = false;
 	}
 
 	void EntityCache::sort() {
-		std::sort(std::begin(entities_), std::end(entities_), [](const Entity& first, const Entity& second) {
-			return first.id() < second.id();
+		std::sort(std::begin(entities_), std::end(entities_), [](const EntityId& first, const EntityId& second) {
+			return first.index < second.index;
 		});
 	}
 

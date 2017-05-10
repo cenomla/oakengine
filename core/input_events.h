@@ -10,7 +10,7 @@ namespace oak {
 	struct WindowCreateEvent {
 	};
 
-	struct WindowDestroyEvent {
+	struct WindowCloseEvent {
 	};
 
 	struct WindowResizeEvent {
@@ -34,7 +34,7 @@ namespace oak {
 	};
 
 	void pup(Puper& puper, WindowCreateEvent& data, const ObjInfo& info);
-	void pup(Puper& puper, WindowDestroyEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, WindowCloseEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, WindowResizeEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, KeyEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, ButtonEvent& data, const ObjInfo& info);

@@ -17,7 +17,11 @@ env_flavor_sets = {
 	),
 	'release': dict(
 		OBJDIR = os.path.join(obj_dir, 'release'),
-		BINDIR = os.path.join(bin_dir, 'release')
+		BINDIR = os.path.join(bin_dir, 'release'),
+	),
+	'profile': dict(
+		OBJDIR = os.path.join(obj_dir, 'profile'),
+		BINDIR = os.path.join(bin_dir, 'profile'),
 	),
 }
 
@@ -33,6 +37,11 @@ env_flavor_adds = {
 	'release': dict(
 		CFLAGS = ['-O3', '-DNDEBUG'],
 		CXXFLAGS = ['-O3', '-DNDEBUG'],
+	),
+	'profile': dict(
+		CFLAGS = ['-O3', '-pg', '-DNDEBUG'],
+		CXXFLAGS = ['-O3', '-g', '-pg', '-DNDEBUG'],
+		LINKFLAGS = ['-pg'],
 	),
 }
 

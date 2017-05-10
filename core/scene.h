@@ -13,9 +13,6 @@ namespace oak {
 
 	class Scene {
 	public:
-
-		void terminate();
-
 		EntityId createEntity();
 		void destroyEntity(EntityId entity);
 		void activateEntity(EntityId entity);
@@ -34,8 +31,10 @@ namespace oak {
 		const std::bitset<config::MAX_COMPONENTS>& getComponentFilter(EntityId entity) const;
 
 		void update();
+		void reset();
 
 		void addComponentStorage(size_t tid, ComponentStorage& storage);
+		ComponentStorage& getComponentStorage(size_t tid);
 
 		size_t getEntityCount() const { return entities_.size(); }
 	private:

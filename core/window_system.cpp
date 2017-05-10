@@ -24,7 +24,7 @@ namespace oak {
 	void WindowSystem::run() {
 		glfwSwapBuffers(window_);
 		glViewport(0, 0, 1280, 720);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.3f, 0.4f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		GLenum error = glGetError();
@@ -55,7 +55,7 @@ namespace oak {
 		glfwSetWindowUserPointer(window_, this);
 
 		glfwMakeContextCurrent(window_);
-		glfwSwapInterval(1);
+		glfwSwapInterval(0);
 
 		if (!gladLoadGL()) {
 			log_print_err("cannot load gl");
@@ -68,7 +68,7 @@ namespace oak {
 	}
 
 	static void closeCallback(GLFWwindow *window) {
-		EventManager::inst().getQueue<WindowDestroyEvent>().emit({});
+		EventManager::inst().getQueue<WindowCloseEvent>().emit({});
 	}
 
 	static void resizeCallback(GLFWwindow *window, int width, int height) {

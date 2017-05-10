@@ -2,7 +2,7 @@
 
 #include <mutex>
 
-#include "util/typeid.h"
+#include "util/type_id.h"
 #include "container.h"
 #include "event_queue.h"
 
@@ -26,6 +26,9 @@ namespace oak {
 			size_t tid = util::type_id<detail::BaseEvent, TEvent>::id;
 			void *ptr = oak_allocator.allocate(sizeof(EventQueueBase));
 			new (ptr) EventQueue<TEvent>{};
+			if (queues_.size() <= tid) {
+				queues_.resize(tid + 1);
+			}
 			queues_[tid] = static_cast<EventQueueBase*>(ptr);
 		}
 

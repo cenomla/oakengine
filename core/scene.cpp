@@ -8,19 +8,6 @@
 
 namespace oak {
 
-	void Scene::terminate() {
-		for (const auto& e : entities_) {
-			removeAllComponents(e);
-		}
-		for (auto& a : flags_) {
-			a.reset();
-		}
-		entities_.clear();
-		generations_.clear();
-		freeIndices_.clear();
-		componentPools_.clear();
-	}
-
 	EntityId Scene::createEntity() {
 		EntityId id;
 		if (freeIndices_.empty()) {
@@ -105,11 +92,28 @@ namespace oak {
 		killed_.clear();
 	}
 
+	void Scene::reset() {
+		for (const auto& e : entities_) {
+			removeAllComponents(e);
+		}
+		for (auto& a : flags_) {
+			a.reset();
+		}
+		entities_.clear();
+		generations_.clear();
+		freeIndices_.clear();
+		componentPools_.clear();
+	}
+
 	void Scene::addComponentStorage(size_t tid, ComponentStorage& storage) {
 		if (componentPools_.size() <= tid) {
 			componentPools_.resize(tid + 1);
 		}
 		componentPools_[tid] = &storage;
+	}
+
+	ComponentStorage& Scene::getComponentStorage(size_t tid) {
+		return *componentPools_[tid];
 	}
 
 	void Scene::ensureSize(size_t size) {

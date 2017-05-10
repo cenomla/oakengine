@@ -9,4 +9,7 @@ module_targets['buffer'] = env.Program(target = 'buffer', source = tm_sources, L
 tm_sources = ['equeue.cpp']
 module_targets['equeue'] = env.Program(target = 'equeue', source = tm_sources, LIBS = unit_libs)
 
+tm_sources = ['benchmark.cpp']
+module_targets['benchmark'] = env.Program(target = 'benchmark', source = tm_sources, LIBS = unit_libs)
+
 Return('module_targets')

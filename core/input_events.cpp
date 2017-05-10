@@ -8,7 +8,7 @@ namespace oak {
 
 	}
 
-	void pup(Puper& puper, WindowDestroyEvent& data, const ObjInfo& info) {
+	void pup(Puper& puper, WindowCloseEvent& data, const ObjInfo& info) {
 
 	}
 

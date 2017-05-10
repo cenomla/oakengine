@@ -28,6 +28,9 @@ namespace oak {
 
 	struct SpriteComponent : public graphics::Renderable {
 
+		SpriteComponent() = default;
+		SpriteComponent(size_t id, const glm::vec2& s, int afx, int afy, uint32_t l) : sprite{ id }, scale{ s }, animFrameX{ afx }, animFrameY{ afy }, layer{ l } {}
+
 		Resource<graphics::Sprite> sprite{ 0 };
 		glm::vec2 scale{ 1.0f };
 		int animFrameX = 0, animFrameY = 0;

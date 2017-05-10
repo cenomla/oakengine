@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/typeid.h"
+#include "util/type_id.h"
 #include "entity_id.h"
 #include "scene.h"
 
