@@ -93,7 +93,7 @@ void oak_bench() {
 			entity.addComponent<VelocityComponent>(glm::vec2{ 0.0f });
 			entity.addComponent<BoxComponent>(glm::vec2{ 16.0f }, glm::vec2{ 16.0f });
 		}
-		entity.activate();
+		scene.activateEntity(id);
 	}	
 
 	end = std::chrono::high_resolution_clock::now();

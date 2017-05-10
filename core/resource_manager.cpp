@@ -5,6 +5,7 @@ namespace oak {
 	ResourceManager *ResourceManager::instance = nullptr;
 
 	ResourceManager::ResourceManager() {
+		oak_assert(instance == nullptr);
 		instance = this;
 	}
 

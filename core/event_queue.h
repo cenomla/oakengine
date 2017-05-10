@@ -16,6 +16,10 @@ namespace oak {
 			size_ = 0;
 		}
 
+		void empty() {
+			return size_ == 0;
+		}
+
 	protected:
 		LinearAllocator allocator_;
 		size_t size_;

@@ -68,12 +68,12 @@ void LightRenderer::run() {
 
 	//generate shadows
 	const auto& lights = lightCache_.entities();
-	oak::ComponentStorage& ts = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::TransformComponent>::id);
-	oak::ComponentStorage& ls = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, LightComponent>::id);
+	oak::ComponentStorage& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+	oak::ComponentStorage& ls = oak::getComponentStorage<LightComponent>(*scene_);
 	for (size_t i = 0; i < lights.size(); i++) {
 		const auto& entity = lights[i];
-		const auto& tc = *static_cast<const oak::TransformComponent*>(ts.getComponent(entity));
-		const auto& lc = *static_cast<const LightComponent*>(ls.getComponent(entity));
+		auto& tc = oak::getComponent<const oak::TransformComponent>(ts, entity);
+		auto& lc = oak::getComponent<const LightComponent>(ls, entity);
 
 		renderer.addObject(glm::vec2{ tc.position }, tc.position.z + i, 1, tc.rotationAngle, tc.scale, &lc);
 	}
@@ -91,12 +91,12 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 
 	glm::vec2 pos;
 
-	oak::ComponentStorage& ts = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::TransformComponent>::id);
-	oak::ComponentStorage& as = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::AABB2dComponent>::id);
-	oak::ComponentStorage& ls = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, LightComponent>::id);
+	oak::ComponentStorage& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+	oak::ComponentStorage& as = oak::getComponentStorage<oak::AABB2dComponent>(*scene_);
+	oak::ComponentStorage& ls = oak::getComponentStorage<LightComponent>(*scene_);
 	for (const auto& shadow : shadowCache_.entities()) {
-		const auto& stc = *static_cast<const oak::TransformComponent*>(ts.getComponent(shadow));
-		const auto& saabb = *static_cast<const oak::AABB2dComponent*>(as.getComponent(shadow));
+		auto& stc = oak::getComponent<const oak::TransformComponent>(ts, shadow);
+		auto& saabb = oak::getComponent<const oak::AABB2dComponent>(as, shadow);
 
 		pos = glm::vec2{ stc.position } + saabb.offset;
 
@@ -124,8 +124,8 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 	const auto& lights = lightCache_.entities();
 	for (size_t i = 0; i < batch.objectCount; i++) {
 		const auto& light = lights[i];
-		const auto& ltc = *static_cast<const oak::TransformComponent*>(ts.getComponent(light));
-		const auto& llc = *static_cast<const LightComponent*>(ls.getComponent(light));
+		auto& ltc = oak::getComponent<const oak::TransformComponent>(ts, light);
+		auto& llc = oak::getComponent<const LightComponent>(ls, light);
 
 		vbo_.bind();
 		vbo_.bufferData((shadowCache_.entities().size()) * 192 , nullptr, GL_STREAM_DRAW);

@@ -2,6 +2,8 @@
 
 #include <mutex>
 
+#include "oak_assert.h"
+
 #include "util/type_id.h"
 #include "container.h"
 #include "event_queue.h"
@@ -16,7 +18,10 @@ namespace oak {
 	private:
 		static EventManager *instance;
 	public:
-		static EventManager& inst() { return *instance; }
+		static EventManager& inst() { 
+			oak_assert(instance != nullptr);
+			return *instance; 
+		}
 
 		EventManager();
 		~EventManager();

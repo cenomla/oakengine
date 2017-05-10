@@ -1,6 +1,5 @@
 #include "binding.h"
 
-
 #include "container.h"
 #include "graphics/opengl/gl_shader.h"
 #include "graphics/opengl/gl_texture.h"
@@ -17,7 +16,6 @@
 #include "components.h"
 #include "engine.h"
 #include "prefab.h"
-#include "save_funcs.h"
 
 namespace oak::luah {
 
@@ -563,7 +561,16 @@ namespace oak::luah {
 		return 0;
 	}
 
-	void registerBindings(lua_State *L) {
+	template<class T>
+	void addComponentBinding(lua_State *L, const ComponentHandleStorage& chs) {
+		addFunctionToMetatable(L, "entity", "add_" + chs.getHandle<T>().getName(), c_entity_addComponent<T>);
+		addFunctionToMetatable(L, "entity", "remove_" + chs.getHandle<T>().getName(), c_entity_removeComponent<T>);
+		addFunctionToMetatable(L, "entity", "get_" + chs.getHandle<T>().getName(), c_entity_getComponent<T>);
+		addFunctionToMetatable(L, "entity", "set_" + chs.getHandle<T>().getName(), c_entity_setComponent<T>);
+		addFunctionToMetatable(L, "entity", "has_" + chs.getHandle<T>().getName(), c_entity_hasComponent<T>);
+	}
+
+	void initLuaBindings(lua_State *L, const ComponentHandleStorage& chs) {
 		addFunctionToMetatable(L, "entity", "activate", c_entity_activate);
 		addFunctionToMetatable(L, "entity", "deactivate", c_entity_deactivate);
 		addFunctionToMetatable(L, "entity", "index", c_entity_index);
@@ -571,36 +578,12 @@ namespace oak::luah {
 		addFunctionToMetatable(L, "entity", "set_depth", c_entity_setDepth);
 		addFunctionToMetatable(L, "entity", "is_active", c_entity_active);
 
-		addFunctionToMetatable(L, "entity", "add_transform", c_entity_addComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "remove_transform", c_entity_removeComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "get_transform", c_entity_getComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "set_transform", c_entity_setComponent<TransformComponent>);
-		addFunctionToMetatable(L, "entity", "has_transform", c_entity_hasComponent<TransformComponent>);
-
-		addFunctionToMetatable(L, "entity", "add_physicsBody2d", c_entity_addComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "remove_physicsBody2d", c_entity_removeComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "get_physicsBody2d", c_entity_getComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "set_physicsBody2d", c_entity_setComponent<PhysicsBody2dComponent>);
-		addFunctionToMetatable(L, "entity", "has_physicsBody2d", c_entity_hasComponent<PhysicsBody2dComponent>);
-
-		addFunctionToMetatable(L, "entity", "add_aabb2d", c_entity_addComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "remove_aabb2d", c_entity_removeComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "get_aabb2d", c_entity_getComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "set_aabb2d", c_entity_setComponent<AABB2dComponent>);
-		addFunctionToMetatable(L, "entity", "has_aabb2d", c_entity_hasComponent<AABB2dComponent>);
-
-		addFunctionToMetatable(L, "entity", "add_sprite", c_entity_addComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "remove_sprite", c_entity_removeComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "get_sprite", c_entity_getComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "set_sprite", c_entity_setComponent<SpriteComponent>);
-		addFunctionToMetatable(L, "entity", "has_sprite", c_entity_hasComponent<SpriteComponent>);
-
-		addFunctionToMetatable(L, "entity", "add_text", c_entity_addComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "remove_text", c_entity_removeComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "get_text", c_entity_getComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "set_text", c_entity_setComponent<TextComponent>);
-		addFunctionToMetatable(L, "entity", "has_text", c_entity_hasComponent<TextComponent>);
-
+		addComponentBinding<TransformComponent>(L, chs);
+		addComponentBinding<PhysicsBody2dComponent>(L, chs);
+		addComponentBinding<AABB2dComponent>(L, chs);
+		addComponentBinding<SpriteComponent>(L, chs);
+		addComponentBinding<TextComponent>(L, chs);
+		
 		addFunctionToMetatable(L, "entity_manager", "create_entity", c_entityManager_createEntity);
 		addFunctionToMetatable(L, "entity_manager", "destroy_entity", c_entityManager_destroyEntity);
 
@@ -710,19 +693,6 @@ namespace oak::luah {
 			oak::luah::pushValue(L, evt.entity.index());
 			oak::luah::call(L, 3, 0);
 		});
-		/*
-		engine.getEventManager().add<oak::EntityCollisionEvent>([L](oak::EntityCollisionEvent evt) {
-			oak::luah::getGlobal(L, oak::string{ "oak.es.send_message", oak::frameAllocator });
-			oak::luah::getGlobal(L, oak::string{ "oak.es", oak::frameAllocator });
-			oak::luah::pushValue(L, oak::string{ "on_entity_collide", oak::frameAllocator });
-
-			lua_newtable(L);
-			oak::LuaPuper puper{ L, -2 };
-			pup(puper, evt, {});
-
-			oak::luah::call(L, 3, 0);
-		});
-		*/
 	}
 
 	void pushValue(lua_State *L, const Entity& e) {

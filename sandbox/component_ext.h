@@ -42,5 +42,6 @@ namespace oak {
 
 	void pup(Puper& puper, LightComponent& comp, const ObjInfo& info);
 	void pup(Puper& puper, OccluderComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, ActionComponent& data, const ObjInfo& info);
 
 }

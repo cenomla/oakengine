@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oak_assert.h"
+
 #include "util/type_id.h"
 #include "container.h"
 #include "log.h"
@@ -40,7 +42,10 @@ namespace oak {
 	private:
 		static ResourceManager *instance;
 	public:
-		static ResourceManager& inst() { return *instance; }
+		static ResourceManager& inst() { 
+			oak_assert(instance != nullptr);
+			return *instance; 
+		}
 
 		ResourceManager();
 		~ResourceManager();

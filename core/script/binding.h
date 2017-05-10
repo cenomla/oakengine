@@ -89,7 +89,7 @@ namespace luah {
 
 		lua_settop(L, 0);
 
-		Engine::inst().getEventManager().emitEvent(evt);
+		EventManager::inst().getQueue<T>().emit(evt);
 
 		return 0;
 	}

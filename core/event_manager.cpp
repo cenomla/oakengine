@@ -6,6 +6,7 @@ namespace oak {
 
 
 	EventManager::EventManager() {
+		oak_assert(instance == nullptr);
 		instance = this;
 	}
 

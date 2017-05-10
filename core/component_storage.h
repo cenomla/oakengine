@@ -19,6 +19,8 @@ namespace oak {
 		void* getComponent(EntityId entity);
 		const void* getComponent(EntityId entity) const;
 
+		const TypeHandleBase* getHandle() const { return handle_; }
+
 	private:
 		PoolAllocator allocator_;
 		oak::vector<void*> components_;

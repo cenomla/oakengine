@@ -5,6 +5,7 @@ namespace oak {
 	SystemManager *SystemManager::instance = nullptr;
 
 	SystemManager::SystemManager() {
+		oak_assert(instance == nullptr);
 		instance = this;
 	}
 

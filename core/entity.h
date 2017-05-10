@@ -14,13 +14,6 @@ namespace oak {
 		bool operator!=(const Entity& other) const { return !(*this == other); }
 
 		const EntityId& id() const { return id_; }
-		
-		void activate() { scene_->activateEntity(id_); }
-		void deactivate() { scene_->deactivateEntity(id_); }
-		void destroy() { scene_->destroyEntity(id_); }
-
-		bool isAlive() const { return scene_->isEntityAlive(id_); }
-		bool isActive() const { return scene_->isEntityActive(id_); }
 
 		template<class T, class... TArgs>
 		T& addComponent(TArgs&&... args) {
@@ -49,8 +42,8 @@ namespace oak {
 			return scene_->hasComponent(id_, util::type_id<detail::BaseComponent, T>::id);
 		}
 
-		Scene* getManager() { return scene_; }
-		const Scene* getManager() const { return scene_; }
+		Scene* getScene() { return scene_; }
+		const Scene* getScene() const { return scene_; }
 		
 	private:
 		EntityId id_;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oak_assert.h"
+
 #include "type_id.h"
 #include "type_handle.h"
 
@@ -9,10 +11,23 @@ namespace oak {
 
 	template<class U>
 	class TypeHandleStorage {
+	private:
+		static TypeHandleStorage<U>* instance;
 	public:
 		static constexpr size_t HSize = sizeof(TypeHandle<U>);
 
+		static TypeHandleStorage<U>& inst() {
+			oak_assert(instance != nullptr);
+			return *instance;
+		}
+
+		TypeHandleStorage() {
+			oak_assert(instance == nullptr);
+			instance = this;
+		}
+
 		~TypeHandleStorage() {
+			instance = nullptr;
 			for (auto& ptr : handles_) {
 				if (ptr != nullptr) {
 					static_cast<TypeHandleBase*>(ptr)->~TypeHandleBase();
@@ -58,5 +73,8 @@ namespace oak {
 		oak::unordered_map<oak::string, size_t> nameMap_;
 	};
 
+
+	template<class U>
+	TypeHandleStorage<U>* TypeHandleStorage<U>::instance = nullptr;
 
 }

@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 		entity = { id, &scene };
 		entity.addComponent<oak::TransformComponent>(glm::vec3{ (i % 320) * 4.0f, (i / 320) * 4.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
 		entity.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
-		entity.activate();
+		scene.activateEntity(id);
 	}
 
 	//first frame time

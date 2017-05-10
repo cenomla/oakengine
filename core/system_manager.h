@@ -1,5 +1,7 @@
 #pragma once
 
+#include "oak_assert.h"
+
 #include "util/type_id.h"
 #include "container.h"
 #include "system.h"
@@ -14,7 +16,10 @@ namespace oak {
 	private:
 		static SystemManager *instance;
 	public:
-		static SystemManager& inst() { return *instance; }
+		static SystemManager& inst() { 
+			oak_assert(instance != nullptr);
+			return *instance;
+		}
 
 		SystemManager();
 		~SystemManager();

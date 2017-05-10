@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <system_manager.h>
 #include <graphics/opengl/gl_renderer.h>
-#include <component_storage.h>
+#include <scene_util.h>
 #include <components.h>
 
 #include "tile_system.h"
@@ -17,12 +17,12 @@ void SpriteSystem::init() {
 
 void SpriteSystem::run() {
 	cache_.update(*scene_);
-	oak::ComponentStorage& ts = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::TransformComponent>::id);
-	oak::ComponentStorage& ss = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::SpriteComponent>::id);
+	auto& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+	auto& ss = oak::getComponentStorage<oak::SpriteComponent>(*scene_);
 	auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
 	for (const auto& entity : cache_.entities()) {
-		const auto& tc = *static_cast<const oak::TransformComponent*>(ts.getComponent(entity));
-		const auto& sc = *static_cast<const oak::SpriteComponent*>(ss.getComponent(entity));
+		auto& tc = oak::getComponent<const oak::TransformComponent>(ts, entity);
+		auto& sc = oak::getComponent<const oak::SpriteComponent>(ss, entity);
 		renderer.addObject(glm::vec2{ tc.position }, tc.position.z, sc.layer, tc.rotationAngle, tc.scale, &sc);
 	}
 }
@@ -36,12 +36,12 @@ void TextSystem::init() {
 
 void TextSystem::run() {
 	cache_.update(*scene_);
-	oak::ComponentStorage& ts = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::TransformComponent>::id);
-	oak::ComponentStorage& xs = scene_->getComponentStorage(oak::util::type_id<oak::detail::BaseComponent, oak::TextComponent>::id);
+	oak::ComponentStorage& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+	oak::ComponentStorage& xs = oak::getComponentStorage<oak::TextComponent>(*scene_);
 	auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
 	for (const auto& entity : cache_.entities()) {
-		const auto& tc = *static_cast<const oak::TransformComponent*>(ts.getComponent(entity));
-		const auto& tx = *static_cast<const oak::TextComponent*>(xs.getComponent(entity));
+		auto& tc = oak::getComponent<const oak::TransformComponent>(ts, entity);
+		auto& tx = oak::getComponent<const oak::TextComponent>(xs, entity);
 		renderer.addObject(glm::vec2{ tc.position }, tc.position.z + 0.1f, tx.layer, tc.rotationAngle, tc.scale, &tx);
 	}
 }
