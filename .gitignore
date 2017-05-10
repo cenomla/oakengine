@@ -2,6 +2,10 @@
 .vscode
 .luacheckrc
 bin/obj
+bin/debug
+bin/profile
 log
 sandbox/save
 TODO
+gmon.out
+gprof.output
