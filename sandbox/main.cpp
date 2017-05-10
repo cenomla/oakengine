@@ -189,11 +189,11 @@ int main(int argc, char** argv) {
 		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
 		lastFrame = currentFrame;
-
-		log_print_out("delta: %f, entity count: %i", dt.count(), scene.getEntityCount());
+		
+		//clear all event queues
+		evtManager.clear();
 		//clear frame allocator
 		oak::oalloc_frame.clear();
-		evtManager.clear();
 	}
 
 	//clean up

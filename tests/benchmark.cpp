@@ -82,7 +82,7 @@ void oak_bench() {
 
 	oak::EntityId id;
 	oak::Entity entity{ id, nullptr };
-	for (size_t i = 0; i < 1048576; i++) {
+	for (size_t i = 0; i < 64000; i++) {
 		id = scene.createEntity();
 		entity = { id, &scene };
 		entity.addComponent<TransformComponent>(glm::vec2{ 1.0f }, 0.0f, 1.0f);
