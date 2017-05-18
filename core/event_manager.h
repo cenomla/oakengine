@@ -7,12 +7,9 @@
 #include "util/type_id.h"
 #include "container.h"
 #include "event_queue.h"
+#include "events.h"
 
 namespace oak {
-
-	namespace detail {
-		struct BaseEvent {};
-	}
 
 	class EventManager {
 	private:

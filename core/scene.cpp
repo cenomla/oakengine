@@ -116,6 +116,10 @@ namespace oak {
 		return *componentPools_[tid];
 	}
 
+	const ComponentStorage& Scene::getComponentStorage(size_t tid) const {
+		return *componentPools_[tid];
+	}
+
 	void Scene::ensureSize(size_t size) {
 		if (componentMasks_.size() <= size) {
 			componentMasks_.resize(size + 1);

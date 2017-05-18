@@ -16,11 +16,45 @@
 #include <entity.h>
 #include <input_events.h>
 #include <scene_events.h>
+#include <update_events.h>
+#include <event_comp.h>
 
 #include "component_ext.h"
 #include "systems.h"
 #include "tile_system.h"
 #include "light_renderer.h"
+
+
+class MovementSystem : public oak::System {
+public:
+	MovementSystem(oak::Scene& scene) : scene_{ &scene } {
+		cache_.requireComponent<oak::TransformComponent>();
+		cache_.requireComponent<oak::EventComponent>();
+		cache_.requireEvent<oak::KeyEvent>();
+	}
+
+	void run() override {
+		cache_.update(*scene_);
+
+		auto& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+
+		const auto& queue = oak::EventManager::inst().getQueue<oak::KeyEvent>();
+		for (const auto& entity : cache_.entities()) {
+			for (const auto& event : queue) {
+				if (event.key == 70 && event.action == 1) {
+					auto& tc = oak::getComponent<oak::TransformComponent>(ts, entity);
+					float xx = tc.position.x;
+					tc.position.x = tc.position.y;
+					tc.position.y = xx;
+				}
+			}
+		}
+	}
+
+private:
+	oak::EntityCache cache_;
+	oak::Scene *scene_;
+};
 
 struct stdoutstream : public oak::log::Stream {
 	void write(const void *source, size_t size) override {
@@ -83,6 +117,8 @@ int main(int argc, char** argv) {
 	evtManager.addQueue<oak::ButtonEvent>();
 	evtManager.addQueue<oak::CursorEvent>();
 	evtManager.addQueue<oak::TextEvent>();
+	evtManager.addQueue<oak::TickEvent>();
+	evtManager.addQueue<oak::SimulateEvent>();
 
 	//create the scene
 	oak::Scene scene;
@@ -95,6 +131,7 @@ int main(int argc, char** argv) {
 	SpriteSystem spriteSystem{ scene };
 	TextSystem textSystem{ scene };
 	LightRenderer lightRenderer{ scene };
+	MovementSystem movementSystem{ scene };
 	//add them to the system manager
 	sysManager.addSystem(winSystem, "window_system");
 	sysManager.addSystem(renderer, "renderer");
@@ -103,10 +140,12 @@ int main(int argc, char** argv) {
 	sysManager.addSystem(spriteSystem, "sprite_system");
 	sysManager.addSystem(textSystem, "text_system");
 	sysManager.addSystem(lightRenderer, "light_renderer");
+	sysManager.addSystem(movementSystem, "movement_system");
 	//component type handle storage
 	oak::ComponentHandleStorage chs;
 
 	//create component type handles
+	chs.addHandle<oak::EventComponent>("event");
 	chs.addHandle<oak::TransformComponent>("transform");
 	chs.addHandle<oak::SpriteComponent>("sprite");
 	chs.addHandle<oak::TextComponent>("text");
@@ -115,6 +154,7 @@ int main(int argc, char** argv) {
 	chs.addHandle<LightComponent>("light");
 
 	//create component storage
+	oak::ComponentStorage eventStorage{ &chs.getHandle<oak::EventComponent>() };
 	oak::ComponentStorage transformStorage{ &chs.getHandle<oak::TransformComponent>() };
 	oak::ComponentStorage spriteStorage{ &chs.getHandle<oak::SpriteComponent>() };
 	oak::ComponentStorage textStorage{ &chs.getHandle<oak::TextComponent>() };
@@ -123,6 +163,7 @@ int main(int argc, char** argv) {
 	oak::ComponentStorage lightStorage{ &chs.getHandle<LightComponent>() };
 
 	//add component storage to scene
+	scene.addComponentStorage(chs.getId("event"), eventStorage);
 	scene.addComponentStorage(chs.getId("transform"), transformStorage);
 	scene.addComponentStorage(chs.getId("sprite"), spriteStorage);
 	scene.addComponentStorage(chs.getId("text"), textStorage);
@@ -133,7 +174,7 @@ int main(int argc, char** argv) {
 	auto& shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
 	auto& tex_player = resManager.add<oak::graphics::GLTexture>("tex_player", GLuint(GL_TEXTURE_2D));
 	auto& mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<oak::string>{}("mat_entity"), &shd_pass, &tex_player);
-	auto& spr_player = resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 0.0f, 0.0f, 4.0f, 4.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+	auto& spr_player = resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 0.0f, 0.0f, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 
 	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
 	tex_player.create("sandbox/res/textures/character.png");
@@ -141,15 +182,20 @@ int main(int argc, char** argv) {
 	viewSystem.defineView(0, { 0 });
 	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 
-	oak::EntityId id;
-	oak::Entity entity{ id, &scene };
+	oak::EntityId entity = scene.createEntity();
+	size_t var = 1ull << oak::util::type_id<oak::detail::BaseEvent, oak::TickEvent>::id;
+	oak::addComponent<oak::EventComponent>(scene, entity, std::bitset<oak::config::MAX_EVENTS>{ var });
+	oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ 128.0f, 512.0, 0.0f }, 8.0f, glm::vec3{ 0.0f }, 0.0f);
+	oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+	scene.activateEntity(entity);
+	/*
 	for (size_t i = 0; i < 64000; i++) {
-		id = scene.createEntity();
-		entity = { id, &scene };
-		entity.addComponent<oak::TransformComponent>(glm::vec3{ (i % 320) * 4.0f, (i / 320) * 4.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-		entity.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
-		scene.activateEntity(id);
+		entity = scene.createEntity();
+		oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ (i % 320) * 4.0f, (i / 320) * 4.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
+		oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+		scene.activateEntity(entity);
 	}
+	*/
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
@@ -158,8 +204,12 @@ int main(int argc, char** argv) {
 	//main game loop
 	isRunning = true;
 	while (isRunning) {
+		//refresh window, poll input
+		winSystem.run();
 		//create / destroy / activate / deactivate entities 
 		scene.update();
+
+		evtManager.getQueue<oak::TickEvent>().emit({});
 
 		/*
 		//update physics
@@ -170,14 +220,13 @@ int main(int argc, char** argv) {
 		}
 		*/
 
+		movementSystem.run();
 		spriteSystem.run();
 		textSystem.run();
 		tileSystem.run();
 		lightRenderer.run();
 
 		renderer.run();
-
-		winSystem.run();
 
 		//check for exit
 		for (const auto& event : evtManager.getQueue<oak::WindowCloseEvent>()) {

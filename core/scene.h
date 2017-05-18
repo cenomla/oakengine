@@ -35,6 +35,7 @@ namespace oak {
 
 		void addComponentStorage(size_t tid, ComponentStorage& storage);
 		ComponentStorage& getComponentStorage(size_t tid);
+		const ComponentStorage& getComponentStorage(size_t tid) const;
 
 		size_t getEntityCount() const { return entities_.size(); }
 	private:

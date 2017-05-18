@@ -16,7 +16,7 @@ namespace oak {
 			size_ = 0;
 		}
 
-		void empty() {
+		bool empty() {
 			return size_ == 0;
 		}
 

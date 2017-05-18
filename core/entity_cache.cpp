@@ -6,6 +6,8 @@
 #include "event_queue.h"
 #include "scene.h"
 #include "scene_events.h"
+#include "scene_util.h"
+#include "event_comp.h"
 
 namespace oak {
 
@@ -15,8 +17,8 @@ namespace oak {
 		for (const auto& evt : EventManager::inst().getQueue<EntityActivateEvent>()) {
 			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
-			const auto& filter = scene.getComponentFilter(evt.entity);
-			if ((filter & filter_) == filter_) {
+			const auto& compFilter = scene.getComponentFilter(evt.entity);
+			if (filter(evt.entity, compFilter, scene)) {
 				if (!contains_[evt.entity]) {
 					addEntity(evt.entity);
 					needsSort = true;
@@ -62,6 +64,15 @@ namespace oak {
 	void EntityCache::ensureSize(size_t size) {
 		if (contains_.size() <= size) {
 			contains_.resize(size + 1);
+		}
+	}
+
+	bool EntityCache::filter(EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter, const Scene& scene) {
+		if (!scene.hasComponent(entity, util::type_id<detail::BaseComponent, EventComponent>::id)) {
+			return (compFilter & componentFilter_) == componentFilter_;
+		} else {
+			const auto& ec = getComponent<const EventComponent>(getComponentStorage<EventComponent>(scene), entity);
+			return ((compFilter & componentFilter_) == componentFilter_ && (ec.filter & eventFilter_) == eventFilter_);
 		}
 	}
 }

@@ -30,7 +30,7 @@ namespace oak {
 			instance = nullptr;
 			for (auto& ptr : handles_) {
 				if (ptr != nullptr) {
-					static_cast<TypeHandleBase*>(ptr)->~TypeHandleBase();
+					ptr->~TypeHandleBase();
 					oak_allocator.deallocate(ptr, HSize);
 				}
 			}
@@ -45,7 +45,7 @@ namespace oak {
 			if (handles_[tid] != nullptr) { return; }
 			void *ptr = oak_allocator.allocate(HSize);
 			new (ptr) TypeHandle<T>{ name };
-			handles_[tid] = ptr;
+			handles_[tid] = static_cast<TypeHandleBase*>(ptr);
 			nameMap_[name] = tid;
 		}
 
@@ -56,7 +56,7 @@ namespace oak {
 		}
 
 		const TypeHandleBase* getHandle(size_t tid) const {
-			return static_cast<TypeHandleBase*>(handles_[tid]);
+			return handles_[tid];
 		}
 
 		size_t getId(const oak::string &name) const {
@@ -69,7 +69,7 @@ namespace oak {
 
 
 	private:
-		oak::vector<void*> handles_;
+		oak::vector<TypeHandleBase*> handles_;
 		oak::unordered_map<oak::string, size_t> nameMap_;
 	};
 

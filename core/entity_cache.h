@@ -5,6 +5,7 @@
 #include "util/type_id.h"
 #include "container.h"
 #include "entity_id.h"
+#include "events.h"
 
 namespace oak {
 
@@ -20,17 +21,24 @@ namespace oak {
 		
 		template<class T>
 		void requireComponent() {
-			filter_[util::type_id<detail::BaseComponent, T>::id] = true;
+			componentFilter_[util::type_id<detail::BaseComponent, T>::id] = true;
+		}
+
+		template<class T>
+		void requireEvent() {
+			eventFilter_[util::type_id<detail::BaseEvent, T>::id] = true;
 		}
 	private:
 		oak::vector<EntityId> entities_;
 		oak::vector<bool> contains_;
-		std::bitset<config::MAX_COMPONENTS> filter_;
+		std::bitset<config::MAX_COMPONENTS> componentFilter_;
+		std::bitset<config::MAX_EVENTS> eventFilter_;
 
 		void addEntity(EntityId entity);
 		void removeEntity(EntityId entity);
 		void sort();
 		void ensureSize(size_t size);
+		bool filter(EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter, const Scene& scene);
 	};
 
 }
