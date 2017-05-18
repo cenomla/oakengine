@@ -12,12 +12,12 @@
 #include <view_system.h>
 #include <resource.h>
 #include <component_storage.h>
+#include <core_components.h>
 #include <components.h>
 #include <entity.h>
 #include <input_events.h>
 #include <scene_events.h>
 #include <update_events.h>
-#include <event_comp.h>
 
 #include "component_ext.h"
 #include "systems.h"
@@ -29,8 +29,8 @@ class MovementSystem : public oak::System {
 public:
 	MovementSystem(oak::Scene& scene) : scene_{ &scene } {
 		cache_.requireComponent<oak::TransformComponent>();
-		cache_.requireComponent<oak::EventComponent>();
-		cache_.requireEvent<oak::KeyEvent>();
+		cache_.requireComponent<oak::PrefabComponent>();
+		cache_.requirePrefab(std::hash<oak::string>{}("player"));
 	}
 
 	void run() override {
@@ -38,16 +38,9 @@ public:
 
 		auto& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
 
-		const auto& queue = oak::EventManager::inst().getQueue<oak::KeyEvent>();
 		for (const auto& entity : cache_.entities()) {
-			for (const auto& event : queue) {
-				if (event.key == 70 && event.action == 1) {
-					auto& tc = oak::getComponent<oak::TransformComponent>(ts, entity);
-					float xx = tc.position.x;
-					tc.position.x = tc.position.y;
-					tc.position.y = xx;
-				}
-			}
+			auto& tc = oak::getComponent<oak::TransformComponent>(ts, entity);
+			tc.position.x ++;
 		}
 	}
 
@@ -146,6 +139,7 @@ int main(int argc, char** argv) {
 
 	//create component type handles
 	chs.addHandle<oak::EventComponent>("event");
+	chs.addHandle<oak::PrefabComponent>("prefab");
 	chs.addHandle<oak::TransformComponent>("transform");
 	chs.addHandle<oak::SpriteComponent>("sprite");
 	chs.addHandle<oak::TextComponent>("text");
@@ -155,6 +149,7 @@ int main(int argc, char** argv) {
 
 	//create component storage
 	oak::ComponentStorage eventStorage{ &chs.getHandle<oak::EventComponent>() };
+	oak::ComponentStorage prefabStorage{ &chs.getHandle<oak::PrefabComponent>() };
 	oak::ComponentStorage transformStorage{ &chs.getHandle<oak::TransformComponent>() };
 	oak::ComponentStorage spriteStorage{ &chs.getHandle<oak::SpriteComponent>() };
 	oak::ComponentStorage textStorage{ &chs.getHandle<oak::TextComponent>() };
@@ -164,6 +159,7 @@ int main(int argc, char** argv) {
 
 	//add component storage to scene
 	scene.addComponentStorage(chs.getId("event"), eventStorage);
+	scene.addComponentStorage(chs.getId("prefab"), prefabStorage);
 	scene.addComponentStorage(chs.getId("transform"), transformStorage);
 	scene.addComponentStorage(chs.getId("sprite"), spriteStorage);
 	scene.addComponentStorage(chs.getId("text"), textStorage);
@@ -183,9 +179,12 @@ int main(int argc, char** argv) {
 	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 
 	oak::EntityId entity = scene.createEntity();
-	size_t var = 1ull << oak::util::type_id<oak::detail::BaseEvent, oak::TickEvent>::id;
-	oak::addComponent<oak::EventComponent>(scene, entity, std::bitset<oak::config::MAX_EVENTS>{ var });
+	oak::addComponent<oak::PrefabComponent>(scene, entity, std::hash<oak::string>{}("player"));
 	oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ 128.0f, 512.0, 0.0f }, 8.0f, glm::vec3{ 0.0f }, 0.0f);
+	oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+	scene.activateEntity(entity);
+	entity = scene.createEntity();
+	oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ 740.0f, 256.0, 0.0f }, 8.0f, glm::vec3{ 0.0f }, 0.0f);
 	oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
 	scene.activateEntity(entity);
 	/*
@@ -229,9 +228,8 @@ int main(int argc, char** argv) {
 		renderer.run();
 
 		//check for exit
-		for (const auto& event : evtManager.getQueue<oak::WindowCloseEvent>()) {
-			isRunning = false;
-			break;
+		if (!evtManager.getQueue<oak::WindowCloseEvent>().empty()) {
+			isRunning = false; 
 		}
 
 		//update the delta time

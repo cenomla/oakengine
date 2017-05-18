@@ -7,7 +7,7 @@
 #include "scene.h"
 #include "scene_events.h"
 #include "scene_util.h"
-#include "event_comp.h"
+#include "core_components.h"
 
 namespace oak {
 
@@ -18,7 +18,7 @@ namespace oak {
 			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
 			const auto& compFilter = scene.getComponentFilter(evt.entity);
-			if (filter(evt.entity, compFilter, scene)) {
+			if (filter(scene, evt.entity, compFilter)) {
 				if (!contains_[evt.entity]) {
 					addEntity(evt.entity);
 					needsSort = true;
@@ -67,12 +67,16 @@ namespace oak {
 		}
 	}
 
-	bool EntityCache::filter(EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter, const Scene& scene) {
-		if (!scene.hasComponent(entity, util::type_id<detail::BaseComponent, EventComponent>::id)) {
-			return (compFilter & componentFilter_) == componentFilter_;
-		} else {
-			const auto& ec = getComponent<const EventComponent>(getComponentStorage<EventComponent>(scene), entity);
-			return ((compFilter & componentFilter_) == componentFilter_ && (ec.filter & eventFilter_) == eventFilter_);
-		}
+	static const size_t ecid = util::type_id<detail::BaseComponent, EventComponent>::id;
+	static const size_t pcid = util::type_id<detail::BaseComponent, PrefabComponent>::id;
+
+	bool EntityCache::filter(const Scene& scene, EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter) {
+		return (compFilter & componentFilter_) == componentFilter_ &&
+			(compFilter[ecid] ? 
+				(getComponent<const EventComponent>(getComponentStorage<EventComponent>(scene), entity).filter & eventFilter_) == eventFilter_ :
+				true) &&
+			(compFilter[pcid] && prefabFilter_ != 0 ? 
+				getComponent<const PrefabComponent>(getComponentStorage<PrefabComponent>(scene), entity).id == prefabFilter_ :
+				true);
 	}
 }

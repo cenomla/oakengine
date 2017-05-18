@@ -16,29 +16,34 @@ namespace oak {
 
 		void update(const Scene& scene);
 
-		const oak::vector<EntityId>& entities() const { return entities_; }
-		void clear() { entities_.clear(); };
+		inline const oak::vector<EntityId>& entities() const { return entities_; }
+		inline void clear() { entities_.clear(); };
 		
 		template<class T>
-		void requireComponent() {
+		inline void requireComponent() {
 			componentFilter_[util::type_id<detail::BaseComponent, T>::id] = true;
 		}
 
 		template<class T>
-		void requireEvent() {
+		inline void requireEvent() {
 			eventFilter_[util::type_id<detail::BaseEvent, T>::id] = true;
+		}
+
+		inline void requirePrefab(size_t id) {
+			prefabFilter_ = id;
 		}
 	private:
 		oak::vector<EntityId> entities_;
 		oak::vector<bool> contains_;
 		std::bitset<config::MAX_COMPONENTS> componentFilter_;
 		std::bitset<config::MAX_EVENTS> eventFilter_;
+		size_t prefabFilter_ = 0;
 
 		void addEntity(EntityId entity);
 		void removeEntity(EntityId entity);
 		void sort();
 		void ensureSize(size_t size);
-		bool filter(EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter, const Scene& scene);
+		bool filter(const Scene& scene, EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter);
 	};
 
 }

@@ -33,6 +33,11 @@ namespace oak {
 		return *static_cast<T*>(comp);
 	}
 
+	template<class T>
+	bool hasComponent(const Scene& scene, EntityId entity) {
+		return scene.hasComponent(entity, util::type_id<detail::BaseComponent, T>::id);
+	}
+
 }
 
 
