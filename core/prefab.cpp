@@ -2,7 +2,7 @@
 
 namespace oak {
 
-	Prefab::Prefab(Scene *scene, ComponentHandleStorage *handleStorage) : scene_{ scene }, handleStorage_{ handleStorage } {}
+	Prefab::Prefab(Scene *scene) : scene_{ scene } {}
 	
 	Prefab::~Prefab() {
 		clear();
@@ -21,7 +21,7 @@ namespace oak {
 	}
 
 	void* Prefab::addComponent(size_t tid) {
-		const auto& handle = handleStorage_->getHandle(tid);
+		const auto& handle = ComponentHandleStorage::inst().getHandle(tid);
 		void *comp = oak_allocator.allocate(handle->getSize());
 		handle->construct(comp);
 		//ensure size
@@ -36,7 +36,7 @@ namespace oak {
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];
 			if (it != nullptr) {
-				const auto& handle = handleStorage_->getHandle(i);
+				const auto& handle = ComponentHandleStorage::inst().getHandle(i);
 				handle->destruct(it);
 				oak_allocator.deallocate(it, handle->getSize());
 			}

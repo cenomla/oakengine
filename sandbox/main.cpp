@@ -8,6 +8,7 @@
 #include <system_manager.h>
 #include <resource_manager.h>
 #include <event_manager.h>
+#include <input_manager.h>
 #include <window_system.h>
 #include <view_system.h>
 #include <resource.h>
@@ -18,16 +19,18 @@
 #include <input_events.h>
 #include <scene_events.h>
 #include <update_events.h>
+#include <input.h>
 
 #include "component_ext.h"
 #include "systems.h"
 #include "tile_system.h"
 #include "light_renderer.h"
 
-
 class MovementSystem : public oak::System {
 public:
-	MovementSystem(oak::Scene& scene) : scene_{ &scene } {
+	MovementSystem(oak::Scene& scene) : scene_{ &scene } {}
+
+	void init() override {
 		cache_.requireComponent<oak::TransformComponent>();
 		cache_.requireComponent<oak::PrefabComponent>();
 		cache_.requirePrefab(std::hash<oak::string>{}("player"));
@@ -40,7 +43,19 @@ public:
 
 		for (const auto& entity : cache_.entities()) {
 			auto& tc = oak::getComponent<oak::TransformComponent>(ts, entity);
-			tc.position.x ++;
+			
+			if (oak::InputManager::inst().getAction("move_up")) {
+				tc.position.y -= 4.0f;
+			}
+			if (oak::InputManager::inst().getAction("move_down")) {
+				tc.position.y += 4.0f;
+			}
+			if (oak::InputManager::inst().getAction("move_left")) {
+				tc.position.x -= 4.0f;
+			}
+			if (oak::InputManager::inst().getAction("move_right")) {
+				tc.position.x += 4.0f;
+			}
 		}
 	}
 
@@ -97,6 +112,12 @@ int main(int argc, char** argv) {
 	oak::SystemManager sysManager;
 	oak::EventManager evtManager;
 	oak::ResourceManager resManager;
+	oak::InputManager inputManager;
+
+	inputManager.bind("move_up", oak::key::w, true);
+	inputManager.bind("move_down", oak::key::s, true);
+	inputManager.bind("move_left", oak::key::a, true);
+	inputManager.bind("move_right", oak::key::d, true);
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
@@ -208,8 +229,6 @@ int main(int argc, char** argv) {
 		//create / destroy / activate / deactivate entities 
 		scene.update();
 
-		evtManager.getQueue<oak::TickEvent>().emit({});
-
 		/*
 		//update physics
 		accum += dt.count();
@@ -237,9 +256,9 @@ int main(int argc, char** argv) {
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
 		lastFrame = currentFrame;
 		
-		//clear all event queues
+		//do engine things
+		inputManager.update();
 		evtManager.clear();
-		//clear frame allocator
 		oak::oalloc_frame.clear();
 	}
 

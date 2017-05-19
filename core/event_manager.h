@@ -15,7 +15,7 @@ namespace oak {
 	private:
 		static EventManager *instance;
 	public:
-		static EventManager& inst() { 
+		inline static EventManager& inst() { 
 			oak_assert(instance != nullptr);
 			return *instance; 
 		}

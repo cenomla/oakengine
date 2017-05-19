@@ -44,7 +44,7 @@ namespace oak {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
 		window_ = glfwCreateWindow(1280, 720, title_.c_str(), 0, 0);
 		if (window_ == nullptr) {
@@ -55,7 +55,7 @@ namespace oak {
 		glfwSetWindowUserPointer(window_, this);
 
 		glfwMakeContextCurrent(window_);
-		glfwSwapInterval(0);
+		glfwSwapInterval(1);
 
 		if (!gladLoadGL()) {
 			log_print_err("cannot load gl");
@@ -80,7 +80,7 @@ namespace oak {
 	}
 
 	static void buttonCallback(GLFWwindow *window, int button, int action, int mods) {
-		EventManager::inst().getQueue<ButtonEvent>().emit({});
+		EventManager::inst().getQueue<ButtonEvent>().emit({ button, action, mods });
 	}
 
 	static void cursorCallback(GLFWwindow *window, double xpos, double ypos) {

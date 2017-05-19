@@ -8,7 +8,7 @@ namespace oak {
 
 	class Prefab {
 	public:
-		Prefab(Scene *scene, ComponentHandleStorage *handleStorage);
+		Prefab(Scene *scene);
 		~Prefab();
 
 		EntityId createInstance() const;
@@ -26,7 +26,6 @@ namespace oak {
 	private:
 		oak::vector<void*> storage_;
 		Scene *scene_;
-		ComponentHandleStorage *handleStorage_;
 	};
 
 }

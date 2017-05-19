@@ -50,7 +50,7 @@ namespace oak {
 		//stores the indices free for reuse
 		oak::deque<uint32_t> freeIndices_;
 
-		std::vector<ComponentStorage*> componentPools_;
+		oak::vector<ComponentStorage*> componentPools_;
 		
 		void ensureSize(size_t size);
 		void removeAllComponents(EntityId entity);
