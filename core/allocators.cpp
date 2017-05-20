@@ -29,6 +29,9 @@ namespace oak {
 
 	}
 
+	namespace debug::vars {
+		extern size_t allocatedMemory;
+	}
 	void* ProxyAllocator::allocate(size_t size) {
 		void *ptr = aligned_alloc(64, size + sizeof(detail::Block));
 		detail::Block *l = static_cast<detail::Block*>(ptr);
@@ -38,12 +41,16 @@ namespace oak {
 
 		numAllocs_ ++;
 
+		debug::vars::allocatedMemory += size + sizeof(detail::Block);
+
 		return ptrutil::add(ptr, sizeof(detail::Block));
 	}
 
 	void ProxyAllocator::deallocate(void *ptr, size_t size) {
 		//search through linked list for ptr - sizeof(memList) then remove from list and deallocate
 		ptr = ptrutil::subtract(ptr, sizeof(detail::Block));
+
+		debug::vars::allocatedMemory -= size + sizeof(detail::Block);
 		
 		detail::Block *p = memList_;
 		detail::Block *prev = nullptr;

@@ -5,6 +5,7 @@
 #include "oak_assert.h"
 
 #include "util/type_id.h"
+#include "util/mpl.h"
 #include "component_storage.h"
 #include "scene.h"
 
@@ -20,10 +21,15 @@ namespace oak {
 		return scene.getComponentStorage(util::type_id<detail::BaseComponent, T>::id);
 	}
 
-	template<class T, class U>
-	T& getComponent(U&& storage, EntityId entity) {
+	template<class T>
+	T& getComponent(mpl::const_type<T, ComponentStorage>& storage, EntityId entity) {
 		oak_assert(ComponentHandleStorage::inst().getHandle(util::type_id<detail::BaseComponent, typename std::remove_const<T>::type>::id) == storage.getHandle());
 		return *static_cast<T*>(storage.getComponent(entity));
+	}
+
+	template<class T>
+	T& getComponent(mpl::const_type<T, Scene>& scene, EntityId entity) {
+		return *static_cast<T*>(scene.getComponent(entity, util::type_id<detail::BaseComponent, typename std::remove_const<T>::type>::id));
 	}
 
 	template<class T, class... TArgs>

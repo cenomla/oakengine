@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 #include <system.h>
-#include <scene_util.h>
+#include <scene_utils.h>
 #include <entity_cache.h>
 #include <container.h>
 #include <graphics/opengl/gl_renderer.h>

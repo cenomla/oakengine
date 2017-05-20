@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <system_manager.h>
 #include <graphics/opengl/gl_renderer.h>
-#include <scene_util.h>
+#include <scene_utils.h>
 #include <components.h>
 
 #include "tile_system.h"

@@ -4,9 +4,9 @@
 #include <scene_events.h>
 #include <input_events.h>
 #include <scene.h>
+#include <scene_utils.h>
 #include <component_storage.h>
 #include <entity_id.h>
-#include <entity.h>
 #include <entity_cache.h>
 #include <container.h>
 #include <chrono>
@@ -80,20 +80,18 @@ void oak_bench() {
 	//create 1048576 entities, add components to entities
 	start = std::chrono::high_resolution_clock::now();
 
-	oak::EntityId id;
-	oak::Entity entity{ id, nullptr };
+	oak::EntityId entity;
 	for (size_t i = 0; i < 64000; i++) {
-		id = scene.createEntity();
-		entity = { id, &scene };
-		entity.addComponent<TransformComponent>(glm::vec2{ 1.0f }, 0.0f, 1.0f);
+		entity = scene.createEntity();
+		oak::addComponent<TransformComponent>(scene, entity, glm::vec2{ 1.0f }, 0.0f, 1.0f);
 		if (i % 2 == 0) {
-			entity.addComponent<DrawComponent>(0u, 2u, 15.0f);
+			oak::addComponent<DrawComponent>(scene, entity, 0u, 2u, 15.0f);
 		}
 		if (i % 2 == 1) {
-			entity.addComponent<VelocityComponent>(glm::vec2{ 0.0f });
-			entity.addComponent<BoxComponent>(glm::vec2{ 16.0f }, glm::vec2{ 16.0f });
+			oak::addComponent<VelocityComponent>(scene, entity, glm::vec2{ 0.0f });
+			oak::addComponent<BoxComponent>(scene, entity, glm::vec2{ 16.0f }, glm::vec2{ 16.0f });
 		}
-		scene.activateEntity(id);
+		scene.activateEntity(entity);
 	}	
 
 	end = std::chrono::high_resolution_clock::now();

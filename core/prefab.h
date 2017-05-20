@@ -8,7 +8,7 @@ namespace oak {
 
 	class Prefab {
 	public:
-		Prefab(Scene *scene);
+		Prefab(const oak::string& name, Scene& scene);
 		~Prefab();
 
 		EntityId createInstance() const;
@@ -25,6 +25,7 @@ namespace oak {
 		void clear();
 	private:
 		oak::vector<void*> storage_;
+		oak::string name_;
 		Scene *scene_;
 	};
 

@@ -7,7 +7,6 @@
 #include "graphics/sprite.h"
 #include "container.h"
 #include "resource.h"
-#include "entity.h"
 
 namespace oak {
 

@@ -1,7 +1,6 @@
 #include "file_puper.h"
 
 #include "util/byte_buffer.h"
-#include "entity.h"
 
 namespace oak {
 

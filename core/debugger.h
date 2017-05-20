@@ -2,13 +2,9 @@
 
 #include <chrono>
 
-#include "debug_vars.h"
 #include "container.h"
 
 namespace oak {
-
-	class Puper;
-	struct ObjInfo;
 
 	struct PerformanceProfile {
 		std::chrono::high_resolution_clock::time_point start;
@@ -18,8 +14,6 @@ namespace oak {
 		float durration;
 		bool running;
 	};
-
-	void pup(Puper& puper, DebugVars& data, const ObjInfo& info);
 
 	class Debugger {
 	public:

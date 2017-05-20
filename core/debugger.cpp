@@ -4,15 +4,6 @@
 
 namespace oak {
 
-	DebugVars debugVars;
-
-	void pup(Puper& puper, DebugVars& data, const ObjInfo& info) {
-		pup(puper, data.dt, info + ObjInfo{ "delta_time" });
-		pup(puper, data.fps, info + ObjInfo{ "fps" });
-		pup(puper, data.usedMemory, info + ObjInfo{ "used_memory" });
-		pup(puper, data.allocatedMemory, info + ObjInfo{ "allocated_memory" });
-	}
-
 	size_t Debugger::createProfile(const oak::string& name) {
 		size_t id = profiles_.size();
 

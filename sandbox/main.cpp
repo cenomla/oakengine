@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include <graphics/opengl/gl_renderer.h>
+#include <graphics/opengl/gl_texture_atlas.h>
 #include <log.h>
 #include <system_manager.h>
 #include <resource_manager.h>
@@ -15,11 +16,11 @@
 #include <component_storage.h>
 #include <core_components.h>
 #include <components.h>
-#include <entity.h>
 #include <input_events.h>
 #include <scene_events.h>
 #include <update_events.h>
 #include <input.h>
+#include <prefab.h>
 
 #include "component_ext.h"
 #include "systems.h"
@@ -110,6 +111,7 @@ int main(int argc, char** argv) {
 
 	//init engine managers
 	oak::SystemManager sysManager;
+	oak::ComponentHandleStorage chs;
 	oak::EventManager evtManager;
 	oak::ResourceManager resManager;
 	oak::InputManager inputManager;
@@ -155,8 +157,6 @@ int main(int argc, char** argv) {
 	sysManager.addSystem(textSystem, "text_system");
 	sysManager.addSystem(lightRenderer, "light_renderer");
 	sysManager.addSystem(movementSystem, "movement_system");
-	//component type handle storage
-	oak::ComponentHandleStorage chs;
 
 	//create component type handles
 	chs.addHandle<oak::EventComponent>("event");
@@ -189,33 +189,32 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(chs.getId("light"), lightStorage);
 
 	auto& shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
-	auto& tex_player = resManager.add<oak::graphics::GLTexture>("tex_player", GLuint(GL_TEXTURE_2D));
-	auto& mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<oak::string>{}("mat_entity"), &shd_pass, &tex_player);
-	auto& spr_player = resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 0.0f, 0.0f, 16.0f, 16.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-
 	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
-	tex_player.create("sandbox/res/textures/character.png");
+	auto& atlas = resManager.add<oak::graphics::GLTextureAtlas>("atlas", GLuint{ GL_TEXTURE_2D });
+	atlas.addTexture("sandbox/res/textures/character.png");
+	atlas.addTexture("sandbox/res/textures/platform.png");
+	atlas.bake(512, 512);
+	auto& mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<oak::string>{}("mat_entity"), &shd_pass, &atlas);
+	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 0.0f, 0.0f, 32.0f, 32.0f, atlas.getTextureRegion("sandbox/res/rextures/character.png"));
+	resManager.add<oak::graphics::Sprite>("spr_platform", mat_entity.id, 0.0f, 0.0f, 64.0f, 16.0f, atlas.getTextureRegion("sandbox/res/textures/platform.png"));
 
 	viewSystem.defineView(0, { 0 });
 	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 
-	oak::EntityId entity = scene.createEntity();
-	oak::addComponent<oak::PrefabComponent>(scene, entity, std::hash<oak::string>{}("player"));
-	oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ 128.0f, 512.0, 0.0f }, 8.0f, glm::vec3{ 0.0f }, 0.0f);
-	oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+	auto& pf_platform = resManager.add<oak::Prefab>("pf_platform", "platform", scene);
+	pf_platform.addComponent<oak::TransformComponent>();
+	pf_platform.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_platform"), glm::vec2{ 1.0f }, 0, 0, 0u);
+
+	auto& pf_player = resManager.add<oak::Prefab>("pf_player", "player", scene);
+	pf_player.addComponent<oak::TransformComponent>();
+	pf_player.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+
+
+	oak::EntityId entity = pf_platform.createInstance();
+	oak::getComponent<oak::TransformComponent>(scene, entity).position = glm::vec3{ 128.0, 512.0f, 0.0f };
 	scene.activateEntity(entity);
-	entity = scene.createEntity();
-	oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ 740.0f, 256.0, 0.0f }, 8.0f, glm::vec3{ 0.0f }, 0.0f);
-	oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+	entity = pf_player.createInstance();
 	scene.activateEntity(entity);
-	/*
-	for (size_t i = 0; i < 64000; i++) {
-		entity = scene.createEntity();
-		oak::addComponent<oak::TransformComponent>(scene, entity, glm::vec3{ (i % 320) * 4.0f, (i / 320) * 4.0f, 0.0f }, 1.0f, glm::vec3{ 0.0f }, 0.0f);
-		oak::addComponent<oak::SpriteComponent>(scene, entity, std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
-		scene.activateEntity(entity);
-	}
-	*/
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();

@@ -24,6 +24,9 @@ namespace oak {
 		};
 
 	}
+	namespace debug::vars {
+		extern size_t usedMemory;
+	}
 
 	//base allocator
 	template<class T>
@@ -51,18 +54,14 @@ namespace oak {
 		OakAllocator(const OakAllocator<U>& other) : allocator_{ other.allocator_ } {}
 
 		pointer allocate(size_t count, const_pointer locality = nullptr) {
+			debug::vars::usedMemory += count * value_size;
 			return static_cast<pointer>(allocator_->allocate(count * value_size));
 		}
 
 		void deallocate(void *ptr, size_t count) {
+			debug::vars::usedMemory -= count * value_size;
 			allocator_->deallocate(ptr, count * value_size);
 		}
-
-		/*
-		size_type max_size() const {
-			return 8_gb;
-		}
-		*/
 
 		template<class U>
 		bool equals(const OakAllocator<U>& second) const {
