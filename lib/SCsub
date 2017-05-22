@@ -2,16 +2,26 @@ Import('*')
 
 import os
 
+glad_include = ""
+glad_src = ""
+
+if env['flavor'] == 'debug':
+	glad_include = "#lib/glad/debug-include"
+	glad_src = "glad/glad-debug.c"
+else:
+	glad_include = "#lib/glad/include"
+	glad_src = "glad/glad.c"
+
 #add the include directories for each libray to the CPPPATH
-env.Append(CPPPATH = ['#lib/lua-5.3.3', '#lib/stb', '#lib/glfw-3.2.1/include', '#lib/glad/include', '#lib/glm', '#lib/enet-1.3.13/include'])
+env.Append(CPPPATH = ['#lib/lua-5.3.3', '#lib/stb', '#lib/glfw-3.2.1/include', glad_include, '#lib/glm', '#lib/enet-1.3.13/include'])
 env.Append(LIBPATH = [os.path.join('#$BINDIR', 'lib')])
 
 module_targets = {}
 #lua is very nice to build
-module_targets['lua'] = env.Library(target = 'liblua.a', source = Glob('lua-5.3.3/lua/*.c'), CFLAGS = env['CCFLAGS'] + ['-DLUA_COMPAT_5_2'])
+module_targets['lua'] = env.Library(target = 'liblua.a', source = Glob('lua-5.3.3/lua/*.c'), CCFLAGS = env['CCFLAGS'] + ['-DLUA_COMPAT_5_2'])
 
 #so is glad
-module_targets['glad'] = env.Library(target = 'libglad.a', source = 'glad/glad.c')
+module_targets['glad'] = env.Library(target = 'libglad.a', source = glad_src)
 
 #glfw config (only compiling wayland files for now will worry about other platforms later)
 glfw_sources_x11 = ['context.c', 'init.c', 'input.c', 'linux_joystick.c', 'monitor.c', 'posix_time.c', 'posix_tls.c', 'vulkan.c', 'window.c', 'glx_context.c', 'egl_context.c',

@@ -35,6 +35,13 @@ namespace oak {
 		glfwPollEvents();
 	}
 
+	static void post_gl_call(const char *name, void *funcptr, int len_args, ...) {
+		GLenum error = glad_glGetError();
+		if (error != GL_NO_ERROR) {
+			log_print_warn("opengl error: %i, %s", error, name);
+		}
+	}
+
 	void WindowSystem::createWindow() {
 		if (!glfwInit()) {
 			log_print_err("cannot init glfw");
@@ -61,6 +68,10 @@ namespace oak {
 			log_print_err("cannot load gl");
 			abort();
 		}
+
+#ifdef GLAD_DEBUG
+		glad_set_post_callback(post_gl_call);
+#endif
 
 		log_print_out("opengl version: %s", glGetString(GL_VERSION));
 

@@ -194,20 +194,26 @@ int main(int argc, char** argv) {
 	atlas.addTexture("sandbox/res/textures/character.png");
 	atlas.addTexture("sandbox/res/textures/platform.png");
 	atlas.bake(512, 512);
+	auto& tex_light = resManager.add<oak::graphics::GLTexture>("tex_light", GLuint{ GL_TEXTURE_2D });
+	tex_light.create("sandbox/res/textures/light.png");
 	auto& mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<oak::string>{}("mat_entity"), &shd_pass, &atlas);
-	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 0.0f, 0.0f, 32.0f, 32.0f, atlas.getTextureRegion("sandbox/res/rextures/character.png"));
+	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 16.0f, 16.0f, 32.0f, 32.0f, atlas.getTextureRegion("sandbox/res/rextures/character.png"));
 	resManager.add<oak::graphics::Sprite>("spr_platform", mat_entity.id, 0.0f, 0.0f, 64.0f, 16.0f, atlas.getTextureRegion("sandbox/res/textures/platform.png"));
+	auto& mat_light = resManager.add<oak::graphics::GLMaterial>("mat_light", std::hash<oak::string>{}("mat_light"), &shd_pass, &tex_light);
 
-	viewSystem.defineView(0, { 0 });
+	viewSystem.defineView(0, { 0, 1 });
 	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
 
 	auto& pf_platform = resManager.add<oak::Prefab>("pf_platform", "platform", scene);
 	pf_platform.addComponent<oak::TransformComponent>();
 	pf_platform.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_platform"), glm::vec2{ 1.0f }, 0, 0, 0u);
+	pf_platform.addComponent<oak::AABB2dComponent>(glm::vec2{ 32.0f, 8.0f }, glm::vec2{ 32.0f, 8.0f });
+	pf_platform.addComponent<OccluderComponent>();
 
 	auto& pf_player = resManager.add<oak::Prefab>("pf_player", "player", scene);
 	pf_player.addComponent<oak::TransformComponent>();
 	pf_player.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
+	pf_player.addComponent<LightComponent>(512.0f, glm::vec3{ 1.0f }, mat_light.id);
 
 
 	oak::EntityId entity = pf_platform.createInstance();

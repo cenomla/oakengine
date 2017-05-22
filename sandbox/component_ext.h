@@ -5,6 +5,10 @@
 #include <pup.h>
 
 struct LightComponent : public oak::graphics::Renderable {
+
+	LightComponent() = default;
+	LightComponent(float s, const glm::vec3& c, size_t mi) : size{ s }, color{ c }, matId{ mi } {}
+
 	float size = 256.0f;
 	glm::vec3 color{ 1.0f, 1.0f, 1.0f };
 	size_t matId = std::hash<oak::string>{}("mat_light");
@@ -33,8 +37,6 @@ struct LightComponent : public oak::graphics::Renderable {
 
 struct OccluderComponent {
 	float height = 1.0f;
-	float width = 1.0f;
-	glm::vec2 hohoh{ 1.0f };
 };
 
 

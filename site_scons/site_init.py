@@ -76,6 +76,7 @@ def get_env_flavor(env, flavor):
 	flv.set_target = lambda name: set_target(flv, name)
 	flv.Replace(**env_flavor_sets[flavor])
 	flv.Append(**env_flavor_adds[flavor])
+	flv['flavor'] = flavor
 
 	return flv
 
