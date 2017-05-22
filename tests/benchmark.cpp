@@ -52,22 +52,22 @@ void oak_bench() {
 	evtManager.addQueue<oak::EntityDeactivateEvent>();
 
 	oak::Scene scene;
-	oak::ComponentHandleStorage chs;
+	oak::ComponentTypeManager chs;
 
 	chs.addHandle<TransformComponent>("transform");
 	chs.addHandle<DrawComponent>("draw");
 	chs.addHandle<VelocityComponent>("velocity");
 	chs.addHandle<BoxComponent>("box");
 
-	oak::ComponentStorage ts{ &chs.getHandle<TransformComponent>() };
-	oak::ComponentStorage ds{ &chs.getHandle<DrawComponent>() };
-	oak::ComponentStorage vs{ &chs.getHandle<VelocityComponent>() };
-	oak::ComponentStorage bs{ &chs.getHandle<BoxComponent>() };
+	oak::ComponentStorage ts{ "transform" };
+	oak::ComponentStorage ds{ "draw" };
+	oak::ComponentStorage vs{ "velocity" };
+	oak::ComponentStorage bs{ "box" };
 
-	scene.addComponentStorage(chs.getId("transform"), ts);
-	scene.addComponentStorage(chs.getId("draw"), ds);
-	scene.addComponentStorage(chs.getId("velocity"), vs);
-	scene.addComponentStorage(chs.getId("box"), bs);
+	scene.addComponentStorage(ts);
+	scene.addComponentStorage(ds);
+	scene.addComponentStorage(vs);
+	scene.addComponentStorage(bs);
 
 	oak::EntityCache drawCache;
 	drawCache.requireComponent<TransformComponent>();

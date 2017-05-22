@@ -10,23 +10,23 @@
 namespace oak {
 
 	template<class U>
-	class TypeHandleStorage {
+	class TypeManager {
 	private:
-		static TypeHandleStorage<U>* instance;
+		static TypeManager<U>* instance;
 	public:
-		static constexpr size_t HSize = sizeof(TypeHandle<U>);
+		static constexpr size_t HSize = sizeof(TypeHandle<U, U>);
 
-		static TypeHandleStorage<U>& inst() {
+		static TypeManager<U>& inst() {
 			oak_assert(instance != nullptr);
 			return *instance;
 		}
 
-		TypeHandleStorage() {
+		TypeManager() {
 			oak_assert(instance == nullptr);
 			instance = this;
 		}
 
-		~TypeHandleStorage() {
+		~TypeManager() {
 			instance = nullptr;
 			for (auto& ptr : handles_) {
 				if (ptr != nullptr) {
@@ -38,21 +38,25 @@ namespace oak {
 
 		template<class T>
 		void addHandle(const oak::string &name) {
-			size_t tid = util::type_id<U, T>::id;
+			auto ptr = static_cast<TypeHandle<U, T>*>(oak_allocator.allocate(HSize));
+			new (ptr) TypeHandle<U, T>{ name };
+			size_t tid = ptr->getId();
 			if (handles_.size() <= tid) {
 				handles_.resize(tid + 1);
 			}
 			if (handles_[tid] != nullptr) { return; }
-			void *ptr = oak_allocator.allocate(HSize);
-			new (ptr) TypeHandle<T>{ name };
-			handles_[tid] = static_cast<TypeHandleBase*>(ptr);
+			handles_[tid] = ptr;
 			nameMap_[name] = tid;
 		}
 
 		template<class T>
-		const TypeHandle<T>& getHandle() const {
+		const TypeHandle<U, T>& getHandle() const {
 			size_t tid = util::type_id<U, T>::id;
-			return *static_cast<const TypeHandle<T>*>(handles_[tid]);
+			return *static_cast<const TypeHandle<U, T>*>(handles_[tid]);
+		}
+
+		const TypeHandleBase* getHandle(const oak::string& name) const {
+			return handles_[getId(name)];
 		}
 
 		const TypeHandleBase* getHandle(size_t tid) const {
@@ -75,6 +79,6 @@ namespace oak {
 
 
 	template<class U>
-	TypeHandleStorage<U>* TypeHandleStorage<U>::instance = nullptr;
+	TypeManager<U>* TypeManager<U>::instance = nullptr;
 
 }

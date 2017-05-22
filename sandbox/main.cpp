@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 
 	//init engine managers
 	oak::SystemManager sysManager;
-	oak::ComponentHandleStorage chs;
+	oak::ComponentTypeManager chs;
 	oak::EventManager evtManager;
 	oak::ResourceManager resManager;
 	oak::InputManager inputManager;
@@ -169,24 +169,24 @@ int main(int argc, char** argv) {
 	chs.addHandle<LightComponent>("light");
 
 	//create component storage
-	oak::ComponentStorage eventStorage{ &chs.getHandle<oak::EventComponent>() };
-	oak::ComponentStorage prefabStorage{ &chs.getHandle<oak::PrefabComponent>() };
-	oak::ComponentStorage transformStorage{ &chs.getHandle<oak::TransformComponent>() };
-	oak::ComponentStorage spriteStorage{ &chs.getHandle<oak::SpriteComponent>() };
-	oak::ComponentStorage textStorage{ &chs.getHandle<oak::TextComponent>() };
-	oak::ComponentStorage aabbStorage{ &chs.getHandle<oak::AABB2dComponent>() };
-	oak::ComponentStorage occluderStorage{ &chs.getHandle<OccluderComponent>() };
-	oak::ComponentStorage lightStorage{ &chs.getHandle<LightComponent>() };
+	oak::ComponentStorage eventStorage{ "event" };
+	oak::ComponentStorage prefabStorage{ "prefab" };
+	oak::ComponentStorage transformStorage{ "transform" };
+	oak::ComponentStorage spriteStorage{ "sprite" };
+	oak::ComponentStorage textStorage{ "text" };
+	oak::ComponentStorage aabbStorage{ "aabb2d" };
+	oak::ComponentStorage occluderStorage{ "occluder" };
+	oak::ComponentStorage lightStorage{ "light" };
 
 	//add component storage to scene
-	scene.addComponentStorage(chs.getId("event"), eventStorage);
-	scene.addComponentStorage(chs.getId("prefab"), prefabStorage);
-	scene.addComponentStorage(chs.getId("transform"), transformStorage);
-	scene.addComponentStorage(chs.getId("sprite"), spriteStorage);
-	scene.addComponentStorage(chs.getId("text"), textStorage);
-	scene.addComponentStorage(chs.getId("aabb2d"), aabbStorage);
-	scene.addComponentStorage(chs.getId("occluder"), occluderStorage);
-	scene.addComponentStorage(chs.getId("light"), lightStorage);
+	scene.addComponentStorage(eventStorage);
+	scene.addComponentStorage(prefabStorage);
+	scene.addComponentStorage(transformStorage);
+	scene.addComponentStorage(spriteStorage);
+	scene.addComponentStorage(textStorage);
+	scene.addComponentStorage(aabbStorage);
+	scene.addComponentStorage(occluderStorage);
+	scene.addComponentStorage(lightStorage);
 
 	auto& shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
 	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");

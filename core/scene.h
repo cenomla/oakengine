@@ -2,14 +2,12 @@
 
 #include <bitset>
 
-#include "util/type_handle_storage.h"
+#include "component.h"
 #include "entity_id.h"
 
 namespace oak {
 
 	class ComponentStorage;
-
-	using ComponentHandleStorage = TypeHandleStorage<detail::BaseComponent>;
 
 	class Scene {
 	public:
@@ -33,7 +31,7 @@ namespace oak {
 		void update();
 		void reset();
 
-		void addComponentStorage(size_t tid, ComponentStorage& storage);
+		void addComponentStorage(ComponentStorage& storage);
 		ComponentStorage& getComponentStorage(size_t tid);
 		const ComponentStorage& getComponentStorage(size_t tid) const;
 

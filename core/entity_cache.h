@@ -4,6 +4,7 @@
 
 #include "util/type_id.h"
 #include "container.h"
+#include "component.h"
 #include "entity_id.h"
 #include "events.h"
 

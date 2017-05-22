@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/type_id.h"
 #include "container.h"
 #include "pup.h"
 
@@ -13,6 +14,7 @@ namespace oak {
 		virtual void copy(void *object, const void *src) const = 0;
 		virtual void destruct(void *object) const = 0;
 		virtual void serialize(Puper &puper, void *data, const ObjInfo &info) const = 0;
+		virtual size_t getId() const = 0;
 		size_t getSize() const { return size_; }
 		const oak::string& getName() const { return name_; }
 	protected:
@@ -20,7 +22,7 @@ namespace oak {
 		size_t size_;
 	};
 
-	template <class T>
+	template <class U, class T>
 	struct TypeHandle : public TypeHandleBase {
 		TypeHandle(const oak::string &name) : TypeHandleBase{ name, sizeof(T) } {};
 
@@ -42,6 +44,10 @@ namespace oak {
 
 		void serialize(Puper &puper, void *data, const ObjInfo &info) const override {
 			pup(puper, *static_cast<T*>(data), info);
+		}
+
+		size_t getId() const override {
+			return util::type_id<U, T>::id;
 		}
 	};
 

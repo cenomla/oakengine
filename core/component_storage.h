@@ -9,7 +9,7 @@ namespace oak {
 
 	class ComponentStorage {
 	public:
-		ComponentStorage(const TypeHandleBase *handle);
+		ComponentStorage(const oak::string& compName);
 		~ComponentStorage();
 
 		void* addComponent(EntityId entity);
@@ -22,9 +22,9 @@ namespace oak {
 		const TypeHandleBase* getHandle() const { return handle_; }
 
 	private:
+		const TypeHandleBase *handle_;
 		PoolAllocator allocator_;
 		oak::vector<void*> components_;
-		const TypeHandleBase *handle_;
 
 		void* makeValid(EntityId entity);
 	};
