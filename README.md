@@ -13,9 +13,20 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 - Simple opengl sprite batcher
 - Easily extendable
 
+### Libraries Used:
+
+| Library | Site |
+| --- | --- |
+| glfw | www.glfw.org |
+| glad | www.github.com/Dav1dde/glad |
+| glm | www.glm.g-truc.net |
+| lua | www.lua.org |
+| enet | www.enet.bespin.org |
+| stb | www.github.com/nothings/stb |
+
 ### Building:
- 
-Oak engine depends on glfw, glad, glm, lua, enet, and stb. SConstruct is used for the build process.
+
+Oak engine uses the sconstruct build system
 
 ##### Linux instructions:
 ~~~~
@@ -29,13 +40,12 @@ scons
 ~~~~
 or
 ~~~~
-scons debug | release
+scons <flavor>
 ~~~~
-for flavor specific builds.
 
 ##### Windows/Mac:
  
-I currently don't have access to one of these platform for testing the build on so I dont have a build system for them. However Oak engine is coded using completely crossplatform code and librarys so it should build without too much trouble. 
+I currently don't have access to one of these platform for testing the build on so I dont have the build system working for them. However Oak engine is coded using completely crossplatform code and librarys so it should build without too much trouble. 
 
 ### Documentation:
 
