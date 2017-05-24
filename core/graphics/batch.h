@@ -7,7 +7,7 @@ namespace oak::graphics {
 	struct Material;
 
 	struct Batch {
-		MeshDescriptor meshDesc;
+		MeshDescriptor desc;
 		const Material *material;
 		size_t offset, count;
 	};

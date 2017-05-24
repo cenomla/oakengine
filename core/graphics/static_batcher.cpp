@@ -50,7 +50,7 @@ namespace oak::graphics {
 			}
 			//stream data
 			it.mesh->draw(buffer, it.transform);
-			buffer = static_cast<char*>(buffer) + it.mesh->getVertexCount() * currentBatch.meshDesc.stride;
+			buffer = static_cast<char*>(buffer) + it.mesh->getVertexCount() * currentBatch.desc.stride;
 
 			currentBatch.count += it.mesh->getVertexCount();
 		}

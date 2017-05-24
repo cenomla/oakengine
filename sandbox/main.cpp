@@ -215,7 +215,15 @@ int main(int argc, char** argv) {
 	gltex_box.create("sandbox/res/textures/box.png");
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
 	auto& mat_box = resManager.add<oak::graphics::Material>("mat_entity", &sh_pass, &tex_box);
-	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", oak::graphics::MeshDescriptor{ 32 });
+	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", 
+	oak::graphics::MeshDescriptor{ 
+		32,
+		{
+			{ 0, 3, oak::graphics::AttributeDescriptor::FLOAT_T, 0 },
+			{ 1, 3, oak::graphics::AttributeDescriptor::FLOAT_T, 12 },
+			{ 2, 2, oak::graphics::AttributeDescriptor::FLOAT_T, 24 }
+		}
+	});
 	mesh_box.load("sandbox/res/models/box.obj");
 
 	renderer.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_box, &mat_box);
