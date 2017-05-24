@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
 		glm::mat4 proj;
 	} block;
 	block.model = glm::mat4{ 1.0f };
-	block.view = glm::lookAt(glm::vec3{ 4.0f, 8.0f, 10.0f }, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	block.view = glm::lookAt(glm::vec3{ -4.0f, -8.0f, -10.0f }, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.01f, 100.0f);
 
 	auto& glsh_pass = resManager.add<oak::graphics::GLShader>("glsh_pass");
@@ -226,7 +226,15 @@ int main(int argc, char** argv) {
 	});
 	mesh_box.load("sandbox/res/models/box.obj");
 
-	renderer.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_box, &mat_box);
+	for (float i = 0; i < 16; i++) {
+		for (float j = 0; j < 16; j++) {
+			for (float k = 0; k < 16; k++) {
+				renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 2.0f, j * 2.0f, k * 2.0f }), &mesh_box, &mat_box);
+			}
+		}
+	}
+	//renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_box, &mat_box);
+	//renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, -2.0f }), &mesh_box, &mat_box);
 
 	//create entities
 	oak::EntityId entity = scene.createEntity();

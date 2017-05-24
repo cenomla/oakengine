@@ -44,6 +44,7 @@ namespace oak::graphics {
 		void *buffer = storage->map(0);
 		void *ibuffer = istorage->map(0);
 		size_t offset = 0;
+		size_t vcount = 0;
 		const Material *mat = meshes_[0].material;
 
 		Batch currentBatch{ meshes_[0].mesh->getDescriptor(), mat, offset, 0 }; //first batch
@@ -57,7 +58,8 @@ namespace oak::graphics {
 				currentBatch = Batch{ it.mesh->getDescriptor(), mat, offset, 0 };
 			}
 			//stream data
-			it.mesh->draw(buffer, ibuffer, it.transform);
+			it.mesh->draw(buffer, ibuffer, it.transform, vcount);
+			vcount += it.mesh->getVertexCount();
 			buffer = static_cast<char*>(buffer) + it.mesh->getVertexCount() * currentBatch.desc.stride;
 			ibuffer = static_cast<int*>(ibuffer) + it.mesh->getIndexCount();
 

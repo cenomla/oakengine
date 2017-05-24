@@ -81,17 +81,17 @@ namespace oak::graphics {
 
 	}
 
-	void Mesh::draw(void *buffer, void *ibuffer, const glm::mat4& transform) const {
+	void Mesh::draw(void *buffer, void *ibuffer, const glm::mat4& transform, uint32_t startIndex) const {
 		MeshVertex *data = static_cast<MeshVertex*>(buffer);
 		uint32_t *idata = static_cast<uint32_t*>(ibuffer);
 
 		size_t i = 0;
 		for (const auto& vertex : vertices_) {
-			data[i++] = { glm::vec3{ transform * glm::vec4{ vertex.position, 1.0f } }, vertex.normal, vertex.uvs };
+			data[i++] = { glm::vec3{ transform * glm::vec4{ vertex.position, 1.0f } }, glm::vec3{ transform * glm::vec4{ vertex.normal, 1.0f } }, vertex.uvs };
 		}
 		i = 0;
 		for (const auto& index : indices_) {
-			idata[i++] = index;
+			idata[i++] = startIndex + index;
 		}
 	}
 

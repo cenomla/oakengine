@@ -39,7 +39,7 @@ namespace oak::graphics {
 
 		void load(const oak::string& path);
 
-		void draw(void *buffer, void *ibuffer, const glm::mat4& transform) const;
+		void draw(void *buffer, void *ibuffer, const glm::mat4& transform, uint32_t startIndex) const;
 
 		inline size_t getVertexCount() const { return vertices_.size(); }
 		inline size_t getIndexCount() const { return indices_.size(); }

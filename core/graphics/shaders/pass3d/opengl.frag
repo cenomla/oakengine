@@ -11,7 +11,7 @@ layout (location = 0) out vec4 outColor;
 void main() {
 
 	float level = 0.0;
-	vec3 toLight = normalize(vec3(4.0, 8.0, 10.0));
+	vec3 toLight = normalize(vec3(4.0, 8.0, 10.0) - fragPos);
 
 
 	float p = dot(toLight, normalize(fragNormal));
