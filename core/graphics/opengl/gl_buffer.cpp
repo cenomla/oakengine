@@ -49,14 +49,13 @@ namespace oak::graphics {
 	}
 
 	void GLBuffer::unmap() {
+		bind();
 		glUnmapBuffer(type_);
-		unbind();
 	}
 
 	void GLBuffer::data(size_t size, const void *data, int32_t hint) {
 		bind();
 		glBufferData(type_, size, data, GL_STATIC_DRAW);
-		unbind();
 	}
 
 	void GLBuffer::bindBufferBase(uint32_t index) const {

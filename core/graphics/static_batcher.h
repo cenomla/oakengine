@@ -18,7 +18,7 @@ namespace oak::graphics {
 		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material);
 		void removeMesh(const Mesh *mesh);
 
-		void run(BufferStorage *storage);
+		void run(BufferStorage *storage, BufferStorage *istorage);
 		
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
 
@@ -34,8 +34,7 @@ namespace oak::graphics {
 		oak::vector<MeshInfo> meshes_;
 		oak::vector<Batch> batches_;
 
-		size_t size_;
-		size_t maxSize_;
+		size_t size_, isize_, maxSize_, maxISize_;
 
 		bool needsRebatch_;
 

@@ -13,8 +13,8 @@ namespace oak::graphics {
 		oak::vector<oak::string> tokens;
 
 		oak::vector<glm::vec3> vertices;
-		oak::vector<glm::vec2> uvs;
 		oak::vector<glm::vec3> normals;
+		oak::vector<glm::vec2> uvs;
 		oak::vector<glm::ivec3> faces;
 
 		//get vertices and face indices from obj file
@@ -59,18 +59,39 @@ namespace oak::graphics {
 			}
 		} while (pos != oak::string::npos);
 
+		oak::vector<glm::vec3> normalList{ vertices.size() };
+		oak::vector<glm::vec2> uvList{ vertices.size() };
+		oak::vector<uint32_t> indexList;
+		//process faces
 		for (const auto& face : faces) {
-			vertices_.push_back(MeshVertex{ vertices[face.x - 1], normals[face.z - 1], glm::vec2{ uvs[face.y - 1].x, 1.0f - uvs[face.y - 1].y } });
+			uint32_t vi = face.x - 1;
+			indexList.push_back(vi);
+			normalList[vi] = normals[face.z - 1];
+			uvList[vi] = glm::vec2{ uvs[face.y - 1].x, 1.0f - uvs[face.y - 1].y };
+		}
+
+		size_t i = 0;
+		for (const auto& vertex : vertices) {
+			vertices_.push_back(MeshVertex{ vertex, normalList[i], uvList[i] });
+			i++;
+		}
+		for (const auto& index : indexList) {
+			indices_.push_back(index);
 		}
 
 	}
 
-	void Mesh::draw(void *buffer, const glm::mat4& transform) const {
+	void Mesh::draw(void *buffer, void *ibuffer, const glm::mat4& transform) const {
 		MeshVertex *data = static_cast<MeshVertex*>(buffer);
+		uint32_t *idata = static_cast<uint32_t*>(ibuffer);
 
 		size_t i = 0;
 		for (const auto& vertex : vertices_) {
 			data[i++] = { glm::vec3{ transform * glm::vec4{ vertex.position, 1.0f } }, vertex.normal, vertex.uvs };
+		}
+		i = 0;
+		for (const auto& index : indices_) {
+			idata[i++] = index;
 		}
 	}
 

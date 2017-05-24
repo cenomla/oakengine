@@ -1,10 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <graphics/renderable.h>
 #include <pup.h>
 
-struct LightComponent : public oak::graphics::Renderable {
+struct LightComponent {
 
 	LightComponent() = default;
 	LightComponent(float s, const glm::vec3& c, size_t mi) : size{ s }, color{ c }, matId{ mi } {}
@@ -13,7 +12,7 @@ struct LightComponent : public oak::graphics::Renderable {
 	glm::vec3 color{ 1.0f, 1.0f, 1.0f };
 	size_t matId = std::hash<oak::string>{}("mat_light");
 
-	void draw(void *buffer, float x, float y, float rotation, float scale) const override {
+	void draw(void *buffer, float x, float y, float rotation, float scale) const {
 		struct LV {
 			glm::vec2 position;
 			glm::vec2 texCoords;
@@ -24,14 +23,6 @@ struct LightComponent : public oak::graphics::Renderable {
 		data[1] = { glm::vec2{ x + size, y - size }, glm::vec2{ 1.0f, 0.0f } };
 		data[2] = { glm::vec2{ x + size, y + size }, glm::vec2{ 1.0f, 1.0f } };
 		data[3] = { glm::vec2{ x - size, y + size }, glm::vec2{ 0.0f, 1.0f } };
-	}
-
-	size_t getMaterialId() const override {
-		return matId;
-	}
-
-	size_t getVertexCount() const override {
-		return 4;
 	}
 };
 

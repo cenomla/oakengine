@@ -39,14 +39,16 @@ namespace oak::graphics {
 
 		void load(const oak::string& path);
 
-		void draw(void *buffer, const glm::mat4& transform) const;
+		void draw(void *buffer, void *ibuffer, const glm::mat4& transform) const;
 
 		inline size_t getVertexCount() const { return vertices_.size(); }
+		inline size_t getIndexCount() const { return indices_.size(); }
 		inline const MeshDescriptor& getDescriptor() const { return descriptor_; }
 
 	private:
 		MeshDescriptor descriptor_;
 		oak::vector<MeshVertex> vertices_;
+		oak::vector<uint32_t> indices_;
 	};
 
 }

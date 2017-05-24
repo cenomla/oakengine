@@ -1,9 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-
 #include "graphics/font.h"
-#include "graphics/renderable.h"
 #include "graphics/sprite.h"
 #include "graphics/mesh.h"
 #include "container.h"
@@ -34,8 +32,7 @@ namespace oak {
 		glm::vec2 offset{ 0.0f };
 	};
 
-	struct SpriteComponent : public graphics::Renderable {
-
+	struct SpriteComponent {
 		SpriteComponent() = default;
 		SpriteComponent(size_t id, const glm::vec2& s, int afx, int afy, uint32_t l) : sprite{ id }, scale{ s }, animFrameX{ afx }, animFrameY{ afy }, layer{ l } {}
 
@@ -44,26 +41,21 @@ namespace oak {
 		int animFrameX = 0, animFrameY = 0;
 		uint32_t layer = 0;
 
-		void draw(void *buffer, float x, float y, float rotation, float s) const override { 
+		void draw(void *buffer, float x, float y, float rotation, float s) const { 
 			sprite.get().draw(buffer, x, y, animFrameX, animFrameY, rotation, scale.x * s, scale.y * s);
 		}
-
-		size_t getMaterialId() const override { return sprite.get().getMaterialId(); }
-		size_t getVertexCount() const override { return 4; }
 	};
 
-	struct TextComponent : public graphics::Renderable {
+	struct TextComponent {
 		Resource<graphics::Font> font{ 0 };
 		oak::string text;
 		glm::vec2 offset{ 0.0f };
 		uint32_t layer = 0;
 		float size = 24.0f;
 
-		void draw(void *buffer, float x, float y, float rotation, float scale) const override { 
+		void draw(void *buffer, float x, float y, float rotation, float scale) const { 
 			font.get().draw(buffer, text, x + offset.x, y + offset.y, rotation, size * scale);
 		}
-		size_t getMaterialId() const override { return font.get().getMaterialId(); }
-		size_t getVertexCount() const override { return text.size() * 4; } 
 	};
 
 	struct PhysicsBody2dComponent {

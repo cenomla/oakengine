@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <glm/glm.hpp>
 
-#include "texture_region.h"
+#include "texture.h"
 
 namespace oak::graphics {
 

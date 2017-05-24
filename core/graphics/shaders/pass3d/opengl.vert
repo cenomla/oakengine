@@ -10,6 +10,8 @@ layout (shared) uniform MatrixBlock {
 	mat4 proj;
 } matrix;
 
+out vec3 fragNormal;
+out vec3 fragPos;
 out vec2 fragUVs;
 
 out gl_PerVertex {
@@ -17,6 +19,9 @@ out gl_PerVertex {
 };
 
 void main() {
-	gl_Position = matrix.proj * matrix.view * matrix.model * vec4(vPosition, 1.0);
+	vec4 pos = matrix.model * vec4(vPosition, 1.0);
+	gl_Position = matrix.proj * matrix.view * pos;
+	fragNormal = normalize(vNormal);
+	fragPos = pos.xyz;
 	fragUVs = vUVs;
 }

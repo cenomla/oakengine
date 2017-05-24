@@ -4,7 +4,7 @@
 
 #include "gl_texture.h"
 #include "container.h"
-#include "graphics/texture_region.h"
+#include "graphics/texture.h"
 
 namespace oak::graphics {
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <graphics/renderable.h>
 
 class Chunk;
 struct Tile;
@@ -28,13 +27,13 @@ struct Tile {
 	};
 };
 
-class Chunk : public oak::graphics::Renderable {
+class Chunk{
 public:
 	friend void oak::pup(Puper& puper, Chunk& chunk, const ObjInfo& info);
 
 	Chunk(size_t materialId, int x, int y, int width, int height);
 
-	void draw(void *buffer, float x, float y, float rotation, float scale) const override;
+	void draw(void *buffer, float x, float y, float rotation, float scale) const;
 
 	inline void setTile(int x, int y, const Tile& tile) { 
 		Tile &t = tiles_[y * 16 + x];
@@ -49,9 +48,6 @@ public:
 
 	inline const glm::vec2& getPosition() const { return position_; }
 	inline const glm::vec2& getExtent() const { return extent_; }
-
-	inline size_t getMaterialId() const override { return materialId_; }
-	inline size_t getVertexCount() const override { return tileCount_ * 4; }
 private:
 	Tile tiles_[256];
 	size_t materialId_;

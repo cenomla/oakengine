@@ -16,10 +16,12 @@ namespace oak::graphics {
 		void init() override;
 		void render(const Batch& batch) override;
 		inline BufferStorage* getStorage() override { return &vbo_; }
+		inline BufferStorage* getIStorage() override { return &ibo_; }
 
 	private:
 		GLVertexArray vao_;
 		GLBuffer vbo_;
+		GLBuffer ibo_;
 	};
 
 }

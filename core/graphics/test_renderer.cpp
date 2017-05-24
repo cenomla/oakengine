@@ -16,7 +16,7 @@ namespace oak::graphics {
 	}
 
 	void TestRenderer::run() {
-		batcher_.run(renderer_->getStorage());
+		batcher_.run(renderer_->getStorage(), renderer_->getIStorage());
 
 		for (const auto& batch : batcher_.getBatches()) {
 			renderer_->render(batch);

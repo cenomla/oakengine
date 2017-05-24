@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
 		glm::mat4 proj;
 	} block;
 	block.model = glm::mat4{ 1.0f };
-	block.view = glm::lookAt(glm::vec3{ 0.0f, 8.0f, 10.0f }, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	block.view = glm::lookAt(glm::vec3{ 4.0f, 8.0f, 10.0f }, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.01f, 100.0f);
 
 	auto& glsh_pass = resManager.add<oak::graphics::GLShader>("glsh_pass");
