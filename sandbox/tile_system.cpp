@@ -8,13 +8,13 @@ constexpr size_t INVALID_CHUNK = 0xFFFFFFFFFFFFFFFF;
 TileSystem::TileSystem(int numChunks, int tileSize) : numChunks_{ numChunks }, tileSize_{ tileSize } {}
 
 void TileSystem::run() {
-	auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
+	//auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
 
 	for (size_t i = 0; i < chunkLayers_.size(); i++) {
 		const size_t cid = chunkLayers_[i];
 		if (cid != INVALID_CHUNK) {
 			for (const auto &chunk : chunks_[cid]) {
-				renderer.addObject(glm::vec2{ 0.0f }, depths_[i], layers_[i], 0.0f, 0.0f, &chunk);
+				//renderer.addObject(glm::vec2{ 0.0f }, depths_[i], layers_[i], 0.0f, 0.0f, &chunk);
 			}
 		}
 	}

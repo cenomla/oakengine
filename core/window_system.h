@@ -2,6 +2,8 @@
 
 #include <cinttypes>
 
+#include "graphics/renderer.h"
+
 #include "container.h"
 #include "system.h"
 

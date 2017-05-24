@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <glm/glm.hpp>
 
 #include "texture_region.h"

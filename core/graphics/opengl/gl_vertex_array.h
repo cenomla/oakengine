@@ -3,12 +3,16 @@
 #include <initializer_list>
 #include <glad/glad.h>
 
-#include "graphics/attribute_data.h"
-
 namespace oak::graphics {
 
 	class GLVertexArray {
 	public:
+		struct AttributeData {
+			uint32_t location;
+			uint32_t format;
+			size_t offset;
+		};
+
 		GLVertexArray();
 		~GLVertexArray();
 
@@ -18,7 +22,7 @@ namespace oak::graphics {
 		void bind() const;
 		void unbind() const;
 
-		void attributeDescription(BindingData &&binding, std::initializer_list<AttributeData> &&attribs);
+		void attributeDescription(size_t stride, std::initializer_list<AttributeData> &&attribs);
 	private:
 		GLuint vao_;
 	};

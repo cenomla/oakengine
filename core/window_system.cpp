@@ -25,7 +25,7 @@ namespace oak {
 		glfwSwapBuffers(window_);
 		glViewport(0, 0, 1280, 720);
 		glClearColor(0.3f, 0.4f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR) {
@@ -74,6 +74,9 @@ namespace oak {
 #endif
 
 		log_print_out("opengl version: %s", glGetString(GL_VERSION));
+		
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
 
 		EventManager::inst().getQueue<WindowCreateEvent>().emit({});
 	}

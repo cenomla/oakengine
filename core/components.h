@@ -5,6 +5,7 @@
 #include "graphics/font.h"
 #include "graphics/renderable.h"
 #include "graphics/sprite.h"
+#include "graphics/mesh.h"
 #include "container.h"
 #include "resource.h"
 
@@ -14,6 +15,14 @@ namespace oak {
 	struct ObjInfo;
 
 	struct TransformComponent {
+		glm::mat4 transform{ 1.0f };
+	};
+
+	struct MeshComponent {
+		Resource<graphics::Mesh> mesh{ 0 };
+	};
+
+	struct PositionComponent {
 		glm::vec3 position{ 0.0f };
 		float scale = 1.0f;
 		glm::vec3 rotationAxis{ 0.0f };
@@ -77,10 +86,12 @@ namespace oak {
 		float dynamicFriction = 0.0f;
 	};
 
-	void pup(Puper &puper, TransformComponent &comp, const ObjInfo &info);
-	void pup(Puper &puper, AABB2dComponent &comp, const ObjInfo &info);
-	void pup(Puper &puper, SpriteComponent &comp, const ObjInfo &info);
-	void pup(Puper &puper, TextComponent &comp, const ObjInfo &info);
-	void pup(Puper &puper, PhysicsBody2dComponent &comp, const ObjInfo &info);
+	void pup(Puper& puper, TransformComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, MeshComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, PositionComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, AABB2dComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, SpriteComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, TextComponent& comp, const ObjInfo& info);
+	void pup(Puper& puper, PhysicsBody2dComponent& comp, const ObjInfo& info);
 
 }

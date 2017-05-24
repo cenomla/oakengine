@@ -28,10 +28,10 @@ namespace oak::graphics {
 		glBindVertexArray(0);
 	}
 
-	void GLVertexArray::attributeDescription(BindingData &&binding, std::initializer_list<AttributeData> &&attribs) {
+	void GLVertexArray::attributeDescription(size_t stride, std::initializer_list<AttributeData> &&attribs) {
 		for (const auto& attrib : attribs) {
 			glEnableVertexAttribArray(attrib.location);
-			glVertexAttribPointer(attrib.location, attrib.format, GL_FLOAT, GL_FALSE, binding.stride, reinterpret_cast<void*>(attrib.offset));
+			glVertexAttribPointer(attrib.location, attrib.format, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(attrib.offset));
 		}
 	}
 

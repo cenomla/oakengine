@@ -3,8 +3,10 @@
 #include <chrono>
 #include <cmath>
 
-#include <graphics/opengl/gl_renderer.h>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <graphics/opengl/gl_texture_atlas.h>
+#include <graphics/test_renderer.h>
 #include <log.h>
 #include <system_manager.h>
 #include <resource_manager.h>
@@ -40,10 +42,10 @@ public:
 	void run() override {
 		cache_.update(*scene_);
 
-		auto& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+		auto& ts = oak::getComponentStorage<oak::PositionComponent>(*scene_);
 
 		for (const auto& entity : cache_.entities()) {
-			auto& tc = oak::getComponent<oak::TransformComponent>(ts, entity);
+			auto& tc = oak::getComponent<oak::PositionComponent>(ts, entity);
 			
 			if (oak::InputManager::inst().getAction("move_up")) {
 				tc.position.y -= 4.0f;
@@ -141,7 +143,7 @@ int main(int argc, char** argv) {
 
 	//create all the systems
 	oak::WindowSystem winSystem{ "oak engine sandbox" };
-	oak::graphics::GLRenderer renderer;
+	oak::graphics::TestRenderer renderer{ scene };
 	oak::ViewSystem viewSystem;
 	TileSystem tileSystem{ 8, 16 };
 	SpriteSystem spriteSystem{ scene };
@@ -188,38 +190,36 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(occluderStorage);
 	scene.addComponentStorage(lightStorage);
 
-	auto& shd_pass = resManager.add<oak::graphics::GLShader>("shd_pass");
-	shd_pass.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
-	auto& atlas = resManager.add<oak::graphics::GLTextureAtlas>("atlas", GLuint{ GL_TEXTURE_2D });
-	atlas.addTexture("sandbox/res/textures/character.png");
-	atlas.addTexture("sandbox/res/textures/platform.png");
-	atlas.bake(512, 512);
-	auto& tex_light = resManager.add<oak::graphics::GLTexture>("tex_light", GLuint{ GL_TEXTURE_2D });
-	tex_light.create("sandbox/res/textures/light.png");
-	auto& mat_entity = resManager.add<oak::graphics::GLMaterial>("mat_entity", std::hash<oak::string>{}("mat_entity"), &shd_pass, &atlas);
-	resManager.add<oak::graphics::Sprite>("spr_player", mat_entity.id, 16.0f, 16.0f, 32.0f, 32.0f, atlas.getTextureRegion("sandbox/res/rextures/character.png"));
-	resManager.add<oak::graphics::Sprite>("spr_platform", mat_entity.id, 0.0f, 0.0f, 64.0f, 16.0f, atlas.getTextureRegion("sandbox/res/textures/platform.png"));
-	auto& mat_light = resManager.add<oak::graphics::GLMaterial>("mat_light", std::hash<oak::string>{}("mat_light"), &shd_pass, &tex_light);
+	struct {
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 proj;
+	} block;
+	block.model = glm::mat4{ 1.0f };
+	block.view = glm::lookAt(glm::vec3{ 0.0f, 8.0f, 10.0f }, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.01f, 100.0f);
 
-	viewSystem.defineView(0, { 0, 1 });
-	viewSystem.setView(0, oak::View{ 0, 0, 1280, 720 });
+	auto& glsh_pass = resManager.add<oak::graphics::GLShader>("glsh_pass");
+	glsh_pass.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
+	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
+	ubo.create();
+	ubo.bind();
+	ubo.bufferData(sizeof(block), &block, GL_STATIC_DRAW);
+	ubo.bindBufferBase(0);
+	ubo.unbind();
+	glsh_pass.bindBlockIndex("MatrixBlock", 0);
+	auto& sh_pass = resManager.add<oak::graphics::Shader>("sh_pass", glsh_pass.getId());
+	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D });
+	gltex_box.create("sandbox/res/textures/box.png");
+	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_entity", &sh_pass, &tex_box);
+	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", oak::graphics::MeshDescriptor{ 32 });
+	mesh_box.load("sandbox/res/models/box.obj");
 
-	auto& pf_platform = resManager.add<oak::Prefab>("pf_platform", "platform", scene);
-	pf_platform.addComponent<oak::TransformComponent>();
-	pf_platform.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_platform"), glm::vec2{ 1.0f }, 0, 0, 0u);
-	pf_platform.addComponent<oak::AABB2dComponent>(glm::vec2{ 32.0f, 8.0f }, glm::vec2{ 32.0f, 8.0f });
-	pf_platform.addComponent<OccluderComponent>();
+	renderer.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_box, &mat_box);
 
-	auto& pf_player = resManager.add<oak::Prefab>("pf_player", "player", scene);
-	pf_player.addComponent<oak::TransformComponent>();
-	pf_player.addComponent<oak::SpriteComponent>(std::hash<oak::string>{}("spr_player"), glm::vec2{ 1.0f }, 0, 0, 0u);
-	pf_player.addComponent<LightComponent>(512.0f, glm::vec3{ 1.0f }, mat_light.id);
-
-
-	oak::EntityId entity = pf_platform.createInstance();
-	oak::getComponent<oak::TransformComponent>(scene, entity).position = glm::vec3{ 128.0, 512.0f, 0.0f };
-	scene.activateEntity(entity);
-	entity = pf_player.createInstance();
+	//create entities
+	oak::EntityId entity = scene.createEntity();
 	scene.activateEntity(entity);
 
 	//first frame time
@@ -244,10 +244,6 @@ int main(int argc, char** argv) {
 		*/
 
 		movementSystem.run();
-		spriteSystem.run();
-		textSystem.run();
-		tileSystem.run();
-		lightRenderer.run();
 
 		renderer.run();
 
@@ -259,8 +255,8 @@ int main(int argc, char** argv) {
 		//update the delta time
 		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
-		lastFrame = currentFrame;
-		
+		lastFrame = currentFrame;		
+
 		//do engine things
 		inputManager.update();
 		evtManager.clear();

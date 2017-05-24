@@ -4,6 +4,7 @@
 #include <view_system.h>
 #include <component_storage.h>
 #include <components.h>
+#include <graphics/batch.h>
 
 #include "component_ext.h"
 
@@ -17,7 +18,7 @@ void LightRenderer::init() {
 	lightCache_.requireComponent<oak::TransformComponent>();
 	lightCache_.requireComponent<LightComponent>();
 
-	oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>().setDrawOp(1, [this](auto&&... args) { this->render(std::forward<decltype(args)>(args)...); });
+	//oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>().setDrawOp(1, [this](auto&&... args) { this->render(std::forward<decltype(args)>(args)...); });
 
 	//setup rendering stuff
 	vao_.create();
@@ -25,10 +26,6 @@ void LightRenderer::init() {
 
 	vbo_.create();
 	vbo_.bind();
-	vao_.attributeDescription(
-		{0, 0, sizeof(glm::vec2)}, {
-			{0, 0, 2, 0}
-		});
 	
 	vbo_.unbind();
 	vao_.unbind();
@@ -42,7 +39,7 @@ void LightRenderer::init() {
 
 	fvbo_.create();
 	fvbo_.bind();
-	fvao_.attributeDescription({ 0, 0, sizeof(glm::vec2) }, { { 0, 0, 2, 0} });
+	//fvao_.attributeDescription({ 0, 0, sizeof(glm::vec2) }, { { 0, 0, 2, 0} });
 
 	float data[] = {
 		-1.0f, -1.0f,
@@ -61,7 +58,7 @@ void LightRenderer::init() {
 }
 
 void LightRenderer::run() {
-	auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
+	//auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
 
 	shadowCache_.update(*scene_);
 	lightCache_.update(*scene_);
@@ -75,7 +72,7 @@ void LightRenderer::run() {
 		auto& tc = oak::getComponent<const oak::TransformComponent>(ts, entity);
 		auto& lc = oak::getComponent<const LightComponent>(ls, entity);
 
-		renderer.addObject(glm::vec2{ tc.position }, tc.position.z + i, 1, tc.rotationAngle, tc.scale, &lc);
+		//renderer.addObject(glm::vec2{ tc.position }, tc.position.z + i, 1, tc.rotationAngle, tc.scale, &lc);
 	}
 }
 
@@ -91,11 +88,11 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 
 	glm::vec2 pos;
 
-	oak::ComponentStorage& ts = oak::getComponentStorage<oak::TransformComponent>(*scene_);
+	oak::ComponentStorage& ts = oak::getComponentStorage<oak::PositionComponent>(*scene_);
 	oak::ComponentStorage& as = oak::getComponentStorage<oak::AABB2dComponent>(*scene_);
 	oak::ComponentStorage& ls = oak::getComponentStorage<LightComponent>(*scene_);
 	for (const auto& shadow : shadowCache_.entities()) {
-		auto& stc = oak::getComponent<const oak::TransformComponent>(ts, shadow);
+		auto& stc = oak::getComponent<const oak::PositionComponent>(ts, shadow);
 		auto& saabb = oak::getComponent<const oak::AABB2dComponent>(as, shadow);
 
 		pos = glm::vec2{ stc.position } + saabb.offset;
@@ -122,9 +119,9 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 	}
 
 	const auto& lights = lightCache_.entities();
-	for (size_t i = 0; i < batch.objectCount; i++) {
+	for (size_t i = 0; i < batch.count; i++) {
 		const auto& light = lights[i];
-		auto& ltc = oak::getComponent<const oak::TransformComponent>(ts, light);
+		auto& ltc = oak::getComponent<const oak::PositionComponent>(ts, light);
 		auto& llc = oak::getComponent<const LightComponent>(ls, light);
 
 		vbo_.bind();
@@ -162,7 +159,7 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 		glStencilMask(0xFF);
 		//draw code goes here
 
-		shadowShader_.bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
+		//shadowShader_.bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
 		shadowShader_.bind();
 		vao_.bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount);
@@ -176,9 +173,9 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 		glStencilMask(0xFF);
 
 		vao.bind();
-		batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
-		batch.material->bind();
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, reinterpret_cast<void*>((batch.start + i) * 24));
+		//batch.material->shader->bindBlockIndex("MatrixBlock", viewSystem.getViewId(batch.layer));
+		//batch.material->bind();
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, reinterpret_cast<void*>((batch.start + i) * 24));
 		
 		glClearStencil(0);
 		glClear(GL_STENCIL_BUFFER_BIT);
