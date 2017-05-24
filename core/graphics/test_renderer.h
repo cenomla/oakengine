@@ -5,6 +5,8 @@
 #include "system.h"
 #include "entity_cache.h"
 
+#include "opengl/gl_buffer.h"
+
 namespace oak {
 	class Scene;
 }
@@ -25,6 +27,8 @@ namespace oak::graphics {
 
 		Scene *scene_;
 		EntityCache cache_;
+
+		GLBuffer storage_;
 
 
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "graphics/buffer_storage.h"
 
 namespace oak::graphics {
 
-	class GLBuffer {
+	class GLBuffer : public BufferStorage {
 	public:
-		GLBuffer(GLenum type);
+		GLBuffer(int32_t type);
 		~GLBuffer();
 
 		GLBuffer(GLBuffer &&other);
@@ -18,16 +18,16 @@ namespace oak::graphics {
 		void create();
 		void destroy();
 
-		void* map(GLenum flag) const;
-		void unmap() const;
+		void* map(int32_t flags);
+		void unmap();
 
-		void bufferData(size_t size, const void *data, GLenum hint) const;
-		void bufferData(size_t size, size_t offset, const void *data) const;
+		void data(size_t size, const void *data, int32_t flags);
+		void data(size_t size, size_t offset, const void *data);
 
-		void bindBufferBase(GLuint index) const;
+		void bindBufferBase(uint32_t index) const;
 	private:
-		GLenum type_;
-		GLuint bid_;
+		int32_t type_;
+		uint32_t bid_;
 	};
 
 }

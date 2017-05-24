@@ -50,7 +50,7 @@ void LightRenderer::init() {
 		-1.0f, -1.0f
 	};
 
-	fvbo_.bufferData(sizeof(data), data, GL_STATIC_DRAW);
+	fvbo_.data(sizeof(data), data, GL_STATIC_DRAW);
 
 	fvbo_.unbind();
 	fvao_.unbind();
@@ -125,7 +125,7 @@ void LightRenderer::render(const oak::graphics::GLVertexArray& vao, const oak::g
 		auto& llc = oak::getComponent<const LightComponent>(ls, light);
 
 		vbo_.bind();
-		vbo_.bufferData((shadowCache_.entities().size()) * 192 , nullptr, GL_STREAM_DRAW);
+		vbo_.data((shadowCache_.entities().size()) * 192 , nullptr, GL_STREAM_DRAW);
 		glm::vec2 *buffer = static_cast<glm::vec2*>(vbo_.map(GL_WRITE_ONLY));
 		size_t vertexCount = 0;
 

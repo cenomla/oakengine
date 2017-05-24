@@ -8,18 +8,18 @@
 
 namespace oak::graphics {
 
+	class BufferStorage;
+
 	class StaticBatcher {
 	public:
 
 		StaticBatcher();
-		~StaticBatcher();
 
 		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material);
 		void removeMesh(const Mesh *mesh);
 
-		void run();
-
-		inline const void* getData() const { return vertexData_; }
+		void run(BufferStorage *storage);
+		
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
 
 	private:
@@ -27,7 +27,6 @@ namespace oak::graphics {
 			glm::mat4 transform;
 			const Mesh *mesh;
 			const Material *material;
-			void *data;
 
 			bool operator<(const MeshInfo& rhs) const { return material < rhs.material; }
 		};
@@ -35,10 +34,6 @@ namespace oak::graphics {
 		oak::vector<MeshInfo> meshes_;
 		oak::vector<Batch> batches_;
 
-		void *vertexData_;
-		void *indexData_;
-
-		size_t vertexCount_;
 		size_t size_;
 		size_t maxSize_;
 

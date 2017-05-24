@@ -6,10 +6,12 @@
 
 namespace oak::graphics {
 
+	class BufferStorage;
+
 	class Renderer {
 	public:
 		virtual void init() = 0;
-		virtual void render(const void *data, const Batch& batch) = 0;
+		virtual void render(BufferStorage *data, const Batch& batch) = 0;
 	};
 
 }

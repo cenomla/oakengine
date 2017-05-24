@@ -2,6 +2,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <glad/glad.h>
+
 namespace oak {
 
 	void ViewSystem::defineView(size_t viewId, const oak::vector<uint32_t>& layers) {
@@ -27,7 +29,7 @@ namespace oak {
 		it.matrixBlock.model = glm::mat4{ 1.0f };
 
 		it.ubo.bind();
-		it.ubo.bufferData(sizeof(it.matrixBlock), &it.matrixBlock, GL_STREAM_DRAW);
+		it.ubo.data(sizeof(it.matrixBlock), &it.matrixBlock, GL_STREAM_DRAW);
 		it.ubo.unbind();
 	}
 

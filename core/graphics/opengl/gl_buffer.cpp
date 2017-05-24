@@ -1,8 +1,10 @@
 #include "gl_buffer.h"
 
+#include <glad/glad.h>
+
 namespace oak::graphics {
 
-	GLBuffer::GLBuffer(GLenum type) : type_{ type }, bid_{ 0 } {
+	GLBuffer::GLBuffer(int32_t type) : type_{ type }, bid_{ 0 } {
 
 	}
 
@@ -41,23 +43,23 @@ namespace oak::graphics {
 		}
 	}
 
-	void *GLBuffer::map(GLenum flag) const {
-		return glMapBuffer(type_, flag);
+	void *GLBuffer::map(int32_t flag) {
+		bind();
+		return glMapBuffer(type_, GL_WRITE_ONLY);
 	}
 
-	void GLBuffer::unmap() const {
+	void GLBuffer::unmap() {
 		glUnmapBuffer(type_);
+		unbind();
 	}
 
-	void GLBuffer::bufferData(size_t size, const void *data, GLenum hint) const {
-		glBufferData(type_, size, data, hint);
+	void GLBuffer::data(size_t size, const void *data, int32_t hint) {
+		bind();
+		glBufferData(type_, size, data, GL_STATIC_DRAW);
+		unbind();
 	}
 
-	void GLBuffer::bufferData(size_t size, size_t offset, const void *data) const {
-		glBufferSubData(type_, size, offset, data);
-	}
-
-	void GLBuffer::bindBufferBase(GLuint index) const {
+	void GLBuffer::bindBufferBase(uint32_t index) const {
 		if (type_ == GL_UNIFORM_BUFFER) {
 			glBindBufferBase(type_, index, bid_);
 		}

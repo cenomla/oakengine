@@ -29,6 +29,8 @@
 #include "tile_system.h"
 #include "light_renderer.h"
 
+#include <glad/glad.h>
+
 class MovementSystem : public oak::System {
 public:
 	MovementSystem(oak::Scene& scene) : scene_{ &scene } {}
@@ -204,7 +206,7 @@ int main(int argc, char** argv) {
 	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
 	ubo.create();
 	ubo.bind();
-	ubo.bufferData(sizeof(block), &block, GL_STATIC_DRAW);
+	ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
 	ubo.bindBufferBase(0);
 	ubo.unbind();
 	glsh_pass.bindBlockIndex("MatrixBlock", 0);

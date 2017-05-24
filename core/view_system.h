@@ -7,6 +7,8 @@
 #include "view.h"
 #include "system.h"
 
+#include <glad/glad.h>
+
 namespace oak {
 
 	class ViewSystem : public System {

@@ -5,23 +5,23 @@
 
 namespace oak::graphics {
 
-	TestRenderer::TestRenderer(Scene& scene) : scene_{ &scene } {}
+	TestRenderer::TestRenderer(Scene& scene) : scene_{ &scene }, storage_{ GL_ARRAY_BUFFER } {}
 
 	void TestRenderer::init() {
 		renderer_ = new GLRenderer{};
 		renderer_->init();
+
+		storage_.create();
 
 		cache_.requireComponent<TransformComponent>();
 		cache_.requireComponent<MeshComponent>();
 	}
 
 	void TestRenderer::run() {
-		batcher_.run();
-
-		const char *data = static_cast<const char*>(batcher_.getData());
+		batcher_.run(&storage_);
 
 		for (const auto& batch : batcher_.getBatches()) {
-			renderer_->render(data + batch.offset, batch);
+			renderer_->render(&storage_, batch);
 		}
 
 	}

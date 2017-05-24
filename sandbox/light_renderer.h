@@ -11,6 +11,7 @@
 #include <graphics/opengl/gl_vertex_array.h>
 #include <graphics/opengl/gl_material.h>
 #include <graphics/opengl/gl_framebuffer.h>
+#include <graphics/opengl/gl_buffer.h>
 #include <graphics/batch.h>
 
 class LightRenderer : public oak::System {
