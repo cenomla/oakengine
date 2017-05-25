@@ -2,15 +2,19 @@
 
 #include <cinttypes>
 
+struct GLFWwindow;
+
 namespace oak {
 
 	class Puper;
 	struct ObjInfo;
 	
 	struct WindowCreateEvent {
+		GLFWwindow *window;
 	};
 
 	struct WindowCloseEvent {
+		GLFWwindow *window;
 	};
 
 	struct WindowResizeEvent {

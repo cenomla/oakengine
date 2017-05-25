@@ -87,7 +87,7 @@ namespace oak::graphics {
 
 		size_t i = 0;
 		for (const auto& vertex : vertices_) {
-			data[i++] = { glm::vec3{ transform * glm::vec4{ vertex.position, 1.0f } }, glm::vec3{ transform * glm::vec4{ vertex.normal, 1.0f } }, vertex.uvs };
+			data[i++] = { glm::vec3{ transform * glm::vec4{ vertex.position, 1.0f } }, glm::vec3{ transform * glm::vec4{ vertex.normal, 0.0f } }, vertex.uvs };
 		}
 		i = 0;
 		for (const auto& index : indices_) {

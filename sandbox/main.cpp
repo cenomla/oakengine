@@ -6,13 +6,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <graphics/opengl/gl_texture_atlas.h>
-#include <graphics/test_renderer.h>
+#include <graphics/render_system.h>
 #include <log.h>
 #include <system_manager.h>
 #include <resource_manager.h>
 #include <event_manager.h>
 #include <input_manager.h>
-#include <window_system.h>
 #include <view_system.h>
 #include <resource.h>
 #include <component_storage.h>
@@ -114,11 +113,11 @@ int main(int argc, char** argv) {
 	oak::log::cerr.addStream(&lfs);
 
 	//init engine managers
+	oak::InputManager inputManager;
 	oak::SystemManager sysManager;
 	oak::ComponentTypeManager chs;
 	oak::EventManager evtManager;
 	oak::ResourceManager resManager;
-	oak::InputManager inputManager;
 
 	inputManager.bind("move_up", oak::key::w, true);
 	inputManager.bind("move_down", oak::key::s, true);
@@ -144,22 +143,11 @@ int main(int argc, char** argv) {
 	oak::Scene scene;
 
 	//create all the systems
-	oak::WindowSystem winSystem{ "oak engine sandbox" };
-	oak::graphics::TestRenderer renderer{ scene };
-	oak::ViewSystem viewSystem;
-	TileSystem tileSystem{ 8, 16 };
-	SpriteSystem spriteSystem{ scene };
-	TextSystem textSystem{ scene };
-	LightRenderer lightRenderer{ scene };
+	oak::graphics::GLRenderer renderer;
+	oak::graphics::RenderSystem renderSystem{ scene, renderer };
 	MovementSystem movementSystem{ scene };
 	//add them to the system manager
-	sysManager.addSystem(winSystem, "window_system");
-	sysManager.addSystem(renderer, "renderer");
-	sysManager.addSystem(viewSystem, "view_system");
-	sysManager.addSystem(tileSystem, "tile_system");
-	sysManager.addSystem(spriteSystem, "sprite_system");
-	sysManager.addSystem(textSystem, "text_system");
-	sysManager.addSystem(lightRenderer, "light_renderer");
+	sysManager.addSystem(renderSystem, "render_system");
 	sysManager.addSystem(movementSystem, "movement_system");
 
 	//create component type handles
@@ -198,7 +186,7 @@ int main(int argc, char** argv) {
 		glm::mat4 proj;
 	} block;
 	block.model = glm::mat4{ 1.0f };
-	block.view = glm::lookAt(glm::vec3{ -4.0f, -8.0f, -10.0f }, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	block.view = glm::lookAt(glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 4.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.01f, 100.0f);
 
 	auto& glsh_pass = resManager.add<oak::graphics::GLShader>("glsh_pass");
@@ -226,10 +214,10 @@ int main(int argc, char** argv) {
 	});
 	mesh_box.load("sandbox/res/models/box.obj");
 
-	for (float i = 0; i < 16; i++) {
-		for (float j = 0; j < 16; j++) {
-			for (float k = 0; k < 16; k++) {
-				renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 2.0f, j * 2.0f, k * 2.0f }), &mesh_box, &mat_box);
+	for (float i = 0; i < 4; i++) {
+		for (float j = 0; j < 4; j++) {
+			for (float k = 0; k < 4; k++) {
+				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 2.0f, j * 2.0f, k * 2.0f }), &mesh_box, &mat_box);
 			}
 		}
 	}
@@ -247,9 +235,8 @@ int main(int argc, char** argv) {
 	//main game loop
 	isRunning = true;
 	while (isRunning) {
-		//refresh window, poll input
-		winSystem.run();
-		//create / destroy / activate / deactivate entities 
+		inputManager.update();
+		//create / destroy / activate / deactivate entities
 		scene.update();
 
 		/*
@@ -263,7 +250,7 @@ int main(int argc, char** argv) {
 
 		movementSystem.run();
 
-		renderer.run();
+		renderSystem.run();
 
 		//check for exit
 		if (!evtManager.getQueue<oak::WindowCloseEvent>().empty()) {
@@ -276,7 +263,6 @@ int main(int argc, char** argv) {
 		lastFrame = currentFrame;		
 
 		//do engine things
-		inputManager.update();
 		evtManager.clear();
 		oak::oalloc_frame.clear();
 	}

@@ -21,7 +21,7 @@ out gl_PerVertex {
 void main() {
 	vec4 pos = matrix.model * vec4(vPosition, 1.0);
 	gl_Position = matrix.proj * matrix.view * pos;
-	fragNormal = normalize(mat3(matrix.model) * vNormal);
+	fragNormal = normalize((matrix.model * vec4(vNormal, 0.0)).xyz);
 	fragPos = pos.xyz;
 	fragUVs = vUVs;
 }

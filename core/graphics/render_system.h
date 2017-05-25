@@ -11,20 +11,19 @@ namespace oak {
 
 namespace oak::graphics {
 
-	class TestRenderer : public System {
+	class RenderSystem : public System {
 	public:
-		TestRenderer(oak::Scene& scene);
+		RenderSystem(Scene& scene, Renderer& renderer);
 
 		void init() override;
+		void terminate() override;
 		void run() override;
 		
 		StaticBatcher batcher_;
 	private:
-
-		Renderer *renderer_;
-
 		Scene *scene_;
 		EntityCache cache_;
+		Renderer *renderer_;
 	};
 
 }
