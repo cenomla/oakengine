@@ -2,17 +2,56 @@
 
 #include <GLFW/glfw3.h>
 
+#include "event_manager.h"
+#include "input_events.h"
 #include "log.h"
 
 namespace oak::graphics {
 
 	void VkRenderer::init() {
-
 		if (!glfwVulkanSupported()) {
 			log_print_err("vulkan is not supported");
 			abort();
 		}
+		initInstance();
+		initDebugReport();
 
+		//create window
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+		window_ = glfwCreateWindow(1280, 720, "sandbox", nullptr, nullptr);
+		if (!window_) {
+			log_print_err("failed to create window");
+			abort();
+		}
+
+		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
+
+		//init surface
+		VkResult result = glfwCreateWindowSurface(instance_, window_, nullptr, &surface_);
+		if (result != VK_SUCCESS) {
+			log_print_err("failed to create vulkan surface");
+			abort();
+		}
+
+		initDevice();
+
+
+	}
+
+	void VkRenderer::terminate() {
+		vkDestroyInstance(instance_, nullptr);
+	}
+
+	void VkRenderer::render(const Batch& batch) {
+
+	}
+
+	void VkRenderer::swap() {
+
+	}
+
+	void VkRenderer::initInstance() {
 		VkApplicationInfo appInfo;
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pNext = nullptr;
@@ -75,16 +114,54 @@ namespace oak::graphics {
 		}
 	}
 
-	void VkRenderer::terminate() {
-		vkDestroyInstance(instance_, nullptr);
+	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+		VkDebugReportFlagsEXT flags,
+		VkDebugReportObjectTypeEXT objType,
+		uint64_t obj,
+		size_t location,
+		int32_t code,
+		const char* layerPrefix,
+		const char* msg,
+		void* userData) {
+
+		log_print_warn("validation layer: %s", msg);
+
+		return VK_FALSE;
 	}
 
-	void VkRenderer::render(const Batch& batch) {
 
+	void VkRenderer::initDebugReport() {
+		VkDebugReportCallbackCreateInfoEXT debugInfo{};
+		debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+		debugInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+		debugInfo.pfnCallback = debugCallback;
+
+		auto func = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance_, "vkCreateDebugReportCallbackEXT"));
+		func(instance_, &debugInfo, nullptr, &debugReport_);
 	}
 
-	void VkRenderer::swap() {
+	void VkRenderer::getPhysicalDevice() {
+		uint32_t deviceCount = 0;
+		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
+		oak::vector<VkPhysicalDevice> physicalDevices{ deviceCount };
+		vkEnumeratePhysicalDevices(instance_, &deviceCount, physicalDevices.data());
 
+		log_print_out("device count: %u", deviceCount);
+
+		for (const auto& device : physicalDevices) {
+			VkPhysicalDeviceProperties deviceProperties;
+			VkPhysicalDeviceFeatures deviceFeatures;
+			vkGetPhysicalDeviceProperties(device, &deviceProperties);
+			vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+			log_print_out("device name: %s", deviceProperties.deviceName);
+		}
+
+		physicalDevice_ = physicalDevices[0];
+	}
+
+	void VkRenderer::initDevice() {
+		getPhysicalDevice();
 	}
 
 }

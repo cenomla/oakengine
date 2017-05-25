@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <graphics/opengl/gl_texture_atlas.h>
+#include <graphics/vulkan/vk_renderer.h>
 #include <graphics/render_system.h>
 #include <log.h>
 #include <system_manager.h>
@@ -143,7 +144,7 @@ int main(int argc, char** argv) {
 	oak::Scene scene;
 
 	//create all the systems
-	oak::graphics::GLRenderer renderer;
+	oak::graphics::VkRenderer renderer;
 	oak::graphics::RenderSystem renderSystem{ scene, renderer };
 	MovementSystem movementSystem{ scene };
 	//add them to the system manager
@@ -190,17 +191,18 @@ int main(int argc, char** argv) {
 	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.01f, 100.0f);
 
 	auto& glsh_pass = resManager.add<oak::graphics::GLShader>("glsh_pass");
-	glsh_pass.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
-	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
+	//glsh_pass.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
+	/*oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
 	ubo.create();
 	ubo.bind();
 	ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
 	ubo.bindBufferBase(0);
 	ubo.unbind();
 	glsh_pass.bindBlockIndex("MatrixBlock", 0);
+	*/
 	auto& sh_pass = resManager.add<oak::graphics::Shader>("sh_pass", glsh_pass.getId());
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D });
-	gltex_box.create("sandbox/res/textures/box.png");
+	//gltex_box.create("sandbox/res/textures/box.png");
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
 	auto& mat_box = resManager.add<oak::graphics::Material>("mat_entity", &sh_pass, &tex_box);
 	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", 
@@ -214,7 +216,7 @@ int main(int argc, char** argv) {
 	for (float i = 0; i < 4; i++) {
 		for (float j = 0; j < 4; j++) {
 			for (float k = 0; k < 4; k++) {
-				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 2.0f, j * 2.0f, k * 2.0f }), &mesh_box, &mat_box);
+				//renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 2.0f, j * 2.0f, k * 2.0f }), &mesh_box, &mat_box);
 			}
 		}
 	}

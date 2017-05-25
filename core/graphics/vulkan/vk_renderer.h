@@ -20,6 +20,14 @@ namespace oak::graphics {
 	private:
 		GLFWwindow *window_;
 		VkInstance instance_;
+		VkDebugReportCallbackEXT debugReport_;
+		VkSurfaceKHR surface_;
+		VkPhysicalDevice physicalDevice_;
+
+		void initInstance();
+		void initDebugReport();
+		void getPhysicalDevice();
+		void initDevice();
 	};
 
 }
