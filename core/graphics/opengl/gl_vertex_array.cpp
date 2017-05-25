@@ -29,18 +29,40 @@ namespace oak::graphics {
 		glBindVertexArray(0);
 	}
 
-	static GLenum typeMap[] = {
+	static GLenum gltype[] = {
 		GL_FLOAT,
-		GL_INT,
-		GL_UNSIGNED_INT,
-		GL_BYTE,
+		GL_FLOAT,
+		GL_FLOAT,
 		GL_UNSIGNED_BYTE
 	};
 
-	void GLVertexArray::attributeDescription(size_t stride, const oak::vector<AttributeDescriptor>& attribs) {
-		for (const auto& attrib : attribs) {
-			glEnableVertexAttribArray(attrib.location);
-			glVertexAttribPointer(attrib.location, attrib.count, typeMap[attrib.type], GL_FALSE, stride, reinterpret_cast<void*>(attrib.offset));
+	static GLenum normalized[] = {
+		GL_FALSE,
+		GL_FALSE,
+		GL_FALSE,
+		GL_TRUE
+	};
+
+	static GLuint count[] = {
+		3, 
+		3, 
+		2, 
+		3
+	};
+
+	void GLVertexArray::attributeDescription(const AttributeLayout& layout) {
+		const size_t stride = layout.stride();
+		size_t i = 0;
+		size_t offset = 0;
+		for (const auto& attrib : layout.attributes) {
+			int type = static_cast<int>(attrib);
+			glEnableVertexAttribArray(i);
+			glVertexAttribPointer(i, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
+			switch(gltype[type]) {
+				case GL_FLOAT: offset += count[type] * 4; break;
+				case GL_UNSIGNED_BYTE: offset += count[type]; break;
+			}
+			i++;
 		}
 	}
 

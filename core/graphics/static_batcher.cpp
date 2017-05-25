@@ -11,14 +11,14 @@ namespace oak::graphics {
 
 	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material) {
 		meshes_.push_back({ transform, mesh, material });
-		size_ += mesh->getVertexCount() * mesh->getDescriptor().stride;
+		size_ += mesh->getVertexCount() * mesh->getLayout().stride();
 		isize_ += mesh->getIndexCount() * 4;
 		needsRebatch_ = true;
 	}
 
 	void StaticBatcher::removeMesh(const Mesh *mesh) {
 		meshes_.erase(std::remove_if(std::begin(meshes_), std::end(meshes_), [&mesh](const MeshInfo& info){ return info.mesh == mesh; }), std::end(meshes_));
-		size_ -= mesh->getVertexCount() * mesh->getDescriptor().stride;
+		size_ -= mesh->getVertexCount() * mesh->getLayout().stride();
 		isize_ -= mesh->getIndexCount() * 4;
 		needsRebatch_ = true;
 	}
@@ -47,7 +47,7 @@ namespace oak::graphics {
 		size_t vcount = 0;
 		const Material *mat = meshes_[0].material;
 
-		Batch currentBatch{ meshes_[0].mesh->getDescriptor(), mat, offset, 0 }; //first batch
+		Batch currentBatch{ meshes_[0].mesh->getLayout(), mat, offset, 0 }; //first batch
 		//iterate through the sorted object
 		for (auto& it : meshes_) {
 			//if the material is different use a different batch
@@ -55,12 +55,12 @@ namespace oak::graphics {
 				offset += currentBatch.count;
 				batches_.push_back(currentBatch);
 				mat = it.material;
-				currentBatch = Batch{ it.mesh->getDescriptor(), mat, offset, 0 };
+				currentBatch = Batch{ it.mesh->getLayout(), mat, offset, 0 };
 			}
 			//stream data
 			it.mesh->draw(buffer, ibuffer, it.transform, vcount);
 			vcount += it.mesh->getVertexCount();
-			buffer = static_cast<char*>(buffer) + it.mesh->getVertexCount() * currentBatch.desc.stride;
+			buffer = static_cast<char*>(buffer) + it.mesh->getVertexCount() * currentBatch.layout.stride();
 			ibuffer = static_cast<int*>(ibuffer) + it.mesh->getIndexCount();
 
 			currentBatch.count += it.mesh->getIndexCount();

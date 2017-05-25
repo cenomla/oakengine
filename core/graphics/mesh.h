@@ -9,17 +9,32 @@
 
 namespace oak::graphics {
 
-	struct AttributeDescriptor {
-		static constexpr uint8_t FLOAT_T = 0;
-		static constexpr uint8_t INT_T = 1;
-		static constexpr uint8_t UINT_T = 2;
-		static constexpr uint8_t BYTE_T = 4;
-		static constexpr uint8_t UBYTE_T = 8;
+	enum class AttributeType {
+		POSITION,
+		NORMAL,
+		UV,
+		COLOR
+	};
 
-		uint32_t location = 0;
-		uint32_t count = 0;
-		uint32_t type = 0;
-		size_t offset = 0;
+	struct AttributeLayout {
+		oak::vector<AttributeType> attributes;
+
+		size_t stride() const {
+			size_t s = 0;
+			for (const auto& type : attributes) {
+				switch (type) {
+					case AttributeType::UV:
+						s += 2 * sizeof(float);
+						break;
+					case AttributeType::COLOR:
+						s += 3;
+						break;
+					default:
+						s += 3 * sizeof(float);
+				}
+			}
+			return s;
+		}
 	};
 
 	struct MeshVertex {
@@ -28,14 +43,9 @@ namespace oak::graphics {
 		glm::vec2 uvs;
 	};
 
-	struct MeshDescriptor {
-		size_t stride = 0;
-		oak::vector<AttributeDescriptor> attributes;
-	};
-
 	class Mesh {
 	public:
-		Mesh(const MeshDescriptor& descriptor);
+		Mesh(const AttributeLayout& layout);
 
 		void load(const oak::string& path);
 
@@ -43,10 +53,10 @@ namespace oak::graphics {
 
 		inline size_t getVertexCount() const { return vertices_.size(); }
 		inline size_t getIndexCount() const { return indices_.size(); }
-		inline const MeshDescriptor& getDescriptor() const { return descriptor_; }
+		inline const AttributeLayout& getLayout() const { return layout_; }
 
 	private:
-		MeshDescriptor descriptor_;
+		AttributeLayout layout_;
 		oak::vector<MeshVertex> vertices_;
 		oak::vector<uint32_t> indices_;
 	};

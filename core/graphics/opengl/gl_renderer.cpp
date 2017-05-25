@@ -81,7 +81,7 @@ namespace oak::graphics {
 		
 		vao_.bind();
 		vbo_.bind();
-		vao_.attributeDescription(batch.desc.stride, batch.desc.attributes);
+		vao_.attributeDescription(batch.layout);
 		vbo_.unbind();
 
 		glUseProgram(batch.material->shader->id);

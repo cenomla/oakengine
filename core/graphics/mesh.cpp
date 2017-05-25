@@ -5,7 +5,7 @@
 
 namespace oak::graphics {
 
-	Mesh::Mesh(const MeshDescriptor& descriptor) : descriptor_{ descriptor } {}
+	Mesh::Mesh(const AttributeLayout& layout) : layout_{ layout } {}
 
 	void Mesh::load(const oak::string &path) {
 

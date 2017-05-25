@@ -16,7 +16,7 @@ namespace oak::graphics {
 		void bind() const;
 		void unbind() const;
 
-		void attributeDescription(size_t stride, const oak::vector<AttributeDescriptor>& attribs);
+		void attributeDescription(const AttributeLayout& attribs);
 	private:
 		uint32_t vao_;
 	};

@@ -113,10 +113,10 @@ int main(int argc, char** argv) {
 	oak::log::cerr.addStream(&lfs);
 
 	//init engine managers
+	oak::EventManager evtManager;
 	oak::InputManager inputManager;
 	oak::SystemManager sysManager;
 	oak::ComponentTypeManager chs;
-	oak::EventManager evtManager;
 	oak::ResourceManager resManager;
 
 	inputManager.bind("move_up", oak::key::w, true);
@@ -204,14 +204,11 @@ int main(int argc, char** argv) {
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
 	auto& mat_box = resManager.add<oak::graphics::Material>("mat_entity", &sh_pass, &tex_box);
 	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", 
-	oak::graphics::MeshDescriptor{ 
-		32,
-		{
-			{ 0, 3, oak::graphics::AttributeDescriptor::FLOAT_T, 0 },
-			{ 1, 3, oak::graphics::AttributeDescriptor::FLOAT_T, 12 },
-			{ 2, 2, oak::graphics::AttributeDescriptor::FLOAT_T, 24 }
-		}
-	});
+	oak::graphics::AttributeLayout{ oak::vector<oak::graphics::AttributeType>{
+		oak::graphics::AttributeType::POSITION,
+		oak::graphics::AttributeType::NORMAL,
+		oak::graphics::AttributeType::UV
+	} });
 	mesh_box.load("sandbox/res/models/box.obj");
 
 	for (float i = 0; i < 4; i++) {
