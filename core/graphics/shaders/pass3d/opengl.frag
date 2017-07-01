@@ -10,9 +10,9 @@ layout (location = 0) out vec4 outColor;
 
 void main() {
 
-	vec3 toLight = normalize(vec3(14.0, 16.0, 12.0) - fragPos);
+	vec3 toLight = normalize(vec3(140.0, 160.0, 120.0) - fragPos);
 	float level = max(dot(fragNormal, toLight), 0.0);
 
 	vec4 texel = texture(texSampler, fragUVs);
-	outColor = mix(vec4(texel.rgb * max(level, 0.2), texel.a), vec4((fragNormal + 1) * 0.5, 1.0), 0.2);
+	outColor = mix(vec4(texel.rgb * max(level, 0.25), texel.a), vec4((fragNormal + 1) * 0.5, 1.0), 0.2);
 }

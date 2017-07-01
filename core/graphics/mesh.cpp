@@ -5,7 +5,18 @@
 
 namespace oak::graphics {
 
-	Mesh::Mesh(const AttributeLayout& layout) : layout_{ layout } {}
+	Mesh::Mesh(const AttributeLayout& layout) : layout_{ layout }, data_{ nullptr }, idata_{ nullptr } {}
+
+	Mesh::~Mesh() {
+		if (data_) {
+			oak_allocator.deallocate(data_, vertexCount_ * layout_.stride());
+		}
+		if (idata_) {
+			oak_allocator.deallocate(idata_, indexCount_ * 4);
+		}
+		data_ = nullptr;
+		idata_ = nullptr;
+	}
 
 	void Mesh::load(const oak::string &path) {
 
@@ -71,27 +82,81 @@ namespace oak::graphics {
 		}
 
 		size_t i = 0;
+		data_ = oak_allocator.allocate(vertices.size() * 32);
+		idata_ = oak_allocator.allocate(indexList.size() * 4);
+
+		struct MeshVertex {
+			glm::vec3 position;
+			glm::vec3 normal;
+			glm::vec2 uvs;
+		};
 		for (const auto& vertex : vertices) {
-			vertices_.push_back(MeshVertex{ vertex, normalList[i], uvList[i] });
+			static_cast<MeshVertex*>(data_)[i] = MeshVertex{ vertex, normalList[i], uvList[i] };
 			i++;
 		}
+		vertexCount_ = i;
+		i = 0;
 		for (const auto& index : indexList) {
-			indices_.push_back(index);
+			static_cast<uint32_t*>(idata_)[i++] = index;
 		}
+		indexCount_ = i;
+	}
 
+	static size_t size[] = {
+		12, 
+		12, 
+		8, 
+		4
+	};
+
+	void Mesh::setData(void *vertices, void *indices, size_t vcount, size_t icount) {
+		if (data_) {
+			oak_allocator.deallocate(data_, vertexCount_ * layout_.stride());
+		}
+		if (idata_) {
+			oak_allocator.deallocate(idata_, indexCount_ * 4);
+		}
+		data_ = vertices;
+		idata_ = indices;
+		vertexCount_ = vcount;
+		indexCount_ = icount;
 	}
 
 	void Mesh::draw(void *buffer, void *ibuffer, const glm::mat4& transform, uint32_t startIndex) const {
-		MeshVertex *data = static_cast<MeshVertex*>(buffer);
-		uint32_t *idata = static_cast<uint32_t*>(ibuffer);
 
-		size_t i = 0;
-		for (const auto& vertex : vertices_) {
-			data[i++] = { glm::vec3{ transform * glm::vec4{ vertex.position, 1.0f } }, glm::vec3{ transform * glm::vec4{ vertex.normal, 0.0f } }, vertex.uvs };
+		oak::vector<std::pair<size_t, int>> attributes;
+
+		size_t offset = 0;
+		for (const auto& attr : layout_.attributes) {
+			switch (attr) {
+				case AttributeType::POSITION:
+					attributes.push_back({ offset, 1 });
+					break;
+				case AttributeType::NORMAL:
+					attributes.push_back({ offset, 0 });
+					break;
+				default:
+					attributes.push_back({ offset, -static_cast<int>(size[static_cast<int>(attr)]) });
+			}
+			offset += size[static_cast<int>(attr)];
 		}
-		i = 0;
-		for (const auto& index : indices_) {
-			idata[i++] = startIndex + index;
+
+		//transform stuff
+		const size_t stride = layout_.stride();
+		for (const auto& attr : attributes) {
+			for (size_t i = 0; i < vertexCount_; i++) {
+				auto b = static_cast<char*>(buffer) + i * stride;
+				auto p = static_cast<char*>(data_) + i * stride;
+				if (attr.second < 0) {
+					size_t v = static_cast<size_t>(-attr.second);
+					memcpy(b + attr.first, p + attr.first, v);
+				} else {
+					*reinterpret_cast<glm::vec3*>(b + attr.first) = glm::vec3{ transform * glm::vec4{ *reinterpret_cast<glm::vec3*>(p + attr.first), static_cast<float>(attr.second) } };
+				}
+			}
+		}
+		for (size_t i = 0; i < indexCount_; i++) {
+			static_cast<uint32_t*>(ibuffer)[i] = static_cast<uint32_t*>(idata_)[i] + startIndex;
 		}
 	}
 

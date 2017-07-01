@@ -47,10 +47,10 @@ namespace oak::graphics {
 		3, 
 		3, 
 		2, 
-		3
+		4
 	};
 
-	void GLVertexArray::attributeDescription(const AttributeLayout& layout) {
+	void GLVertexArray::attributeDescription(const AttributeLayout& layout) const {
 		const size_t stride = layout.stride();
 		size_t i = 0;
 		size_t offset = 0;

@@ -3,10 +3,14 @@
 #include <chrono>
 #include <cmath>
 
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <graphics/opengl/gl_texture_atlas.h>
-#include <graphics/vulkan/vk_renderer.h>
+#include <graphics/opengl/gl_renderer.h>
+#include <graphics/opengl/gl_buffer_storage.h>
+#include <graphics/opengl/gl_shader.h>
+
 #include <graphics/render_system.h>
 #include <log.h>
 #include <system_manager.h>
@@ -23,11 +27,11 @@
 #include <update_events.h>
 #include <input.h>
 #include <prefab.h>
+#include <scene_utils.h>
 
 #include "component_ext.h"
 #include "systems.h"
 #include "tile_system.h"
-#include "light_renderer.h"
 
 #include <glad/glad.h>
 
@@ -120,10 +124,12 @@ int main(int argc, char** argv) {
 	oak::ComponentTypeManager chs;
 	oak::ResourceManager resManager;
 
-	inputManager.bind("move_up", oak::key::w, true);
-	inputManager.bind("move_down", oak::key::s, true);
-	inputManager.bind("move_left", oak::key::a, true);
-	inputManager.bind("move_right", oak::key::d, true);
+	inputManager.bind("move_forward", oak::key::w, true);
+	inputManager.bind("move_backward", oak::key::s, true);
+	inputManager.bind("strafe_left", oak::key::a, true);
+	inputManager.bind("strafe_right", oak::key::d, true);
+	inputManager.bind("move_up", oak::key::space, true);
+	inputManager.bind("move_down", oak::key::lshift, true);
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
@@ -136,6 +142,7 @@ int main(int argc, char** argv) {
 	evtManager.addQueue<oak::KeyEvent>();
 	evtManager.addQueue<oak::ButtonEvent>();
 	evtManager.addQueue<oak::CursorEvent>();
+	evtManager.addQueue<oak::CursorModeEvent>();
 	evtManager.addQueue<oak::TextEvent>();
 	evtManager.addQueue<oak::TickEvent>();
 	evtManager.addQueue<oak::SimulateEvent>();
@@ -144,8 +151,11 @@ int main(int argc, char** argv) {
 	oak::Scene scene;
 
 	//create all the systems
-	oak::graphics::VkRenderer renderer;
-	oak::graphics::RenderSystem renderSystem{ scene, renderer };
+	oak::graphics::GLRenderer renderer;
+
+	//create the rendering system with the buffer storage
+	oak::graphics::GLBufferStorage glBufferStorage;
+	oak::graphics::RenderSystem renderSystem{ scene, renderer, &glBufferStorage };
 	MovementSystem movementSystem{ scene };
 	//add them to the system manager
 	sysManager.addSystem(renderSystem, "render_system");
@@ -188,23 +198,48 @@ int main(int argc, char** argv) {
 	} block;
 	block.model = glm::mat4{ 1.0f };
 	block.view = glm::lookAt(glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 4.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.01f, 100.0f);
+	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.1f, 1000.0f);
 
-	auto& glsh_pass = resManager.add<oak::graphics::GLShader>("glsh_pass");
-	//glsh_pass.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
-	/*oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
+	struct {
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 proj;
+	} oblock;
+	oblock.model = glm::mat4{ 1.0f };
+	oblock.view = glm::mat4{ 1.0f };
+	oblock.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+
+	auto& glsh_pass3d = resManager.add<oak::graphics::GLShader>("glsh_pass3d");
+	glsh_pass3d.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
+	glsh_pass3d.bindBlockIndex("MatrixBlock", 0);
+	auto& glsh_pass2d = resManager.add<oak::graphics::GLShader>("glsh_pass2d");
+	glsh_pass2d.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
+	glsh_pass2d.bindBlockIndex("MatrixBlock", 1);
+
+	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
 	ubo.create();
 	ubo.bind();
 	ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
 	ubo.bindBufferBase(0);
 	ubo.unbind();
-	glsh_pass.bindBlockIndex("MatrixBlock", 0);
-	*/
-	auto& sh_pass = resManager.add<oak::graphics::Shader>("sh_pass", glsh_pass.getId());
+
+	oak::graphics::GLBuffer oubo{ GL_UNIFORM_BUFFER };
+	oubo.create();
+	oubo.bind();
+	oubo.data(sizeof(oblock), &oblock, GL_STATIC_DRAW);
+	oubo.bindBufferBase(1);
+	oubo.unbind();
+	
+	auto& sh_pass3d = resManager.add<oak::graphics::Shader>("sh_pass3d", glsh_pass3d.getId());
+	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", glsh_pass2d.getId());
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D });
-	//gltex_box.create("sandbox/res/textures/box.png");
+	gltex_box.create("sandbox/res/textures/box.png");
+	auto& gltex_character = resManager.add<oak::graphics::GLTexture>("gltex_character", GLuint{ GL_TEXTURE_2D });
+	gltex_character.create("sandbox/res/textures/character.png");
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_entity", &sh_pass, &tex_box);
+	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", gltex_character.getId());
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &sh_pass3d, &tex_box);
+	auto& mat_character = resManager.add<oak::graphics::Material>("mat_character", &sh_pass3d, &tex_character);
 	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", 
 	oak::graphics::AttributeLayout{ oak::vector<oak::graphics::AttributeType>{
 		oak::graphics::AttributeType::POSITION,
@@ -212,15 +247,40 @@ int main(int argc, char** argv) {
 		oak::graphics::AttributeType::UV
 	} });
 	mesh_box.load("sandbox/res/models/box.obj");
+	auto& mesh_character = resManager.add<oak::graphics::Mesh>("mesh_character", 
+	oak::graphics::AttributeLayout{ oak::vector<oak::graphics::AttributeType>{ 
+		oak::graphics::AttributeType::POSITION,
+		oak::graphics::AttributeType::NORMAL,
+		oak::graphics::AttributeType::UV
+	} });
+
+	float vertices[] = {
+		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		64.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		64.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
+	};
+
+	uint32_t indices[] = {
+		0, 1, 2, 2, 3, 0
+	};
+
+	float *pv = static_cast<float*>(oak::oak_allocator.allocate(sizeof(vertices)));
+	uint32_t *pi = static_cast<uint32_t*>(oak::oak_allocator.allocate(24));
+
+	memcpy(pv, vertices, sizeof(vertices));
+	memcpy(pi, indices, sizeof(indices));
+
+	mesh_character.setData(pv, pi, 6, 6);
 
 	for (float i = 0; i < 4; i++) {
 		for (float j = 0; j < 4; j++) {
 			for (float k = 0; k < 4; k++) {
-				//renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 2.0f, j * 2.0f, k * 2.0f }), &mesh_box, &mat_box);
+				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 1.99f, j * 1.99f, k * 1.99f }), &mesh_box, &mat_box);
 			}
 		}
 	}
-	//renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_box, &mat_box);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_character, &mat_character);
 	//renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, -2.0f }), &mesh_box, &mat_box);
 
 	//create entities
@@ -231,21 +291,82 @@ int main(int argc, char** argv) {
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> dt;
 
+	inputManager.update();
+
+	//cam
+	glm::vec3 pos{ 16.0f, 8.0f, 16.0f };
+	glm::vec3 look{ 0.0f };
+	float roth = 180.0f, rotv = 90.0f;
+	float px, py;
+	{
+		double mx, my;
+		inputManager.getCursorPos(&mx, &my);
+		px = static_cast<float>(mx);
+		py = static_cast<float>(my);
+	}
+	oak::CursorMode cmode = oak::CursorMode::NORMAL;
+	evtManager.getQueue<oak::CursorModeEvent>().emit({ cmode });
+
+
 	//main game loop
 	isRunning = true;
 	while (isRunning) {
+		if (inputManager.getKey(oak::key::esc)) {
+			if (cmode == oak::CursorMode::NORMAL) {
+				cmode = oak::CursorMode::DISABLED;
+			} else {
+				cmode = oak::CursorMode::NORMAL;
+			}
+
+			evtManager.getQueue<oak::CursorModeEvent>().emit({ cmode });
+			inputManager.setKey(oak::key::esc, 0);
+		}
 		inputManager.update();
 		//create / destroy / activate / deactivate entities
 		scene.update();
 
-		/*
-		//update physics
-		accum += dt.count();
-		while (accum >= 1.0f/60.0f) {
-			//physicsSystem.update(1.0f/60.0f);
-			accum -= 1.0f/60.0f; 
+		//temp camera
+		//look
+		if (cmode == oak::CursorMode::DISABLED) {
+			for (const auto& evt : evtManager.getQueue<oak::CursorEvent>()) {
+				roth -= glm::radians(evt.x - px) / 6.0f;
+				rotv -= glm::radians(evt.y - py) / 6.0f;
+				px = evt.x;
+				py = evt.y;
+
+				look = glm::quat{ glm::vec3{ rotv, roth, 0.0f } } * glm::vec3{ 0.0f, 0.0f, -1.0f };
+			}
+		} else {
+			for (const auto& evt : evtManager.getQueue<oak::CursorEvent>()) {
+				px = evt.x;
+				py = evt.y;
+			}
 		}
-		*/
+		//move
+		if (inputManager.getAction("move_forward")) {
+			pos += glm::vec3{ look.x, 0.0f, look.z };
+		}
+		if (inputManager.getAction("move_backward")) {
+			pos -= glm::vec3{ look.x, 0.0f, look.z };
+		}
+		if (inputManager.getAction("strafe_left")) {
+			pos -= glm::cross(glm::vec3{ look.x, 0.0f, look.z }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		}
+		if (inputManager.getAction("strafe_right")) {
+			pos += glm::cross(glm::vec3{ look.x, 0.0f, look.z }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		}
+		if (inputManager.getAction("move_up")) {
+			pos.y += 0.4f;
+		}
+		if (inputManager.getAction("move_down")) {
+			pos.y -= 0.4f;
+		}
+
+		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
+
+		ubo.bind();
+		ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
+		ubo.unbind();
 
 		movementSystem.run();
 
@@ -259,7 +380,9 @@ int main(int argc, char** argv) {
 		//update the delta time
 		std::chrono::high_resolution_clock::time_point currentFrame = std::chrono::high_resolution_clock::now();
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
-		lastFrame = currentFrame;		
+		lastFrame = currentFrame;
+
+		printf("dt: %f\n", dt.count());
 
 		//do engine things
 		evtManager.clear();

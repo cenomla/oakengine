@@ -4,6 +4,8 @@
 
 #include "container.h"
 
+struct GLFWwindow;
+
 namespace oak {
 
 	class InputManager {
@@ -21,12 +23,17 @@ namespace oak {
 		void update();
 
 		void bind(const oak::string& action, int binding, bool key);
+
 		int getAction(const oak::string& action) const;
+
 		int getKey(int key) const;
+		void setKey(int key, int action);
 		int getButton(int button) const;
+		void getCursorPos(double *xpos, double *ypos) const;
 	private:
 		int actions_[1024];
 		oak::unordered_map<oak::string, int> bindings_;
+		GLFWwindow *window_;
 	};
 
 }

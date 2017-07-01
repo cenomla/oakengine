@@ -1,6 +1,7 @@
 #include "vk_renderer.h"
 
 #include <GLFW/glfw3.h>
+#include <set>
 
 #include "event_manager.h"
 #include "input_events.h"
@@ -43,11 +44,7 @@ namespace oak::graphics {
 		vkDestroyInstance(instance_, nullptr);
 	}
 
-	void VkRenderer::render(const Batch& batch) {
-
-	}
-
-	void VkRenderer::swap() {
+	void VkRenderer::render() {
 
 	}
 
@@ -102,7 +99,6 @@ namespace oak::graphics {
 		extNames[glfwExtensionCount] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
 
 		instanceInfo.enabledExtensionCount = extensionCount;
-		//instanceInfo.enabledExtensionCount = 0;
 		instanceInfo.ppEnabledExtensionNames = extNames.data();
 		instanceInfo.flags = 0;
 		instanceInfo.pNext = nullptr;
@@ -160,8 +156,104 @@ namespace oak::graphics {
 		physicalDevice_ = physicalDevices[0];
 	}
 
+	void VkRenderer::getFamilyIndices() {
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queueFamilyCount, nullptr);
+		oak::vector<VkQueueFamilyProperties> queueFamilies{ queueFamilyCount };
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for (const auto &queueFamily : queueFamilies) {
+			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				deviceGraphicsQueue_ = i;
+			}
+
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice_, i, surface_, &presentSupport);
+
+			if (queueFamily.queueCount > 0 && presentSupport) {
+				devicePresentQueue_ = i;
+			}
+
+			if (deviceGraphicsQueue_ != 0 && devicePresentQueue_ != 0) {
+				break;
+			}
+
+			i++;
+		}
+	}
+
+	void VkRenderer::getDeviceSwapchainSupport() {
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice_, surface_, &surfaceCapabilities_);
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &formatCount, nullptr);
+		if (formatCount != 0) {
+			surfaceFormats_.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice_, surface_, &formatCount, surfaceFormats_.data());
+		}
+
+		uint32_t modesCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface_, &modesCount, nullptr);
+		if (modesCount != 0) {
+			presentModes_.resize(formatCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice_, surface_, &modesCount, presentModes_.data());
+		}
+	}
+
 	void VkRenderer::initDevice() {
 		getPhysicalDevice();
+		getFamilyIndices();
+		getDeviceSwapchainSupport();
+		if (deviceGraphicsQueue_ == 0 || devicePresentQueue_ == 0 || surfaceFormats_.empty() || presentModes_.empty()) {
+			log_print_err("supported device not found :(");
+			abort();
+		}
+
+		oak::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		std::set<int> uniqueQueueFamilies{ deviceGraphicsQueue_, devicePresentQueue_ };
+
+		float queuePriority = 0.0f;
+
+		for (int queueFamily : uniqueQueueFamilies) {
+			VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
+			deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			deviceQueueCreateInfo.queueFamilyIndex = queueFamily;
+			deviceQueueCreateInfo.queueCount = 1;
+			deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+			queueCreateInfos.push_back(deviceQueueCreateInfo);
+		}
+
+		VkPhysicalDeviceFeatures deviceFeatures{};
+
+		VkDeviceCreateInfo deviceInfo{};
+		deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
+		deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+		deviceInfo.pEnabledFeatures = &deviceFeatures;
+
+		const char* layerNames[] = {
+			"VK_LAYER_LUNARG_standard_validation"
+		};
+
+		const char* deviceExtensions[] = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
+		deviceInfo.enabledLayerCount = 1;
+		deviceInfo.ppEnabledLayerNames = layerNames;
+		deviceInfo.enabledExtensionCount = 1;
+		deviceInfo.ppEnabledExtensionNames = deviceExtensions;
+
+		VkResult result = vkCreateDevice(physicalDevice_, &deviceInfo, nullptr, &device_);
+		if (result != VK_SUCCESS) {
+			log_print_err("failed to create device");
+			abort();
+		}
+
+		vkGetDeviceQueue(device_, deviceGraphicsQueue_, 0, &graphicsQueue_);
+		vkGetDeviceQueue(device_, devicePresentQueue_, 0, &presentQueue_);
+
 	}
 
 }

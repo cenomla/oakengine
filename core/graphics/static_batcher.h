@@ -18,7 +18,7 @@ namespace oak::graphics {
 		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material);
 		void removeMesh(const Mesh *mesh);
 
-		void run(BufferStorage *storage, BufferStorage *istorage);
+		void run(BufferStorage *storage);
 		
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
 

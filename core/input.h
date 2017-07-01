@@ -2,6 +2,12 @@
 
 namespace oak {
 
+	enum class CursorMode {
+		NORMAL,
+		HIDDEN,
+		DISABLED
+	};
+
 	namespace action {
 		constexpr int released = 0;
 		constexpr int pressed = 1;

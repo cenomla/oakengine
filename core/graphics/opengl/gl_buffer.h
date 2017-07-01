@@ -1,10 +1,11 @@
 #pragma once
 
-#include "graphics/buffer_storage.h"
+#include <cstdint>
+#include <cstddef>
 
 namespace oak::graphics {
 
-	class GLBuffer : public BufferStorage {
+	class GLBuffer {
 	public:
 		GLBuffer(int32_t type);
 		~GLBuffer();
@@ -18,10 +19,10 @@ namespace oak::graphics {
 		void create();
 		void destroy();
 
-		void* map(int32_t flags);
+		void* map(uint32_t flags);
 		void unmap();
 
-		void data(size_t size, const void *data, int32_t flags);
+		void data(size_t size, const void *data, uint32_t flags);
 		void data(size_t size, size_t offset, const void *data);
 
 		void bindBufferBase(uint32_t index) const;

@@ -30,6 +30,7 @@ namespace oak {
 
 	void InputManager::update() {
 		for (const auto& evt : EventManager::inst().getQueue<WindowCreateEvent>()) {
+			window_ = evt.window;
 			setCallbacks(evt.window);
 		}
 		glfwPollEvents();
@@ -39,6 +40,19 @@ namespace oak {
 
 		for (const auto& evt : EventManager::inst().getQueue<ButtonEvent>()) {
 			actions_[evt.button] = evt.action;
+		}
+		for (const auto& evt : EventManager::inst().getQueue<CursorModeEvent>()) {
+			switch (evt.mode) {
+				case CursorMode::NORMAL:
+					glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					break;
+				case CursorMode::HIDDEN:
+					glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+					break;
+				case CursorMode::DISABLED:
+					glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					break;
+			}
 		}
 	}
 
@@ -60,9 +74,18 @@ namespace oak {
 		return actions_[key + button::max];
 	}
 
+	void InputManager::setKey(int key, int action) {
+		actions_[key + button::max] = action;
+	}
+
 	int InputManager::getButton(int button) const {
 		return actions_[button];
 	}
+
+	void InputManager::getCursorPos(double *xpos, double *ypos) const {
+		glfwGetCursorPos(window_, xpos, ypos);
+	}
+
 	static void closeCallback(GLFWwindow *window) {
 		EventManager::inst().getQueue<WindowCloseEvent>().emit({ window });
 	}

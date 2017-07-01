@@ -2,6 +2,8 @@
 
 #include <cinttypes>
 
+#include "input.h"
+
 struct GLFWwindow;
 
 namespace oak {
@@ -35,6 +37,10 @@ namespace oak {
 
 	struct TextEvent {
 		uint32_t codepoint;
+	};
+
+	struct CursorModeEvent {
+		CursorMode mode;
 	};
 
 	void pup(Puper& puper, WindowCreateEvent& data, const ObjInfo& info);

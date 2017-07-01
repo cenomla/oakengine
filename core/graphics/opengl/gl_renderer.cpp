@@ -14,8 +14,6 @@
 
 namespace oak::graphics {
 
-	GLRenderer::GLRenderer() : vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER } {}
-
 	static void post_gl_call(const char *name, void *funcptr, int len_args, ...) {
 		GLenum error = glad_glGetError();
 		if (error != GL_NO_ERROR) {
@@ -56,40 +54,39 @@ namespace oak::graphics {
 		glCullFace(GL_BACK);
 
 		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
-
-
-		vao_.create();
-		vbo_.create();
-		vao_.bind();
-		ibo_.create();
-		ibo_.bind();
-		vao_.unbind();
 	}
 
 	void GLRenderer::terminate() {
 		glfwDestroyWindow(window_);
 	}
 
-	void GLRenderer::swap() {
-		glfwSwapBuffers(window_);
-		glViewport(0, 0, 1280, 720);
-		glClearColor(0.3f, 0.4f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-
-	void GLRenderer::render(const Batch& batch) {
+	void GLRenderer::render() {
 		
-		vao_.bind();
-		vbo_.bind();
-		vao_.attributeDescription(batch.layout);
-		vbo_.unbind();
+		for (auto stage : pipeline_->stages) {
+			if (stage->type == PipelineStageType::SWAP) {
+				glfwSwapBuffers(window_);
+			}
+			if (stage->type == PipelineStageType::CLEAR) {
+				auto p = static_cast<PipelineStageClear*>(stage);
+				glViewport(0, 0, 1280, 720);
+				glClearColor(p->color.r, p->color.g, p->color.b, p->color.a);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			}
+			if (stage->type == PipelineStageType::DRAW) {
+				auto p = static_cast<PipelineStageDraw*>(stage);
+				for (auto& it : p->batches) {
+					it.second.storage->bind();
+					it.second.storage->attributeDescription(it.second.layout);
 
-		glUseProgram(batch.material->shader->id);
-		glBindTexture(GL_TEXTURE_2D, batch.material->texture->id);
+					glUseProgram(it.second.material->shader->id);
+					glBindTexture(GL_TEXTURE_2D, it.second.material->texture->id);
 
-		glDrawElements(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
+					glDrawElements(GL_TRIANGLES, it.second.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(it.second.offset * 4));
 
-		vao_.unbind();
+					it.second.storage->unbind();
+				}
+			}
+		}
 	}
 
 }

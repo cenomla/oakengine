@@ -16,7 +16,7 @@ namespace oak::graphics {
 		void bind() const;
 		void unbind() const;
 
-		void attributeDescription(const AttributeLayout& attribs);
+		void attributeDescription(const AttributeLayout& attribs) const;
 	private:
 		uint32_t vao_;
 	};

@@ -43,7 +43,7 @@ namespace oak::graphics {
 		}
 	}
 
-	void *GLBuffer::map(int32_t flag) {
+	void *GLBuffer::map(uint32_t flag) {
 		bind();
 		return glMapBuffer(type_, GL_WRITE_ONLY);
 	}
@@ -53,7 +53,7 @@ namespace oak::graphics {
 		glUnmapBuffer(type_);
 	}
 
-	void GLBuffer::data(size_t size, const void *data, int32_t hint) {
+	void GLBuffer::data(size_t size, const void *data, uint32_t hint) {
 		bind();
 		glBufferData(type_, size, data, GL_STATIC_DRAW);
 	}
