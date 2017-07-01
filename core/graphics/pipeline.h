@@ -45,8 +45,6 @@ namespace oak::graphics {
 		Framebuffer *framebuffer;
 	};
 
-	class Renderer;
-
 	class Pipeline {
 	public:
 		void setup(); //setup pipeline

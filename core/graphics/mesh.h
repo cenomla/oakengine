@@ -13,7 +13,7 @@ namespace oak::graphics {
 
 	class Mesh {
 	public:
-		Mesh(const AttributeLayout& layout);
+		Mesh(const AttributeLayout *layout);
 		~Mesh();
 
 		void setData(void *vertices, void *indices, size_t count, size_t icount);
@@ -23,10 +23,10 @@ namespace oak::graphics {
 
 		inline size_t getVertexCount() const { return vertexCount_; }
 		inline size_t getIndexCount() const { return indexCount_; }
-		inline const AttributeLayout& getLayout() const { return layout_; }
+		inline const AttributeLayout& getLayout() const { return *layout_; }
 
 	private:
-		AttributeLayout layout_;
+		const AttributeLayout *layout_;
 		size_t vertexCount_, indexCount_;
 		void *data_, *idata_;
 	};

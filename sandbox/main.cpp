@@ -153,9 +153,27 @@ int main(int argc, char** argv) {
 	//create all the systems
 	oak::graphics::GLRenderer renderer;
 
-	//create the rendering system with the buffer storage
-	oak::graphics::GLBufferStorage glBufferStorage;
-	oak::graphics::RenderSystem renderSystem{ scene, renderer, &glBufferStorage };
+	//create the rendering system
+	oak::graphics::RenderSystem renderSystem{ scene, renderer };
+
+	oak::graphics::AttributeLayout _3dlayout{ oak::vector<oak::graphics::AttributeType>{ 
+		oak::graphics::AttributeType::POSITION,
+		oak::graphics::AttributeType::NORMAL,
+		oak::graphics::AttributeType::UV
+	} };
+
+	oak::graphics::AttributeLayout _2dlayout{ oak::vector<oak::graphics::AttributeType>{ 
+		oak::graphics::AttributeType::POSITION2D,
+		oak::graphics::AttributeType::UV
+	} };
+
+	oak::graphics::GLBufferStorage _3dstorage;
+	oak::graphics::GLBufferStorage _2dstorage;
+
+	renderSystem.batcher_.addBufferStorage(&_3dlayout, &_3dstorage);
+	renderSystem.batcher_.addBufferStorage(&_2dlayout, &_2dstorage);
+	
+
 	MovementSystem movementSystem{ scene };
 	//add them to the system manager
 	sysManager.addSystem(renderSystem, "render_system");
@@ -191,6 +209,11 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(occluderStorage);
 	scene.addComponentStorage(lightStorage);
 
+	//initialize the buffer storage
+	_3dstorage.init(&_3dlayout);
+	_2dstorage.init(&_2dlayout);
+
+	//setup uniforms
 	struct {
 		glm::mat4 model;
 		glm::mat4 view;
@@ -238,27 +261,27 @@ int main(int argc, char** argv) {
 	gltex_character.create("sandbox/res/textures/character.png");
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
 	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", gltex_character.getId());
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &sh_pass3d, &tex_box);
-	auto& mat_character = resManager.add<oak::graphics::Material>("mat_character", &sh_pass3d, &tex_character);
-	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", 
-	oak::graphics::AttributeLayout{ oak::vector<oak::graphics::AttributeType>{
-		oak::graphics::AttributeType::POSITION,
-		oak::graphics::AttributeType::NORMAL,
-		oak::graphics::AttributeType::UV
-	} });
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &sh_pass3d, &tex_box, &_3dlayout);
+	auto& mat_character = resManager.add<oak::graphics::Material>("mat_character", &sh_pass3d, &tex_character, &_3dlayout);
+	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &sh_pass2d, &tex_character, &_2dlayout);
+
+	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", &_3dlayout);
 	mesh_box.load("sandbox/res/models/box.obj");
-	auto& mesh_character = resManager.add<oak::graphics::Mesh>("mesh_character", 
-	oak::graphics::AttributeLayout{ oak::vector<oak::graphics::AttributeType>{ 
-		oak::graphics::AttributeType::POSITION,
-		oak::graphics::AttributeType::NORMAL,
-		oak::graphics::AttributeType::UV
-	} });
+	auto& mesh_character = resManager.add<oak::graphics::Mesh>("mesh_character", &_3dlayout);
+	auto& mesh_overlay = resManager.add<oak::graphics::Mesh>("mesh_overlay", &_2dlayout);
 
 	float vertices[] = {
 		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		64.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
 		64.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
+	};
+
+	float vertices1[] = {
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 128.0f, 0.0f, 1.0f,
+		128.0f, 128.0f, 1.0f, 1.0f,
+		128.0f, 0.0f, 1.0f, 0.0f
 	};
 
 	uint32_t indices[] = {
@@ -271,7 +294,15 @@ int main(int argc, char** argv) {
 	memcpy(pv, vertices, sizeof(vertices));
 	memcpy(pi, indices, sizeof(indices));
 
-	mesh_character.setData(pv, pi, 6, 6);
+	mesh_character.setData(pv, pi, 4, 6);
+
+	pv = static_cast<float*>(oak::oak_allocator.allocate(sizeof(vertices1)));
+	pi = static_cast<uint32_t*>(oak::oak_allocator.allocate(24));
+
+	memcpy(pv, vertices1, sizeof(vertices1));
+	memcpy(pi, indices, sizeof(indices));
+
+	mesh_overlay.setData(pv, pi, 4, 6);
 
 	for (float i = 0; i < 4; i++) {
 		for (float j = 0; j < 4; j++) {
@@ -281,7 +312,7 @@ int main(int argc, char** argv) {
 		}
 	}
 	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_character, &mat_character);
-	//renderer.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, -2.0f }), &mesh_box, &mat_box);
+	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay);
 
 	//create entities
 	oak::EntityId entity = scene.createEntity();

@@ -74,16 +74,13 @@ namespace oak::graphics {
 			}
 			if (stage->type == PipelineStageType::DRAW) {
 				auto p = static_cast<PipelineStageDraw*>(stage);
-				for (auto& it : p->batches) {
+				for (const auto& it : p->batches) {
 					it.second.storage->bind();
-					it.second.storage->attributeDescription(it.second.layout);
 
 					glUseProgram(it.second.material->shader->id);
 					glBindTexture(GL_TEXTURE_2D, it.second.material->texture->id);
 
 					glDrawElements(GL_TRIANGLES, it.second.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(it.second.offset * 4));
-
-					it.second.storage->unbind();
 				}
 			}
 		}

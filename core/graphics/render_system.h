@@ -14,7 +14,7 @@ namespace oak::graphics {
 
 	class RenderSystem : public System {
 	public:
-		RenderSystem(Scene& scene, Renderer& renderer, BufferStorage *storage);
+		RenderSystem(Scene& scene, Renderer& renderer);
 
 		void init() override;
 		void terminate() override;
@@ -25,7 +25,6 @@ namespace oak::graphics {
 		Scene *scene_;
 		EntityCache cache_;
 		Renderer *renderer_;
-		BufferStorage *storage_;
 		Pipeline pipeline_;
 		PipelineStageClear clearStage_;
 		PipelineStageDraw drawStage_;

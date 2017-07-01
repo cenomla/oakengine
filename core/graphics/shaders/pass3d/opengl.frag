@@ -14,5 +14,5 @@ void main() {
 	float level = max(dot(fragNormal, toLight), 0.0);
 
 	vec4 texel = texture(texSampler, fragUVs);
-	outColor = mix(vec4(texel.rgb * max(level, 0.25), texel.a), vec4((fragNormal + 1) * 0.5, 1.0), 0.2);
+	outColor = vec4(texel.rgb * max(level, 0.2), texel.a);
 }

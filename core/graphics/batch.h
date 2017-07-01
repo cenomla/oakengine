@@ -9,9 +9,8 @@ namespace oak::graphics {
 	struct Material;
 
 	struct Batch {
-		AttributeLayout layout;
-		const Material *material;
 		const BufferStorage *storage;
+		const Material *material;
 		size_t offset, count;
 	};
 

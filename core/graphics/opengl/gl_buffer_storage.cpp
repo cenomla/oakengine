@@ -8,13 +8,19 @@ namespace oak::graphics {
 
 	}
 
-	void GLBufferStorage::init() {
-		//standard opengl vertex array setup with index buffer (excluding the attribute descriptor part)
+	void GLBufferStorage::init(const AttributeLayout *attribs) {
+		//standard opengl vertex array setup with index buffer
 		vao_.create();
 		vao_.bind();
+
 		vbo_.create();
+		vbo_.bind();
+		vao_.attributeDescription(attribs);
+		vbo_.unbind();
+
 		ibo_.create();
 		ibo_.bind();
+		
 		vao_.unbind();
 	}
 
@@ -31,12 +37,6 @@ namespace oak::graphics {
 
 	void GLBufferStorage::unbind() const {
 		vao_.unbind();
-	}
-
-	void GLBufferStorage::attributeDescription(const AttributeLayout& attribs) const {
-		vbo_.bind();
-		vao_.attributeDescription(attribs);
-		vbo_.unbind();
 	}
 
 	void* GLBufferStorage::map(int index, uint32_t flags) {

@@ -5,11 +5,11 @@
 
 namespace oak::graphics {
 
-	Mesh::Mesh(const AttributeLayout& layout) : layout_{ layout }, data_{ nullptr }, idata_{ nullptr } {}
+	Mesh::Mesh(const AttributeLayout *layout) : layout_{ layout }, data_{ nullptr }, idata_{ nullptr } {}
 
 	Mesh::~Mesh() {
 		if (data_) {
-			oak_allocator.deallocate(data_, vertexCount_ * layout_.stride());
+			oak_allocator.deallocate(data_, vertexCount_ * layout_->stride());
 		}
 		if (idata_) {
 			oak_allocator.deallocate(idata_, indexCount_ * 4);
@@ -103,7 +103,8 @@ namespace oak::graphics {
 	}
 
 	static size_t size[] = {
-		12, 
+		12,
+		8,
 		12, 
 		8, 
 		4
@@ -111,7 +112,7 @@ namespace oak::graphics {
 
 	void Mesh::setData(void *vertices, void *indices, size_t vcount, size_t icount) {
 		if (data_) {
-			oak_allocator.deallocate(data_, vertexCount_ * layout_.stride());
+			oak_allocator.deallocate(data_, vertexCount_ * layout_->stride());
 		}
 		if (idata_) {
 			oak_allocator.deallocate(idata_, indexCount_ * 4);
@@ -127,7 +128,7 @@ namespace oak::graphics {
 		oak::vector<std::pair<size_t, int>> attributes;
 
 		size_t offset = 0;
-		for (const auto& attr : layout_.attributes) {
+		for (const auto& attr : layout_->attributes) {
 			switch (attr) {
 				case AttributeType::POSITION:
 					attributes.push_back({ offset, 1 });
@@ -142,7 +143,7 @@ namespace oak::graphics {
 		}
 
 		//transform stuff
-		const size_t stride = layout_.stride();
+		const size_t stride = layout_->stride();
 		for (const auto& attr : attributes) {
 			for (size_t i = 0; i < vertexCount_; i++) {
 				auto b = static_cast<char*>(buffer) + i * stride;

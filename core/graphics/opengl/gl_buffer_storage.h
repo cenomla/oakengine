@@ -13,13 +13,11 @@ namespace oak::graphics {
 
 		GLBufferStorage();
 
-		void init() override;
+		void init(const AttributeLayout *attribs) override;
 		void terminate() override;
 
 		void bind() const override;
 		void unbind() const override;
-
-		void attributeDescription(const AttributeLayout& attribs) const override;
 
 		void* map(int index, uint32_t flags) override;
 		void unmap(int index) override;

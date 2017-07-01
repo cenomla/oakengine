@@ -33,6 +33,7 @@ namespace oak::graphics {
 		GL_FLOAT,
 		GL_FLOAT,
 		GL_FLOAT,
+		GL_FLOAT,
 		GL_UNSIGNED_BYTE
 	};
 
@@ -40,21 +41,23 @@ namespace oak::graphics {
 		GL_FALSE,
 		GL_FALSE,
 		GL_FALSE,
+		GL_FALSE,
 		GL_TRUE
 	};
 
 	static GLuint count[] = {
-		3, 
+		3,
+		2,
 		3, 
 		2, 
 		4
 	};
 
-	void GLVertexArray::attributeDescription(const AttributeLayout& layout) const {
-		const size_t stride = layout.stride();
+	void GLVertexArray::attributeDescription(const AttributeLayout *layout) const {
+		const size_t stride = layout->stride();
 		size_t i = 0;
 		size_t offset = 0;
-		for (const auto& attrib : layout.attributes) {
+		for (const auto& attrib : layout->attributes) {
 			int type = static_cast<int>(attrib);
 			glEnableVertexAttribArray(i);
 			glVertexAttribPointer(i, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));

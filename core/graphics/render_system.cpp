@@ -5,7 +5,7 @@
 
 namespace oak::graphics {
 
-	RenderSystem::RenderSystem(Scene& scene, Renderer& renderer, BufferStorage *storage) : scene_{ &scene }, renderer_{ &renderer }, storage_{ storage } {}
+	RenderSystem::RenderSystem(Scene& scene, Renderer& renderer) : scene_{ &scene }, renderer_{ &renderer } {}
 
 	void RenderSystem::init() {
 		renderer_->init();
@@ -18,20 +18,16 @@ namespace oak::graphics {
 		pipeline_.stages.push_back(&drawStage_);
 		pipeline_.stages.push_back(&swapStage_);
 		renderer_->setPipeline(&pipeline_);
-
-		storage_->init();
 	}
 
 	void RenderSystem::terminate() {
-		storage_->terminate();
 		renderer_->terminate();
 	}
 
 	void RenderSystem::run() {
 		if (!renderer_) { return; }
 
-
-		batcher_.run(storage_);
+		batcher_.run();
 
 		drawStage_.batches.clear();
 
