@@ -17,7 +17,7 @@ namespace oak::graphics {
 
 		void addBufferStorage(const AttributeLayout *layout, BufferStorage *storage);
 
-		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material);
+		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer);
 		void removeMesh(const Mesh *mesh);
 
 		void run();
@@ -28,12 +28,9 @@ namespace oak::graphics {
 		struct BufferLayout {
 			const AttributeLayout *layout;
 			BufferStorage *storage;
-			size_t hash;
 			size_t size[2], capacity[2];
 			size_t offset, count;
 			void *map[2];
-
-			bool operator==(const BufferLayout& other) const { return hash == other.hash; }
 		};
 
 		struct MeshInfo {
@@ -45,7 +42,7 @@ namespace oak::graphics {
 			bool operator<(const MeshInfo& rhs) const { return material < rhs.material; }
 		};
 
-		BufferLayout* findBuffer(size_t hash);
+		BufferLayout* findBuffer(const AttributeLayout *layout);
 
 		oak::vector<MeshInfo> meshes_;
 		oak::vector<Batch> batches_;

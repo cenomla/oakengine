@@ -13,11 +13,11 @@ namespace oak::graphics {
 
 	void StaticBatcher::addBufferStorage(const AttributeLayout *layout, BufferStorage *storage) {
 		//add the buffer to the list and hash its layout for quick comparison
-		buffers_.push_back(BufferLayout{ layout, storage, std::hash<AttributeLayout>{}(*layout), { 0, 0 }, { 0, 0 }, 0, 0, { nullptr, nullptr } });
+		buffers_.push_back(BufferLayout{ layout, storage, { 0, 0 }, { 0, 0 }, 0, 0, { nullptr, nullptr } });
 	}
 
-	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material) {
-		if (std::hash<AttributeLayout>{}(mesh->getLayout()) == std::hash<AttributeLayout>{}(*material->layout)) {
+	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer) {
+		if (mesh->getLayout() == material->layout) {
 			meshes_.push_back({ transform, mesh, material });
 			needsRebatch_ = true;
 		} else {
@@ -39,7 +39,7 @@ namespace oak::graphics {
 
 		//create batches 
 		const Material *mat = meshes_[0].material;
-		BufferLayout *bl = findBuffer(std::hash<AttributeLayout>{}(*mat->layout));
+		BufferLayout *bl = findBuffer(mat->layout);
 		Batch currentBatch{ bl->storage, mat, bl->offset, 0 }; //first batch
 		//iterate through the sorted object
 		for (auto& it : meshes_) {
@@ -48,12 +48,12 @@ namespace oak::graphics {
 				bl->offset += currentBatch.count;
 				batches_.push_back(currentBatch);
 				mat = it.material;
-				bl = findBuffer(std::hash<AttributeLayout>{}(*mat->layout));
+				bl = findBuffer(mat->layout);
 				currentBatch = Batch{ bl->storage, mat, bl->offset, 0 };
 			}
 			it.bl = bl;
 			currentBatch.count += it.mesh->getIndexCount();
-			bl->size[0] += it.mesh->getVertexCount() * it.mesh->getLayout().stride(); //add to size of buffer total size of model
+			bl->size[0] += it.mesh->getVertexCount() * it.mesh->getLayout()->stride(); //add to size of buffer total size of model
 			bl->size[1] += it.mesh->getIndexCount() * 4; //add to size of index buffer total size of indices array
 		}
 		batches_.push_back(currentBatch);
@@ -83,7 +83,7 @@ namespace oak::graphics {
 			bl = it.bl;
 			it.mesh->draw(bl->map[0], bl->map[1], it.transform, bl->count);
 			bl->count += it.mesh->getVertexCount();
-			bl->map[0] = static_cast<char*>(bl->map[0]) + it.mesh->getVertexCount() * it.mesh->getLayout().stride();
+			bl->map[0] = static_cast<char*>(bl->map[0]) + it.mesh->getVertexCount() * it.mesh->getLayout()->stride();
 			bl->map[1] = static_cast<int*>(bl->map[1]) + it.mesh->getIndexCount();
 		}
 		batches_.push_back(currentBatch);
@@ -104,9 +104,9 @@ namespace oak::graphics {
 		needsRebatch_ = false;
 	}
 
-	StaticBatcher::BufferLayout* StaticBatcher::findBuffer(size_t hash) {
+	StaticBatcher::BufferLayout* StaticBatcher::findBuffer(const AttributeLayout *layout) {
 		for (auto& bl : buffers_) {
-			if (bl.hash == hash) {
+			if (bl.layout == layout) {
 				return &bl;
 			}
 		}

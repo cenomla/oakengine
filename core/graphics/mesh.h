@@ -23,7 +23,7 @@ namespace oak::graphics {
 
 		inline size_t getVertexCount() const { return vertexCount_; }
 		inline size_t getIndexCount() const { return indexCount_; }
-		inline const AttributeLayout& getLayout() const { return *layout_; }
+		inline const AttributeLayout* getLayout() const { return layout_; }
 
 	private:
 		const AttributeLayout *layout_;

@@ -34,18 +34,3 @@ namespace oak::graphics {
 	};
 
 }
-
-namespace std {
-
-	template<>
-	struct hash<oak::graphics::AttributeLayout> {
-		size_t operator()(const oak::graphics::AttributeLayout& layout) const { //sdbm hash function
-			size_t h = 0;
-			for (const auto& type : layout.attributes) {
-				h = static_cast<int>(type) + (h << 6) + (h << 16) - h;
-			}
-			return h;
-		}
-	};
-
-}
