@@ -307,12 +307,12 @@ int main(int argc, char** argv) {
 	for (float i = 0; i < 4; i++) {
 		for (float j = 0; j < 4; j++) {
 			for (float k = 0; k < 4; k++) {
-				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 1.99f, j * 1.99f, k * 1.99f }), &mesh_box, &mat_box);
+				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 1.99f, j * 1.99f, k * 1.99f }), &mesh_box, &mat_box, 0);
 			}
 		}
 	}
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_character, &mat_character);
-	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_character, &mat_character, 0);
+	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 0);
 
 	//create entities
 	oak::EntityId entity = scene.createEntity();

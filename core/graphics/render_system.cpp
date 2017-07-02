@@ -13,6 +13,7 @@ namespace oak::graphics {
 		cache_.requireComponent<MeshComponent>();
 
 		clearStage_.color = glm::vec4{ 0.3f, 0.5f, 0.9f, 1.0f };
+		drawStage_.layer = 0; //render the first layer
 		
 		pipeline_.stages.push_back(&clearStage_);
 		pipeline_.stages.push_back(&drawStage_);
@@ -28,13 +29,7 @@ namespace oak::graphics {
 		if (!renderer_) { return; }
 
 		batcher_.run();
-
-		drawStage_.batches.clear();
-
-		//copy batches from batcher to draw stage
-		for (const auto& batch : batcher_.getBatches()) {
-			drawStage_.batches.push_back({ 0, batch });
-		}
+		drawStage_.batches = &batcher_.getBatches();
 
 		renderer_->render();
 

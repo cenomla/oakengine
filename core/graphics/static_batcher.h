@@ -34,12 +34,18 @@ namespace oak::graphics {
 		};
 
 		struct MeshInfo {
-			glm::mat4 transform;
-			const Mesh *mesh;
+			uint64_t layer;
 			const Material *material;
+			const Mesh *mesh;
+			glm::mat4 transform;
 			BufferLayout *bl;
 
-			bool operator<(const MeshInfo& rhs) const { return material < rhs.material; }
+
+			inline bool operator<(const MeshInfo& rhs) const { 
+				return layer == rhs.layer ? 
+					material < rhs.material : 
+					layer < rhs.layer; 
+			}
 		};
 
 		BufferLayout* findBuffer(const AttributeLayout *layout);

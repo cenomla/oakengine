@@ -18,7 +18,7 @@ namespace oak::graphics {
 
 	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer) {
 		if (mesh->getLayout() == material->layout) {
-			meshes_.push_back({ transform, mesh, material });
+			meshes_.push_back({ layer, material, mesh, transform, nullptr });
 			needsRebatch_ = true;
 		} else {
 			log_print_warn("model::mesh attribute mismatch");
@@ -39,17 +39,22 @@ namespace oak::graphics {
 
 		//create batches 
 		const Material *mat = meshes_[0].material;
+		uint32_t layer = meshes_[0].layer;
 		BufferLayout *bl = findBuffer(mat->layout);
-		Batch currentBatch{ bl->storage, mat, bl->offset, 0 }; //first batch
+		Batch currentBatch{ bl->storage, mat, bl->offset, 0, layer }; //first batch
 		//iterate through the sorted object
 		for (auto& it : meshes_) {
 			//if the material is different use a different batch
-			if (mat != it.material) {
-				bl->offset += currentBatch.count;
-				batches_.push_back(currentBatch);
+			if (mat != it.material || layer != it.layer) {
+				//update mat and layer
 				mat = it.material;
+				layer = it.layer;
+				//offset the buffer layout
+				bl->offset += currentBatch.count;
 				bl = findBuffer(mat->layout);
-				currentBatch = Batch{ bl->storage, mat, bl->offset, 0 };
+				//make a new batch
+				batches_.push_back(currentBatch);
+				currentBatch = Batch{ bl->storage, mat, bl->offset, 0, layer };
 			}
 			it.bl = bl;
 			currentBatch.count += it.mesh->getIndexCount();

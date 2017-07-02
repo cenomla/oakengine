@@ -37,7 +37,8 @@ namespace oak::graphics {
 
 	struct PipelineStageDraw : public PipelineStage {
 		PipelineStageDraw() : PipelineStage{ PipelineStageType::DRAW } {}
-		oak::vector<std::pair<uint32_t, Batch>> batches; //list of batches with the layer they are apart of
+		const oak::vector<Batch> *batches; //list of batches
+		uint32_t layer; //layer to draw
 	};
 
 	struct PipelineStageBindFramebuffer : public PipelineStage {

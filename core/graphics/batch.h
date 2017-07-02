@@ -12,6 +12,7 @@ namespace oak::graphics {
 		const BufferStorage *storage;
 		const Material *material;
 		size_t offset, count;
+		uint32_t layer;
 	};
 
 }
