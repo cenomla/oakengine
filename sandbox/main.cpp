@@ -235,6 +235,19 @@ int main(int argc, char** argv) {
 	auto& glsh_pass3d = resManager.add<oak::graphics::GLShader>("glsh_pass3d");
 	glsh_pass3d.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
 	glsh_pass3d.bindBlockIndex("MatrixBlock", 0);
+
+	auto& glsh_blend = resManager.add<oak::graphics::GLShader>("glsh_blend");
+	glsh_blend.create("core/graphics/shaders/blend/opengl.vert", "core/graphics/shaders/blend/opengl.frag");
+	glsh_blend.bindBlockIndex("MatrixBlock", 0);
+	
+	//set sampler uniforms
+	glsh_blend.bind();
+	glsh_blend.setUniform("texSampler[0]", 0);
+	glsh_blend.setUniform("texSampler[1]", 1);
+	glsh_blend.setUniform("texSampler[2]", 2);
+	glsh_blend.setUniform("texSampler[3]", 3);
+	glsh_blend.unbind();
+
 	auto& glsh_pass2d = resManager.add<oak::graphics::GLShader>("glsh_pass2d");
 	glsh_pass2d.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
 	glsh_pass2d.bindBlockIndex("MatrixBlock", 1);
@@ -253,21 +266,46 @@ int main(int argc, char** argv) {
 	oubo.bindBufferBase(1);
 	oubo.unbind();
 	
+	//shader setup
 	auto& sh_pass3d = resManager.add<oak::graphics::Shader>("sh_pass3d", glsh_pass3d.getId());
 	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", glsh_pass2d.getId());
+	auto& sh_blend = resManager.add<oak::graphics::Shader>("sh_blend", glsh_blend.getId());
+	
+	//opengl texture loading
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D });
-	gltex_box.create("sandbox/res/textures/box.png");
 	auto& gltex_character = resManager.add<oak::graphics::GLTexture>("gltex_character", GLuint{ GL_TEXTURE_2D });
+	auto& gltex_grassFade = resManager.add<oak::graphics::GLTexture>("gltex_grassFade", GLuint{ GL_TEXTURE_2D });
+	auto& gltex_rock = resManager.add<oak::graphics::GLTexture>("gltex_rock", GLuint{ GL_TEXTURE_2D });
+	auto& gltex_grass = resManager.add<oak::graphics::GLTexture>("gltex_grass", GLuint{ GL_TEXTURE_2D });
+	auto& gltex_blend = resManager.add<oak::graphics::GLTexture>("gltex_blend", GLuint{ GL_TEXTURE_2D }, GLuint{ GL_LINEAR });
+	gltex_box.create("sandbox/res/textures/box.png");
 	gltex_character.create("sandbox/res/textures/character.png");
+	gltex_grassFade.create("sandbox/res/textures/faded_grass.png");
+	gltex_rock.create("sandbox/res/textures/blue_rock.png");
+	gltex_grass.create("sandbox/res/textures/grass.png");
+	gltex_blend.create("sandbox/res/textures/blend.png");
+
+
+	//textures
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
 	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", gltex_character.getId());
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &sh_pass3d, &tex_box, &_3dlayout);
-	auto& mat_character = resManager.add<oak::graphics::Material>("mat_character", &sh_pass3d, &tex_character, &_3dlayout);
-	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &sh_pass2d, &tex_character, &_2dlayout);
+	auto& tex_grassFade = resManager.add<oak::graphics::Texture>("tex_grassFade", gltex_grassFade.getId());
+	auto& tex_rock = resManager.add<oak::graphics::Texture>("tex_rock", gltex_rock.getId());
+	auto& tex_grass = resManager.add<oak::graphics::Texture>("tex_grass", gltex_grass.getId());
 
+	auto& tex_blend = resManager.add<oak::graphics::Texture>("tex_blend", gltex_blend.getId());
+
+	//materials
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_pass3d, &tex_box);
+	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
+	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_grass", &_3dlayout, &sh_blend, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
+
+
+	//meshes
 	auto& mesh_box = resManager.add<oak::graphics::Mesh>("mesh_box", &_3dlayout);
 	mesh_box.load("sandbox/res/models/box.obj");
-	auto& mesh_character = resManager.add<oak::graphics::Mesh>("mesh_character", &_3dlayout);
+
+	auto& mesh_floor = resManager.add<oak::graphics::Mesh>("mesh_floor", &_3dlayout);
 	auto& mesh_overlay = resManager.add<oak::graphics::Mesh>("mesh_overlay", &_2dlayout);
 
 	float vertices[] = {
@@ -294,7 +332,7 @@ int main(int argc, char** argv) {
 	memcpy(pv, vertices, sizeof(vertices));
 	memcpy(pi, indices, sizeof(indices));
 
-	mesh_character.setData(pv, pi, 4, 6);
+	mesh_floor.setData(pv, pi, 4, 6);
 
 	pv = static_cast<float*>(oak::oak_allocator.allocate(sizeof(vertices1)));
 	pi = static_cast<uint32_t*>(oak::oak_allocator.allocate(24));
@@ -307,11 +345,11 @@ int main(int argc, char** argv) {
 	for (float i = 0; i < 4; i++) {
 		for (float j = 0; j < 4; j++) {
 			for (float k = 0; k < 4; k++) {
-				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ i * 1.99f, j * 1.99f, k * 1.99f }), &mesh_box, &mat_box, 0);
+				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f + i * 1.99f, 1.0f + j * 1.99f, 32.0f + k * 1.99f }), &mesh_box, &mat_box, 0);
 			}
 		}
 	}
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_character, &mat_character, 0);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
 	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 0);
 
 	//create entities
@@ -396,7 +434,7 @@ int main(int argc, char** argv) {
 		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 		ubo.bind();
-		ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
+		ubo.data(sizeof(block), &block, GL_STREAM_DRAW);
 		ubo.unbind();
 
 		movementSystem.run();

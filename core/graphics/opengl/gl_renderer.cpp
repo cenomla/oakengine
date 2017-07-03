@@ -34,7 +34,7 @@ namespace oak::graphics {
 		}
 
 		glfwMakeContextCurrent(window_);
-		glfwSwapInterval(1);
+		glfwSwapInterval(0);
 
 		if (!gladLoadGL()) {
 			log_print_err("cannot load gl");
@@ -81,7 +81,13 @@ namespace oak::graphics {
 					it.storage->bind();
 
 					glUseProgram(it.material->shader->id);
-					glBindTexture(GL_TEXTURE_2D, it.material->texture->id);
+					//bind textures
+					for (int i = 0; i < 16; i++) {
+						if (it.material->textures[i] != nullptr) {
+							glActiveTexture(GL_TEXTURE0 + i);
+							glBindTexture(GL_TEXTURE_2D, it.material->textures[i]->id);
+						}
+					}
 
 					glDrawElements(GL_TRIANGLES, it.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(it.offset * 4));
 				}

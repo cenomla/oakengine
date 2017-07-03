@@ -7,9 +7,9 @@
 namespace oak::graphics {
 
 	struct Material {
-		const Shader *shader;
-		const Texture *texture;
 		const AttributeLayout *layout;
+		const Shader *shader;
+		const Texture* textures[16] = { nullptr };
 	};
 
 }
