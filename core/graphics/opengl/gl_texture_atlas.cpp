@@ -7,7 +7,7 @@
 
 namespace oak::graphics {
 
-	GLTextureAtlas::GLTextureAtlas(GLenum type, GLenum filter) : GLTexture{ type, filter } {
+	GLTextureAtlas::GLTextureAtlas(GLenum type, GLenum filter) : GLTexture{ type, TextureFormat::BYTE_RGBA, filter } {
 	}
 
 	GLTextureAtlas::~GLTextureAtlas() {

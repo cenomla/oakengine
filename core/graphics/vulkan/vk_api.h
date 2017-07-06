@@ -2,19 +2,19 @@
 
 #include <vulkan/vulkan.h>
 
-#include "graphics/renderer.h"
+#include "graphics/api.h"
+#include "container.h"
 
 struct GLFWwindow;
 
 namespace oak::graphics {
 
-	class VkRenderer : public Renderer {
+	class VKApi : public Api {
 	public:
-
 		void init() override;
 		void terminate() override;
-		void setPipeline(Pipeline *pipeline) override;
-		void render() override;
+
+		void swap() override;
 	private:
 		GLFWwindow *window_;
 		VkInstance instance_;

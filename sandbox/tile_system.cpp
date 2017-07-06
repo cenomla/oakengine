@@ -1,7 +1,6 @@
 #include "tile_system.h"
 
 #include <system_manager.h>
-#include <graphics/opengl/gl_renderer.h>
 
 constexpr size_t INVALID_CHUNK = 0xFFFFFFFFFFFFFFFF;
 

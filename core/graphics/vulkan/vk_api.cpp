@@ -1,4 +1,4 @@
-#include "vk_renderer.h"
+#include "vk_api.h"
 
 #include <GLFW/glfw3.h>
 #include <set>
@@ -9,7 +9,7 @@
 
 namespace oak::graphics {
 
-	void VkRenderer::init() {
+	void VKApi::init() {
 		if (!glfwVulkanSupported()) {
 			log_print_err("vulkan is not supported");
 			abort();
@@ -40,15 +40,15 @@ namespace oak::graphics {
 
 	}
 
-	void VkRenderer::terminate() {
+	void VKApi::terminate() {
 		vkDestroyInstance(instance_, nullptr);
 	}
 
-	void VkRenderer::render() {
-
+	void VKApi::swap() {
+		
 	}
 
-	void VkRenderer::initInstance() {
+	void VKApi::initInstance() {
 		VkApplicationInfo appInfo;
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pNext = nullptr;
@@ -126,7 +126,7 @@ namespace oak::graphics {
 	}
 
 
-	void VkRenderer::initDebugReport() {
+	void VKApi::initDebugReport() {
 		VkDebugReportCallbackCreateInfoEXT debugInfo{};
 		debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 		debugInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
@@ -136,7 +136,7 @@ namespace oak::graphics {
 		func(instance_, &debugInfo, nullptr, &debugReport_);
 	}
 
-	void VkRenderer::getPhysicalDevice() {
+	void VKApi::getPhysicalDevice() {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
 		oak::vector<VkPhysicalDevice> physicalDevices{ deviceCount };
@@ -156,7 +156,7 @@ namespace oak::graphics {
 		physicalDevice_ = physicalDevices[0];
 	}
 
-	void VkRenderer::getFamilyIndices() {
+	void VKApi::getFamilyIndices() {
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice_, &queueFamilyCount, nullptr);
 		oak::vector<VkQueueFamilyProperties> queueFamilies{ queueFamilyCount };
@@ -183,7 +183,7 @@ namespace oak::graphics {
 		}
 	}
 
-	void VkRenderer::getDeviceSwapchainSupport() {
+	void VKApi::getDeviceSwapchainSupport() {
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice_, surface_, &surfaceCapabilities_);
 
 		uint32_t formatCount;
@@ -201,7 +201,7 @@ namespace oak::graphics {
 		}
 	}
 
-	void VkRenderer::initDevice() {
+	void VKApi::initDevice() {
 		getPhysicalDevice();
 		getFamilyIndices();
 		getDeviceSwapchainSupport();

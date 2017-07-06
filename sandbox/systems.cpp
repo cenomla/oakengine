@@ -1,50 +1,5 @@
-#include "systems.h"
-
 #include <glm/glm.hpp>
-#include <system_manager.h>
-#include <graphics/opengl/gl_renderer.h>
-#include <scene_utils.h>
-#include <components.h>
 
-#include "tile_system.h"
-
-SpriteSystem::SpriteSystem(oak::Scene& scene) : scene_{ &scene } {}
-
-void SpriteSystem::init() {
-	cache_.requireComponent<oak::PositionComponent>();
-	cache_.requireComponent<oak::SpriteComponent>();
-}
-
-void SpriteSystem::run() {
-	cache_.update(*scene_);
-	auto& ts = oak::getComponentStorage<oak::PositionComponent>(*scene_);
-	auto& ss = oak::getComponentStorage<oak::SpriteComponent>(*scene_);
-	//auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
-	for (const auto& entity : cache_.entities()) {
-		auto& tc = oak::getComponent<const oak::PositionComponent>(ts, entity);
-		auto& sc = oak::getComponent<const oak::SpriteComponent>(ss, entity);
-		//renderer.addObject(glm::vec2{ tc.position }, tc.position.z, sc.layer, tc.rotationAngle, tc.scale, &sc);
-	}
-}
-
-TextSystem::TextSystem(oak::Scene& scene) : scene_{ &scene } {}
-
-void TextSystem::init() {
-	cache_.requireComponent<oak::PositionComponent>();
-	cache_.requireComponent<oak::TextComponent>();
-}
-
-void TextSystem::run() {
-	cache_.update(*scene_);
-	oak::ComponentStorage& ts = oak::getComponentStorage<oak::PositionComponent>(*scene_);
-	oak::ComponentStorage& xs = oak::getComponentStorage<oak::TextComponent>(*scene_);
-	//auto &renderer = oak::SystemManager::inst().getSystem<oak::graphics::GLRenderer>();
-	for (const auto& entity : cache_.entities()) {
-		auto& tc = oak::getComponent<const oak::PositionComponent>(ts, entity);
-		auto& tx = oak::getComponent<const oak::TextComponent>(xs, entity);
-		//renderer.addObject(glm::vec2{ tc.position }, tc.position.z + 0.1f, tx.layer, tc.rotationAngle, tc.scale, &tx);
-	}
-}
 
 struct CollisionInfo {
 	glm::vec2 position;

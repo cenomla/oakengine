@@ -2,13 +2,14 @@
 
 #include <glad/glad.h>
 
+#include "graphics/texture.h"
 #include "container.h"
 
 namespace oak::graphics {
 
 	class GLTexture {
 	public:
-		GLTexture(GLenum type, GLenum filter = GL_NEAREST);
+		GLTexture(GLenum type, TextureFormat format, GLenum filter = GL_NEAREST);
 		~GLTexture();
 
 		void bind(GLenum slot) const;
@@ -22,6 +23,7 @@ namespace oak::graphics {
 	protected:
 		GLuint tex_;
 		GLenum type_;
+		TextureFormat format_;
 		GLenum filter_;
 	};
 

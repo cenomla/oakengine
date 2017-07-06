@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <graphics/opengl/gl_texture_atlas.h>
-#include <graphics/opengl/gl_renderer.h>
+#include <graphics/opengl/gl_api.h>
 #include <graphics/opengl/gl_buffer_storage.h>
 #include <graphics/opengl/gl_shader.h>
 
@@ -30,8 +30,7 @@
 #include <scene_utils.h>
 
 #include "component_ext.h"
-#include "systems.h"
-#include "tile_system.h"
+#include "test_renderer.h"
 
 #include <glad/glad.h>
 
@@ -151,11 +150,16 @@ int main(int argc, char** argv) {
 	oak::Scene scene;
 
 	//create all the systems
-	oak::graphics::GLRenderer renderer;
+	oak::graphics::GLApi gl_api;
 
 	//create the rendering system
-	oak::graphics::RenderSystem renderSystem{ scene, renderer };
+	oak::graphics::RenderSystem renderSystem{ scene, gl_api };
 
+	TestRenderer testRenderer;
+	renderSystem.pushLayerFront(testRenderer);
+
+
+	//define vertex attribute layouts that will be used in the scene
 	oak::graphics::AttributeLayout _3dlayout{ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION,
 		oak::graphics::AttributeType::NORMAL,
@@ -272,12 +276,12 @@ int main(int argc, char** argv) {
 	auto& sh_blend = resManager.add<oak::graphics::Shader>("sh_blend", glsh_blend.getId());
 	
 	//opengl texture loading
-	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D });
-	auto& gltex_character = resManager.add<oak::graphics::GLTexture>("gltex_character", GLuint{ GL_TEXTURE_2D });
-	auto& gltex_grassFade = resManager.add<oak::graphics::GLTexture>("gltex_grassFade", GLuint{ GL_TEXTURE_2D });
-	auto& gltex_rock = resManager.add<oak::graphics::GLTexture>("gltex_rock", GLuint{ GL_TEXTURE_2D });
-	auto& gltex_grass = resManager.add<oak::graphics::GLTexture>("gltex_grass", GLuint{ GL_TEXTURE_2D });
-	auto& gltex_blend = resManager.add<oak::graphics::GLTexture>("gltex_blend", GLuint{ GL_TEXTURE_2D }, GLuint{ GL_LINEAR });
+	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_character = resManager.add<oak::graphics::GLTexture>("gltex_character", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_grassFade = resManager.add<oak::graphics::GLTexture>("gltex_grassFade", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_rock = resManager.add<oak::graphics::GLTexture>("gltex_rock", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_grass = resManager.add<oak::graphics::GLTexture>("gltex_grass", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_blend = resManager.add<oak::graphics::GLTexture>("gltex_blend", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA, GLuint{ GL_LINEAR });
 	gltex_box.create("sandbox/res/textures/box.png");
 	gltex_character.create("sandbox/res/textures/character.png");
 	gltex_grassFade.create("sandbox/res/textures/faded_grass.png");
@@ -285,6 +289,10 @@ int main(int argc, char** argv) {
 	gltex_grass.create("sandbox/res/textures/grass.png");
 	gltex_blend.create("sandbox/res/textures/blend.png");
 
+	//setup framebuffer for deffered rendering
+	auto& gltex_normal = resManager.add<oak::graphics::GLTexture>("gltex_normal", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
+	auto& gltex_depth = resManager.add<oak::graphics::GLTexture>("gltex_depth", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
+	auto& gltex_diffuse = resManager.add<oak::graphics::GLTexture>("gltex_diffuse", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
 
 	//textures
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
@@ -350,7 +358,7 @@ int main(int argc, char** argv) {
 		}
 	}
 	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
-	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 0);
+	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
 
 	//create entities
 	oak::EntityId entity = scene.createEntity();

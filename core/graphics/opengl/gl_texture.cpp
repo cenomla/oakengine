@@ -9,7 +9,7 @@
 
 namespace oak::graphics {
 
-	GLTexture::GLTexture(GLenum type, GLenum filter) : tex_{ 0 }, type_{ type }, filter_{ filter } {
+	GLTexture::GLTexture(GLenum type, TextureFormat format, GLenum filter) : tex_{ 0 }, type_{ type }, format_{ format }, filter_{ filter } {
 
 	}
 
@@ -41,12 +41,19 @@ namespace oak::graphics {
 		stbi_image_free(data);
 	}
 
+	static GLenum textureFormats[][3] = {
+		{ GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE }, 
+		{ GL_RGB32F, GL_RGB, GL_FLOAT }
+	};
+
 	void GLTexture::create(int width, int height, void *data) {
 		if (tex_ != 0) { return; }
 
+		const auto& format = textureFormats[static_cast<int>(format_)];
+
 		glGenTextures(1, &tex_);
 		glBindTexture(type_, tex_);
-		glTexImage2D(type_, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(type_, 0, format[0], width, height, 0, format[1], format[2], data);
 		
 		glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, filter_);
 		glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, filter_);
