@@ -8,7 +8,7 @@ namespace oak::graphics {
 	class Renderer {
 	public:
 		virtual void render(Api *api) = 0;
-		virtual void setPipeline(Pipeline *pipeline) = 0;
+		virtual void setPipeline(const Pipeline *pipeline) = 0;
 	};
 
 }

@@ -8,7 +8,10 @@ namespace oak::graphics {
 		BYTE_RGB,
 		FLOAT_RGBA,
 		FLOAT_RGB,
-		DEPTH_32F
+		DEPTH_32F,
+		DEPTH_32,
+		DEPTH_24,
+		DEPTH_16
 	};
 
 	enum class FramebufferAttachment {

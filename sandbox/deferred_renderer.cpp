@@ -1,4 +1,4 @@
-#include "test_renderer.h"
+#include "deferred_renderer.h"
 
 #include <glad/glad.h>
 #include <graphics/material.h>
@@ -8,7 +8,7 @@
 
 #include <resource_manager.h>
 
-void TestRenderer::init() {
+void DeferredRenderer::init() {
 	light_.create("core/graphics/shaders/deferred/light/vert.glsl", "core/graphics/shaders/deferred/light/frag.glsl");
 
 	light_.bind();
@@ -39,27 +39,29 @@ void TestRenderer::init() {
 	buffer_.data(1, sizeof(edata), edata, GL_STATIC_DRAW);
 
 	//setup framebuffer for deferred rendering
-	auto& albeido = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_albeido", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& albedo = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_albedo", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	auto& normal = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_normal", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
-	auto& depth = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_depth", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::DEPTH_32F);
-	albeido.create(1280, 720, nullptr);
+	auto& depth = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_depth", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::DEPTH_24);
+	albedo.create(1280, 720, nullptr);
 	normal.create(1280, 720, nullptr);
 	depth.create(1280, 720, nullptr);
 
 
 	//gbuffer
-	gbuffer_.addTexture(albeido, oak::graphics::FramebufferAttachment::COLOR0, 0);
+	gbuffer_.addTexture(albedo, oak::graphics::FramebufferAttachment::COLOR0, 0);
 	gbuffer_.addTexture(normal, oak::graphics::FramebufferAttachment::COLOR1, 0);
 	gbuffer_.addTexture(depth, oak::graphics::FramebufferAttachment::DEPTH, 0);
 
 	gbuffer_.create(0, 0);
 }
 
-void TestRenderer::terminate() {
-
+void DeferredRenderer::terminate() {
+	light_.destroy();
+	buffer_.destroy();
+	gbuffer_.destroy();
 }
 
-void TestRenderer::render(oak::graphics::Api *api) {
+void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -67,10 +69,11 @@ void TestRenderer::render(oak::graphics::Api *api) {
 	glBindFramebuffer(GL_FRAMEBUFFER, gbuffer_.getId());
 
 	glViewport(pipeline_->x, pipeline_->y, pipeline_->width, pipeline_->height);
-	glClearColor(0.3f, 0.5f, 0.9f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (const auto& batch : *pipeline_->batches) {
+		if (batch.layer != 0) { continue; }
 		//bind material 
 		glUseProgram(batch.material->shader->id);
 		for (int i = 0; i < 16; i++) {
@@ -96,7 +99,7 @@ void TestRenderer::render(oak::graphics::Api *api) {
 
 	glUseProgram(light_.getId());
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, oak::ResourceManager::inst().require<oak::graphics::GLTexture>("gltex_albeido").getId());
+	glBindTexture(GL_TEXTURE_2D, oak::ResourceManager::inst().require<oak::graphics::GLTexture>("gltex_albedo").getId());
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, oak::ResourceManager::inst().require<oak::graphics::GLTexture>("gltex_normal").getId());
 	glActiveTexture(GL_TEXTURE2);
@@ -105,7 +108,5 @@ void TestRenderer::render(oak::graphics::Api *api) {
 	buffer_.bind();
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-	api->swap();
 
 }

@@ -53,6 +53,9 @@ namespace oak::graphics {
 			layer->render(api_);
 		}
 
+		//swap buffers
+		api_->swap();
+
 	}
 
 }

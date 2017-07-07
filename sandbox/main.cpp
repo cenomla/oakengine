@@ -31,7 +31,8 @@
 #include <scene_utils.h>
 
 #include "component_ext.h"
-#include "test_renderer.h"
+#include "deferred_renderer.h"
+#include "gui_renderer.h"
 
 #include <glad/glad.h>
 
@@ -157,9 +158,10 @@ int main(int argc, char** argv) {
 	oak::graphics::RenderSystem renderSystem{ scene, gl_api };
 
 	//basic test renderer
-	TestRenderer testRenderer;
-	renderSystem.pushLayerFront(testRenderer);
-
+	DeferredRenderer deferredRenderer;
+	GuiRenderer guiRenderer;
+	renderSystem.pushLayerBack(deferredRenderer);
+	renderSystem.pushLayerBack(guiRenderer);
 
 	//define vertex attribute layouts that will be used in the scene
 	oak::graphics::AttributeLayout _3dlayout{ oak::vector<oak::graphics::AttributeType>{ 
@@ -216,7 +218,8 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(lightStorage);
 
 	//init the test renderer
-	testRenderer.init();
+	deferredRenderer.init();
+	guiRenderer.init();
 
 	//initialize the buffer storage
 	_3dstorage.create(&_3dlayout);
@@ -227,7 +230,7 @@ int main(int argc, char** argv) {
 		glm::mat4 proj;
 		glm::mat4 view;
 	} block;
-	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.5f, 200.0f);
+	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.5f, 500.0f);
 	block.view = glm::lookAt(glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 4.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 	struct {
@@ -243,25 +246,21 @@ int main(int argc, char** argv) {
 	oblock.view = glm::mat4{ 1.0f };
 	oblock.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
-	auto& glsh_pass3d = resManager.add<oak::graphics::GLShader>("glsh_pass3d");
-	glsh_pass3d.create("core/graphics/shaders/forward/pass3d/opengl.vert", "core/graphics/shaders/forward/pass3d/opengl.frag");
-	glsh_pass3d.bindBlockIndex("MatrixBlock", 0);
+	auto& glsh_geometry = resManager.add<oak::graphics::GLShader>("glsh_geometry");
+	glsh_geometry.create("core/graphics/shaders/deferred/geometry/vert.glsl", "core/graphics/shaders/deferred/geometry/frag.glsl");
+	glsh_geometry.bindBlockIndex("MatrixBlock", 0);
 
 	auto& glsh_blend = resManager.add<oak::graphics::GLShader>("glsh_blend");
-	glsh_blend.create("core/graphics/shaders/forward/blend/opengl.vert", "core/graphics/shaders/forward/blend/opengl.frag");
+	glsh_blend.create("core/graphics/shaders/deferred/blend/vert.glsl", "core/graphics/shaders/deferred/blend/frag.glsl");
 	glsh_blend.bindBlockIndex("MatrixBlock", 0);
 	
 	//set sampler uniforms
 	glsh_blend.bind();
-	glsh_blend.setUniform("texSampler[0]", 0);
-	glsh_blend.setUniform("texSampler[1]", 1);
-	glsh_blend.setUniform("texSampler[2]", 2);
-	glsh_blend.setUniform("texSampler[3]", 3);
+	glsh_blend.setUniform("textures[0]", 0);
+	glsh_blend.setUniform("textures[1]", 1);
+	glsh_blend.setUniform("textures[2]", 2);
+	glsh_blend.setUniform("textures[3]", 3);
 	glsh_blend.unbind();
-
-	auto& glsh_geometry = resManager.add<oak::graphics::GLShader>("glsh_geometry");
-	glsh_geometry.create("core/graphics/shaders/deferred/geometry/vert.glsl", "core/graphics/shaders/deferred/geometry/frag.glsl");
-	glsh_geometry.bindBlockIndex("MatrixBlock", 0);
 
 	auto& glsh_pass2d = resManager.add<oak::graphics::GLShader>("glsh_pass2d");
 	glsh_pass2d.create("core/graphics/shaders/forward/pass2d/opengl.vert", "core/graphics/shaders/forward/pass2d/opengl.frag");
@@ -289,10 +288,9 @@ int main(int argc, char** argv) {
 	oubo.unbind();
 	
 	//shader setup
-	auto& sh_pass3d = resManager.add<oak::graphics::Shader>("sh_pass3d", glsh_pass3d.getId());
-	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", glsh_pass2d.getId());
-	auto& sh_blend = resManager.add<oak::graphics::Shader>("sh_blend", glsh_blend.getId());
 	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", glsh_geometry.getId());
+	auto& sh_blend = resManager.add<oak::graphics::Shader>("sh_blend", glsh_blend.getId());
+	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", glsh_pass2d.getId());
 	
 	//opengl texture loading
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
@@ -319,8 +317,8 @@ int main(int argc, char** argv) {
 
 	//materials
 	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_box);
+	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_terrain", &_3dlayout, &sh_blend, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
 	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
-	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_grass", &_3dlayout, &sh_pass3d, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
 
 
 	//meshes
@@ -371,8 +369,8 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	//renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
-	//renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
+	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
 
 	//create entities
 	oak::EntityId entity = scene.createEntity();

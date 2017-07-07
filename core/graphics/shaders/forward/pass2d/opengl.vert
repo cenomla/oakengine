@@ -3,7 +3,7 @@
 layout (location = 0) in vec2 vPosition;
 layout (location = 1) in vec2 vTexCoords;
 
-layout (shared) uniform MatrixBlock {
+layout (std140) uniform MatrixBlock {
 	mat4 proj;
 	mat4 view;
 } matrix;
