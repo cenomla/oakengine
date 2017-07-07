@@ -8,7 +8,7 @@ namespace oak::graphics {
 
 	}
 
-	void GLBufferStorage::init(const AttributeLayout *attribs) {
+	void GLBufferStorage::create(const AttributeLayout *attribs) {
 		//standard opengl vertex array setup with index buffer
 		vao_.create();
 		vao_.bind();
@@ -24,7 +24,7 @@ namespace oak::graphics {
 		vao_.unbind();
 	}
 
-	void GLBufferStorage::terminate() {
+	void GLBufferStorage::destroy() {
 		//destroy opengl objects
 		vbo_.destroy();
 		ibo_.destroy();

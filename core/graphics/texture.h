@@ -4,11 +4,6 @@
 
 namespace oak::graphics {
 
-	enum class TextureFormat {
-		BYTE_RGBA,
-		FLOAT_RGB
-	};
-
 	struct TextureRegion {
 		float dx, dy, dw, dh;
 	};

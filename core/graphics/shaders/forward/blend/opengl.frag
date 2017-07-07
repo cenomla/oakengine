@@ -11,7 +11,7 @@ layout (location = 0) out vec4 outColor;
 void main() {
 
 	vec3 toLight = normalize(vec3(140.0, 160.0, 120.0) - fragPos);
-	float level = max(dot(fragNormal, toLight), 0.0);
+	float level = max(dot(normalize(fragNormal), toLight), 0.0);
 
 	vec4 blend = texture(texSampler[0], fragUVs);
 	vec4 tex1 = texture(texSampler[1], fragUVs * 4);

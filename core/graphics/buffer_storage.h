@@ -10,8 +10,8 @@ namespace oak::graphics {
 	class BufferStorage {
 	public:
 
-		virtual void init(const AttributeLayout *attribs) = 0;
-		virtual void terminate() = 0;
+		virtual void create(const AttributeLayout *attribs) = 0;
+		virtual void destroy() = 0;
 
 		virtual void bind() const = 0;
 		virtual void unbind() const = 0;

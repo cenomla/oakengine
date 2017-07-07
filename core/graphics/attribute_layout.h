@@ -1,16 +1,9 @@
 #pragma once
 
+#include "graphics/api.h"
 #include "container.h"
 
 namespace oak::graphics {
-
-	enum class AttributeType {
-		POSITION,
-		POSITION2D, 
-		NORMAL,
-		UV,
-		COLOR
-	};
 
 	struct AttributeLayout {
 		oak::vector<AttributeType> attributes;

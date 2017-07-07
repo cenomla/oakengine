@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 
 #include "graphics/texture.h"
+#include "graphics/api.h"
 #include "container.h"
 
 namespace oak::graphics {

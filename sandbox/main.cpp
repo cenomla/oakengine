@@ -10,6 +10,7 @@
 #include <graphics/opengl/gl_api.h>
 #include <graphics/opengl/gl_buffer_storage.h>
 #include <graphics/opengl/gl_shader.h>
+#include <graphics/opengl/gl_framebuffer.h>
 
 #include <graphics/render_system.h>
 #include <log.h>
@@ -155,6 +156,7 @@ int main(int argc, char** argv) {
 	//create the rendering system
 	oak::graphics::RenderSystem renderSystem{ scene, gl_api };
 
+	//basic test renderer
 	TestRenderer testRenderer;
 	renderSystem.pushLayerFront(testRenderer);
 
@@ -213,35 +215,40 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(occluderStorage);
 	scene.addComponentStorage(lightStorage);
 
+	//init the test renderer
+	testRenderer.init();
+
 	//initialize the buffer storage
-	_3dstorage.init(&_3dlayout);
-	_2dstorage.init(&_2dlayout);
+	_3dstorage.create(&_3dlayout);
+	_2dstorage.create(&_2dlayout);
 
 	//setup uniforms
 	struct {
-		glm::mat4 model;
-		glm::mat4 view;
 		glm::mat4 proj;
+		glm::mat4 view;
 	} block;
-	block.model = glm::mat4{ 1.0f };
+	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.5f, 200.0f);
 	block.view = glm::lookAt(glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 4.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.1f, 1000.0f);
 
 	struct {
-		glm::mat4 model;
-		glm::mat4 view;
 		glm::mat4 proj;
+		glm::mat4 view;
+	} iblock;
+	iblock.proj = glm::inverse(block.proj);
+
+	struct {
+		glm::mat4 proj;
+		glm::mat4 view;
 	} oblock;
-	oblock.model = glm::mat4{ 1.0f };
 	oblock.view = glm::mat4{ 1.0f };
 	oblock.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
 	auto& glsh_pass3d = resManager.add<oak::graphics::GLShader>("glsh_pass3d");
-	glsh_pass3d.create("core/graphics/shaders/pass3d/opengl.vert", "core/graphics/shaders/pass3d/opengl.frag");
+	glsh_pass3d.create("core/graphics/shaders/forward/pass3d/opengl.vert", "core/graphics/shaders/forward/pass3d/opengl.frag");
 	glsh_pass3d.bindBlockIndex("MatrixBlock", 0);
 
 	auto& glsh_blend = resManager.add<oak::graphics::GLShader>("glsh_blend");
-	glsh_blend.create("core/graphics/shaders/blend/opengl.vert", "core/graphics/shaders/blend/opengl.frag");
+	glsh_blend.create("core/graphics/shaders/forward/blend/opengl.vert", "core/graphics/shaders/forward/blend/opengl.frag");
 	glsh_blend.bindBlockIndex("MatrixBlock", 0);
 	
 	//set sampler uniforms
@@ -252,8 +259,12 @@ int main(int argc, char** argv) {
 	glsh_blend.setUniform("texSampler[3]", 3);
 	glsh_blend.unbind();
 
+	auto& glsh_geometry = resManager.add<oak::graphics::GLShader>("glsh_geometry");
+	glsh_geometry.create("core/graphics/shaders/deferred/geometry/vert.glsl", "core/graphics/shaders/deferred/geometry/frag.glsl");
+	glsh_geometry.bindBlockIndex("MatrixBlock", 0);
+
 	auto& glsh_pass2d = resManager.add<oak::graphics::GLShader>("glsh_pass2d");
-	glsh_pass2d.create("core/graphics/shaders/pass2d/opengl.vert", "core/graphics/shaders/pass2d/opengl.frag");
+	glsh_pass2d.create("core/graphics/shaders/forward/pass2d/opengl.vert", "core/graphics/shaders/forward/pass2d/opengl.frag");
 	glsh_pass2d.bindBlockIndex("MatrixBlock", 1);
 
 	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
@@ -262,6 +273,13 @@ int main(int argc, char** argv) {
 	ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
 	ubo.bindBufferBase(0);
 	ubo.unbind();
+
+	oak::graphics::GLBuffer iubo{ GL_UNIFORM_BUFFER };
+	iubo.create();
+	iubo.bind();
+	iubo.data(sizeof(iblock), &iblock, GL_STATIC_DRAW);
+	iubo.bindBufferBase(2);
+	iubo.unbind();
 
 	oak::graphics::GLBuffer oubo{ GL_UNIFORM_BUFFER };
 	oubo.create();
@@ -274,6 +292,7 @@ int main(int argc, char** argv) {
 	auto& sh_pass3d = resManager.add<oak::graphics::Shader>("sh_pass3d", glsh_pass3d.getId());
 	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", glsh_pass2d.getId());
 	auto& sh_blend = resManager.add<oak::graphics::Shader>("sh_blend", glsh_blend.getId());
+	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", glsh_geometry.getId());
 	
 	//opengl texture loading
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
@@ -289,11 +308,6 @@ int main(int argc, char** argv) {
 	gltex_grass.create("sandbox/res/textures/grass.png");
 	gltex_blend.create("sandbox/res/textures/blend.png");
 
-	//setup framebuffer for deffered rendering
-	auto& gltex_normal = resManager.add<oak::graphics::GLTexture>("gltex_normal", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
-	auto& gltex_depth = resManager.add<oak::graphics::GLTexture>("gltex_depth", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
-	auto& gltex_diffuse = resManager.add<oak::graphics::GLTexture>("gltex_diffuse", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGB);
-
 	//textures
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
 	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", gltex_character.getId());
@@ -304,9 +318,9 @@ int main(int argc, char** argv) {
 	auto& tex_blend = resManager.add<oak::graphics::Texture>("tex_blend", gltex_blend.getId());
 
 	//materials
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_pass3d, &tex_box);
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_box);
 	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
-	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_grass", &_3dlayout, &sh_blend, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
+	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_grass", &_3dlayout, &sh_pass3d, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
 
 
 	//meshes
@@ -357,8 +371,8 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
-	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
+	//renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
+	//renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
 
 	//create entities
 	oak::EntityId entity = scene.createEntity();
@@ -371,10 +385,10 @@ int main(int argc, char** argv) {
 	inputManager.update();
 
 	//cam
-	glm::vec3 pos{ 16.0f, 8.0f, 16.0f };
-	glm::vec3 look{ 0.0f };
-	float roth = 180.0f, rotv = 90.0f;
+	float roth = 180.0f, rotv = 0.0f;
 	float px, py;
+	glm::vec3 pos{ 16.0f, 8.0f, 16.0f };
+	glm::vec3 look{ glm::quat{ glm::vec3{ rotv, roth, 0.0f } } * glm::vec3{ 0.0f, 0.0f, -1.0f } };
 	{
 		double mx, my;
 		inputManager.getCursorPos(&mx, &my);
@@ -441,9 +455,15 @@ int main(int argc, char** argv) {
 
 		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
+		iblock.view = glm::inverse(block.view);
+
 		ubo.bind();
 		ubo.data(sizeof(block), &block, GL_STREAM_DRAW);
 		ubo.unbind();
+
+		iubo.bind();
+		iubo.data(sizeof(iblock), &iblock, GL_STATIC_DRAW);
+		iubo.unbind();
 
 		movementSystem.run();
 

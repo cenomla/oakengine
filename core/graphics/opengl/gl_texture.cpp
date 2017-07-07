@@ -42,8 +42,11 @@ namespace oak::graphics {
 	}
 
 	static GLenum textureFormats[][3] = {
-		{ GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE }, 
-		{ GL_RGB32F, GL_RGB, GL_FLOAT }
+		{ GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE },
+		{ GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
+		{ GL_RGBA32F, GL_RGBA, GL_FLOAT }, 
+		{ GL_RGB32F, GL_RGB, GL_FLOAT },
+		{ GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT }
 	};
 
 	void GLTexture::create(int width, int height, void *data) {
