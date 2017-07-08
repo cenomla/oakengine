@@ -20,7 +20,7 @@ void main() {
 
 	gl_Position = matrix.proj * matrix.view * vec4(vPosition, 1.0);
 
-	passNormal = vNormal;
+	passNormal = (matrix.view * vec4(vNormal, 0.0)).xyz;
 	passUV = vUV;
 
 }

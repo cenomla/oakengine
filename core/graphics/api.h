@@ -6,8 +6,10 @@ namespace oak::graphics {
 	enum class TextureFormat {
 		BYTE_RGBA,
 		BYTE_RGB,
+		BYTE_R,
 		FLOAT_RGBA,
 		FLOAT_RGB,
+		FLOAT_R,
 		DEPTH_32F,
 		DEPTH_32,
 		DEPTH_24,

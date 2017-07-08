@@ -234,10 +234,11 @@ int main(int argc, char** argv) {
 	block.view = glm::lookAt(glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 4.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 	struct {
+		glm::mat4 invProj;
 		glm::mat4 proj;
-		glm::mat4 view;
 	} iblock;
-	iblock.proj = glm::inverse(block.proj);
+	iblock.invProj = glm::inverse(block.proj);
+	iblock.proj = block.proj;
 
 	struct {
 		glm::mat4 proj;
@@ -250,6 +251,11 @@ int main(int argc, char** argv) {
 	glsh_geometry.create("core/graphics/shaders/deferred/geometry/vert.glsl", "core/graphics/shaders/deferred/geometry/frag.glsl");
 	glsh_geometry.bindBlockIndex("MatrixBlock", 0);
 
+	glsh_geometry.bind();
+	glsh_geometry.setUniform("texDiffuse", 0);
+	glsh_geometry.setUniform("texSpec", 1);
+	glsh_geometry.setUniform("texEmissive", 2);
+
 	auto& glsh_blend = resManager.add<oak::graphics::GLShader>("glsh_blend");
 	glsh_blend.create("core/graphics/shaders/deferred/blend/vert.glsl", "core/graphics/shaders/deferred/blend/frag.glsl");
 	glsh_blend.bindBlockIndex("MatrixBlock", 0);
@@ -260,7 +266,9 @@ int main(int argc, char** argv) {
 	glsh_blend.setUniform("textures[1]", 1);
 	glsh_blend.setUniform("textures[2]", 2);
 	glsh_blend.setUniform("textures[3]", 3);
-	glsh_blend.unbind();
+	glsh_blend.setUniform("textures[4]", 4);
+	glsh_blend.setUniform("textures[5]", 5);
+	glsh_blend.setUniform("textures[6]", 6);
 
 	auto& glsh_pass2d = resManager.add<oak::graphics::GLShader>("glsh_pass2d");
 	glsh_pass2d.create("core/graphics/shaders/forward/pass2d/opengl.vert", "core/graphics/shaders/forward/pass2d/opengl.frag");
@@ -268,24 +276,19 @@ int main(int argc, char** argv) {
 
 	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
 	ubo.create();
-	ubo.bind();
-	ubo.data(sizeof(block), &block, GL_STATIC_DRAW);
 	ubo.bindBufferBase(0);
-	ubo.unbind();
 
 	oak::graphics::GLBuffer iubo{ GL_UNIFORM_BUFFER };
 	iubo.create();
 	iubo.bind();
-	iubo.data(sizeof(iblock), &iblock, GL_STATIC_DRAW);
+	iubo.data(sizeof(iblock), &iblock, GL_STREAM_DRAW);
 	iubo.bindBufferBase(2);
-	iubo.unbind();
 
 	oak::graphics::GLBuffer oubo{ GL_UNIFORM_BUFFER };
 	oubo.create();
 	oubo.bind();
 	oubo.data(sizeof(oblock), &oblock, GL_STATIC_DRAW);
 	oubo.bindBufferBase(1);
-	oubo.unbind();
 	
 	//shader setup
 	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", glsh_geometry.getId());
@@ -294,30 +297,41 @@ int main(int argc, char** argv) {
 	
 	//opengl texture loading
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_boxSpec = resManager.add<oak::graphics::GLTexture>("gltex_boxSpec", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
+	auto& gltex_boxEm = resManager.add<oak::graphics::GLTexture>("gltex_boxEm", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
 	auto& gltex_character = resManager.add<oak::graphics::GLTexture>("gltex_character", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	auto& gltex_grassFade = resManager.add<oak::graphics::GLTexture>("gltex_grassFade", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	auto& gltex_rock = resManager.add<oak::graphics::GLTexture>("gltex_rock", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_rockSpec = resManager.add<oak::graphics::GLTexture>("gltex_rockSpec", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
 	auto& gltex_grass = resManager.add<oak::graphics::GLTexture>("gltex_grass", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
-	auto& gltex_blend = resManager.add<oak::graphics::GLTexture>("gltex_blend", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA, GLuint{ GL_LINEAR });
+	auto& gltex_grassSpec = resManager.add<oak::graphics::GLTexture>("gltex_grassSpec", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
+	auto& gltex_blend = resManager.add<oak::graphics::GLTexture>("gltex_blend", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	gltex_box.create("sandbox/res/textures/box.png");
+	gltex_boxSpec.create("sandbox/res/textures/box_spec.png", 1);
+	gltex_boxEm.create("sandbox/res/textures/box_emissive.png", 1);
 	gltex_character.create("sandbox/res/textures/character.png");
 	gltex_grassFade.create("sandbox/res/textures/faded_grass.png");
 	gltex_rock.create("sandbox/res/textures/blue_rock.png");
+	gltex_rockSpec.create("sandbox/res/textures/blue_rock_spec.png", 1);
 	gltex_grass.create("sandbox/res/textures/grass.png");
+	gltex_grassSpec.create("sandbox/res/textures/grass_spec.png", 1);
 	gltex_blend.create("sandbox/res/textures/blend.png");
 
 	//textures
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
+	auto& tex_boxSpec = resManager.add<oak::graphics::Texture>("tex_boxSpec", gltex_boxSpec.getId());
+	auto& tex_boxEm = resManager.add<oak::graphics::Texture>("tex_boxEm", gltex_boxEm.getId());
 	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", gltex_character.getId());
 	auto& tex_grassFade = resManager.add<oak::graphics::Texture>("tex_grassFade", gltex_grassFade.getId());
 	auto& tex_rock = resManager.add<oak::graphics::Texture>("tex_rock", gltex_rock.getId());
+	auto& tex_rockSpec = resManager.add<oak::graphics::Texture>("tex_rockSpec", gltex_rockSpec.getId());
 	auto& tex_grass = resManager.add<oak::graphics::Texture>("tex_grass", gltex_grass.getId());
-
+	auto& tex_grassSpec = resManager.add<oak::graphics::Texture>("tex_grassSpec", gltex_grassSpec.getId());
 	auto& tex_blend = resManager.add<oak::graphics::Texture>("tex_blend", gltex_blend.getId());
 
 	//materials
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_box);
-	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_terrain", &_3dlayout, &sh_blend, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_box, &tex_boxSpec, &tex_boxEm);
+	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_terrain", &_3dlayout, &sh_blend, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass, &tex_rockSpec, &tex_grassSpec, &tex_grassSpec);
 	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
 
 
@@ -365,7 +379,7 @@ int main(int argc, char** argv) {
 	for (float i = 0; i < 4; i++) {
 		for (float j = 0; j < 4; j++) {
 			for (float k = 0; k < 4; k++) {
-				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f + i * 1.99f, 1.0f + j * 1.99f, 32.0f + k * 1.99f }), &mesh_box, &mat_box, 0);
+				renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f + i * 2.5f, 1.0f + j * 2.5f, 32.0f + k * 2.5f }), &mesh_box, &mat_box, 0);
 			}
 		}
 	}
@@ -453,15 +467,8 @@ int main(int argc, char** argv) {
 
 		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-		iblock.view = glm::inverse(block.view);
-
 		ubo.bind();
 		ubo.data(sizeof(block), &block, GL_STREAM_DRAW);
-		ubo.unbind();
-
-		iubo.bind();
-		iubo.data(sizeof(iblock), &iblock, GL_STATIC_DRAW);
-		iubo.unbind();
 
 		movementSystem.run();
 

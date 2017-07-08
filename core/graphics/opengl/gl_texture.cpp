@@ -9,7 +9,8 @@
 
 namespace oak::graphics {
 
-	GLTexture::GLTexture(GLenum type, TextureFormat format, GLenum filter) : tex_{ 0 }, type_{ type }, format_{ format }, filter_{ filter } {
+	GLTexture::GLTexture(GLenum type, TextureFormat format, GLenum filter, GLenum wrap) : 
+	tex_{ 0 }, type_{ type }, format_{ format }, filter_{ filter }, wrap_{ wrap } {
 
 	}
 
@@ -26,11 +27,11 @@ namespace oak::graphics {
 		glBindTexture(type_, 0);
 	}
 
-	void GLTexture::create(const oak::string &path) {
+	void GLTexture::create(const oak::string &path, int rcomp) {
 		if (tex_ != 0) { return; }
 
 		int w, h, comp;
-		stbi_uc *data = stbi_load(path.c_str(), &w, &h, &comp, 4);
+		stbi_uc *data = stbi_load(path.c_str(), &w, &h, &comp, rcomp);
 
 		if (data == nullptr) {
 			log_print_warn("failed to load texture: %s", path.c_str());
@@ -44,8 +45,10 @@ namespace oak::graphics {
 	static GLenum textureFormats[][3] = {
 		{ GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE },
 		{ GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
+		{ GL_R8, GL_RED, GL_UNSIGNED_BYTE },
 		{ GL_RGBA32F, GL_RGBA, GL_FLOAT }, 
 		{ GL_RGB32F, GL_RGB, GL_FLOAT },
+		{ GL_R32F, GL_RED, GL_FLOAT },
 		{ GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT },
 		{ GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
 		{ GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
@@ -63,8 +66,8 @@ namespace oak::graphics {
 		
 		glTexParameteri(type_, GL_TEXTURE_MAG_FILTER, filter_);
 		glTexParameteri(type_, GL_TEXTURE_MIN_FILTER, filter_);
-		glTexParameteri(type_, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(type_, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(type_, GL_TEXTURE_WRAP_S, wrap_);
+		glTexParameteri(type_, GL_TEXTURE_WRAP_T, wrap_);
 	}
 
 	void GLTexture::destroy() {

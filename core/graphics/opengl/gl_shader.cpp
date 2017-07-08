@@ -55,7 +55,9 @@ namespace oak::graphics {
 			if (block != -1) { continue; }
 			//make sure to handle all indices of an array
 			for (int a = 0; a < size; a++) {
-				sprintf(buffer + length - 3, "[%i]", a);
+				if (size > 1) {
+					sprintf(buffer + length - 3, "[%i]", a);
+				}
 				locations_.insert({ oak::string{ buffer },  glGetUniformLocation(pid_, buffer) });
 			}
 		}
