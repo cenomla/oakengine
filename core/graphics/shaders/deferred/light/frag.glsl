@@ -15,7 +15,6 @@ const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float lightRadius = 128.0;
 
 const vec3 ambientColor = vec3(0.1, 0.1, 0.1);
-const float gamma = 1.0;
 
 in vec2 passUV;
 
@@ -71,8 +70,5 @@ void main() {
 		l = albedo.rgb * em;
 	}
 
-
-	vec3 clinear = max(l * ao, ambientColor);
-	outColor = vec4(pow(clinear, vec3(1.0 / gamma)), 1.0);
-
+	outColor = vec4(max(l * ao, ambientColor), 1.0);
 }

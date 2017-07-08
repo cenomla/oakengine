@@ -10,8 +10,9 @@ layout (std140) uniform MatrixBlock {
 } matrix;
 
 layout (std140) uniform KernelBlock {
-	vec4 samples[64];
+	vec4 samples[128];
 	float radius;
+	int count;
 } kernel;
 
 const float zNear = 0.5;
@@ -34,7 +35,7 @@ float ssao(vec3 pos, vec3 normal, vec2 uv) {
 	const float bias = 0.025;
 
 	float occlusion = 0.0;
-	for (int i = 0; i < 64; i++) {
+	for (int i = 0; i < kernel.count; i++) {
 		vec3 s = tbn * kernel.samples[i].xyz;
 		s = pos + s * kernel.radius;
 
@@ -49,7 +50,7 @@ float ssao(vec3 pos, vec3 normal, vec2 uv) {
 		occlusion += (lsd >= s.z + bias ? 1.0 : 0.0) * rc;
 	}
 
-	occlusion = 1.0 - (occlusion / 64.0);
+	occlusion = 1.0 - (occlusion / float(kernel.count));
 
 	return pow(occlusion, 1.4);
 }

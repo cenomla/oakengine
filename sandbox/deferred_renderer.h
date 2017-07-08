@@ -16,8 +16,10 @@ private:
 	const oak::graphics::Pipeline *pipeline_;
 	oak::graphics::GLFramebuffer gbuffer_;
 	oak::graphics::GLFramebuffer ssaobuffer_;
+	oak::graphics::GLFramebuffer aabuffer_;
 	oak::graphics::GLShader light_;
 	oak::graphics::GLShader ssao_;
+	oak::graphics::GLShader fxaa_;
 	oak::graphics::GLBufferStorage buffer_;
 	oak::graphics::GLBuffer kernelBuffer_{ GL_UNIFORM_BUFFER };
 };

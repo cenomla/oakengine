@@ -50,7 +50,7 @@ namespace oak::graphics {
 			//get the block index
 			block = glGetUniformBlockIndex(pid_, buffer);
 			//log
-			log_print_out("uniform name: %s, size: %i, block index: %i", buffer, size, block);
+			//log_print_out("uniform name: %s, size: %i, block index: %i", buffer, size, block);
 			//only cache the locations of non block uniforms
 			if (block != -1) { continue; }
 			//make sure to handle all indices of an array
