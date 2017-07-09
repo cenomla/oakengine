@@ -15,6 +15,8 @@ void GuiRenderer::terminate() {
 void GuiRenderer::render(oak::graphics::Api *api) {
 	//do rendering stuff
 
+	glDisable(GL_DEPTH_TEST);
+
 	for (const auto& batch : *pipeline_->batches) {
 		if (batch.layer != 1) { continue; }
 		//bind material 

@@ -31,7 +31,7 @@
 #include <scene_utils.h>
 
 #include "component_ext.h"
-#include "deferred_renderer.h"
+#include "forward_renderer.h"
 #include "gui_renderer.h"
 
 #include <glad/glad.h>
@@ -158,9 +158,9 @@ int main(int argc, char** argv) {
 	oak::graphics::RenderSystem renderSystem{ scene, gl_api };
 
 	//basic test renderer
-	DeferredRenderer deferredRenderer;
+	ForwardRenderer sceneRenderer;
 	GuiRenderer guiRenderer;
-	renderSystem.pushLayerBack(deferredRenderer);
+	renderSystem.pushLayerBack(sceneRenderer);
 	renderSystem.pushLayerBack(guiRenderer);
 
 	//define vertex attribute layouts that will be used in the scene
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(lightStorage);
 
 	//init the test renderer
-	deferredRenderer.init();
+	sceneRenderer.init();
 	guiRenderer.init();
 
 	//initialize the buffer storage
@@ -248,31 +248,10 @@ int main(int argc, char** argv) {
 	oblock.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
 	auto& glsh_geometry = resManager.add<oak::graphics::GLShader>("glsh_geometry");
-	glsh_geometry.create("core/graphics/shaders/deferred/geometry/vert.glsl", "core/graphics/shaders/deferred/geometry/frag.glsl");
-	glsh_geometry.bindBlockIndex("MatrixBlock", 0);
-
-	glsh_geometry.bind();
-	glsh_geometry.setUniform("texDiffuse", 0);
-	glsh_geometry.setUniform("texSpec", 1);
-	glsh_geometry.setUniform("texEmissive", 2);
-
-	auto& glsh_blend = resManager.add<oak::graphics::GLShader>("glsh_blend");
-	glsh_blend.create("core/graphics/shaders/deferred/blend/vert.glsl", "core/graphics/shaders/deferred/blend/frag.glsl");
-	glsh_blend.bindBlockIndex("MatrixBlock", 0);
-	
-	//set sampler uniforms
-	glsh_blend.bind();
-	glsh_blend.setUniform("textures[0]", 0);
-	glsh_blend.setUniform("textures[1]", 1);
-	glsh_blend.setUniform("textures[2]", 2);
-	glsh_blend.setUniform("textures[3]", 3);
-	glsh_blend.setUniform("textures[4]", 4);
-	glsh_blend.setUniform("textures[5]", 5);
-	glsh_blend.setUniform("textures[6]", 6);
+	glsh_geometry.create("core/graphics/shaders/forward/pbr/vert.glsl", "core/graphics/shaders/forward/pbr/frag.glsl");
 
 	auto& glsh_pass2d = resManager.add<oak::graphics::GLShader>("glsh_pass2d");
-	glsh_pass2d.create("core/graphics/shaders/forward/pass2d/opengl.vert", "core/graphics/shaders/forward/pass2d/opengl.frag");
-	glsh_pass2d.bindBlockIndex("MatrixBlock", 1);
+	glsh_pass2d.create("core/graphics/shaders/forward/pass2d/vert.glsl", "core/graphics/shaders/forward/pass2d/frag.glsl");
 
 	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
 	ubo.create();
@@ -292,46 +271,47 @@ int main(int argc, char** argv) {
 	
 	//shader setup
 	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", glsh_geometry.getId());
-	auto& sh_blend = resManager.add<oak::graphics::Shader>("sh_blend", glsh_blend.getId());
 	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", glsh_pass2d.getId());
 	
 	//opengl texture loading
+	auto& gltex_pbrBase = resManager.add<oak::graphics::GLTexture>("gltex_pbrBase", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_pbrNormal = resManager.add<oak::graphics::GLTexture>("gltex_pbrNormal", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
+	auto& gltex_pbrMetallic = resManager.add<oak::graphics::GLTexture>("gltex_pbrMetallic", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
+	auto& gltex_pbrRoughness = resManager.add<oak::graphics::GLTexture>("gltex_pbrRoughness", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
+	gltex_pbrBase.create("sandbox/res/textures/pbr_rust/color.png");
+	gltex_pbrNormal.create("sandbox/res/textures/pbr_rust/normal.png");
+	gltex_pbrMetallic.create("sandbox/res/textures/pbr_rust/metalness.png", 1);
+	gltex_pbrRoughness.create("sandbox/res/textures/pbr_rust/roughness.png", 1);
+
 	auto& gltex_box = resManager.add<oak::graphics::GLTexture>("gltex_box", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
-	auto& gltex_boxSpec = resManager.add<oak::graphics::GLTexture>("gltex_boxSpec", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
-	auto& gltex_boxEm = resManager.add<oak::graphics::GLTexture>("gltex_boxEm", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
 	auto& gltex_character = resManager.add<oak::graphics::GLTexture>("gltex_character", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	auto& gltex_grassFade = resManager.add<oak::graphics::GLTexture>("gltex_grassFade", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	auto& gltex_rock = resManager.add<oak::graphics::GLTexture>("gltex_rock", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
-	auto& gltex_rockSpec = resManager.add<oak::graphics::GLTexture>("gltex_rockSpec", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
 	auto& gltex_grass = resManager.add<oak::graphics::GLTexture>("gltex_grass", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
-	auto& gltex_grassSpec = resManager.add<oak::graphics::GLTexture>("gltex_grassSpec", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_R);
 	auto& gltex_blend = resManager.add<oak::graphics::GLTexture>("gltex_blend", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);
 	gltex_box.create("sandbox/res/textures/box.png");
-	gltex_boxSpec.create("sandbox/res/textures/box_spec.png", 1);
-	gltex_boxEm.create("sandbox/res/textures/box_emissive.png", 1);
 	gltex_character.create("sandbox/res/textures/character.png");
 	gltex_grassFade.create("sandbox/res/textures/faded_grass.png");
 	gltex_rock.create("sandbox/res/textures/blue_rock.png");
-	gltex_rockSpec.create("sandbox/res/textures/blue_rock_spec.png", 1);
 	gltex_grass.create("sandbox/res/textures/grass.png");
-	gltex_grassSpec.create("sandbox/res/textures/grass_spec.png", 1);
 	gltex_blend.create("sandbox/res/textures/blend.png");
 
 	//textures
+	auto& tex_pbrBase = resManager.add<oak::graphics::Texture>("tex_pbrBase", gltex_pbrBase.getId());
+	auto& tex_pbrNormal = resManager.add<oak::graphics::Texture>("tex_pbrNormal", gltex_pbrNormal.getId());
+	auto& tex_pbrMetallic = resManager.add<oak::graphics::Texture>("tex_pbrMetallic", gltex_pbrMetallic.getId());
+	auto& tex_pbrRoughness = resManager.add<oak::graphics::Texture>("tex_pbrRoughness", gltex_pbrRoughness.getId());
+
 	auto& tex_box = resManager.add<oak::graphics::Texture>("tex_box", gltex_box.getId());
-	auto& tex_boxSpec = resManager.add<oak::graphics::Texture>("tex_boxSpec", gltex_boxSpec.getId());
-	auto& tex_boxEm = resManager.add<oak::graphics::Texture>("tex_boxEm", gltex_boxEm.getId());
 	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", gltex_character.getId());
 	auto& tex_grassFade = resManager.add<oak::graphics::Texture>("tex_grassFade", gltex_grassFade.getId());
 	auto& tex_rock = resManager.add<oak::graphics::Texture>("tex_rock", gltex_rock.getId());
-	auto& tex_rockSpec = resManager.add<oak::graphics::Texture>("tex_rockSpec", gltex_rockSpec.getId());
 	auto& tex_grass = resManager.add<oak::graphics::Texture>("tex_grass", gltex_grass.getId());
-	auto& tex_grassSpec = resManager.add<oak::graphics::Texture>("tex_grassSpec", gltex_grassSpec.getId());
 	auto& tex_blend = resManager.add<oak::graphics::Texture>("tex_blend", gltex_blend.getId());
 
 	//materials
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_box, &tex_boxSpec, &tex_boxEm);
-	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_terrain", &_3dlayout, &sh_blend, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass, &tex_rockSpec, &tex_grassSpec, &tex_grassSpec);
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_pbrBase, &tex_pbrMetallic, &tex_pbrRoughness);
+	auto& mat_terrain = resManager.add<oak::graphics::Material>("mat_terrain", &_3dlayout, &sh_geometry, &tex_blend, &tex_rock, &tex_grassFade, &tex_grass);
 	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
 
 
@@ -383,7 +363,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
+	//renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
 	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
 
 	//create entities
@@ -466,6 +446,9 @@ int main(int argc, char** argv) {
 		}
 
 		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
+
+		glsh_geometry.bind();
+		glsh_geometry.setUniform("u_camPos", pos);
 
 		ubo.bind();
 		ubo.data(sizeof(block), &block, GL_STREAM_DRAW);

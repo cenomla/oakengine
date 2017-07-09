@@ -1,3 +1,5 @@
+#pragma once
+
 #include <graphics/renderer.h>
 #include <graphics/opengl/gl_framebuffer.h>
 #include <graphics/opengl/gl_shader.h>
