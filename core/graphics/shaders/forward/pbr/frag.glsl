@@ -12,15 +12,13 @@ in Pass {
 	vec2 uv;
 } frag;
 
-struct Light {
-	vec3 pos;
-	vec3 color;
-	float radius;
-};
 
-Light u_lights[4];
-
-uniform vec3 u_camPos;
+layout (std140, binding = 4) uniform LightBlock {
+	struct {
+		vec4 pos;
+		vec3 color;
+	} data[4];
+} u_lights;
 
 const float c_PI = 3.14159265359;
 
@@ -64,22 +62,12 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0) {
 
 void main() {
 
-	u_lights[0].pos = vec3(16.0, 4.0, 33.0);
-	u_lights[1].pos = vec3(16.0, 12.0, 33.0);
-	u_lights[2].pos = vec3(16.0, 12.0, 41.0);
-	u_lights[3].pos = vec3(16.0, 4.0, 41.0);
-
-	for (int i = 0; i < 4; i++) {
-		u_lights[i].color = vec3(1.0);
-		u_lights[i].radius = 128.0;
-	}
-
 	vec3 albedo = pow(texture(u_sampler0, frag.uv).rgb, vec3(2.2));
 	float metallic = texture(u_sampler1, frag.uv).r;
 	float roughness = texture(u_sampler2, frag.uv).r;
 
 	vec3 N = normalize(frag.normal);
-	vec3 V = normalize(u_camPos - frag.pos);
+	vec3 V = normalize(-frag.pos);
 
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metallic);
@@ -87,12 +75,12 @@ void main() {
 	vec3 Lo = vec3(0.0);
 	//calculate radiance
 	for (int i = 0; i < 4; i++) {
-		vec3 toL = u_lights[i].pos - frag.pos;
+		vec3 toL = u_lights.data[i].pos.xyz - frag.pos;
 		vec3 L = normalize(toL);
 		vec3 H = normalize(L + V);
 		float dist = length(toL);
-		float att = u_lights[i].radius / (dist * dist);
-		vec3 radiance = u_lights[i].color * att;
+		float att = u_lights.data[i].pos.w / (dist * dist);
+		vec3 radiance = u_lights.data[i].color * att;
 
 		float NDF = distributionGGX(N, H, roughness);
 		float G = geometrySmith(N, V, L, roughness);
@@ -113,8 +101,6 @@ void main() {
 	//end radiance calculation
 	vec3 ambient = vec3(0.03) * albedo * u_ao;
 	vec3 color = ambient + Lo;
-
-
 	//tone map HDR to LDR
 	color = color / (color + vec3(1.0));
 	//gamma correct

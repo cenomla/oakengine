@@ -102,7 +102,7 @@ void DeferredRenderer::init() {
 
 	//setup framebuffer for deferred rendering
 	auto& albedo = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_albedo", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA, GLenum{ GL_NEAREST }, GLenum{ GL_CLAMP_TO_EDGE });
-	auto& normal = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_normal", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_RGBA, GLenum{ GL_NEAREST }, GLenum{ GL_CLAMP_TO_EDGE });
+	auto& normal = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_normal", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA, GLenum{ GL_NEAREST }, GLenum{ GL_CLAMP_TO_EDGE });
 	auto& depth = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_depth", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::DEPTH_24, GLenum{ GL_NEAREST }, GLenum{ GL_CLAMP_TO_EDGE });
 	auto& ao = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_ao", GLuint{ GL_TEXTURE_2D }, oak::graphics::TextureFormat::FLOAT_R, GLenum{ GL_NEAREST }, GLenum{ GL_CLAMP_TO_EDGE });
 	auto& fxaa = oak::ResourceManager::inst().add<oak::graphics::GLTexture>("gltex_fxaa", GLuint{GL_TEXTURE_2D }, oak::graphics::TextureFormat::BYTE_RGBA);

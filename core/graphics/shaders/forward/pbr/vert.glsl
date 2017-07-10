@@ -20,8 +20,8 @@ void main() {
 	vec4 viewPos = matrix.view * vec4(v_pos, 1.0);
 	gl_Position = matrix.proj * viewPos;
 
-	pass.pos = v_pos;
-	pass.normal = v_normal;
+	pass.pos = viewPos.xyz;
+	pass.normal = (matrix.view * vec4(v_normal, 0.0)).xyz;
 	pass.uv = v_uv;
 
 }

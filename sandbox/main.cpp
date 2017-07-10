@@ -268,6 +268,31 @@ int main(int argc, char** argv) {
 	oubo.bind();
 	oubo.data(sizeof(oblock), &oblock, GL_STATIC_DRAW);
 	oubo.bindBufferBase(1);
+
+	//lights
+
+	struct {
+		glm::vec3 pos;
+		float radius;
+		glm::vec3 color;
+		float padding = 0.0f;
+	} lights[4];
+
+	glm::vec3 lpos[4] = {
+		{ 16.0f, 5.0f, 34.0f },
+		{ 16.0f, 11.0f, 34.0f },
+		{ 16.0f, 5.0f, 40.0f },
+		{ 16.0f, 11.0f, 40.0f }
+	};
+	
+	for (int i = 0; i < 4; i++) {
+		lights[i].radius = 128.0f;
+		lights[i].color = { 1.0f, 1.0f, 1.0f };
+	}
+
+	oak::graphics::GLBuffer lubo{ GL_UNIFORM_BUFFER };
+	lubo.create();
+	lubo.bindBufferBase(4);
 	
 	//shader setup
 	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", glsh_geometry.getId());
@@ -363,7 +388,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	//renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_terrain, 0);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_box, 0);
 	renderSystem.batcher_.addMesh(glm::mat4{ 1.0f }, &mesh_overlay, &mat_overlay, 1);
 
 	//create entities
@@ -447,11 +472,19 @@ int main(int argc, char** argv) {
 
 		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-		glsh_geometry.bind();
-		glsh_geometry.setUniform("u_camPos", pos);
+//		glsh_geometry.bind();
+//		glsh_geometry.setUniform("u_camPos", pos);
 
 		ubo.bind();
 		ubo.data(sizeof(block), &block, GL_STREAM_DRAW);
+
+		for (int i = 0; i < 4; i++) {
+			lights[i].pos = glm::vec3{ block.view * glm::vec4{ lpos[i], 1.0f} };
+		}
+
+		lubo.bind();
+		lubo.data(sizeof(lights), &lights, GL_STREAM_DRAW);
+	
 
 		movementSystem.run();
 
