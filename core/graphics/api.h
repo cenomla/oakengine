@@ -16,6 +16,23 @@ namespace oak::graphics {
 		DEPTH_16
 	};
 
+	enum class TextureType {
+		IMAGE_2D,
+		IMAGE_3D,
+		ARRAY_2D
+	};
+
+	enum class TextureFilter {
+		NEAREST,
+		LINEAR,
+		LINEAR_MIP_LINEAR
+	};
+
+	enum class TextureWrap {
+		REPEAT,
+		CLAMP_EDGE
+	};
+
 	enum class FramebufferAttachment {
 		DEPTH_STENCIL = 33,
 		DEPTH = 32,

@@ -8,9 +8,9 @@
 
 namespace oak::graphics {
 
-	class GLTextureAtlas : public GLTexture {
+	class GLTextureAtlas  {
 	public:
-		GLTextureAtlas(GLenum type, GLenum filter = GL_NEAREST);
+		GLTextureAtlas();
 		~GLTextureAtlas();
 
 		void addTexture(const oak::string &name);

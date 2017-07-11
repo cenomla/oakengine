@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/mesh.h"
+#include "graphics/attribute_layout.h"
 
 namespace oak::graphics {
 

@@ -1,17 +1,18 @@
 #version 450 core
 
-uniform sampler2D texNormal;
-uniform sampler2D texDepth;
-uniform sampler2D texNoise;
+layout (binding = 1) uniform sampler2D texNormal;
+layout (binding = 2) uniform sampler2D texDepth;
+layout (binding = 3) uniform sampler2D texNoise;
 
-layout (std140) uniform MatrixBlock {
+layout (std140, binding = 2) uniform MatrixBlock {
 	mat4 invProj;
 	mat4 proj;
 } matrix;
 
-layout (std140) uniform KernelBlock {
+layout (std140, binding = 3) uniform KernelBlock {
 	vec4 samples[128];
 	float radius;
+	float power;
 	int count;
 } kernel;
 
@@ -52,12 +53,12 @@ float ssao(vec3 pos, vec3 normal, vec2 uv) {
 
 	occlusion = 1.0 - (occlusion / float(kernel.count));
 
-	return pow(occlusion, 1.4);
+	return pow(occlusion, kernel.power);
 }
 
 void main() {
 
-	vec3 normal = texture(texNormal, passUV).xyz;
+	vec3 normal = texture(texNormal, passUV).xyz * 2.0 - 1.0;
 	float depth = texture(texDepth, passUV).x;
 
 	//reconstruct position from depth

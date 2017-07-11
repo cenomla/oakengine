@@ -39,7 +39,7 @@ namespace oak::graphics {
 	};
 
 	void Font::create(const oak::string &path) {
-		const oak::string file = util::readFileAsString(path);
+		const oak::string file = util::readFileAsString(path.c_str());
 		size_t pos = 0, len = 0;
 
 		FontHeaderInfo fhi;

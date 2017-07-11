@@ -4,20 +4,17 @@ layout (binding = 0) uniform sampler2D u_sampler0;
 layout (binding = 1) uniform sampler2D u_sampler1; //metallic
 layout (binding = 2) uniform sampler2D u_sampler2; //roughness
 
-uniform float u_ao = 1.0;
-
 in Pass {
 	vec3 pos;
 	vec3 normal;
 	vec2 uv;
 } frag;
 
-
 layout (std140, binding = 4) uniform LightBlock {
 	struct {
 		vec4 pos;
 		vec3 color;
-	} data[4];
+	} data[8];
 } u_lights;
 
 const float c_PI = 3.14159265359;
@@ -74,7 +71,7 @@ void main() {
 
 	vec3 Lo = vec3(0.0);
 	//calculate radiance
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 8; i++) {
 		vec3 toL = u_lights.data[i].pos.xyz - frag.pos;
 		vec3 L = normalize(toL);
 		vec3 H = normalize(L + V);
@@ -99,7 +96,7 @@ void main() {
 	}
 
 	//end radiance calculation
-	vec3 ambient = vec3(0.03) * albedo * u_ao;
+	vec3 ambient = vec3(0.01) * albedo;
 	vec3 color = ambient + Lo;
 	//tone map HDR to LDR
 	color = color / (color + vec3(1.0));

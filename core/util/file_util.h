@@ -8,11 +8,11 @@
 
 namespace oak::util {
 
-	inline oak::vector<char> readFile(const oak::string &path) {
-		std::ifstream file{ path.c_str(), std::ios::ate | std::ios::binary };
+	inline oak::vector<char> readFile(const char *path) {
+		std::ifstream file{ path, std::ios::ate | std::ios::binary };
 
 		if (!file.is_open()) {
-			log_print_err("couldnt open file: %s", path.c_str());
+			log_print_err("couldnt open file: %s", path);
 			abort();
 		}
 
@@ -26,11 +26,11 @@ namespace oak::util {
 		return buffer;
 	}
 
-	inline oak::string readFileAsString(const oak::string &path) {
-		std::ifstream file{ path.c_str(), std::ios::binary | std::ios::ate };
+	inline oak::string readFileAsString(const char *path) {
+		std::ifstream file{ path, std::ios::binary | std::ios::ate };
 
 		if (!file.is_open()) {
-			log_print_err("couldnt open file: %s", path.c_str());
+			log_print_err("couldnt open file: %s", path);
 			abort();
 		}
 

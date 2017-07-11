@@ -6,8 +6,6 @@
 
 void ForwardRenderer::init() {
 
-	//upload light data
-
 }
 
 void ForwardRenderer::terminate() {

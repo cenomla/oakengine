@@ -7,7 +7,7 @@
 
 namespace oak::graphics {
 
-	GLTextureAtlas::GLTextureAtlas(GLenum type, GLenum filter) : GLTexture{ type, TextureFormat::BYTE_RGBA, filter } {
+	GLTextureAtlas::GLTextureAtlas() {
 	}
 
 	GLTextureAtlas::~GLTextureAtlas() {
@@ -28,7 +28,6 @@ namespace oak::graphics {
 	}
 
 	void GLTextureAtlas::bake(int width, int height) {
-		if (tex_ != 0) { return; }
 
 		oak::vector<stbrp_node> nodes;
 		nodes.resize(width+1);
@@ -50,7 +49,7 @@ namespace oak::graphics {
 		stbrp_pack_rects(&c, rects.data(), rects.size());
 
 		//create texture and upload it to opengl
-		create(width, height, nullptr);
+		//create(width, height, nullptr);
 
 		float tx = 1.0f / width;
 		float ty = 1.0f / height;
@@ -64,12 +63,12 @@ namespace oak::graphics {
 			region.dw = rect.w * tx;
 			region.dh = rect.h * ty;
 
-			glTexSubImage2D(type_, 0, rect.x, rect.y, rect.w, rect.h, GL_RGBA, GL_UNSIGNED_BYTE, image.data);
+			//glTexSubImage2D(type_, 0, rect.x, rect.y, rect.w, rect.h, GL_RGBA, GL_UNSIGNED_BYTE, image.data);
 		}
 	}
 
 	void GLTextureAtlas::clear() {
-		destroy();
+		//destroy();
 		for (auto& it : regions_) {
 			if (it.first.data != nullptr) {
 				stbi_image_free(it.first.data);

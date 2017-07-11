@@ -7,28 +7,30 @@
 
 #include "container.h"
 
-#include "attribute_layout.h"
-
 namespace oak::graphics {
 
 	class Mesh {
 	public:
-		Mesh(const AttributeLayout *layout);
-		~Mesh();
 
-		void setData(void *vertices, void *indices, size_t count, size_t icount);
-		void load(const oak::string& path);
+		struct Vertex {
+			glm::vec3 position;
+			glm::vec3 normal;
+			glm::vec2 uv;
+		};
+		
+		void setData(const oak::vector<Vertex>& vertices, const oak::vector<uint32_t>& indices);
 
 		void draw(void *buffer, void *ibuffer, const glm::mat4& transform, uint32_t startIndex) const;
 
-		inline size_t getVertexCount() const { return vertexCount_; }
-		inline size_t getIndexCount() const { return indexCount_; }
-		inline const AttributeLayout* getLayout() const { return layout_; }
+		inline size_t getVertexCount() const { return vertices_.size(); }
+		inline size_t getIndexCount() const { return indices_.size(); }
 
 	private:
-		const AttributeLayout *layout_;
-		size_t vertexCount_, indexCount_;
-		void *data_, *idata_;
+
+		oak::vector<Vertex> vertices_;
+		oak::vector<uint32_t> indices_;
+
+		void destroy();
 	};
 
 }

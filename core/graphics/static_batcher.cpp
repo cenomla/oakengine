@@ -17,12 +17,8 @@ namespace oak::graphics {
 	}
 
 	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer) {
-		if (mesh->getLayout() == material->layout) {
-			meshes_.push_back({ layer, material, mesh, transform, nullptr });
-			needsRebatch_ = true;
-		} else {
-			log_print_warn("model::mesh attribute mismatch");
-		}
+		meshes_.push_back({ layer, material, mesh, transform, nullptr });
+		needsRebatch_ = true;
 	}
 
 	void StaticBatcher::removeMesh(const Mesh *mesh) {
@@ -58,7 +54,7 @@ namespace oak::graphics {
 			}
 			it.bl = bl;
 			currentBatch.count += it.mesh->getIndexCount();
-			bl->size[0] += it.mesh->getVertexCount() * it.mesh->getLayout()->stride(); //add to size of buffer total size of model
+			bl->size[0] += it.mesh->getVertexCount() * mat->layout->stride(); //add to size of buffer total size of mesh
 			bl->size[1] += it.mesh->getIndexCount() * 4; //add to size of index buffer total size of indices array
 		}
 		batches_.push_back(currentBatch);
@@ -88,7 +84,7 @@ namespace oak::graphics {
 			bl = it.bl;
 			it.mesh->draw(bl->map[0], bl->map[1], it.transform, bl->count);
 			bl->count += it.mesh->getVertexCount();
-			bl->map[0] = static_cast<char*>(bl->map[0]) + it.mesh->getVertexCount() * it.mesh->getLayout()->stride();
+			bl->map[0] = static_cast<char*>(bl->map[0]) + it.mesh->getVertexCount() * mat->layout->stride();
 			bl->map[1] = static_cast<int*>(bl->map[1]) + it.mesh->getIndexCount();
 		}
 		batches_.push_back(currentBatch);

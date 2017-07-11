@@ -1,8 +1,10 @@
 #pragma once
 
+#include <glad/glad.h>
+
 #include <graphics/renderer.h>
-#include <graphics/opengl/gl_framebuffer.h>
-#include <graphics/opengl/gl_shader.h>
+#include <graphics/framebuffer.h>
+#include <graphics/shader.h>
 #include <graphics/opengl/gl_buffer_storage.h>
 
 class DeferredRenderer : public oak::graphics::Renderer {
@@ -16,12 +18,18 @@ public:
 
 private:
 	const oak::graphics::Pipeline *pipeline_;
-	oak::graphics::GLFramebuffer gbuffer_;
-	oak::graphics::GLFramebuffer ssaobuffer_;
-	oak::graphics::GLFramebuffer aabuffer_;
-	oak::graphics::GLShader light_;
-	oak::graphics::GLShader ssao_;
-	oak::graphics::GLShader fxaa_;
+	oak::graphics::Framebuffer gbuffer_;
+	oak::graphics::Framebuffer ssaobuffer_;
+	oak::graphics::Framebuffer aabuffer_;
+	oak::graphics::Shader light_;
+	oak::graphics::Shader ssao_;
+	oak::graphics::Shader fxaa_;
 	oak::graphics::GLBufferStorage buffer_;
 	oak::graphics::GLBuffer kernelBuffer_{ GL_UNIFORM_BUFFER };
+	oak::graphics::Texture albedo_;
+	oak::graphics::Texture normal_;
+	oak::graphics::Texture depth_;
+	oak::graphics::Texture noise_;
+	oak::graphics::Texture aa_;
+	oak::graphics::Texture ao_;
 };

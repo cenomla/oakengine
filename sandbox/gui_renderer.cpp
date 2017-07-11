@@ -1,5 +1,7 @@
 #include "gui_renderer.h"
 
+#include <glad/glad.h>
+
 #include <graphics/pipeline.h>
 #include <graphics/material.h>
 
@@ -19,7 +21,7 @@ void GuiRenderer::render(oak::graphics::Api *api) {
 
 	for (const auto& batch : *pipeline_->batches) {
 		if (batch.layer != 1) { continue; }
-		//bind material 
+		//bind material
 		glUseProgram(batch.material->shader->id);
 		for (int i = 0; i < 16; i++) {
 			if (batch.material->textures[i] != nullptr) {

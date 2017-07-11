@@ -1,41 +1,24 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <glad/glad.h>
-
-#include "container.h"
 
 namespace oak::graphics {
+	struct Shader;
+	struct ShaderInfo;
+}
 
-	class GLShader {
-	public:
-		GLShader();
-		~GLShader();
+namespace oak::graphics::GLShader {
 
-		GLShader(GLShader&& other);
-		void operator=(GLShader&& other);
+	Shader create(const ShaderInfo& info);
+	void destroy(Shader& shader);
 
-		void create(const oak::string& vertPath, const oak::string& fragPath);
-		void destroy();
+	void bind(const Shader& shader);
+	void unbind();
 
-		void bind() const;
-		void unbind() const;
-
-		void setUniform(const oak::string& name, const glm::mat4& value) const;
-		void setUniform(const oak::string& name, const glm::vec3& value) const;
-		void setUniform(const oak::string& name, uint32_t value) const;
-		void setUniform(const oak::string& name, int value) const;
-		void setUniform(const oak::string& name, float value) const;
-
-		void bindBlockIndex(const oak::string& name, GLuint binding) const;
-
-		inline GLuint getId() const { return pid_; }
-
-	private:
-		GLuint pid_;
-		oak::unordered_map<oak::string, GLuint> locations_;
-
-		GLuint load(const oak::string& path, GLenum type);
-	};
+	void setUniform(const Shader& shader, const char* name, const glm::mat4& value);
+	void setUniform(const Shader& shader, const char* name, const glm::vec3& value);
+	void setUniform(const Shader& shader, const char* name, unsigned int value);
+	void setUniform(const Shader& shader, const char* name, int value);
+	void setUniform(const Shader& shader, const char* name, float value);
 
 }

@@ -11,8 +11,6 @@ uniform float u_mulReduce = 1.0 / 8.0;
 uniform float u_minReduce = 1.0 / 128.0;
 uniform float u_maxSpan = 8.0;
 
-const float gamma = 1.8;
-
 in vec2 passUV;
 
 layout (location = 0) out vec4 fragColor;
@@ -108,6 +106,5 @@ vec3 fxaa() {
 void main(void) {
 	vec3 cl = fxaa();
 
-	fragColor = vec4(pow(cl, vec3(1.0) / gamma), 1.0);
-
+	fragColor = vec4(cl, 1.0);
 }

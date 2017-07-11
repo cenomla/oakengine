@@ -1,40 +1,41 @@
 #include "gl_shader.h"
 
+#include <glad/glad.h>
+
+#include "graphics/shader.h"
 #include "util/file_util.h"
 #include "log.h"
 
-namespace oak::graphics {
-		
-	GLShader::GLShader() : pid_{ 0 } {}
+namespace oak::graphics::GLShader {
 
-	GLShader::~GLShader() {
-		destroy();
-	}
+	static GLuint load(const char *path, GLenum type);
 
-	GLShader::GLShader(GLShader&& other) : pid_{ other.pid_ }, locations_{ std::move(other.locations_) } { 
-		other.pid_ = 0;
-	}
-
-	void GLShader::operator=(GLShader&& other) {
-		pid_ = other.pid_;
-		locations_ = std::move(other.locations_);
-		other.pid_ = 0;
-	}
-
-	void GLShader::create(const oak::string& vertPath, const oak::string& fragPath) {
-		if (pid_ != 0) { return; }
+	Shader create(const ShaderInfo& info) {
 
 		//create the program
-		GLuint vert = load(vertPath, GL_VERTEX_SHADER);
-		GLuint frag = load(fragPath, GL_FRAGMENT_SHADER);
-		pid_ = glCreateProgram();
-		glAttachShader(pid_, vert);
-		glAttachShader(pid_, frag);
-		glLinkProgram(pid_);
-		glValidateProgram(pid_);
-		glDeleteShader(vert);
-		glDeleteShader(frag);
+		uint32_t pid = glCreateProgram();
+		oak::vector<GLuint> shaders;
+		if (info.vertex) {
+			shaders.push_back(load(info.vertex, GL_VERTEX_SHADER));
+		}
+		if (info.geometry) {
+			shaders.push_back(load(info.geometry, GL_GEOMETRY_SHADER));
+		}
+		if (info.fragment) {
+			shaders.push_back(load(info.fragment, GL_FRAGMENT_SHADER));
+		}
+		for (auto id : shaders) {
+			glAttachShader(pid, id);
+		}
+		glLinkProgram(pid);
+		glValidateProgram(pid);
+		for (auto id : shaders) {
+			glDeleteShader(id);
+		}
 
+		return { pid, info };
+
+		/*
 		//get all the uniform names
 		char buffer[64];
 		GLsizei length;
@@ -42,7 +43,7 @@ namespace oak::graphics {
 		GLint size;
 		GLenum type;
 		int block;
-		glGetProgramiv(pid_, GL_ACTIVE_UNIFORMS, &count);
+		glGetProgramiv(pid, GL_ACTIVE_UNIFORMS, &count);
 
 		for (GLuint i = 0; i < static_cast<GLuint>(count); i++) {
 			//get the uniform information
@@ -61,50 +62,46 @@ namespace oak::graphics {
 				locations_.insert({ oak::string{ buffer },  glGetUniformLocation(pid_, buffer) });
 			}
 		}
+		*/
 	}
 
-	void GLShader::destroy() {
-		if (pid_ != 0) {
-			glDeleteProgram(pid_);
-			pid_ = 0;
+	void destroy(Shader& shader) {
+		if (shader.id) {
+			glDeleteProgram(shader.id);
+			shader.id = 0;
 		}
 	}
 
-	void GLShader::bind() const {
-		glUseProgram(pid_);
+	void bind(const Shader& shader) {
+		glUseProgram(shader.id);;
 	}
 
-	void GLShader::unbind() const {
+	void unbind() {
 		glUseProgram(0);
 	}
 
 
-	void GLShader::setUniform(const oak::string& name, const glm::mat4& value) const {
-		glUniformMatrix4fv(locations_.at(name), 1, GL_FALSE, &value[0][0]);
+	void setUniform(const Shader& shader, const char *name, const glm::mat4& value) {
+		glUniformMatrix4fv(glGetUniformLocation(shader.id, name), 1, GL_FALSE, &value[0][0]);
 	}
 
-	void GLShader::setUniform(const oak::string& name, const glm::vec3& value) const {
-		glUniform3fv(locations_.at(name), 1, &value[0]);
+	void setUniform(const Shader& shader, const char *name, const glm::vec3& value) {
+		glUniform3fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
 	}
 
-	void GLShader::setUniform(const oak::string& name, uint32_t value) const {
-		glUniform1ui(locations_.at(name), value);
+	void setUniform(const Shader& shader, const char *name, unsigned int value) {
+		glUniform1ui(glGetUniformLocation(shader.id, name), value);
 	}
 
-	void GLShader::setUniform(const oak::string& name, int value) const {
-		glUniform1i(locations_.at(name), value);
+	void setUniform(const Shader& shader, const char *name, int value) {
+		glUniform1i(glGetUniformLocation(shader.id, name), value);
 	}
 
-	void GLShader::setUniform(const oak::string& name, float value) const {
-		glUniform1f(locations_.at(name), value);
+	void setUniform(const Shader& shader, const char *name, float value) {
+		glUniform1f(glGetUniformLocation(shader.id, name), value);
 	}
 
-	void GLShader::bindBlockIndex(const oak::string& name, GLuint binding) const {
-		GLuint index = glGetUniformBlockIndex(pid_, name.c_str());
-		glUniformBlockBinding(pid_, index, binding);
-	}
-
-	GLuint GLShader::load(const oak::string& path, GLenum type) {	
+	GLuint load(const char *path, GLenum type) {	
 		const oak::string code = util::readFileAsString(path);
 		const char *cstr = code.c_str();
 
@@ -125,7 +122,7 @@ namespace oak::graphics {
 		}
 		//log a failure
 		if (result == GL_FALSE) {
-			log_print_warn("failed to compile shader: %s", path.c_str());
+			log_print_warn("failed to compile shader: %s", path);
 		}
 
 		return shader;
