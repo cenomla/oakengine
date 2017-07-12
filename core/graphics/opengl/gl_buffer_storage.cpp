@@ -2,68 +2,76 @@
 
 #include <glad/glad.h>
 
+#include "gl_vertex_array.h"
+#include "gl_buffer.h"
+
 namespace oak::graphics {
-
-	GLBufferStorage::GLBufferStorage() : vbo_{ GL_ARRAY_BUFFER }, ibo_{ GL_ELEMENT_ARRAY_BUFFER } {
-
-	}
 
 	void GLBufferStorage::create(const AttributeLayout *attribs) {
 		//standard opengl vertex array setup with index buffer
-		vao_.create();
-		vao_.bind();
+		vao_ = GLVertexArray::create();
+		GLVertexArray::bind(vao_);
 
-		vbo_.create();
-		vbo_.bind();
-		vao_.attributeDescription(attribs);
-		vbo_.unbind();
+		BufferInfo info;
+		info.type = BufferType::VERTEX;
+		info.hint = BufferHint::STREAM;
 
-		ibo_.create();
-		ibo_.bind();
+		vbo_ = GLBuffer::create(info);
+		GLBuffer::bind(vbo_);
+		GLVertexArray::attributeDescription(attribs);
+		GLBuffer::unbind(vbo_);
+
+		info.type = BufferType::ELEMENT;
+		ibo_ = GLBuffer::create(info);
+		GLBuffer::bind(ibo_);
 		
-		vao_.unbind();
+		GLVertexArray::unbind();
 	}
 
 	void GLBufferStorage::destroy() {
 		//destroy opengl objects
-		vbo_.destroy();
-		ibo_.destroy();
-		vao_.destroy();
+		GLBuffer::destroy(vbo_);
+		GLBuffer::destroy(ibo_);
+		GLVertexArray::destroy(vao_);
 	}
 
 	void GLBufferStorage::bind() const {
-		vao_.bind();
+		GLVertexArray::bind(vao_);
 	}
 
 	void GLBufferStorage::unbind() const {
-		vao_.unbind();
+		GLVertexArray::unbind();
 	}
 
-	void* GLBufferStorage::map(int index, uint32_t flags) {
+	void* GLBufferStorage::map(int index) {
 		if (index == 0) {
-			return vbo_.map(flags);
+			GLBuffer::bind(vbo_);
+			return GLBuffer::map(vbo_);
 		}
 		if (index == 1) {
-			return ibo_.map(flags);
+			GLBuffer::bind(ibo_);
+			return GLBuffer::map(ibo_);
 		}
 		return nullptr;
 	}
 
 	void GLBufferStorage::unmap(int index) {
 		if (index == 0) {
-			vbo_.unmap();
+			GLBuffer::unmap(vbo_);
 		}
 		if (index == 1) {
-			ibo_.unmap();
+			GLBuffer::unmap(ibo_);
 		}
 	}
 
-	void GLBufferStorage::data(int index, size_t size, const void *data, uint32_t flags) {
+	void GLBufferStorage::data(int index, size_t size, const void *data) {
 		if (index == 0) {
-			vbo_.data(size, data, flags);
+			GLBuffer::bind(vbo_);
+			GLBuffer::data(vbo_, size, data);
 		}
 		if (index == 1) {
-			ibo_.data(size, data, flags);
+			GLBuffer::bind(ibo_);
+			GLBuffer::data(ibo_, size, data);
 		}
 	}
 

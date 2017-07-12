@@ -5,6 +5,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "texture.h"
+
 #include "log.h"
 
 namespace oak::graphics {
@@ -22,6 +24,12 @@ namespace oak::graphics {
 
 		processNode(scene, scene->mRootNode);
 
+	}
+
+	void Model::setTextureRegion(const TextureRegion& region) {
+		for (auto& mesh: meshes_) {
+			mesh.setTextureRegion(region);
+		}
 	}
 
 	void Model::processNode(const aiScene *scene, aiNode *node) {

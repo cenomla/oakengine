@@ -5,6 +5,7 @@
 
 #include "graphics/material.h"
 #include "event_manager.h"
+#include "input_manager.h"
 #include "input_events.h"
 #include "log.h"
 
@@ -18,12 +19,25 @@ namespace oak::graphics {
 	}
 
 	void GLApi::init() {
+		GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+
+		const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+		/*
+		glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+		glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+		glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+		*/
+
+		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-		window_ = glfwCreateWindow(1280, 720, "sandbox", 0, 0);
+		window_ = glfwCreateWindow(mode->width, mode->height, "sandbox", 0, 0);
 		if (window_ == nullptr) {
 			log_print_err("cannot create window");
 			abort();
@@ -44,6 +58,7 @@ namespace oak::graphics {
 		log_print_out("opengl version: %s", glGetString(GL_VERSION));
 
 		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
+		InputManager::inst().update();
 	}
 
 	void GLApi::terminate() {

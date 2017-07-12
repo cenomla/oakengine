@@ -9,6 +9,8 @@
 
 namespace oak::graphics {
 
+	struct TextureRegion;
+
 	class Mesh {
 	public:
 
@@ -19,6 +21,7 @@ namespace oak::graphics {
 		};
 		
 		void setData(const oak::vector<Vertex>& vertices, const oak::vector<uint32_t>& indices);
+		void setTextureRegion(const TextureRegion& region);
 
 		void draw(void *buffer, void *ibuffer, const glm::mat4& transform, uint32_t startIndex) const;
 
@@ -29,8 +32,6 @@ namespace oak::graphics {
 
 		oak::vector<Vertex> vertices_;
 		oak::vector<uint32_t> indices_;
-
-		void destroy();
 	};
 
 }

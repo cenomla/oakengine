@@ -1,24 +1,19 @@
 #pragma once
 
-#include "graphics/attribute_layout.h"
+#include <cinttypes>
 
 namespace oak::graphics {
+	struct AttributeLayout;
+}
 
-	class GLVertexArray {
-	public:
+namespace oak::graphics::GLVertexArray {
 
-		GLVertexArray();
-		~GLVertexArray();
-
-		void create();
-		void destroy();
+	uint32_t create();
+	void destroy(uint32_t id);
 	
-		void bind() const;
-		void unbind() const;
+	void bind(uint32_t id);
+	void unbind();
 
-		void attributeDescription(const AttributeLayout *attribs) const;
-	private:
-		uint32_t vao_;
-	};
+	void attributeDescription(const AttributeLayout *attribs);
 
 }

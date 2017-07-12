@@ -6,9 +6,10 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <graphics/opengl/gl_texture_atlas.h>
+#include <graphics/opengl/gl_texture.h>
 #include <graphics/opengl/gl_api.h>
 #include <graphics/opengl/gl_buffer_storage.h>
+#include <graphics/opengl/gl_buffer.h>
 #include <graphics/opengl/gl_shader.h>
 #include <graphics/opengl/gl_framebuffer.h>
 
@@ -19,11 +20,9 @@
 #include <resource_manager.h>
 #include <event_manager.h>
 #include <input_manager.h>
-#include <view_system.h>
 #include <resource.h>
 #include <component_storage.h>
 #include <core_components.h>
-#include <components.h>
 #include <input_events.h>
 #include <scene_events.h>
 #include <update_events.h>
@@ -37,42 +36,105 @@
 
 #include <glad/glad.h>
 
-class MovementSystem : public oak::System {
+oak::graphics::Buffer matrix_ubo;
+oak::graphics::Buffer proj_ubo; 
+oak::graphics::Buffer ortho_ubo;
+oak::graphics::Buffer light_ubo;
+
+oak::CursorMode cmode;
+
+struct TransformComp {
+	glm::mat4 transform{ 1.0f };
+};
+
+struct CameraComp {
+	glm::vec3 position{ 0.0f };
+	glm::vec3 rotation{ 0.0f };
+};
+
+void pup(oak::Puper& puper, TransformComp& comp, const oak::ObjInfo& info) {
+
+}
+
+void pup(oak::Puper& puper, CameraComp& comp, const oak::ObjInfo& info) {
+
+}
+
+class CameraSystem : public oak::System {
 public:
-	MovementSystem(oak::Scene& scene) : scene_{ &scene } {}
+	CameraSystem(oak::Scene& scene) : scene_{ &scene } {}
 
 	void init() override {
-		cache_.requireComponent<oak::TransformComponent>();
 		cache_.requireComponent<oak::PrefabComponent>();
+		cache_.requireComponent<CameraComp>();
 		cache_.requirePrefab(std::hash<oak::string>{}("player"));
 	}
 
 	void run() override {
 		cache_.update(*scene_);
 
-		auto& ts = oak::getComponentStorage<oak::PositionComponent>(*scene_);
+		auto& cs = oak::getComponentStorage<CameraComp>(*scene_);
+
+		auto& inputManager = oak::InputManager::inst();
 
 		for (const auto& entity : cache_.entities()) {
-			auto& tc = oak::getComponent<oak::PositionComponent>(ts, entity);
+			auto& cc = oak::getComponent<CameraComp>(cs, entity);
+
+			//temp camera
+			//look
 			
-			if (oak::InputManager::inst().getAction("move_up")) {
-				tc.position.y -= 4.0f;
+			if (cmode == oak::CursorMode::DISABLED) {
+				for (const auto& evt : oak::EventManager::inst().getQueue<oak::CursorEvent>()) {
+					//translate to zero
+					cc.rotation.y -= glm::radians(evt.x - px) / 6.0f;
+					cc.rotation.x -= glm::radians(evt.y - py) / 6.0f;
+
+					if (cc.rotation.y >= glm::pi<float>() * 2.0f) {
+						cc.rotation.y = 0.0f;
+					}
+					if (cc.rotation.x >= glm::pi<float>() * 2.0f) {
+						cc.rotation.x = 0.0f;
+					}
+					px = evt.x;
+					py = evt.y;
+
+				}
+			} else {
+				for (const auto& evt : oak::EventManager::inst().getQueue<oak::CursorEvent>()) {
+					px = evt.x;
+					py = evt.y;
+				}
 			}
-			if (oak::InputManager::inst().getAction("move_down")) {
-				tc.position.y += 4.0f;
+			//move
+			
+			if (inputManager.getAction("move_forward")) {
+				cc.position += glm::quat{ glm::vec3{ 0.0f, cc.rotation.y, 0.0f } } * glm::vec3{ 0.0f, 0.0f, -1.0f };
 			}
-			if (oak::InputManager::inst().getAction("move_left")) {
-				tc.position.x -= 4.0f;
+			if (inputManager.getAction("move_backward")) {
+				cc.position += glm::quat{ glm::vec3{ 0.0f, cc.rotation.y, 0.0f } } * glm::vec3{ 0.0f, 0.0f, 1.0f };
 			}
-			if (oak::InputManager::inst().getAction("move_right")) {
-				tc.position.x += 4.0f;
+			if (inputManager.getAction("strafe_left")) {
+				cc.position += glm::quat{ glm::vec3{ 0.0f, cc.rotation.y, 0.0f } } * glm::vec3{ -1.0f, 0.0f, 0.0f };
 			}
+			if (inputManager.getAction("strafe_right")) {
+				cc.position += glm::quat{ glm::vec3{ 0.0f, cc.rotation.y, 0.0f } } * glm::vec3{ 1.0f, 0.0f, 0.0f };
+			}
+			if (inputManager.getAction("move_up")) {
+				cc.position.y += 0.4f;
+			}
+			if (inputManager.getAction("move_down")) {
+				cc.position.y -= 0.4f;
+			}
+			
+			
 		}
 	}
 
 private:
 	oak::EntityCache cache_;
 	oak::Scene *scene_;
+	float px = 0.0f, py = 0.0f;
+
 };
 
 struct stdoutstream : public oak::log::Stream {
@@ -141,6 +203,7 @@ int main(int argc, char** argv) {
 	evtManager.addQueue<oak::WindowCreateEvent>();
 	evtManager.addQueue<oak::WindowCloseEvent>();
 	evtManager.addQueue<oak::WindowResizeEvent>();
+	evtManager.addQueue<oak::FrameSizeEvent>();
 	evtManager.addQueue<oak::KeyEvent>();
 	evtManager.addQueue<oak::ButtonEvent>();
 	evtManager.addQueue<oak::CursorEvent>();
@@ -183,40 +246,28 @@ int main(int argc, char** argv) {
 	renderSystem.batcher_.addBufferStorage(&_2dlayout, &_2dstorage);
 	
 
-	MovementSystem movementSystem{ scene };
+	CameraSystem cameraSystem{ scene };
 	//add them to the system manager
 	sysManager.addSystem(renderSystem, "render_system");
-	sysManager.addSystem(movementSystem, "movement_system");
+	sysManager.addSystem(cameraSystem, "camera_system");
 
 	//create component type handles
 	chs.addHandle<oak::EventComponent>("event");
 	chs.addHandle<oak::PrefabComponent>("prefab");
-	chs.addHandle<oak::TransformComponent>("transform");
-	chs.addHandle<oak::SpriteComponent>("sprite");
-	chs.addHandle<oak::TextComponent>("text");
-	chs.addHandle<oak::AABB2dComponent>("aabb2d");
-	chs.addHandle<OccluderComponent>("occluder");
-	chs.addHandle<LightComponent>("light");
+	chs.addHandle<TransformComp>("transform");
+	chs.addHandle<CameraComp>("camera");
 
 	//create component storage
 	oak::ComponentStorage eventStorage{ "event" };
 	oak::ComponentStorage prefabStorage{ "prefab" };
 	oak::ComponentStorage transformStorage{ "transform" };
-	oak::ComponentStorage spriteStorage{ "sprite" };
-	oak::ComponentStorage textStorage{ "text" };
-	oak::ComponentStorage aabbStorage{ "aabb2d" };
-	oak::ComponentStorage occluderStorage{ "occluder" };
-	oak::ComponentStorage lightStorage{ "light" };
+	oak::ComponentStorage cameraStorage{ "camera" };
 
 	//add component storage to scene
 	scene.addComponentStorage(eventStorage);
 	scene.addComponentStorage(prefabStorage);
 	scene.addComponentStorage(transformStorage);
-	scene.addComponentStorage(spriteStorage);
-	scene.addComponentStorage(textStorage);
-	scene.addComponentStorage(aabbStorage);
-	scene.addComponentStorage(occluderStorage);
-	scene.addComponentStorage(lightStorage);
+	scene.addComponentStorage(cameraStorage);
 
 	//init the test renderer
 	sceneRenderer.init();
@@ -230,42 +281,42 @@ int main(int argc, char** argv) {
 	struct {
 		glm::mat4 proj;
 		glm::mat4 view;
-	} block;
-	block.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.5f, 500.0f);
-	block.view = glm::lookAt(glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 4.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	} matrix;
+	matrix.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.5f, 500.0f);
 
 	struct {
 		glm::mat4 invProj;
 		glm::mat4 proj;
-	} iblock;
-	iblock.invProj = glm::inverse(block.proj);
-	iblock.proj = block.proj;
+	} pmatrix;
+	pmatrix.invProj = glm::inverse(matrix.proj);
+	pmatrix.proj = matrix.proj;
 
 	struct {
 		glm::mat4 proj;
 		glm::mat4 view;
-	} oblock;
-	oblock.view = glm::mat4{ 1.0f };
-	oblock.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+	} omatrix;
+	omatrix.view = glm::mat4{ 1.0f };
+	omatrix.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
-	oak::graphics::GLBuffer ubo{ GL_UNIFORM_BUFFER };
-	ubo.create();
-	ubo.bindBufferBase(0);
-
-	oak::graphics::GLBuffer iubo{ GL_UNIFORM_BUFFER };
-	iubo.create();
-	iubo.bind();
-	iubo.data(sizeof(iblock), &iblock, GL_STREAM_DRAW);
-	iubo.bindBufferBase(2);
-
-	oak::graphics::GLBuffer oubo{ GL_UNIFORM_BUFFER };
-	oubo.create();
-	oubo.bind();
-	oubo.data(sizeof(oblock), &oblock, GL_STATIC_DRAW);
-	oubo.bindBufferBase(1);
+	oak::graphics::BufferInfo bufferInfo;
+	//create matrix buffer
+	bufferInfo.type = oak::graphics::BufferType::UNIFORM;
+	bufferInfo.hint = oak::graphics::BufferHint::STREAM;
+	bufferInfo.base = 0;
+	matrix_ubo = oak::graphics::GLBuffer::create(bufferInfo);
+	//create proj invProj buffer
+	bufferInfo.hint = oak::graphics::BufferHint::STATIC;
+	bufferInfo.base = 2;
+	proj_ubo = oak::graphics::GLBuffer::create(bufferInfo);
+	oak::graphics::GLBuffer::bind(proj_ubo);
+	oak::graphics::GLBuffer::data(proj_ubo, sizeof(pmatrix), &pmatrix);
+	//create ortho matrix buffer
+	bufferInfo.base = 1;
+	ortho_ubo = oak::graphics::GLBuffer::create(bufferInfo);
+	oak::graphics::GLBuffer::bind(ortho_ubo);
+	oak::graphics::GLBuffer::data(ortho_ubo, sizeof(omatrix), &omatrix);
 
 	//lights
-
 	struct {
 		glm::vec3 pos;
 		float radius;
@@ -289,9 +340,9 @@ int main(int argc, char** argv) {
 		lights[i].color = { 1.0f, 1.0f, 1.0f };
 	}
 
-	oak::graphics::GLBuffer lubo{ GL_UNIFORM_BUFFER };
-	lubo.create();
-	lubo.bindBufferBase(4);
+	bufferInfo.hint = oak::graphics::BufferHint::STREAM;
+	bufferInfo.base = 4;
+	light_ubo = oak::graphics::GLBuffer::create(bufferInfo);
 	
 	//shader setup
 	oak::graphics::ShaderInfo shaderInfo;
@@ -302,20 +353,46 @@ int main(int argc, char** argv) {
 	shaderInfo.fragment = "core/graphics/shaders/forward/pass2d/frag.glsl";
 	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", oak::graphics::GLShader::create(shaderInfo));
 	//textures
-	auto& tex_pbrBase = resManager.add<oak::graphics::Texture>("tex_pbrBase", oak::graphics::GLTexture::create("sandbox/res/textures/pbr_rust/color.png"));
-	auto& tex_pbrNormal = resManager.add<oak::graphics::Texture>("tex_pbrNormal", oak::graphics::GLTexture::create("sandbox/res/textures/pbr_rust/normal.png"));
-	auto& tex_pbrMetallic = resManager.add<oak::graphics::Texture>("tex_pbrMetallic", oak::graphics::GLTexture::create("sandbox/res/textures/pbr_rust/metalness.png", 1));
-	auto& tex_pbrRoughness = resManager.add<oak::graphics::Texture>("tex_pbrRoughness", oak::graphics::GLTexture::create("sandbox/res/textures/pbr_rust/roughness.png", 1));
-
-	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", oak::graphics::GLTexture::create("sandbox/res/textures/character.png"));
+	oak::graphics::TextureInfo textureInfo;
+	textureInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
+	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", oak::graphics::GLTexture::create("sandbox/res/textures/character.png", textureInfo));
+	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
+	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
+	textureInfo.width = 4096;
+	textureInfo.height = 4096;
+	auto& colorAtlas = resManager.add<oak::graphics::TextureAtlas>("colorAtlas", 
+		oak::graphics::GLTexture::createAtlas({ 
+			"sandbox/res/textures/pbr_rust/color.png",
+			"sandbox/res/textures/pbr_grass/color.png",
+			"sandbox/res/textures/pbr_rock/color.png",
+		}, textureInfo));
+	auto& normalAtlas = resManager.add<oak::graphics::TextureAtlas>("normalAtlas",
+		oak::graphics::GLTexture::createAtlas({
+			"sandbox/res/textures/pbr_rust/normal.png",
+			"sandbox/res/textures/pbr_grass/normal.png"
+		},	textureInfo));
+	textureInfo.format = oak::graphics::TextureFormat::BYTE_R;
+	auto& metalAtlas = resManager.add<oak::graphics::TextureAtlas>("metalAtlas",
+		oak::graphics::GLTexture::createAtlas({
+			"sandbox/res/textures/pbr_rust/metalness.png",
+			"sandbox/res/textures/pbr_grass/metalness.png",
+			"sandbox/res/textures/pbr_rock/metalness.png"
+		}, textureInfo));
+	auto& roughAtlas = resManager.add<oak::graphics::TextureAtlas>("roughAtlas",
+		oak::graphics::GLTexture::createAtlas({
+			"sandbox/res/textures/pbr_rust/roughness.png",
+			"sandbox/res/textures/pbr_grass/roughness.png",
+			"sandbox/res/textures/pbr_rock/roughness.png"
+		}, textureInfo));
 
 	//materials
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &tex_pbrBase, &tex_pbrRoughness, &tex_pbrMetallic);
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
 
 	//meshes
 	auto& mesh_box = resManager.add<oak::graphics::Model>("model_box");
 	mesh_box.load("sandbox/res/models/box.obj");
+	mesh_box.setTextureRegion(colorAtlas.regions[2].second);
 
 	auto& mesh_floor = resManager.add<oak::graphics::Mesh>("mesh_floor");
 
@@ -331,34 +408,25 @@ int main(int argc, char** argv) {
 	};
 
 	mesh_floor.setData(vertices, indices);
+	mesh_floor.setTextureRegion(colorAtlas.regions[1].second);
 
 	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }), &mesh_box.getMeshes()[0], &mat_box, 0);
 	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_box, 0);
 
 	//create entities
-	oak::EntityId entity = scene.createEntity();
-	scene.activateEntity(entity);
+	oak::EntityId player = scene.createEntity();
+	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
+	oak::addComponent<TransformComp>(scene, player);
+	oak::addComponent<CameraComp>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
+	scene.activateEntity(player);
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> dt;
 
-	inputManager.update();
 
-	//cam
-	float roth = 180.0f, rotv = 0.0f;
-	float px, py;
-	glm::vec3 pos{ 16.0f, 8.0f, 16.0f };
-	glm::vec3 look{ glm::quat{ glm::vec3{ rotv, roth, 0.0f } } * glm::vec3{ 0.0f, 0.0f, -1.0f } };
-	{
-		double mx, my;
-		inputManager.getCursorPos(&mx, &my);
-		px = static_cast<float>(mx);
-		py = static_cast<float>(my);
-	}
-	oak::CursorMode cmode = oak::CursorMode::NORMAL;
-	evtManager.getQueue<oak::CursorModeEvent>().emit({ cmode });
-
+	cmode = oak::CursorMode::NORMAL;
+	oak::EventManager::inst().getQueue<oak::CursorModeEvent>().emit({ cmode });
 
 	//main game loop
 	isRunning = true;
@@ -376,59 +444,24 @@ int main(int argc, char** argv) {
 		inputManager.update();
 		//create / destroy / activate / deactivate entities
 		scene.update();
-
-		//temp camera
-		//look
-		if (cmode == oak::CursorMode::DISABLED) {
-			for (const auto& evt : evtManager.getQueue<oak::CursorEvent>()) {
-				roth -= glm::radians(evt.x - px) / 6.0f;
-				rotv -= glm::radians(evt.y - py) / 6.0f;
-				px = evt.x;
-				py = evt.y;
-
-				look = glm::quat{ glm::vec3{ rotv, roth, 0.0f } } * glm::vec3{ 0.0f, 0.0f, -1.0f };
-			}
-		} else {
-			for (const auto& evt : evtManager.getQueue<oak::CursorEvent>()) {
-				px = evt.x;
-				py = evt.y;
-			}
-		}
-		//move
-		if (inputManager.getAction("move_forward")) {
-			pos += glm::vec3{ look.x, 0.0f, look.z };
-		}
-		if (inputManager.getAction("move_backward")) {
-			pos -= glm::vec3{ look.x, 0.0f, look.z };
-		}
-		if (inputManager.getAction("strafe_left")) {
-			pos -= glm::cross(glm::vec3{ look.x, 0.0f, look.z }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		}
-		if (inputManager.getAction("strafe_right")) {
-			pos += glm::cross(glm::vec3{ look.x, 0.0f, look.z }, glm::vec3{ 0.0f, 1.0f, 0.0f });
-		}
-		if (inputManager.getAction("move_up")) {
-			pos.y += 0.4f;
-		}
-		if (inputManager.getAction("move_down")) {
-			pos.y -= 0.4f;
-		}
-
-		block.view = glm::lookAt(pos, pos + look, glm::vec3{ 0.0f, 1.0f, 0.0f });
-
-		ubo.bind();
-		ubo.data(sizeof(block), &block, GL_STREAM_DRAW);
-
+		//update view
+		auto& cc = oak::getComponent<CameraComp>(scene, player);
+		matrix.view = glm::mat4{ glm::quat{ cc.rotation } };
+		matrix.view[3] = glm::vec4{ cc.position, 1.0f };
+		matrix.view = glm::inverse(matrix.view); //move view instead of camera
+		//update lights
 		for (int i = 0; i < 8; i++) {
-			lights[i].pos = glm::vec3{ block.view * glm::vec4{ lpos[i], 1.0f} };
+			lights[i].pos = glm::vec3{ matrix.view * glm::vec4{ lpos[i], 1.0f} };
 		}
 
-		lubo.bind();
-		lubo.data(sizeof(lights), &lights, GL_STREAM_DRAW);
+		//upload buffers
+		oak::graphics::GLBuffer::bind(matrix_ubo);
+		oak::graphics::GLBuffer::data(matrix_ubo, sizeof(matrix), &matrix);
+		oak::graphics::GLBuffer::bind(light_ubo);
+		oak::graphics::GLBuffer::data(light_ubo, sizeof(lights), &lights);
 	
 
-		movementSystem.run();
-
+		cameraSystem.run();
 		renderSystem.run();
 
 		//check for exit

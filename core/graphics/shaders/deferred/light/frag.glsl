@@ -79,7 +79,7 @@ void main() {
 	vec4 s_ar = texture(texAlbedo, passUV);
 	vec4 s_nm = texture(texNormal, passUV);
 	vec3 albedo = s_ar.rgb;
-	float roughness = s_ar.w;
+	float roughness = max(s_ar.w, 0.25);
 	vec3 normal = s_nm.xyz * 2.0 - 1.0;
 	float metalness = s_nm.w;
 	float depth = texture(texDepth, passUV).x;

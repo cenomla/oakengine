@@ -13,7 +13,7 @@ namespace oak {
 
 	InputManager *InputManager::instance = nullptr;
 
-	InputManager::InputManager() {
+	InputManager::InputManager() : actions_{ 0 }, window_{ nullptr } {
 		oak_assert(instance == nullptr);
 		instance = this;
 
@@ -42,6 +42,7 @@ namespace oak {
 			actions_[evt.button] = evt.action;
 		}
 		for (const auto& evt : EventManager::inst().getQueue<CursorModeEvent>()) {
+			if (!window_) { break; }
 			switch (evt.mode) {
 				case CursorMode::NORMAL:
 					glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -83,6 +84,11 @@ namespace oak {
 	}
 
 	void InputManager::getCursorPos(double *xpos, double *ypos) const {
+		if (!window_) {
+			*xpos = 0.0f;
+			*ypos = 0.0f;
+			return;
+		}
 		glfwGetCursorPos(window_, xpos, ypos);
 	}
 

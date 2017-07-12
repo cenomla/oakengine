@@ -2,6 +2,7 @@
 
 #include <cinttypes>
 
+#include "container.h"
 #include "api.h"
 
 namespace oak::graphics {
@@ -18,8 +19,8 @@ namespace oak::graphics {
 		TextureFilter magFilter = TextureFilter::LINEAR;
 		TextureFilter minFilter = TextureFilter::LINEAR;
 
-		TextureWrap xWrap = TextureWrap::CLAMP_EDGE;
-		TextureWrap yWrap = TextureWrap::CLAMP_EDGE;
+		TextureWrap xWrap = TextureWrap::REPEAT;
+		TextureWrap yWrap = TextureWrap::REPEAT;
 
 		uint32_t width, height;
 	};
@@ -27,6 +28,11 @@ namespace oak::graphics {
 	struct Texture {
 		uint32_t id = 0;
 		TextureInfo info;
+	};
+
+	struct TextureAtlas {
+		Texture texture;
+		oak::vector<std::pair<oak::string, TextureRegion>> regions;
 	};
 
 }

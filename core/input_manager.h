@@ -30,6 +30,8 @@ namespace oak {
 		void setKey(int key, int action);
 		int getButton(int button) const;
 		void getCursorPos(double *xpos, double *ypos) const;
+		
+		inline GLFWwindow* getWindow() const { return window_; }
 	private:
 		int actions_[1024];
 		oak::unordered_map<oak::string, int> bindings_;

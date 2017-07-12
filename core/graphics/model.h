@@ -14,6 +14,7 @@ namespace oak::graphics {
 	public:
 
 		void load(const oak::string& path);
+		void setTextureRegion(const TextureRegion& region);
 
 		const oak::vector<Mesh>& getMeshes() const { return meshes_; }
 

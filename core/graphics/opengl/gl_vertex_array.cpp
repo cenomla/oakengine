@@ -2,34 +2,29 @@
 
 #include <glad/glad.h>
 
-namespace oak::graphics {
+#include "graphics/attribute_layout.h"
 
-	GLVertexArray::GLVertexArray() : vao_{ 0 } {}
+namespace oak::graphics::GLVertexArray {
 
-	GLVertexArray::~GLVertexArray() {
-		destroy();
+	uint32_t create() {
+		uint32_t id;
+		glGenVertexArrays(1, &id);
+		return id;
 	}
 
-	void GLVertexArray::create() {
-		glGenVertexArrays(1, &vao_);
+	void destroy(uint32_t id) {
+		glDeleteVertexArrays(1, &id);
 	}
 
-	void GLVertexArray::destroy() {
-		if (vao_ != 0) {
-			glDeleteVertexArrays(1, &vao_);
-			vao_ = 0;
-		}
+	void bind(uint32_t id) {
+		glBindVertexArray(id);
 	}
 
-	void GLVertexArray::bind() const {
-		glBindVertexArray(vao_);
-	}
-
-	void GLVertexArray::unbind() const {
+	void unbind() {
 		glBindVertexArray(0);
 	}
 
-	static GLenum gltype[] = {
+	static const GLenum gltype[] = {
 		GL_FLOAT,
 		GL_FLOAT,
 		GL_FLOAT,
@@ -37,7 +32,7 @@ namespace oak::graphics {
 		GL_UNSIGNED_BYTE
 	};
 
-	static GLenum normalized[] = {
+	static const GLenum normalized[] = {
 		GL_FALSE,
 		GL_FALSE,
 		GL_FALSE,
@@ -45,7 +40,7 @@ namespace oak::graphics {
 		GL_TRUE
 	};
 
-	static GLuint count[] = {
+	static const GLuint count[] = {
 		3,
 		2,
 		3, 
@@ -53,7 +48,7 @@ namespace oak::graphics {
 		4
 	};
 
-	void GLVertexArray::attributeDescription(const AttributeLayout *layout) const {
+	void attributeDescription(const AttributeLayout *layout) {
 		const size_t stride = layout->stride();
 		size_t i = 0;
 		size_t offset = 0;

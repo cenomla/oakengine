@@ -5,6 +5,7 @@
 #include <graphics/renderer.h>
 #include <graphics/framebuffer.h>
 #include <graphics/shader.h>
+#include <graphics/buffer.h>
 #include <graphics/opengl/gl_buffer_storage.h>
 
 class DeferredRenderer : public oak::graphics::Renderer {
@@ -25,7 +26,7 @@ private:
 	oak::graphics::Shader ssao_;
 	oak::graphics::Shader fxaa_;
 	oak::graphics::GLBufferStorage buffer_;
-	oak::graphics::GLBuffer kernelBuffer_{ GL_UNIFORM_BUFFER };
+	oak::graphics::Buffer kernelBuffer_;
 	oak::graphics::Texture albedo_;
 	oak::graphics::Texture normal_;
 	oak::graphics::Texture depth_;

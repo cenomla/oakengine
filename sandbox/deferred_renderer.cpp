@@ -4,12 +4,15 @@
 #include <glm/gtx/compatibility.hpp>
 
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <graphics/material.h>
 #include <graphics/api.h>
 #include <graphics/pipeline.h>
 #include <graphics/opengl/gl_texture.h>
 #include <graphics/opengl/gl_shader.h>
 #include <graphics/opengl/gl_framebuffer.h>
+#include <graphics/opengl/gl_buffer.h>
+#include <input_manager.h>
 
 #include <random>
 
@@ -23,8 +26,8 @@ void DeferredRenderer::init() {
 	struct {
 		glm::vec4 samples[128];
 		float radius = 1.27;
-		float power = 3.0;
-		int count = 24;
+		float power = 1.0;
+		int count = 16;
 	} kernel;
 	for (size_t i = 0; i < 128; i ++) {
 		kernel.samples[i] = {
@@ -57,13 +60,19 @@ void DeferredRenderer::init() {
 	texInfo.height = 4;
 	texInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
 	texInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
+	texInfo.xWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
+	texInfo.yWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
 	noise_ = oak::graphics::GLTexture::create(texInfo, noise.data());
 
 
 	//create kernel buffer
-	kernelBuffer_.create();
-	kernelBuffer_.bindBufferBase(3);
-	kernelBuffer_.data(sizeof(kernel), &kernel, GL_STATIC_DRAW);
+	oak::graphics::BufferInfo bufferInfo;
+	bufferInfo.base = 3;
+	bufferInfo.type = oak::graphics::BufferType::UNIFORM;
+	bufferInfo.hint = oak::graphics::BufferHint::STATIC;
+	kernelBuffer_ = oak::graphics::GLBuffer::create(bufferInfo);
+	oak::graphics::GLBuffer::bind(kernelBuffer_);
+	oak::graphics::GLBuffer::data(kernelBuffer_, sizeof(kernel), &kernel);
 
 	//create shaders
 	oak::graphics::ShaderInfo shaderInfo;
@@ -93,26 +102,28 @@ void DeferredRenderer::init() {
 		0, 1, 2, 2, 3, 0
 	};
 
-	buffer_.data(0, sizeof(vdata), vdata, GL_STATIC_DRAW);
-	buffer_.data(1, sizeof(edata), edata, GL_STATIC_DRAW);
+	buffer_.bind();
+	buffer_.data(0, sizeof(vdata), vdata);
+	buffer_.data(1, sizeof(edata), edata);
+	buffer_.unbind();
 
 	//setup framebuffer for deferred rendering
 	texInfo.format = oak::graphics::TextureFormat::BYTE_RGBA;
-	texInfo.width = 1280;
-	texInfo.height = 720;
+	texInfo.width = pipeline_->width;
+	texInfo.height = pipeline_->height;
 	albedo_ = oak::graphics::GLTexture::create(texInfo, nullptr);
 	normal_ = oak::graphics::GLTexture::create(texInfo, nullptr);
 	aa_ = oak::graphics::GLTexture::create(texInfo, nullptr);
 	texInfo.format = oak::graphics::TextureFormat::DEPTH_24;
 	depth_ = oak::graphics::GLTexture::create(texInfo, nullptr);
-	texInfo.format = oak::graphics::TextureFormat::FLOAT_R;
+	texInfo.format = oak::graphics::TextureFormat::BYTE_R;
 	ao_ = oak::graphics::GLTexture::create(texInfo, nullptr);
 
 	//ssao buffer
 	oak::graphics::FramebufferInfo framebufferInfo;
 	framebufferInfo.useRenderbuffer = false;
-	framebufferInfo.width = 1280;
-	framebufferInfo.height = 720;
+	framebufferInfo.width = pipeline_->width;
+	framebufferInfo.height = pipeline_->height;
 	framebufferInfo.attachments.push_back({ &ao_, oak::graphics::FramebufferAttachment::COLOR0 });
 
 	ssaobuffer_ = oak::graphics::GLFramebuffer::create(framebufferInfo);
@@ -137,7 +148,7 @@ void DeferredRenderer::terminate() {
 	oak::graphics::GLShader::destroy(ssao_);
 	oak::graphics::GLShader::destroy(fxaa_);
 	buffer_.destroy();
-	kernelBuffer_.destroy();
+	oak::graphics::GLBuffer::destroy(kernelBuffer_);
 	oak::graphics::GLFramebuffer::destroy(gbuffer_);
 	oak::graphics::GLFramebuffer::destroy(ssaobuffer_);
 	oak::graphics::GLFramebuffer::destroy(aabuffer_);

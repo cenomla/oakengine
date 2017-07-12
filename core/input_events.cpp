@@ -16,6 +16,10 @@ namespace oak {
 
 	}
 
+	void pup(Puper& puper, FrameSizeEvent& data, const ObjInfo& info) {
+
+	}
+
 	void pup(Puper& puper, KeyEvent& data, const ObjInfo& info) {
 
 	}

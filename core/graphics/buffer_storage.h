@@ -16,10 +16,10 @@ namespace oak::graphics {
 		virtual void bind() const = 0;
 		virtual void unbind() const = 0;
 
-		virtual void* map(int index, uint32_t flags) = 0;
+		virtual void* map(int index) = 0;
 		virtual void unmap(int index) = 0;
 
-		virtual void data(int index, size_t size, const void *data, uint32_t flags) = 0;
+		virtual void data(int index, size_t size, const void *data) = 0;
 	};
 
 }

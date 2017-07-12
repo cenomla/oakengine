@@ -2,66 +2,61 @@
 
 #include <glad/glad.h>
 
-namespace oak::graphics {
+#include "graphics/buffer.h"
 
-	GLBuffer::GLBuffer(int32_t type) : type_{ type }, bid_{ 0 } {
+namespace oak::graphics::GLBuffer {
 
+	static const GLenum types[] = {
+		GL_ARRAY_BUFFER,
+		GL_ELEMENT_ARRAY_BUFFER,
+		GL_UNIFORM_BUFFER
+	};
+
+	static const GLenum hints[] = {
+		GL_STATIC_DRAW,
+		GL_STREAM_DRAW
+	};
+
+	void bind(const Buffer& buffer) {
+		glBindBuffer(types[static_cast<int>(buffer.info.type)], buffer.id);
 	}
 
-	GLBuffer::~GLBuffer() {
-		destroy();
+	void unbind(const Buffer& buffer) {
+		glBindBuffer(types[static_cast<int>(buffer.info.type)], 0);
 	}
 
-	GLBuffer::GLBuffer(GLBuffer &&other) : type_{ other.type_ }, bid_{ other.bid_ } { 
-		other.bid_ = 0;
+	Buffer create(const BufferInfo& info) {
+		Buffer buffer;
+		glGenBuffers(1, &buffer.id);
+
+		if (info.base != -1) {
+			glBindBufferBase(types[static_cast<int>(info.type)], info.base, buffer.id);
+		}
+		buffer.info = info;
+		return buffer;
 	}
 
-	void GLBuffer::operator=(GLBuffer &&other) {
-		type_ = other.type_;
-		bid_ = other.bid_;
-		other.bid_ = 0;
-	}
-
-	void GLBuffer::bind() const {
-		glBindBuffer(type_, bid_);
-	}
-
-	void GLBuffer::unbind() const {
-		glBindBuffer(type_, 0);
-	}
-
-	void GLBuffer::create() {
-		if (bid_ != 0) { return; }
-
-		glGenBuffers(1, &bid_);
-	}
-
-	void GLBuffer::destroy() {
-		if (bid_ != 0) {
-			glDeleteBuffers(1, &bid_);
-			bid_ = 0;
+	void destroy(Buffer& buffer) {
+		if (buffer.id) {
+			glDeleteBuffers(1, &buffer.id);
+			buffer.id = 0;
 		}
 	}
 
-	void *GLBuffer::map(uint32_t flag) {
-		bind();
-		return glMapBuffer(type_, GL_WRITE_ONLY);
+	void *map(const Buffer& buffer) {
+		return glMapBuffer(types[static_cast<int>(buffer.info.type)], GL_WRITE_ONLY);
 	}
 
-	void GLBuffer::unmap() {
-		bind();
-		glUnmapBuffer(type_);
+	void unmap(const Buffer& buffer) {
+		glUnmapBuffer(types[static_cast<int>(buffer.info.type)]);
 	}
 
-	void GLBuffer::data(size_t size, const void *data, uint32_t hint) {
-		bind();
-		glBufferData(type_, size, data, GL_STATIC_DRAW);
+	void data(const Buffer& buffer, size_t size, const void *data) {
+		glBufferData(types[static_cast<int>(buffer.info.type)], size, data, hints[static_cast<int>(buffer.info.hint)]);
 	}
 
-	void GLBuffer::bindBufferBase(uint32_t index) const {
-		if (type_ == GL_UNIFORM_BUFFER) {
-			glBindBufferBase(type_, index, bid_);
-		}
+	void data(const Buffer& buffer, size_t offset, size_t size, const void *data) {
+		glBufferSubData(types[static_cast<int>(buffer.info.type)], offset, size, data);
 	}
 
 }

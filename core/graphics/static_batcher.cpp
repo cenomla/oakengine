@@ -64,7 +64,7 @@ namespace oak::graphics {
 			for (int i = 0; i < 2; i++) {
 				if (it.size[i] > it.capacity[i]) {
 					it.capacity[i] = it.size[i];
-					it.storage->data(i, it.capacity[i], nullptr, 0);
+					it.storage->data(i, it.capacity[i], nullptr);
 				}
 			}
 		}
@@ -74,8 +74,9 @@ namespace oak::graphics {
 		//map buffers
 		for (auto& it : buffers_) {
 			if (it.size[0] > 0) {
-				it.map[0] = it.storage->map(0, 0);
-				it.map[1] = it.storage->map(1, 0);
+				for (int i = 0; i < 2; i++) {
+					it.map[i] = it.storage->map(i);
+				}
 			}
 		}
 

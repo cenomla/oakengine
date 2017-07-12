@@ -1,11 +1,14 @@
 #include "render_system.h"
 
 #include <algorithm>
+#include <GLFW/glfw3.h>
 
 #include "api.h"
 #include "renderer.h"
 
-#include "components.h"
+#include "input_manager.h"
+
+#include "log.h"
 
 namespace oak::graphics {
 
@@ -14,14 +17,15 @@ namespace oak::graphics {
 	void RenderSystem::init() {
 		api_->init();
 
-		cache_.requireComponent<TransformComponent>();
-		cache_.requireComponent<MeshComponent>();
+		int frameWidth, frameHeight;
+		glfwGetFramebufferSize(oak::InputManager::inst().getWindow(), &frameWidth, &frameHeight);
+
+		log_print_out("frame width: %i, frame height: %i", frameWidth, frameHeight);
 
 		pipeline_.x = 0;
 		pipeline_.y = 0;
-		pipeline_.width = 1280;
-		pipeline_.height = 720;
-
+		pipeline_.width = frameWidth;
+		pipeline_.height = frameHeight;
 	}
 
 	void RenderSystem::terminate() {

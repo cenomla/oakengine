@@ -4,31 +4,22 @@
 #include <cstddef>
 
 namespace oak::graphics {
+	struct Buffer;
+	struct BufferInfo;
+}
 
-	class GLBuffer {
-	public:
-		GLBuffer(int32_t type);
-		~GLBuffer();
+namespace oak::graphics::GLBuffer {
 
-		GLBuffer(GLBuffer &&other);
-		void operator=(GLBuffer &&other);
+	void bind(const Buffer& buffer);
+	void unbind(const Buffer& buffer);
 
-		void bind() const;
-		void unbind() const;
+	Buffer create(const BufferInfo& info);
+	void destroy(Buffer& buffer);
 
-		void create();
-		void destroy();
+	void* map(const Buffer& buffer);
+	void unmap(const Buffer& buffer);
 
-		void* map(uint32_t flags);
-		void unmap();
-
-		void data(size_t size, const void *data, uint32_t flags);
-		void data(size_t size, size_t offset, const void *data);
-
-		void bindBufferBase(uint32_t index) const;
-	private:
-		int32_t type_;
-		uint32_t bid_;
-	};
+	void data(const Buffer& buffer, size_t size, const void *data);
+	void data(const Buffer& buffer, size_t offset, size_t size, const void *data);
 
 }

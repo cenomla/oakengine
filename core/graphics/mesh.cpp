@@ -3,11 +3,20 @@
 #include "util/file_util.h"
 #include "util/string_util.h"
 
+#include "texture.h"
+
 namespace oak::graphics {
 
 	void Mesh::setData(const oak::vector<Vertex>& vertices, const oak::vector<uint32_t>& indices) {
 		vertices_ = vertices;
 		indices_ = indices;
+	}
+
+	void Mesh::setTextureRegion(const TextureRegion& region) {
+		for (auto& vertex : vertices_) {
+			vertex.uv *= glm::vec2{ region.dw, region.dh };
+			vertex.uv += glm::vec2{ region.dx, region.dy };
+		}
 	}
 
 	void Mesh::draw(void *buffer, void *ibuffer, const glm::mat4& transform, uint32_t startIndex) const {

@@ -23,6 +23,10 @@ namespace oak {
 		int width, height;
 	};
 
+	struct FrameSizeEvent {
+		int width, height;
+	};
+
 	struct KeyEvent {
 		int key, scancode, action, mods;
 	};
@@ -46,6 +50,7 @@ namespace oak {
 	void pup(Puper& puper, WindowCreateEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, WindowCloseEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, WindowResizeEvent& data, const ObjInfo& info);
+	void pup(Puper& puper, FrameSizeEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, KeyEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, ButtonEvent& data, const ObjInfo& info);
 	void pup(Puper& puper, CursorEvent& data, const ObjInfo& info);

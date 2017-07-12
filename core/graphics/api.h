@@ -25,12 +25,26 @@ namespace oak::graphics {
 	enum class TextureFilter {
 		NEAREST,
 		LINEAR,
-		LINEAR_MIP_LINEAR
+		LINEAR_MIP_LINEAR,
+		NEAREST_MIP_NEAREST,
+		LINEAR_MIP_NEAREST,
+		NEAREST_MIP_LINEAR,
 	};
 
 	enum class TextureWrap {
 		REPEAT,
 		CLAMP_EDGE
+	};
+
+	enum class BufferType {
+		VERTEX,
+		ELEMENT,
+		UNIFORM
+	};
+
+	enum class BufferHint {
+		STREAM,
+		STATIC
 	};
 
 	enum class FramebufferAttachment {

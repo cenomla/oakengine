@@ -7,8 +7,6 @@
 
 namespace oak::graphics::GLFramebuffer {
 
-
-
 	Framebuffer create(const FramebufferInfo& info) {
 
 		GLuint fbo = 0, rbo = 0;

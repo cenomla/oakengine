@@ -2,16 +2,12 @@
 
 #include "graphics/buffer_storage.h"
 #include "graphics/attribute_layout.h"
-
-#include "gl_buffer.h"
-#include "gl_vertex_array.h"
+#include "graphics/buffer.h"
 
 namespace oak::graphics {
 
 	class GLBufferStorage : public BufferStorage {
 	public:
-
-		GLBufferStorage();
 
 		void create(const AttributeLayout *attribs) override;
 		void destroy() override;
@@ -19,15 +15,15 @@ namespace oak::graphics {
 		void bind() const override;
 		void unbind() const override;
 
-		void* map(int index, uint32_t flags) override;
+		void* map(int index) override;
 		void unmap(int index) override;
 
-		void data(int index, size_t size, const void *data, uint32_t flags) override;
+		void data(int index, size_t size, const void *data) override;
 
 	private:
-		GLVertexArray vao_;
-		GLBuffer vbo_;
-		GLBuffer ibo_;
+		uint32_t vao_;
+		Buffer vbo_;
+		Buffer ibo_;
 	};
 
 }
