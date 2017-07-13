@@ -15,6 +15,7 @@
 
 #include <graphics/render_system.h>
 #include <graphics/model.h>
+#include <graphics/mesh.h>
 #include <log.h>
 #include <system_manager.h>
 #include <resource_manager.h>
@@ -239,12 +240,20 @@ int main(int argc, char** argv) {
 		oak::graphics::AttributeType::UV
 	} };
 
+	oak::graphics::AttributeLayout particleLayout{ oak::vector<oak::graphics::AttributeType> {
+		oak::graphics::AttributeType::POSITION,
+		oak::graphics::AttributeType::NORMAL,
+		oak::graphics::AttributeType::UV,
+		oak::graphics::AttributeType::INSTANCE_POSITION
+	} };
+
 	oak::graphics::GLBufferStorage _3dstorage;
 	oak::graphics::GLBufferStorage _2dstorage;
+	oak::graphics::GLBufferStorage particleStorage;
 
-	renderSystem.batcher_.addBufferStorage(&_3dlayout, &_3dstorage);
-	renderSystem.batcher_.addBufferStorage(&_2dlayout, &_2dstorage);
-	
+	renderSystem.batcher_.addBufferStorage(&_3dstorage);
+	renderSystem.batcher_.addBufferStorage(&_2dstorage);
+	renderSystem.particleSystem_.setBufferStorage(&particleStorage);
 
 	CameraSystem cameraSystem{ scene };
 	//add them to the system manager
@@ -276,6 +285,7 @@ int main(int argc, char** argv) {
 	//initialize the buffer storage
 	_3dstorage.create(&_3dlayout);
 	_2dstorage.create(&_2dlayout);
+	particleStorage.create(&particleLayout);
 
 	//setup uniforms
 	struct {
@@ -303,18 +313,18 @@ int main(int argc, char** argv) {
 	bufferInfo.type = oak::graphics::BufferType::UNIFORM;
 	bufferInfo.hint = oak::graphics::BufferHint::STREAM;
 	bufferInfo.base = 0;
-	matrix_ubo = oak::graphics::GLBuffer::create(bufferInfo);
+	matrix_ubo = oak::graphics::buffer::create(bufferInfo);
 	//create proj invProj buffer
 	bufferInfo.hint = oak::graphics::BufferHint::STATIC;
 	bufferInfo.base = 2;
-	proj_ubo = oak::graphics::GLBuffer::create(bufferInfo);
-	oak::graphics::GLBuffer::bind(proj_ubo);
-	oak::graphics::GLBuffer::data(proj_ubo, sizeof(pmatrix), &pmatrix);
+	proj_ubo = oak::graphics::buffer::create(bufferInfo);
+	oak::graphics::buffer::bind(proj_ubo);
+	oak::graphics::buffer::data(proj_ubo, sizeof(pmatrix), &pmatrix);
 	//create ortho matrix buffer
 	bufferInfo.base = 1;
-	ortho_ubo = oak::graphics::GLBuffer::create(bufferInfo);
-	oak::graphics::GLBuffer::bind(ortho_ubo);
-	oak::graphics::GLBuffer::data(ortho_ubo, sizeof(omatrix), &omatrix);
+	ortho_ubo = oak::graphics::buffer::create(bufferInfo);
+	oak::graphics::buffer::bind(ortho_ubo);
+	oak::graphics::buffer::data(ortho_ubo, sizeof(omatrix), &omatrix);
 
 	//lights
 	struct {
@@ -342,44 +352,47 @@ int main(int argc, char** argv) {
 
 	bufferInfo.hint = oak::graphics::BufferHint::STREAM;
 	bufferInfo.base = 4;
-	light_ubo = oak::graphics::GLBuffer::create(bufferInfo);
+	light_ubo = oak::graphics::buffer::create(bufferInfo);
 	
 	//shader setup
 	oak::graphics::ShaderInfo shaderInfo;
 	shaderInfo.vertex = "core/graphics/shaders/deferred/geometry/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/geometry/frag.glsl";
-	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", oak::graphics::GLShader::create(shaderInfo));
+	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", oak::graphics::shader::create(shaderInfo));
 	shaderInfo.vertex = "core/graphics/shaders/forward/pass2d/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/forward/pass2d/frag.glsl";
-	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", oak::graphics::GLShader::create(shaderInfo));
+	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", oak::graphics::shader::create(shaderInfo));
+	shaderInfo.vertex = "core/graphics/shaders/deferred/particle/vert.glsl";
+	shaderInfo.fragment = "core/graphics/shaders/deferred/particle/frag.glsl";
+	auto& sh_particle = resManager.add<oak::graphics::Shader>("sh_particle", oak::graphics::shader::create(shaderInfo));
 	//textures
 	oak::graphics::TextureInfo textureInfo;
 	textureInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
-	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", oak::graphics::GLTexture::create("sandbox/res/textures/character.png", textureInfo));
+	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
 	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
 	textureInfo.width = 4096;
 	textureInfo.height = 4096;
 	auto& colorAtlas = resManager.add<oak::graphics::TextureAtlas>("colorAtlas", 
-		oak::graphics::GLTexture::createAtlas({ 
+		oak::graphics::texture::createAtlas({ 
 			"sandbox/res/textures/pbr_rust/color.png",
 			"sandbox/res/textures/pbr_grass/color.png",
 			"sandbox/res/textures/pbr_rock/color.png",
 		}, textureInfo));
 	auto& normalAtlas = resManager.add<oak::graphics::TextureAtlas>("normalAtlas",
-		oak::graphics::GLTexture::createAtlas({
+		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/normal.png",
 			"sandbox/res/textures/pbr_grass/normal.png"
 		},	textureInfo));
 	textureInfo.format = oak::graphics::TextureFormat::BYTE_R;
 	auto& metalAtlas = resManager.add<oak::graphics::TextureAtlas>("metalAtlas",
-		oak::graphics::GLTexture::createAtlas({
+		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/metalness.png",
 			"sandbox/res/textures/pbr_grass/metalness.png",
 			"sandbox/res/textures/pbr_rock/metalness.png"
 		}, textureInfo));
 	auto& roughAtlas = resManager.add<oak::graphics::TextureAtlas>("roughAtlas",
-		oak::graphics::GLTexture::createAtlas({
+		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/roughness.png",
 			"sandbox/res/textures/pbr_grass/roughness.png",
 			"sandbox/res/textures/pbr_rock/roughness.png"
@@ -388,11 +401,16 @@ int main(int argc, char** argv) {
 	//materials
 	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
+	auto& mat_part = resManager.add<oak::graphics::Material>("mat_part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 
 	//meshes
-	auto& mesh_box = resManager.add<oak::graphics::Model>("model_box");
-	mesh_box.load("sandbox/res/models/box.obj");
-	mesh_box.setTextureRegion(colorAtlas.regions[2].second);
+	auto& model_box = resManager.add<oak::graphics::Model>("model_box");
+	model_box.load("sandbox/res/models/box.obj");
+	model_box.setTextureRegion(colorAtlas.regions[2].second);
+
+	auto& model_part = resManager.add<oak::graphics::Model>("model_part");
+	model_part.load("sandbox/res/models/bit.obj");
+	model_part.setTextureRegion(colorAtlas.regions[0].second);
 
 	auto& mesh_floor = resManager.add<oak::graphics::Mesh>("mesh_floor");
 
@@ -410,8 +428,11 @@ int main(int argc, char** argv) {
 	mesh_floor.setData(vertices, indices);
 	mesh_floor.setTextureRegion(colorAtlas.regions[1].second);
 
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }), &mesh_box.getMeshes()[0], &mat_box, 0);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }), &model_box.getMeshes()[0], &mat_box, 0);
 	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_box, 0);
+	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 16.0f, 8.0f, 16.0f }), &model_part.getMeshes()[0], &mat_box, 0);
+
+	renderSystem.particleSystem_.setMesh(&model_part.getMeshes()[0], &mat_part, 0);
 
 	//create entities
 	oak::EntityId player = scene.createEntity();
@@ -455,10 +476,10 @@ int main(int argc, char** argv) {
 		}
 
 		//upload buffers
-		oak::graphics::GLBuffer::bind(matrix_ubo);
-		oak::graphics::GLBuffer::data(matrix_ubo, sizeof(matrix), &matrix);
-		oak::graphics::GLBuffer::bind(light_ubo);
-		oak::graphics::GLBuffer::data(light_ubo, sizeof(lights), &lights);
+		oak::graphics::buffer::bind(matrix_ubo);
+		oak::graphics::buffer::data(matrix_ubo, sizeof(matrix), &matrix);
+		oak::graphics::buffer::bind(light_ubo);
+		oak::graphics::buffer::data(light_ubo, sizeof(lights), &lights);
 	
 
 		cameraSystem.run();

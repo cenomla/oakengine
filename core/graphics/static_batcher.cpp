@@ -11,9 +11,9 @@ namespace oak::graphics {
 
 	StaticBatcher::StaticBatcher() {}
 
-	void StaticBatcher::addBufferStorage(const AttributeLayout *layout, BufferStorage *storage) {
+	void StaticBatcher::addBufferStorage(BufferStorage *storage) {
 		//add the buffer to the list and hash its layout for quick comparison
-		buffers_.push_back(BufferLayout{ layout, storage, { 0, 0 }, { 0, 0 }, 0, 0, { nullptr, nullptr } });
+		buffers_.push_back(BufferInfo{ storage, { 0, 0 }, { 0, 0 }, 0, 0, { nullptr, nullptr } });
 	}
 
 	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer) {
@@ -36,7 +36,7 @@ namespace oak::graphics {
 		//create batches 
 		const Material *mat = meshes_[0].material;
 		uint32_t layer = meshes_[0].layer;
-		BufferLayout *bl = findBuffer(mat->layout);
+		BufferInfo *bl = findBuffer(mat->layout);
 		Batch currentBatch{ bl->storage, mat, bl->offset, 0, layer }; //first batch
 		//iterate through the sorted object
 		for (auto& it : meshes_) {
@@ -88,7 +88,6 @@ namespace oak::graphics {
 			bl->map[0] = static_cast<char*>(bl->map[0]) + it.mesh->getVertexCount() * mat->layout->stride();
 			bl->map[1] = static_cast<int*>(bl->map[1]) + it.mesh->getIndexCount();
 		}
-		batches_.push_back(currentBatch);
 
 		//unmap and reset buffers
 		for (auto& it : buffers_) {
@@ -106,9 +105,9 @@ namespace oak::graphics {
 		needsRebatch_ = false;
 	}
 
-	StaticBatcher::BufferLayout* StaticBatcher::findBuffer(const AttributeLayout *layout) {
+	StaticBatcher::BufferInfo* StaticBatcher::findBuffer(const AttributeLayout *layout) {
 		for (auto& bl : buffers_) {
-			if (bl.layout == layout) {
+			if (bl.storage->getLayout() == layout) {
 				return &bl;
 			}
 		}

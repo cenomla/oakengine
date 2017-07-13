@@ -15,7 +15,7 @@ namespace oak::graphics {
 
 		StaticBatcher();
 
-		void addBufferStorage(const AttributeLayout *layout, BufferStorage *storage);
+		void addBufferStorage(BufferStorage *storage);
 
 		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer);
 		void removeMesh(const Mesh *mesh);
@@ -25,8 +25,7 @@ namespace oak::graphics {
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
 
 	private:
-		struct BufferLayout {
-			const AttributeLayout *layout;
+		struct BufferInfo {
 			BufferStorage *storage;
 			size_t size[2], capacity[2];
 			size_t offset, count;
@@ -38,7 +37,7 @@ namespace oak::graphics {
 			const Material *material;
 			const Mesh *mesh;
 			glm::mat4 transform;
-			BufferLayout *bl;
+			BufferInfo *bl;
 
 
 			inline bool operator<(const MeshInfo& rhs) const { 
@@ -48,11 +47,11 @@ namespace oak::graphics {
 			}
 		};
 
-		BufferLayout* findBuffer(const AttributeLayout *layout);
+		BufferInfo* findBuffer(const AttributeLayout *layout);
 
 		oak::vector<MeshInfo> meshes_;
 		oak::vector<Batch> batches_;
-		oak::vector<BufferLayout> buffers_;
+		oak::vector<BufferInfo> buffers_;
 
 		bool needsRebatch_;
 

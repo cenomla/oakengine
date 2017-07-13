@@ -4,6 +4,7 @@
 
 #include <graphics/pipeline.h>
 #include <graphics/material.h>
+#include <graphics/opengl/gl_vertex_array.h>
 
 void GuiRenderer::init() {
 
@@ -34,5 +35,7 @@ void GuiRenderer::render(oak::graphics::Api *api) {
 
 		glDrawElements(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
 	}
+
+	oak::graphics::GLVertexArray::unbind();
 
 }

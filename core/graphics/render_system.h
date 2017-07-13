@@ -1,6 +1,7 @@
 #pragma once
 
 #include "static_batcher.h"
+#include "particle_system.h"
 #include "system.h"
 #include "entity_cache.h"
 #include "pipeline.h"
@@ -28,6 +29,7 @@ namespace oak::graphics {
 		void run() override;
 		
 		StaticBatcher batcher_;
+		ParticleSystem particleSystem_;
 	private:
 		Scene *scene_;
 		EntityCache cache_;
@@ -35,6 +37,7 @@ namespace oak::graphics {
 		Api *api_;
 		Pipeline pipeline_;
 		oak::vector<Renderer*> layers_;
+		oak::vector<Batch> batches_;
 	};
 
 }

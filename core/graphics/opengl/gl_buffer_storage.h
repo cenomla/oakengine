@@ -9,8 +9,10 @@ namespace oak::graphics {
 	class GLBufferStorage : public BufferStorage {
 	public:
 
-		void create(const AttributeLayout *attribs) override;
+		void create(const AttributeLayout *layout) override;
 		void destroy() override;
+
+		void instance(size_t offset) override;
 
 		void bind() const override;
 		void unbind() const override;

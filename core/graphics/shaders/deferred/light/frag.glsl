@@ -10,11 +10,13 @@ layout (std140, binding = 2) uniform MatrixBlock {
 	mat4 proj;
 } u_matrix;
 
+struct Light {
+	vec4 pos;
+	vec3 color;
+};
+
 layout (std140, binding = 4) uniform LightBlock {
-	struct {
-		vec4 pos;
-		vec3 color;
-	} data[8];
+	Light data[8];
 } u_lights;
 
 uniform vec3 u_ambientColor = vec3(0.01);

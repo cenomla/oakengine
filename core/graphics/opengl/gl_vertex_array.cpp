@@ -29,10 +29,22 @@ namespace oak::graphics::GLVertexArray {
 		GL_FLOAT,
 		GL_FLOAT,
 		GL_FLOAT,
+		GL_UNSIGNED_BYTE,
+		GL_FLOAT,
+		GL_FLOAT,
+		GL_FLOAT,
+		GL_FLOAT,
+		GL_FLOAT,
 		GL_UNSIGNED_BYTE
 	};
 
 	static const GLenum normalized[] = {
+		GL_FALSE,
+		GL_FALSE,
+		GL_FALSE,
+		GL_FALSE,
+		GL_TRUE,
+		GL_FALSE,		
 		GL_FALSE,
 		GL_FALSE,
 		GL_FALSE,
@@ -45,21 +57,53 @@ namespace oak::graphics::GLVertexArray {
 		2,
 		3, 
 		2, 
+		4,
+		16,
+		3,
+		2,
+		3,
+		2,
 		4
 	};
 
-	void attributeDescription(const AttributeLayout *layout) {
+	static const GLuint divisor[] = {
+		0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1
+	};
+
+	static constexpr int glsize(GLenum type) {
+		switch (type) {
+			case GL_FLOAT: return 4;
+			case GL_UNSIGNED_BYTE: return 1;
+			default: return 0;
+		}
+	}
+
+	void attribDescription(const AttributeLayout *layout) {
 		const size_t stride = layout->stride();
 		size_t i = 0;
 		size_t offset = 0;
 		for (const auto& attrib : layout->attributes) {
 			int type = static_cast<int>(attrib);
+			if (divisor[type] > 0) { i++; continue; }
 			glEnableVertexAttribArray(i);
 			glVertexAttribPointer(i, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
-			switch(gltype[type]) {
-				case GL_FLOAT: offset += count[type] * 4; break;
-				case GL_UNSIGNED_BYTE: offset += count[type]; break;
-			}
+			int s = glsize(gltype[type]);
+			offset += s * count[type];
+			i++;
+		}
+	}
+
+	void instanceAttribDescription(const AttributeLayout *layout, size_t offset) {
+		const size_t stride = layout->instance_stride();
+		size_t i = 0;
+		for (const auto& attrib : layout->attributes) {
+			int type = static_cast<int>(attrib);
+			if (divisor[type] < 1) { i++; continue; }
+			glEnableVertexAttribArray(i);
+			glVertexAttribPointer(i, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
+			glVertexAttribDivisor(i, divisor[type]);
+			int s = glsize(gltype[type]);
+			offset += s * count[type];
 			i++;
 		}
 	}

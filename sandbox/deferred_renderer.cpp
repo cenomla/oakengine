@@ -6,12 +6,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <graphics/material.h>
-#include <graphics/api.h>
+#include <graphics/opengl/gl_api.h>
 #include <graphics/pipeline.h>
-#include <graphics/opengl/gl_texture.h>
-#include <graphics/opengl/gl_shader.h>
-#include <graphics/opengl/gl_framebuffer.h>
-#include <graphics/opengl/gl_buffer.h>
 #include <input_manager.h>
 
 #include <random>
@@ -26,7 +22,7 @@ void DeferredRenderer::init() {
 	struct {
 		glm::vec4 samples[128];
 		float radius = 1.27;
-		float power = 1.0;
+		float power = 4.0;
 		int count = 16;
 	} kernel;
 	for (size_t i = 0; i < 128; i ++) {
@@ -62,7 +58,7 @@ void DeferredRenderer::init() {
 	texInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
 	texInfo.xWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
 	texInfo.yWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
-	noise_ = oak::graphics::GLTexture::create(texInfo, noise.data());
+	noise_ = oak::graphics::texture::create(texInfo, noise.data());
 
 
 	//create kernel buffer
@@ -70,21 +66,21 @@ void DeferredRenderer::init() {
 	bufferInfo.base = 3;
 	bufferInfo.type = oak::graphics::BufferType::UNIFORM;
 	bufferInfo.hint = oak::graphics::BufferHint::STATIC;
-	kernelBuffer_ = oak::graphics::GLBuffer::create(bufferInfo);
-	oak::graphics::GLBuffer::bind(kernelBuffer_);
-	oak::graphics::GLBuffer::data(kernelBuffer_, sizeof(kernel), &kernel);
+	kernelBuffer_ = oak::graphics::buffer::create(bufferInfo);
+	oak::graphics::buffer::bind(kernelBuffer_);
+	oak::graphics::buffer::data(kernelBuffer_, sizeof(kernel), &kernel);
 
 	//create shaders
 	oak::graphics::ShaderInfo shaderInfo;
 	shaderInfo.vertex = "core/graphics/shaders/deferred/ssao/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/ssao/frag.glsl";
-	ssao_ = oak::graphics::GLShader::create(shaderInfo);
+	ssao_ = oak::graphics::shader::create(shaderInfo);
 	shaderInfo.vertex = "core/graphics/shaders/deferred/light/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/light/frag.glsl";
-	light_ = oak::graphics::GLShader::create(shaderInfo);
+	light_ = oak::graphics::shader::create(shaderInfo);
 	shaderInfo.vertex = "core/graphics/shaders/deferred/fxaa/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/fxaa/frag.glsl";
-	fxaa_ = oak::graphics::GLShader::create(shaderInfo);
+	fxaa_ = oak::graphics::shader::create(shaderInfo);
 	
 	oak::graphics::AttributeLayout layout{ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION2D
@@ -111,13 +107,13 @@ void DeferredRenderer::init() {
 	texInfo.format = oak::graphics::TextureFormat::BYTE_RGBA;
 	texInfo.width = pipeline_->width;
 	texInfo.height = pipeline_->height;
-	albedo_ = oak::graphics::GLTexture::create(texInfo, nullptr);
-	normal_ = oak::graphics::GLTexture::create(texInfo, nullptr);
-	aa_ = oak::graphics::GLTexture::create(texInfo, nullptr);
+	albedo_ = oak::graphics::texture::create(texInfo, nullptr);
+	normal_ = oak::graphics::texture::create(texInfo, nullptr);
+	aa_ = oak::graphics::texture::create(texInfo, nullptr);
 	texInfo.format = oak::graphics::TextureFormat::DEPTH_24;
-	depth_ = oak::graphics::GLTexture::create(texInfo, nullptr);
+	depth_ = oak::graphics::texture::create(texInfo, nullptr);
 	texInfo.format = oak::graphics::TextureFormat::BYTE_R;
-	ao_ = oak::graphics::GLTexture::create(texInfo, nullptr);
+	ao_ = oak::graphics::texture::create(texInfo, nullptr);
 
 	//ssao buffer
 	oak::graphics::FramebufferInfo framebufferInfo;
@@ -126,7 +122,7 @@ void DeferredRenderer::init() {
 	framebufferInfo.height = pipeline_->height;
 	framebufferInfo.attachments.push_back({ &ao_, oak::graphics::FramebufferAttachment::COLOR0 });
 
-	ssaobuffer_ = oak::graphics::GLFramebuffer::create(framebufferInfo);
+	ssaobuffer_ = oak::graphics::framebuffer::create(framebufferInfo);
 
 	//gbuffer
 	framebufferInfo.attachments.clear();
@@ -134,31 +130,31 @@ void DeferredRenderer::init() {
 	framebufferInfo.attachments.push_back({ &normal_, oak::graphics::FramebufferAttachment::COLOR1 });
 	framebufferInfo.attachments.push_back({ &depth_, oak::graphics::FramebufferAttachment::DEPTH });
 
-	gbuffer_ = oak::graphics::GLFramebuffer::create(framebufferInfo);
+	gbuffer_ = oak::graphics::framebuffer::create(framebufferInfo);
 
 	//aa buffer
 	framebufferInfo.attachments.clear();
 	framebufferInfo.attachments.push_back({ &aa_, oak::graphics::FramebufferAttachment::COLOR0 });
 
-	aabuffer_ = oak::graphics::GLFramebuffer::create(framebufferInfo);
+	aabuffer_ = oak::graphics::framebuffer::create(framebufferInfo);
 }
 
 void DeferredRenderer::terminate() {
-	oak::graphics::GLShader::destroy(light_);
-	oak::graphics::GLShader::destroy(ssao_);
-	oak::graphics::GLShader::destroy(fxaa_);
+	oak::graphics::shader::destroy(light_);
+	oak::graphics::shader::destroy(ssao_);
+	oak::graphics::shader::destroy(fxaa_);
 	buffer_.destroy();
-	oak::graphics::GLBuffer::destroy(kernelBuffer_);
-	oak::graphics::GLFramebuffer::destroy(gbuffer_);
-	oak::graphics::GLFramebuffer::destroy(ssaobuffer_);
-	oak::graphics::GLFramebuffer::destroy(aabuffer_);
+	oak::graphics::buffer::destroy(kernelBuffer_);
+	oak::graphics::framebuffer::destroy(gbuffer_);
+	oak::graphics::framebuffer::destroy(ssaobuffer_);
+	oak::graphics::framebuffer::destroy(aabuffer_);
 
-	oak::graphics::GLTexture::destroy(albedo_);
-	oak::graphics::GLTexture::destroy(normal_);
-	oak::graphics::GLTexture::destroy(depth_);
-	oak::graphics::GLTexture::destroy(noise_);
-	oak::graphics::GLTexture::destroy(aa_);
-	oak::graphics::GLTexture::destroy(ao_);
+	oak::graphics::texture::destroy(albedo_);
+	oak::graphics::texture::destroy(normal_);
+	oak::graphics::texture::destroy(depth_);
+	oak::graphics::texture::destroy(noise_);
+	oak::graphics::texture::destroy(aa_);
+	oak::graphics::texture::destroy(ao_);
 }
 
 void DeferredRenderer::render(oak::graphics::Api *api) {
@@ -187,7 +183,11 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 		batch.storage->bind();
 		//render stuff
 
-		glDrawElements(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
+		if (batch.instances > 0) {
+			glDrawElementsInstanced(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4), batch.instances);
+		} else {
+			glDrawElements(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
+		}
 	}
 
 	//set opengl state
@@ -237,5 +237,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	glUseProgram(fxaa_.getId());
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 */
+
+	oak::graphics::vertex_array::unbind();
 
 }

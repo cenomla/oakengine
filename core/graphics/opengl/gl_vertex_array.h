@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <cstddef>
 
 namespace oak::graphics {
 	struct AttributeLayout;
@@ -14,6 +15,7 @@ namespace oak::graphics::GLVertexArray {
 	void bind(uint32_t id);
 	void unbind();
 
-	void attributeDescription(const AttributeLayout *attribs);
+	void attribDescription(const AttributeLayout *attribs);
+	void instanceAttribDescription(const AttributeLayout *attribs, size_t offset);
 
 }
