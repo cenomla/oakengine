@@ -17,27 +17,26 @@ namespace oak::graphics {
 
 		void addBufferStorage(BufferStorage *storage);
 
-		void addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer);
-		void updateMesh(const glm::mat4& transform, const Mesh *mesh);
+		void addMesh(const Mesh *mesh, const Material *material, uint32_t layer);
 		void removeMesh(const Mesh *mesh);
 
+		void update();
 		void run();
 		
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
 
 	private:
 		struct BufferInfo {
-			BufferStorage *storage;
-			size_t size[2], capacity[2];
-			size_t offset, count;
-			void *map[2];
+			BufferStorage *storage = nullptr;
+			size_t size[2]{ 0 }, capacity[2]{ 0 };
+			size_t offset = 0, count = 0;
+			void *map[2]{ nullptr };
 		};
 
 		struct MeshInfo {
 			uint64_t layer;
 			const Material *material;
 			const Mesh *mesh;
-			glm::mat4 transform;
 			BufferInfo *bl;
 
 

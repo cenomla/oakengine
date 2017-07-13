@@ -1,6 +1,7 @@
 #include "particle_system.h"
 
 #include <glad/glad.h>
+#include <cstring>
 
 #include "material.h"
 #include "mesh.h"
@@ -21,7 +22,7 @@ namespace oak::graphics {
 		layer_ = layer;
 
 		storage_->bind();
-		storage_->instance(mesh_->getVertexCount() * material_->layout->stride());
+		storage_->instance(mesh_->data.size() * 4);
 		storage_->unbind();
 	}
 
@@ -47,19 +48,20 @@ namespace oak::graphics {
 		//create the batch
 		batch_.material = material_;
 		batch_.storage = storage_;
-		batch_.count = mesh_->getIndexCount();
+		batch_.count = mesh_->indices.size();
 		batch_.offset = 0;
 		batch_.instances = 640;
 		batch_.layer = layer_;
 		
-		storage_->data(0, mesh_->getVertexCount() * material_->layout->stride() + 640 * material_->layout->instance_stride(), nullptr);
-		storage_->data(1, mesh_->getIndexCount() * 4, nullptr);
+		storage_->data(0, mesh_->data.size() * 4 + 640 * 12, nullptr);
+		storage_->data(1, mesh_->indices.size() * 4, nullptr);
 
 		void *data = storage_->map(0);
 		void *idata = storage_->map(1);
 
-		mesh_->draw(data, idata, glm::mat4{ 1.0f }, 0);
-		data = static_cast<char*>(data) + mesh_->getVertexCount() * material_->layout->stride();
+		memcpy(data, mesh_->data.data(), mesh_->data.size() * 4);
+		memcpy(idata, mesh_->indices.data(), mesh_->indices.size() * 4);
+		data = static_cast<float*>(data) + mesh_->data.size();
 
 		//upload rest of data
 		for (int i = 0; i < 640; i++) {

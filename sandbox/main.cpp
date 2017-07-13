@@ -414,23 +414,23 @@ int main(int argc, char** argv) {
 
 	auto& mesh_floor = resManager.add<oak::graphics::Mesh>("mesh_floor");
 
-	oak::vector<oak::graphics::Mesh::Vertex> vertices = {
-		{ glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ 0.0f } },
-		{ glm::vec3{ 0.0f, 0.0f, 64.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ 0.0f, 1.0f } },
-		{ glm::vec3{ 64.0f, 0.0f, 64.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ 1.0f } },
-		{ glm::vec3{ 64.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ 1.0f, 0.0f } }
+	mesh_floor.data = {
+		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		64.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		64.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
 	};
 
-	oak::vector<uint32_t> indices = {
+	mesh_floor.vertexCount = 4;
+
+	mesh_floor.indices = {
 		0, 1, 2, 2, 3, 0
 	};
+	oak::graphics::meshSetTextureRegion<oak::graphics::Model::Vertex>(&mesh_floor, colorAtlas.regions[1].second);
 
-	mesh_floor.setData(vertices, indices);
-	mesh_floor.setTextureRegion(colorAtlas.regions[1].second);
-
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }), &model_box.getMeshes()[0], &mat_box, 0);
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }), &mesh_floor, &mat_box, 0);
-	renderSystem.batcher_.addMesh(glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 16.0f, 8.0f, 16.0f }), &model_part.getMeshes()[0], &mat_box, 0);
+	renderSystem.batcher_.addMesh(&model_box.getMeshes()[0], &mat_box, 0);
+	renderSystem.batcher_.addMesh(&mesh_floor, &mat_box, 0);
+	renderSystem.batcher_.addMesh(&model_part.getMeshes()[0], &mat_box, 0);
 
 	renderSystem.particleSystem_.setMesh(&model_part.getMeshes()[0], &mat_part, 0);
 

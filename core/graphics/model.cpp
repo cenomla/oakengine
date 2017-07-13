@@ -1,6 +1,5 @@
 #include "model.h"
 
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -28,7 +27,7 @@ namespace oak::graphics {
 
 	void Model::setTextureRegion(const TextureRegion& region) {
 		for (auto& mesh: meshes_) {
-			mesh.setTextureRegion(region);
+			meshSetTextureRegion<Vertex>(&mesh, region);
 		}
 	}
 
@@ -46,12 +45,12 @@ namespace oak::graphics {
 
 	void Model::processMesh(const aiScene *scene, aiMesh *mesh) {
 		
-		oak::vector<Mesh::Vertex> vertices;
+		oak::vector<Vertex> vertices;
 		oak::vector<uint32_t> indices;
 		oak::vector<int> textures;
 		
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-			Mesh::Vertex vertex;
+			Vertex vertex;
 			vertex.position.x = mesh->mVertices[i].x;
 			vertex.position.y = mesh->mVertices[i].y;
 			vertex.position.z = mesh->mVertices[i].z;
@@ -82,7 +81,10 @@ namespace oak::graphics {
 		}
 
 		Mesh nMesh;
-		nMesh.setData(vertices, indices);
+		nMesh.data.resize(vertices.size() * sizeof(Vertex) / 4);
+		memcpy(nMesh.data.data(), vertices.data(), vertices.size() * sizeof(Vertex));
+		nMesh.indices = indices;
+		nMesh.vertexCount = vertices.size();
 
 		meshes_.push_back(nMesh);
 	}

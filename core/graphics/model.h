@@ -1,7 +1,9 @@
 #pragma once
 
-#include "mesh.h"
+#include <glm/glm.hpp>
 
+#include "mesh.h"
+#include "texture.h"
 #include "container.h"
 
 struct aiScene;
@@ -12,6 +14,12 @@ namespace oak::graphics {
 
 	class Model {
 	public:
+
+		struct Vertex {
+			glm::vec3 position;
+			glm::vec3 normal;
+			glm::vec2 uv;
+		};
 
 		void load(const oak::string& path);
 		void setTextureRegion(const TextureRegion& region);

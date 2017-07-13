@@ -13,28 +13,22 @@ namespace oak::graphics {
 
 	void StaticBatcher::addBufferStorage(BufferStorage *storage) {
 		//add the buffer to the list and hash its layout for quick comparison
-		buffers_.push_back(BufferInfo{ storage, { 0, 0 }, { 0, 0 }, 0, 0, { nullptr, nullptr } });
+		buffers_.push_back(BufferInfo{ storage });
 	}
 
-	void StaticBatcher::addMesh(const glm::mat4& transform, const Mesh *mesh, const Material *material, uint32_t layer) {
-		meshes_.push_back({ layer, material, mesh, transform, nullptr });
+	void StaticBatcher::addMesh(const Mesh *mesh, const Material *material, uint32_t layer) {
+		meshes_.push_back({ layer, material, mesh, nullptr });
 		needsRebatch_ = true;
 	}
-
-	void StaticBatcher::updateMesh(const glm::mat4& transform, const Mesh *mesh) {
-		for (auto& it : meshes_) {
-			if (it.mesh == mesh) {
-				it.transform = transform;
-				needsRebatch_ = true;
-				break;
-			}
-		}
-	}	
 
 	void StaticBatcher::removeMesh(const Mesh *mesh) {
 		meshes_.erase(std::remove_if(std::begin(meshes_), std::end(meshes_), [&mesh](const MeshInfo& info){ return info.mesh == mesh; }), std::end(meshes_));
 		needsRebatch_ = true;
 	}
+
+	void StaticBatcher::update() {
+		needsRebatch_ = true;
+	}	
 
 	void StaticBatcher::run() {
 		if (meshes_.empty() || !needsRebatch_) { return; }
@@ -63,9 +57,10 @@ namespace oak::graphics {
 				currentBatch = Batch{ bl->storage, mat, bl->offset, 0, layer };
 			}
 			it.bl = bl;
-			currentBatch.count += it.mesh->getIndexCount();
-			bl->size[0] += it.mesh->getVertexCount() * mat->layout->stride(); //add to size of buffer total size of mesh
-			bl->size[1] += it.mesh->getIndexCount() * 4; //add to size of index buffer total size of indices array
+			size_t ic = it.mesh->indices.size();
+			currentBatch.count += ic;
+			bl->size[0] += it.mesh->data.size() * 4; //add to size of buffer total size of mesh
+			bl->size[1] += ic * 4; //add to size of index buffer total size of indices array
 		}
 		batches_.push_back(currentBatch);
 
@@ -83,8 +78,8 @@ namespace oak::graphics {
 
 		//map buffers
 		for (auto& it : buffers_) {
-			if (it.size[0] > 0) {
-				for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < 2; i++) {
+				if (it.size[i] > 0) {
 					it.map[i] = it.storage->map(i);
 				}
 			}
@@ -93,23 +88,30 @@ namespace oak::graphics {
 		//copy data to buffers
 		for (auto& it : meshes_) {
 			bl = it.bl;
-			it.mesh->draw(bl->map[0], bl->map[1], it.transform, bl->count);
-			bl->count += it.mesh->getVertexCount();
-			bl->map[0] = static_cast<char*>(bl->map[0]) + it.mesh->getVertexCount() * mat->layout->stride();
-			bl->map[1] = static_cast<int*>(bl->map[1]) + it.mesh->getIndexCount();
+			if (bl->map[0]) {
+				memcpy(bl->map[0], it.mesh->data.data(), it.mesh->data.size() * 4);
+				bl->map[0] = static_cast<float*>(bl->map[0]) + it.mesh->data.size();
+			}
+			if (bl->map[1]) {
+				for (const auto& i : it.mesh->indices) {
+					*static_cast<uint32_t*>(bl->map[1]) = i + bl->count;
+					bl->map[1] = static_cast<uint32_t*>(bl->map[1]) + 1;
+				}
+				bl->count += it.mesh->vertexCount;
+			}
 		}
 
 		//unmap and reset buffers
 		for (auto& it : buffers_) {
-			if (it.size[0] > 0) {
-				for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < 2; i++) {
+				if (it.map[i]) {
 					it.size[i] = 0;
 					it.map[i] = nullptr;
 					it.storage->unmap(i);
 				}
-				it.offset = 0;
-				it.count = 0;
 			}
+			it.offset = 0;
+			it.count = 0;
 		}
 	
 		needsRebatch_ = false;
