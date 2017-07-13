@@ -9,3 +9,4 @@ sandbox/save
 TODO
 gmon.out
 gprof.output
+*.trace
