@@ -21,6 +21,16 @@ namespace oak::graphics {
 		needsRebatch_ = true;
 	}
 
+	void StaticBatcher::updateMesh(const glm::mat4& transform, const Mesh *mesh) {
+		for (auto& it : meshes_) {
+			if (it.mesh == mesh) {
+				it.transform = transform;
+				needsRebatch_ = true;
+				break;
+			}
+		}
+	}	
+
 	void StaticBatcher::removeMesh(const Mesh *mesh) {
 		meshes_.erase(std::remove_if(std::begin(meshes_), std::end(meshes_), [&mesh](const MeshInfo& info){ return info.mesh == mesh; }), std::end(meshes_));
 		needsRebatch_ = true;

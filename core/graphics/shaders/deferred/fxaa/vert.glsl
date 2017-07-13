@@ -1,6 +1,6 @@
 #version 450 core
 
-layout (location = 0) in vec2 vPosition;
+layout (location = 1) in vec2 vPosition;
 
 out vec2 passUV;
 

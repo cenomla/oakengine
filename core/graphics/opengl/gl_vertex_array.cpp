@@ -80,31 +80,25 @@ namespace oak::graphics::GLVertexArray {
 
 	void attribDescription(const AttributeLayout *layout) {
 		const size_t stride = layout->stride();
-		size_t i = 0;
 		size_t offset = 0;
 		for (const auto& attrib : layout->attributes) {
 			int type = static_cast<int>(attrib);
-			if (divisor[type] > 0) { i++; continue; }
-			glEnableVertexAttribArray(i);
-			glVertexAttribPointer(i, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
-			int s = glsize(gltype[type]);
-			offset += s * count[type];
-			i++;
+			if (divisor[type] > 0) { continue; }
+			glEnableVertexAttribArray(type);
+			glVertexAttribPointer(type, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
+			offset += glsize(gltype[type]) * count[type];
 		}
 	}
 
 	void instanceAttribDescription(const AttributeLayout *layout, size_t offset) {
 		const size_t stride = layout->instance_stride();
-		size_t i = 0;
 		for (const auto& attrib : layout->attributes) {
 			int type = static_cast<int>(attrib);
-			if (divisor[type] < 1) { i++; continue; }
-			glEnableVertexAttribArray(i);
-			glVertexAttribPointer(i, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
-			glVertexAttribDivisor(i, divisor[type]);
-			int s = glsize(gltype[type]);
-			offset += s * count[type];
-			i++;
+			if (divisor[type] < 1) { continue; }
+			glEnableVertexAttribArray(type);
+			glVertexAttribPointer(type, count[type], gltype[type], normalized[type], stride, reinterpret_cast<void*>(offset));
+			glVertexAttribDivisor(type, divisor[type]);
+			offset += glsize(gltype[type]) * count[type];
 		}
 	}
 

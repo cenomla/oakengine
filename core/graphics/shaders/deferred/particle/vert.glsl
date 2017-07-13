@@ -1,9 +1,9 @@
 #version 450 core
 
 layout (location = 0) in vec3 vPosition;
-layout (location = 1) in vec3 vNormal;
-layout (location = 2) in vec2 vUV;
-layout (location = 3) in vec3 vOffset;
+layout (location = 2) in vec3 vNormal;
+layout (location = 3) in vec2 vUV;
+layout (location = 6) in vec3 vOffset;
 
 layout (std140, binding = 0) uniform MatrixBlock {
 	mat4 proj;
