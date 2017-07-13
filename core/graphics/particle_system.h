@@ -35,7 +35,7 @@ namespace oak::graphics {
 		const Mesh *mesh_;
 		const Material *material_;
 		uint32_t layer_;
-		Particle particles_[6400];
+		Particle particles_[640];
 		Batch batch_;
 
 		BufferStorage *storage_;

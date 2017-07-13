@@ -209,19 +209,19 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	buffer_.bind();
 
 	//render ssao
-	glBindFramebuffer(GL_FRAMEBUFFER, ssaobuffer_.id);
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glBindFramebuffer(GL_FRAMEBUFFER, ssaobuffer_.id);
+	//glClear(GL_COLOR_BUFFER_BIT);
 
-	glUseProgram(ssao_.id);
+	//glUseProgram(ssao_.id);
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//render lighting
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//bind ao texture to slot 3
-	glBindTexture(GL_TEXTURE_2D, ao_.id);
+	//glBindTexture(GL_TEXTURE_2D, ao_.id);
 
 	glUseProgram(light_.id);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

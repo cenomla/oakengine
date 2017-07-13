@@ -97,7 +97,7 @@ void main() {
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metalness);
 
-	float ao = blurAo();
+	float ao = 1.0;
 
 	vec3 Lo = vec3(0.0);
 	//calculate radiance

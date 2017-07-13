@@ -51,7 +51,7 @@ namespace oak::graphics {
 			abort();
 		}
 
-#ifdef GLAD_DEBUG
+#ifdef DEBUG
 		glad_set_post_callback(post_gl_call);
 #endif
 
