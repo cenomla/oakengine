@@ -16,6 +16,7 @@ namespace oak {
 	public:
 
 		void update(const Scene& scene);
+		bool contains(const Scene& scene, EntityId entity);
 
 		inline const oak::vector<EntityId>& entities() const { return entities_; }
 		inline void clear() { entities_.clear(); };
@@ -33,6 +34,8 @@ namespace oak {
 		inline void requirePrefab(size_t id) {
 			prefabFilter_ = id;
 		}
+
+
 	private:
 		oak::vector<EntityId> entities_;
 		oak::vector<bool> contains_;

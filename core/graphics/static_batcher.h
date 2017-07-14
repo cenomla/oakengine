@@ -18,6 +18,7 @@ namespace oak::graphics {
 		void addBufferStorage(BufferStorage *storage);
 
 		void addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
+		void updateMesh(const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
 		void removeMesh(const Mesh *mesh);
 
 		void update();

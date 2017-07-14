@@ -22,12 +22,14 @@ namespace oak {
 		ensureSize(id.index);
 
 		entities_.push_back(id);
+		EventManager::inst().getQueue<EntityCreateEvent>().emit({ id });
 		return id;
 	}
 
 	void Scene::destroyEntity(EntityId entity) {
 		generations_[entity]++;
 		killed_.push_back(entity);
+		EventManager::inst().getQueue<EntityDestroyEvent>().emit({ entity });
 	}
 
 	void Scene::activateEntity(EntityId entity) {

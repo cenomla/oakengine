@@ -13,7 +13,6 @@
 #include <graphics/opengl/gl_shader.h>
 #include <graphics/opengl/gl_framebuffer.h>
 
-#include <graphics/render_system.h>
 #include <graphics/model.h>
 #include <graphics/mesh.h>
 #include <log.h>
@@ -31,7 +30,8 @@
 #include <prefab.h>
 #include <scene_utils.h>
 
-#include "component_ext.h"
+#include "components.h"
+#include "render_system.h"
 #include "deferred_renderer.h"
 #include "gui_renderer.h"
 
@@ -44,42 +44,25 @@ oak::graphics::Buffer light_ubo;
 
 oak::CursorMode cmode;
 
-struct TransformComp {
-	glm::mat4 transform{ 1.0f };
-};
-
-struct CameraComp {
-	glm::vec3 position{ 0.0f };
-	glm::vec3 rotation{ 0.0f };
-};
-
-void pup(oak::Puper& puper, TransformComp& comp, const oak::ObjInfo& info) {
-
-}
-
-void pup(oak::Puper& puper, CameraComp& comp, const oak::ObjInfo& info) {
-
-}
-
 class CameraSystem : public oak::System {
 public:
 	CameraSystem(oak::Scene *scene) : scene_{ scene } {}
 
 	void init() override {
 		cache_.requireComponent<oak::PrefabComponent>();
-		cache_.requireComponent<CameraComp>();
+		cache_.requireComponent<CameraComponent>();
 		cache_.requirePrefab(std::hash<oak::string>{}("player"));
 	}
 
 	void run() override {
 		cache_.update(*scene_);
 
-		auto& cs = oak::getComponentStorage<CameraComp>(*scene_);
+		auto& cs = oak::getComponentStorage<CameraComponent>(*scene_);
 
 		auto& inputManager = oak::InputManager::inst();
 
 		for (const auto& entity : cache_.entities()) {
-			auto& cc = oak::getComponent<CameraComp>(cs, entity);
+			auto& cc = oak::getComponent<CameraComponent>(cs, entity);
 
 			//temp camera
 			//look
@@ -217,10 +200,10 @@ int main(int argc, char** argv) {
 	oak::Scene scene;
 
 	//create all the systems
-	oak::graphics::GLApi gl_api;
+	oak::graphics::GLApi api;
 
 	//create the rendering system
-	oak::graphics::RenderSystem renderSystem{ &scene, &gl_api };
+	RenderSystem renderSystem{ &scene, &api };
 
 	//basic test renderer
 	DeferredRenderer sceneRenderer;
@@ -247,13 +230,12 @@ int main(int argc, char** argv) {
 		oak::graphics::AttributeType::INSTANCE_POSITION
 	} };
 
-	oak::graphics::GLBufferStorage _3dstorage;
-	oak::graphics::GLBufferStorage _2dstorage;
+	oak::graphics::GLBufferStorage storage3d;
+	oak::graphics::GLBufferStorage storage2d;
 	oak::graphics::GLBufferStorage particleStorage;
 
-	renderSystem.batcher_.addBufferStorage(&_3dstorage);
-	renderSystem.batcher_.addBufferStorage(&_2dstorage);
-	renderSystem.particleSystem_.setBufferStorage(&particleStorage);
+	renderSystem.storage3d = &storage3d;
+	renderSystem.storage2d = &storage2d;
 
 	CameraSystem cameraSystem{ &scene };
 	//add them to the system manager
@@ -263,19 +245,22 @@ int main(int argc, char** argv) {
 	//create component type handles
 	chs.addHandle<oak::EventComponent>("event");
 	chs.addHandle<oak::PrefabComponent>("prefab");
-	chs.addHandle<TransformComp>("transform");
-	chs.addHandle<CameraComp>("camera");
+	chs.addHandle<TransformComponent>("transform");
+	chs.addHandle<ModelComponent>("model");
+	chs.addHandle<CameraComponent>("camera");
 
 	//create component storage
 	oak::ComponentStorage eventStorage{ "event" };
 	oak::ComponentStorage prefabStorage{ "prefab" };
 	oak::ComponentStorage transformStorage{ "transform" };
+	oak::ComponentStorage modelStorage{ "model" };
 	oak::ComponentStorage cameraStorage{ "camera" };
 
 	//add component storage to scene
 	scene.addComponentStorage(&eventStorage);
 	scene.addComponentStorage(&prefabStorage);
 	scene.addComponentStorage(&transformStorage);
+	scene.addComponentStorage(&modelStorage);
 	scene.addComponentStorage(&cameraStorage);
 
 	//init the test renderer
@@ -283,8 +268,8 @@ int main(int argc, char** argv) {
 	guiRenderer.init();
 
 	//initialize the buffer storage
-	_3dstorage.create(&layout3d);
-	_2dstorage.create(&layout2d);
+	storage3d.create(&layout3d);
+	storage2d.create(&layout2d);
 	particleStorage.create(&particleLayout);
 
 	//setup uniforms
@@ -423,17 +408,18 @@ int main(int argc, char** argv) {
 		0, 1, 2, 2, 3, 0
 	};
 
-	renderSystem.batcher_.addMesh(0, &mat_box, &model_box.getMeshes()[0], glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }), colorAtlas.regions[2].second);
-	renderSystem.batcher_.addMesh(0, &mat_box, &mesh_floor, glm::mat4{ 1.0f }, colorAtlas.regions[1].second);
-
-	renderSystem.particleSystem_.setMesh(0, &mat_part, &model_part.getMeshes()[0], colorAtlas.regions[0].second);
-
 	//create entities
 	oak::EntityId player = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
-	oak::addComponent<TransformComp>(scene, player);
-	oak::addComponent<CameraComp>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
+	oak::addComponent<TransformComponent>(scene, player);
+	oak::addComponent<CameraComponent>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
 	scene.activateEntity(player);
+
+	oak::EntityId box = scene.createEntity();
+	oak::addComponent<oak::PrefabComponent>(scene, box, std::hash<oak::string>{}("box"));
+	oak::addComponent<TransformComponent>(scene, box, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }));
+	oak::addComponent<ModelComponent>(scene, box, oak::Resource<oak::graphics::Model>{ "model_box" }, oak::Resource<oak::graphics::Material>{ "mat_box" }, colorAtlas.regions[2].second, 0u);
+	scene.activateEntity(box);
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
@@ -462,7 +448,7 @@ int main(int argc, char** argv) {
 		//move camera
 		cameraSystem.run();
 		//update view
-		auto& cc = oak::getComponent<CameraComp>(scene, player);
+		auto& cc = oak::getComponent<const CameraComponent>(scene, player);
 		matrix.view = glm::mat4{ glm::quat{ cc.rotation } };
 		matrix.view[3] = glm::vec4{ cc.position, 1.0f };
 		matrix.view = glm::inverse(matrix.view); //move view instead of camera

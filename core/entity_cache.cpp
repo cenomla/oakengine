@@ -45,6 +45,11 @@ namespace oak {
 		}
 	}
 
+	bool EntityCache::contains(const Scene& scene, EntityId entity) {
+		const auto& cf = scene.getComponentFilter(entity);
+		return filter(scene, entity, cf);
+	}
+
 	void EntityCache::addEntity(EntityId entity) {
 		entities_.push_back(entity);
 		contains_[entity] = true;
