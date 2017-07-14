@@ -406,33 +406,27 @@ int main(int argc, char** argv) {
 	//meshes
 	auto& model_box = resManager.add<oak::graphics::Model>("model_box");
 	model_box.load("sandbox/res/models/box.obj");
-	model_box.setTextureRegion(colorAtlas.regions[2].second);
 
 	auto& model_part = resManager.add<oak::graphics::Model>("model_part");
 	model_part.load("sandbox/res/models/bit.obj");
-	model_part.setTextureRegion(colorAtlas.regions[0].second);
 
 	auto& mesh_floor = resManager.add<oak::graphics::Mesh>("mesh_floor");
 
-	mesh_floor.data = {
-		0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		64.0f, 0.0f, 64.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-		64.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f
+	mesh_floor.vertices = {
+		oak::graphics::Mesh::Vertex{ { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+		oak::graphics::Mesh::Vertex{ { 0.0f, 0.0f, 64.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f } },
+		oak::graphics::Mesh::Vertex{ { 64.0f, 0.0f, 64.0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f } },
+		oak::graphics::Mesh::Vertex{ { 64.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f } }
 	};
-
-	mesh_floor.vertexCount = 4;
 
 	mesh_floor.indices = {
 		0, 1, 2, 2, 3, 0
 	};
-	oak::graphics::meshSetTextureRegion<oak::graphics::Model::Vertex>(&mesh_floor, colorAtlas.regions[1].second);
 
-	renderSystem.batcher_.addMesh(&model_box.getMeshes()[0], &mat_box, 0);
-	renderSystem.batcher_.addMesh(&mesh_floor, &mat_box, 0);
-	renderSystem.batcher_.addMesh(&model_part.getMeshes()[0], &mat_box, 0);
+	renderSystem.batcher_.addMesh(0, &mat_box, &model_box.getMeshes()[0], glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }), colorAtlas.regions[2].second);
+	renderSystem.batcher_.addMesh(0, &mat_box, &mesh_floor, glm::mat4{ 1.0f }, colorAtlas.regions[1].second);
 
-	renderSystem.particleSystem_.setMesh(&model_part.getMeshes()[0], &mat_part, 0);
+	renderSystem.particleSystem_.setMesh(0, &mat_part, &model_part.getMeshes()[0], colorAtlas.regions[0].second);
 
 	//create entities
 	oak::EntityId player = scene.createEntity();

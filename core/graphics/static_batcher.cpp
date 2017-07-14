@@ -16,8 +16,8 @@ namespace oak::graphics {
 		buffers_.push_back(BufferInfo{ storage });
 	}
 
-	void StaticBatcher::addMesh(const Mesh *mesh, const Material *material, uint32_t layer) {
-		meshes_.push_back({ layer, material, mesh, nullptr });
+	void StaticBatcher::addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region) {
+		meshes_.push_back({ layer, material, mesh, transform, region, nullptr });
 		needsRebatch_ = true;
 	}
 
@@ -59,8 +59,8 @@ namespace oak::graphics {
 			it.bl = bl;
 			size_t ic = it.mesh->indices.size();
 			currentBatch.count += ic;
-			bl->size[0] += it.mesh->data.size() * 4; //add to size of buffer total size of mesh
-			bl->size[1] += ic * 4; //add to size of index buffer total size of indices array
+			bl->size[0] += it.mesh->vertices.size() * sizeof(Mesh::Vertex); //add to size of buffer total size of mesh
+			bl->size[1] += ic * sizeof(uint32_t); //add to size of index buffer total size of indices array
 		}
 		batches_.push_back(currentBatch);
 
@@ -89,16 +89,24 @@ namespace oak::graphics {
 		for (auto& it : meshes_) {
 			bl = it.bl;
 			if (bl->map[0]) {
-				memcpy(bl->map[0], it.mesh->data.data(), it.mesh->data.size() * 4);
-				bl->map[0] = static_cast<float*>(bl->map[0]) + it.mesh->data.size();
+				Mesh::Vertex *vd;
+				for (const auto& v : it.mesh->vertices) {
+					vd = static_cast<Mesh::Vertex*>(bl->map[0]);
+					vd->position = glm::vec3{ it.transform * glm::vec4{ v.position, 1.0f } };
+					vd->normal = glm::vec3{ it.transform * glm::vec4{ v.normal, 0.0f } };
+					vd->uv = v.uv * it.region.extent + it.region.pos;
+					bl->map[0] = static_cast<Mesh::Vertex*>(bl->map[0]) + 1;
+				}
 			}
 			if (bl->map[1]) {
+				uint32_t *id;
 				for (const auto& i : it.mesh->indices) {
-					*static_cast<uint32_t*>(bl->map[1]) = i + bl->count;
+					id = static_cast<uint32_t*>(bl->map[1]);
+					*id = i + bl->count;
 					bl->map[1] = static_cast<uint32_t*>(bl->map[1]) + 1;
 				}
-				bl->count += it.mesh->vertexCount;
 			}
+			bl->count += it.mesh->vertices.size();
 		}
 
 		//unmap and reset buffers

@@ -16,7 +16,7 @@ namespace oak::graphics {
 		ParticleSystem();
 
 		void setBufferStorage(BufferStorage *storage);
-		void setMesh(const Mesh *mesh, const Material *material, uint32_t layer);
+		void setMesh(uint32_t layer, const Material *material, const Mesh *mesh, const TextureRegion& region);
 
 		void run();
 
@@ -32,9 +32,10 @@ namespace oak::graphics {
 		std::random_device rd_;
 		std::mt19937 re_;
 
-		const Mesh *mesh_;
-		const Material *material_;
 		uint32_t layer_;
+		const Material *material_;
+		const Mesh *mesh_;
+		TextureRegion region_;
 		Particle particles_[640];
 		Batch batch_;
 

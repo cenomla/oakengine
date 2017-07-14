@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <glm/glm.hpp>
 
 #include "container.h"
 #include "api.h"
@@ -8,7 +9,8 @@
 namespace oak::graphics {
 
 	struct TextureRegion {
-		float dx, dy, dw, dh;
+		glm::vec2 pos{ 0.0f };
+		glm::vec2 extent{ 1.0f };
 	};
 
 	struct TextureInfo {

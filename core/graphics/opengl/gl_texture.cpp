@@ -189,10 +189,8 @@ namespace oak::graphics::GLTexture {
 				auto& region = atlas.regions[rect.id];
 				region.first = oak::string{ image.name };
 
-				region.second.dx = rect.x * tx;
-				region.second.dy = rect.y * ty;
-				region.second.dw = rect.w * tx;
-				region.second.dh = rect.h * ty;
+				region.second.pos = { rect.x * tx, rect.y * ty };
+				region.second.extent = { rect.w * ty, rect.h * ty };
 
 				glTexImage2D(type, 0, format[0], image.width, image.height, 0, format[1], format[2], image.data);
 				glGenerateMipmap(type);
@@ -210,10 +208,8 @@ namespace oak::graphics::GLTexture {
 				auto& region = atlas.regions[rect.id];
 				region.first = oak::string{ image.name };
 
-				region.second.dx = rect.x * tx;
-				region.second.dy = rect.y * ty;
-				region.second.dw = rect.w * tx;
-				region.second.dh = rect.h * ty;
+				region.second.pos = { rect.x * tx, rect.y * ty };
+				region.second.extent = { rect.w * ty, rect.h * ty };
 
 				glTexSubImage2D(type, 0, rect.x, rect.y, rect.w, rect.h, format[1], format[2], image.data);
 			}

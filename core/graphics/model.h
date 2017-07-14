@@ -15,14 +15,7 @@ namespace oak::graphics {
 	class Model {
 	public:
 
-		struct Vertex {
-			glm::vec3 position;
-			glm::vec3 normal;
-			glm::vec2 uv;
-		};
-
 		void load(const oak::string& path);
-		void setTextureRegion(const TextureRegion& region);
 
 		const oak::vector<Mesh>& getMeshes() const { return meshes_; }
 

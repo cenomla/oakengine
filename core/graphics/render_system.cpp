@@ -49,10 +49,10 @@ namespace oak::graphics {
 	void RenderSystem::run() {
 		//make batches
 		batcher_.run();
-		//particleSystem_.run();
+		particleSystem_.run();
 		auto& sb = batcher_.getBatches();
 		batches_.insert(std::end(batches_), std::begin(sb), std::end(sb));
-		//batches_.push_back(particleSystem_.getBatch());
+		batches_.push_back(particleSystem_.getBatch());
 		pipeline_.batches = &batches_;
 
 		//render the layers

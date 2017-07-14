@@ -25,12 +25,6 @@ namespace oak::graphics {
 
 	}
 
-	void Model::setTextureRegion(const TextureRegion& region) {
-		for (auto& mesh: meshes_) {
-			meshSetTextureRegion<Vertex>(&mesh, region);
-		}
-	}
-
 	void Model::processNode(const aiScene *scene, aiNode *node) {
 		//process all meshs
 		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
@@ -45,12 +39,12 @@ namespace oak::graphics {
 
 	void Model::processMesh(const aiScene *scene, aiMesh *mesh) {
 		
-		oak::vector<Vertex> vertices;
+		oak::vector<Mesh::Vertex> vertices;
 		oak::vector<uint32_t> indices;
 		oak::vector<int> textures;
 		
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-			Vertex vertex;
+			Mesh::Vertex vertex;
 			vertex.position.x = mesh->mVertices[i].x;
 			vertex.position.y = mesh->mVertices[i].y;
 			vertex.position.z = mesh->mVertices[i].z;
@@ -80,11 +74,7 @@ namespace oak::graphics {
 			}
 		}
 
-		Mesh nMesh;
-		nMesh.data.resize(vertices.size() * sizeof(Vertex) / 4);
-		memcpy(nMesh.data.data(), vertices.data(), vertices.size() * sizeof(Vertex));
-		nMesh.indices = indices;
-		nMesh.vertexCount = vertices.size();
+		Mesh nMesh = { vertices, indices };
 
 		meshes_.push_back(nMesh);
 	}

@@ -16,13 +16,14 @@ namespace oak::graphics {
 		storage_ = storage;
 	}
 
-	void ParticleSystem::setMesh(const Mesh *mesh, const Material *material, uint32_t layer) {
-		mesh_ = mesh;
-		material_ = material;
+	void ParticleSystem::setMesh(uint32_t layer, const Material *material, const Mesh *mesh, const TextureRegion& region) {
 		layer_ = layer;
+		material_ = material;
+		mesh_ = mesh;
+		region_ = region;
 
 		storage_->bind();
-		storage_->instance(mesh_->data.size() * 4);
+		storage_->instance(mesh_->vertices.size() * sizeof(Mesh::Vertex));
 		storage_->unbind();
 	}
 
@@ -53,15 +54,23 @@ namespace oak::graphics {
 		batch_.instances = 640;
 		batch_.layer = layer_;
 		
-		storage_->data(0, mesh_->data.size() * 4 + 640 * 12, nullptr);
-		storage_->data(1, mesh_->indices.size() * 4, nullptr);
+		storage_->data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 640 * sizeof(glm::vec3), nullptr);
+		storage_->data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);
 
 		void *data = storage_->map(0);
 		void *idata = storage_->map(1);
 
-		memcpy(data, mesh_->data.data(), mesh_->data.size() * 4);
-		memcpy(idata, mesh_->indices.data(), mesh_->indices.size() * 4);
-		data = static_cast<float*>(data) + mesh_->data.size();
+
+		memcpy(data, mesh_->vertices.data(), mesh_->vertices.size() * sizeof(Mesh::Vertex));
+		memcpy(idata, mesh_->indices.data(), mesh_->indices.size() * sizeof(uint32_t));
+		//transform uvs
+		Mesh::Vertex *vd;
+		for (size_t i = 0; i < mesh_->vertices.size(); i++) {
+			vd = static_cast<Mesh::Vertex*>(data);
+			vd->uv *= region_.extent;
+			vd->uv += region_.pos;
+			data = static_cast<Mesh::Vertex*>(data) + 1;
+		}
 
 		//upload rest of data
 		for (int i = 0; i < 640; i++) {

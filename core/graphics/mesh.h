@@ -10,21 +10,14 @@
 namespace oak::graphics {
 
 	struct Mesh {
-		oak::vector<float> data;
-		oak::vector<uint32_t> indices;
-		size_t vertexCount = 0;
-	};
+		struct Vertex {
+			glm::vec3 position;
+			glm::vec3 normal;
+			glm::vec2 uv;
+		};
 
-	template<class T>
-	inline void meshSetTextureRegion(Mesh *mesh, const TextureRegion& region) {
-		glm::vec2 scale{ region.dw, region.dh };
-		glm::vec2 pos{ region.dx, region.dy };
-		T *v = reinterpret_cast<T*>(mesh->data.data());
-		for (size_t i = 0; i < mesh->vertexCount; i++) {
-			v->uv *= scale;
-			v->uv += pos;
-			v++;
-		}
-	}
+		oak::vector<Vertex> vertices;
+		oak::vector<uint32_t> indices;
+	};
 
 }
