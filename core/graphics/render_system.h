@@ -17,10 +17,10 @@ namespace oak::graphics {
 
 	class RenderSystem : public System {
 	public:
-		RenderSystem(Scene& scene, Api& api);
+		RenderSystem(Scene *scene, Api *api);
 
-		void pushLayerFront(Renderer& renderer);
-		void pushLayerBack(Renderer& renderer);
+		void pushLayerFront(Renderer *renderer);
+		void pushLayerBack(Renderer *renderer);
 
 		void removeLayer(Renderer& renderer);
 

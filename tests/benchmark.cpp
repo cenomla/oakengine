@@ -64,10 +64,10 @@ void oak_bench() {
 	oak::ComponentStorage vs{ "velocity" };
 	oak::ComponentStorage bs{ "box" };
 
-	scene.addComponentStorage(ts);
-	scene.addComponentStorage(ds);
-	scene.addComponentStorage(vs);
-	scene.addComponentStorage(bs);
+	scene.addComponentStorage(&ts);
+	scene.addComponentStorage(&ds);
+	scene.addComponentStorage(&vs);
+	scene.addComponentStorage(&bs);
 
 	oak::EntityCache drawCache;
 	drawCache.requireComponent<TransformComponent>();

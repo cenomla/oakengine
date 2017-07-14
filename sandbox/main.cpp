@@ -63,7 +63,7 @@ void pup(oak::Puper& puper, CameraComp& comp, const oak::ObjInfo& info) {
 
 class CameraSystem : public oak::System {
 public:
-	CameraSystem(oak::Scene& scene) : scene_{ &scene } {}
+	CameraSystem(oak::Scene *scene) : scene_{ scene } {}
 
 	void init() override {
 		cache_.requireComponent<oak::PrefabComponent>();
@@ -220,13 +220,13 @@ int main(int argc, char** argv) {
 	oak::graphics::GLApi gl_api;
 
 	//create the rendering system
-	oak::graphics::RenderSystem renderSystem{ scene, gl_api };
+	oak::graphics::RenderSystem renderSystem{ &scene, &gl_api };
 
 	//basic test renderer
 	DeferredRenderer sceneRenderer;
 	GuiRenderer guiRenderer;
-	renderSystem.pushLayerBack(sceneRenderer);
-	renderSystem.pushLayerBack(guiRenderer);
+	renderSystem.pushLayerBack(&sceneRenderer);
+	renderSystem.pushLayerBack(&guiRenderer);
 
 	//define vertex attribute layouts that will be used in the scene
 	oak::graphics::AttributeLayout _3dlayout{ oak::vector<oak::graphics::AttributeType>{ 
@@ -255,10 +255,10 @@ int main(int argc, char** argv) {
 	renderSystem.batcher_.addBufferStorage(&_2dstorage);
 	renderSystem.particleSystem_.setBufferStorage(&particleStorage);
 
-	CameraSystem cameraSystem{ scene };
+	CameraSystem cameraSystem{ &scene };
 	//add them to the system manager
-	sysManager.addSystem(renderSystem, "render_system");
-	sysManager.addSystem(cameraSystem, "camera_system");
+	sysManager.addSystem(&renderSystem, "render_system");
+	sysManager.addSystem(&cameraSystem, "camera_system");
 
 	//create component type handles
 	chs.addHandle<oak::EventComponent>("event");
@@ -273,10 +273,10 @@ int main(int argc, char** argv) {
 	oak::ComponentStorage cameraStorage{ "camera" };
 
 	//add component storage to scene
-	scene.addComponentStorage(eventStorage);
-	scene.addComponentStorage(prefabStorage);
-	scene.addComponentStorage(transformStorage);
-	scene.addComponentStorage(cameraStorage);
+	scene.addComponentStorage(&eventStorage);
+	scene.addComponentStorage(&prefabStorage);
+	scene.addComponentStorage(&transformStorage);
+	scene.addComponentStorage(&cameraStorage);
 
 	//init the test renderer
 	sceneRenderer.init();

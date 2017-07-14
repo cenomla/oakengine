@@ -105,12 +105,12 @@ namespace oak {
 		componentPools_.clear();
 	}
 
-	void Scene::addComponentStorage(ComponentStorage& storage) {
-		size_t tid = storage.getHandle()->getId();
+	void Scene::addComponentStorage(ComponentStorage *storage) {
+		size_t tid = storage->getHandle()->getId();
 		if (componentPools_.size() <= tid) {
 			componentPools_.resize(tid + 1);
 		}
-		componentPools_[tid] = &storage;
+		componentPools_[tid] = storage;
 	}
 
 	ComponentStorage& Scene::getComponentStorage(size_t tid) {

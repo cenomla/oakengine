@@ -25,15 +25,15 @@ namespace oak {
 		~SystemManager();
 
 		template<class TSystem>
-		void addSystem(TSystem& system, const oak::string& name) {
+		void addSystem(TSystem *system, const oak::string& name) {
 			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
 			if (tid >= systems_.size()) {
 				systems_.resize(tid + 1);
 				names_.resize(tid + 1);
 			}
-			systems_[tid] = &system;
+			systems_[tid] = system;
 			names_[tid] = name;
-			system.init();
+			system->init();
 		}
 
 		template<class TSystem>

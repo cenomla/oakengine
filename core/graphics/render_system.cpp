@@ -12,7 +12,7 @@
 
 namespace oak::graphics {
 
-	RenderSystem::RenderSystem(Scene& scene, Api& api) : scene_{ &scene }, api_{ &api } {}
+	RenderSystem::RenderSystem(Scene *scene, Api *api) : scene_{ scene }, api_{ api } {}
 
 	void RenderSystem::init() {
 		api_->init();
@@ -32,14 +32,14 @@ namespace oak::graphics {
 		api_->terminate();
 	}
 
-	void RenderSystem::pushLayerFront(Renderer& renderer) {
-		renderer.setPipeline(&pipeline_);
-		layers_.insert(std::begin(layers_), &renderer);
+	void RenderSystem::pushLayerFront(Renderer *renderer) {
+		renderer->setPipeline(&pipeline_);
+		layers_.insert(std::begin(layers_), renderer);
 	}
 
-	void RenderSystem::pushLayerBack(Renderer& renderer) {
-		renderer.setPipeline(&pipeline_);
-		layers_.push_back(&renderer);
+	void RenderSystem::pushLayerBack(Renderer *renderer) {
+		renderer->setPipeline(&pipeline_);
+		layers_.push_back(renderer);
 	}
 
 	void RenderSystem::removeLayer(Renderer& renderer) {
