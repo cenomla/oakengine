@@ -167,17 +167,16 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	//do rendering stuff
-	glBindFramebuffer(GL_FRAMEBUFFER, gbuffer_.id);
+	oak::graphics::framebuffer::bind(gbuffer_);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (const auto& batch : *pipeline_->batches) {
 		if (batch.layer != 0) { continue; }
 		//bind material 
-		glUseProgram(batch.material->shader->id);
+		oak::graphics::shader::bind(*batch.material->shader);
 		for (int i = 0; i < 16; i++) {
 			if (batch.material->textures[i] != nullptr) {
-				glActiveTexture(GL_TEXTURE0 + i);
-				glBindTexture(GL_TEXTURE_2D, batch.material->textures[i]->id);
+				oak::graphics::texture::bind(*batch.material->textures[i], i);
 			}
 		}
 		batch.storage->bind();
@@ -196,14 +195,10 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 
 	//bind textures
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, albedo_.id);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normal_.id);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, depth_.id);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, noise_.id);
+	oak::graphics::texture::bind(albedo_, 0);
+	oak::graphics::texture::bind(normal_, 1);
+	oak::graphics::texture::bind(depth_, 2);
+	oak::graphics::texture::bind(noise_, 3);
 
 	//bind the fullscreen quad buffer
 	buffer_.bind();
@@ -217,13 +212,13 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//render lighting
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	oak::graphics::framebuffer::unbind();
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//bind ao texture to slot 3
 	//glBindTexture(GL_TEXTURE_2D, ao_.id);
 
-	glUseProgram(light_.id);
+	oak::graphics::shader::bind(light_);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 /*

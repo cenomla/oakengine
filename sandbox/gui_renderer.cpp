@@ -2,9 +2,9 @@
 
 #include <glad/glad.h>
 
+#include <graphics/opengl/gl_api.h>
 #include <graphics/pipeline.h>
 #include <graphics/material.h>
-#include <graphics/opengl/gl_vertex_array.h>
 
 void GuiRenderer::init() {
 
@@ -23,11 +23,10 @@ void GuiRenderer::render(oak::graphics::Api *api) {
 	for (const auto& batch : *pipeline_->batches) {
 		if (batch.layer != 1) { continue; }
 		//bind material
-		glUseProgram(batch.material->shader->id);
+		oak::graphics::shader::bind(*batch.material->shader);
 		for (int i = 0; i < 16; i++) {
 			if (batch.material->textures[i] != nullptr) {
-				glActiveTexture(GL_TEXTURE0 + i);
-				glBindTexture(GL_TEXTURE_2D, batch.material->textures[i]->id);
+				oak::graphics::texture::bind(*batch.material->textures[i], i);
 			}
 		}
 		batch.storage->bind();

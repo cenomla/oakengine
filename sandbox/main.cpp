@@ -229,13 +229,13 @@ int main(int argc, char** argv) {
 	renderSystem.pushLayerBack(&guiRenderer);
 
 	//define vertex attribute layouts that will be used in the scene
-	oak::graphics::AttributeLayout _3dlayout{ oak::vector<oak::graphics::AttributeType>{ 
+	oak::graphics::AttributeLayout layout3d{ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION,
 		oak::graphics::AttributeType::NORMAL,
 		oak::graphics::AttributeType::UV
 	} };
 
-	oak::graphics::AttributeLayout _2dlayout{ oak::vector<oak::graphics::AttributeType>{ 
+	oak::graphics::AttributeLayout layout2d{ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION2D,
 		oak::graphics::AttributeType::UV
 	} };
@@ -283,8 +283,8 @@ int main(int argc, char** argv) {
 	guiRenderer.init();
 
 	//initialize the buffer storage
-	_3dstorage.create(&_3dlayout);
-	_2dstorage.create(&_2dlayout);
+	_3dstorage.create(&layout3d);
+	_2dstorage.create(&layout2d);
 	particleStorage.create(&particleLayout);
 
 	//setup uniforms
@@ -399,8 +399,8 @@ int main(int argc, char** argv) {
 		}, textureInfo));
 
 	//materials
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &_3dlayout, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
-	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &_2dlayout, &sh_pass2d, &tex_character);
+	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &layout2d, &sh_pass2d, &tex_character);
 	auto& mat_part = resManager.add<oak::graphics::Material>("mat_part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 
 	//meshes
@@ -459,6 +459,8 @@ int main(int argc, char** argv) {
 		inputManager.update();
 		//create / destroy / activate / deactivate entities
 		scene.update();
+		//move camera
+		cameraSystem.run();
 		//update view
 		auto& cc = oak::getComponent<CameraComp>(scene, player);
 		matrix.view = glm::mat4{ glm::quat{ cc.rotation } };
@@ -475,8 +477,6 @@ int main(int argc, char** argv) {
 		oak::graphics::buffer::bind(light_ubo);
 		oak::graphics::buffer::data(light_ubo, sizeof(lights), &lights);
 	
-
-		cameraSystem.run();
 		renderSystem.run();
 
 		//check for exit
