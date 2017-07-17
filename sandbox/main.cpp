@@ -246,14 +246,14 @@ int main(int argc, char** argv) {
 	chs.addHandle<oak::EventComponent>("event");
 	chs.addHandle<oak::PrefabComponent>("prefab");
 	chs.addHandle<TransformComponent>("transform");
-	chs.addHandle<ModelComponent>("model");
+	chs.addHandle<MeshComponent>("mesh");
 	chs.addHandle<CameraComponent>("camera");
 
 	//create component storage
 	oak::ComponentStorage eventStorage{ "event" };
 	oak::ComponentStorage prefabStorage{ "prefab" };
 	oak::ComponentStorage transformStorage{ "transform" };
-	oak::ComponentStorage modelStorage{ "model" };
+	oak::ComponentStorage modelStorage{ "mesh" };
 	oak::ComponentStorage cameraStorage{ "camera" };
 
 	//add component storage to scene
@@ -389,13 +389,9 @@ int main(int argc, char** argv) {
 	auto& mat_part = resManager.add<oak::graphics::Material>("mat_part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 
 	//meshes
-	auto& model_box = resManager.add<oak::graphics::Model>("model_box");
-	model_box.load("sandbox/res/models/box.obj");
-
-	auto& model_part = resManager.add<oak::graphics::Model>("model_part");
-	model_part.load("sandbox/res/models/bit.obj");
-
-	auto& mesh_floor = resManager.add<oak::graphics::Mesh>("mesh_floor");
+	auto model_box = oak::graphics::loadModel("sandbox/res/models/box.obj");
+	auto model_part = oak::graphics::loadModel("sandbox/res/models/bit.obj");
+	oak::graphics::Mesh mesh_floor;
 
 	mesh_floor.vertices = {
 		oak::graphics::Mesh::Vertex{ { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
@@ -418,8 +414,14 @@ int main(int argc, char** argv) {
 	oak::EntityId box = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, box, std::hash<oak::string>{}("box"));
 	oak::addComponent<TransformComponent>(scene, box, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }));
-	oak::addComponent<ModelComponent>(scene, box, oak::Resource<oak::graphics::Model>{ "model_box" }, oak::Resource<oak::graphics::Material>{ "mat_box" }, colorAtlas.regions[2].second, 0u);
+	oak::addComponent<MeshComponent>(scene, box, &model_box[0], &mat_box, colorAtlas.regions[2].second, 0u);
 	scene.activateEntity(box);
+
+	oak::EntityId floor = scene.createEntity();
+	oak::addComponent<oak::PrefabComponent>(scene, floor, std::hash<oak::string>{}("floor"));
+	oak::addComponent<TransformComponent>(scene, floor, glm::mat4{ 1.0f });
+	oak::addComponent<MeshComponent>(scene, floor, &mesh_floor, &mat_box, colorAtlas.regions[2].second, 0u);
+	scene.activateEntity(floor);
 
 	//first frame time
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();

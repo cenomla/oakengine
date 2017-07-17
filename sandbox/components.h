@@ -15,13 +15,13 @@ struct CameraComponent {
 	glm::vec3 rotation;
 };
 
-struct ModelComponent {
-	oak::Resource<oak::graphics::Model> model{ 0 };
-	oak::Resource<oak::graphics::Material> material{ 0 };
+struct MeshComponent {
+	const oak::graphics::Mesh *mesh = nullptr;
+	const oak::graphics::Material *material = nullptr;
 	oak::graphics::TextureRegion region;
 	uint32_t layer = 0;
 };
 
 void pup(oak::Puper& puper, TransformComponent& data, const oak::ObjInfo& info);
 void pup(oak::Puper& puper, CameraComponent& data, const oak::ObjInfo& info);
-void pup(oak::Puper& puper, ModelComponent& data, const oak::ObjInfo& info);
+void pup(oak::Puper& puper, MeshComponent& data, const oak::ObjInfo& info);

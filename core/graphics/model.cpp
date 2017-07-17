@@ -10,34 +10,7 @@
 
 namespace oak::graphics {
 
-	void Model::load(const oak::string& path) {
-
-		Assimp::Importer importer;
-
-		const aiScene *scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
-
-		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			log_print_err("failed to load model: %s, error: %s", path.c_str(), importer.GetErrorString());
-			return;
-		}
-
-		processNode(scene, scene->mRootNode);
-
-	}
-
-	void Model::processNode(const aiScene *scene, aiNode *node) {
-		//process all meshs
-		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-			processMesh(scene, scene->mMeshes[node->mMeshes[i]]);
-		}
-
-		//process all children
-		for (unsigned int i = 0; i < node->mNumChildren; i++) {
-			processNode(scene, node->mChildren[i]);
-		}
-	}
-
-	void Model::processMesh(const aiScene *scene, aiMesh *mesh) {
+	static void processMesh(oak::vector<Mesh>& meshes, const aiScene *scene, aiMesh *mesh) {
 		
 		oak::vector<Mesh::Vertex> vertices;
 		oak::vector<uint32_t> indices;
@@ -74,9 +47,38 @@ namespace oak::graphics {
 			}
 		}
 
-		Mesh nMesh = { vertices, indices };
+		meshes.push_back({ vertices, indices });
+	}
 
-		meshes_.push_back(nMesh);
+	static void processNode(oak::vector<Mesh>& meshes, const aiScene *scene, aiNode *node) {
+		//process all meshs
+		for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+			processMesh(meshes, scene, scene->mMeshes[node->mMeshes[i]]);
+		}
+
+		//process all children
+		for (unsigned int i = 0; i < node->mNumChildren; i++) {
+			processNode(meshes, scene, node->mChildren[i]);
+		}
+	}
+
+	oak::vector<Mesh> loadModel(const oak::string& path) {
+
+		Assimp::Importer importer;
+
+		const aiScene *scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+			log_print_err("failed to load model: %s, error: %s", path.c_str(), importer.GetErrorString());
+			return {};
+		}
+
+		oak::vector<Mesh> meshes;
+		meshes.reserve(scene->mNumMeshes);
+
+		processNode(meshes, scene, scene->mRootNode);
+
+		return meshes;
 	}
 
 }
