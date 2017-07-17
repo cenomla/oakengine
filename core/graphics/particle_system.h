@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include "texture.h"
 #include "batch.h"
 
 #include <random>

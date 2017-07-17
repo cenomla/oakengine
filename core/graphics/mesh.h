@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <cinttypes>
 #include <glm/glm.hpp>
 
-#include "texture.h"
 #include "container.h"
 
 namespace oak::graphics {
@@ -19,5 +17,7 @@ namespace oak::graphics {
 		oak::vector<Vertex> vertices;
 		oak::vector<uint32_t> indices;
 	};
+
+	oak::vector<Mesh> loadModel(const oak::string& path);
 
 }

@@ -1,9 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <graphics/model.h>
+#include <graphics/mesh.h>
 #include <graphics/material.h>
-#include <resource.h>
 #include <pup.h>
 
 struct TransformComponent {

@@ -5,7 +5,6 @@
 
 namespace oak::graphics {
 
-
 	struct Sprite {
 		struct Vertex {
 			glm::vec2 position;
@@ -14,6 +13,6 @@ namespace oak::graphics {
 		
 		float centerX, centerY, width, height;
 		TextureRegion region;
-	}
+	};
 
 }

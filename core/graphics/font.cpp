@@ -7,41 +7,15 @@
 
 namespace oak::graphics {
 
-	Font::Font(size_t mat) : materialId_{ mat }, fontSize_{ 0 } {
-
-	}
-
-	void Font::draw(void *buffer, const oak::string &text, float x, float y, float rotation, float size) const {
-		
-		const float scale = size / static_cast<float>(fontSize_);
-		const float sx = x;
-
-		for (const char c : text) {
-			const Glyph& g = glyphs_[static_cast<size_t>(c)];
-			
-			glm::vec2 pos{ x, y };
-			//static_cast<Vertex*>(buffer)[0] = { glm::rotate(glm::vec2{ g.xoffset, g.yoffset } * scale, rotation) + pos, glm::vec2{ g.dx, g.dy } };
-			//static_cast<Vertex*>(buffer)[1] = { glm::rotate(glm::vec2{ g.xoffset + g.width, g.yoffset } * scale, rotation) + pos, glm::vec2{ g.dx + g.dw, g.dy } };
-			//static_cast<Vertex*>(buffer)[2] = { glm::rotate(glm::vec2{ g.xoffset + g.width, g.yoffset + g.height } * scale, rotation) + pos, glm::vec2{ g.dx + g.dw, g.dy + g.dh } };
-			//static_cast<Vertex*>(buffer)[3] = { glm::rotate(glm::vec2{ g.xoffset, g.yoffset + g.height } * scale, rotation) + pos, glm::vec2{ g.dx, g.dy + g.dh } };
-
-			//buffer = static_cast<Vertex*>(buffer) + 4;
-			x += g.advance * scale;
-			if (c == '\n') {
-				x = sx;
-				y += size * 1.2f;
-			}
-		}
-	}
-
 	struct FontHeaderInfo {
 		size_t size, width, height;
 	};
 
-	void Font::create(const oak::string &path) {
+	Font loadFont(const oak::string& path) {
 		const oak::string file = util::readFileAsString(path.c_str());
 		size_t pos = 0, len = 0;
 
+		Font font;
 		FontHeaderInfo fhi;
 		//parse header
 
@@ -50,7 +24,7 @@ namespace oak::graphics {
 			
 			if (token.compare(0, 4, "size") == 0) {
 				fhi.size = std::stoull(token.substr(5).c_str());
-				fontSize_ = fhi.size;
+				font.size = fhi.size;
 			} else if (token.compare(0, 6, "scaleW") == 0) {
 				fhi.width = std::stoull(token.substr(7).c_str());
 			} else if (token.compare(0, 6, "scaleH") == 0) {
@@ -67,7 +41,7 @@ namespace oak::graphics {
 			const oak::string &token = file.substr(pos, len - pos);
 			
 			if (token.compare(0, 4, "char") == 0) {
-				Glyph glyph;
+				Font::Glyph glyph;
 
 				glyph.id = std::stoi(token.substr(8, 7).c_str());
 				glyph.dx = std::stof(token.substr(18, 4).c_str()) * (1.0f / fhi.width);
@@ -80,15 +54,16 @@ namespace oak::graphics {
 				glyph.height = std::stof(token.substr(48, 4).c_str());
 				glyph.advance = std::stof(token.substr(88, 4).c_str());
 				//ensure size
-				if (static_cast<size_t>(glyph.id) >= glyphs_.size()) {
-					glyphs_.resize(static_cast<size_t>(glyph.id)+1);
+				if (static_cast<size_t>(glyph.id) >= font.glyphs.size()) {
+					font.glyphs.resize(static_cast<size_t>(glyph.id)+1);
 				}
-				glyphs_[static_cast<size_t>(glyph.id)] = glyph;
+				font.glyphs[static_cast<size_t>(glyph.id)] = glyph;
 			}
 
 			pos = len + 1;
 		}
 
+		return font;
 	}
 
 }

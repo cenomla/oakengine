@@ -13,7 +13,6 @@
 #include <graphics/opengl/gl_shader.h>
 #include <graphics/opengl/gl_framebuffer.h>
 
-#include <graphics/model.h>
 #include <graphics/mesh.h>
 #include <log.h>
 #include <system_manager.h>
