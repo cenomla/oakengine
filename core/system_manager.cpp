@@ -11,6 +11,14 @@ namespace oak {
 
 	SystemManager::~SystemManager() {
 		instance = nullptr;
+		//terminate systems
+		for (auto system : systems_) {
+			if (system != nullptr) {
+				system->terminate();
+			}
+		}
+		systems_.clear();
+		names_.clear();
 	}
 
 }
