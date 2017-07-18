@@ -21,11 +21,13 @@ private:
 	const oak::graphics::Pipeline *pipeline_;
 	oak::graphics::Framebuffer gbuffer_;
 	oak::graphics::Framebuffer ssaobuffer_;
-	oak::graphics::Framebuffer aabuffer_;
+	oak::graphics::Framebuffer post_;
 	oak::graphics::Shader light_;
 	oak::graphics::Shader ssao_;
 	oak::graphics::Shader fxaa_;
+	oak::graphics::Shader box_;
 	oak::graphics::GLBufferStorage buffer_;
+	oak::graphics::GLBufferStorage skyBuffer_;
 	oak::graphics::Buffer kernelBuffer_;
 	oak::graphics::Texture albedo_;
 	oak::graphics::Texture normal_;
@@ -33,4 +35,5 @@ private:
 	oak::graphics::Texture noise_;
 	oak::graphics::Texture aa_;
 	oak::graphics::Texture ao_;
+	oak::graphics::Texture sky_;
 };

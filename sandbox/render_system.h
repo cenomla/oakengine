@@ -31,6 +31,7 @@ public:
 	
 	oak::graphics::BufferStorage *storage3d;
 	oak::graphics::BufferStorage *storage2d;
+	oak::graphics::ParticleSystem particleSystem_;
 private:
 	oak::Scene *scene_;
 	oak::EntityCache cache_;
@@ -40,5 +41,4 @@ private:
 	oak::vector<oak::graphics::Renderer*> layers_;
 	oak::vector<oak::graphics::Batch> batches_;
 	oak::graphics::StaticBatcher batcher_;
-	oak::graphics::ParticleSystem particleSystem_;
 };

@@ -13,7 +13,7 @@
 #include <graphics/opengl/gl_shader.h>
 #include <graphics/opengl/gl_framebuffer.h>
 
-#include <graphics/mesh.h>
+#include <mesh.h>
 #include <log.h>
 #include <system_manager.h>
 #include <resource_manager.h>
@@ -235,6 +235,7 @@ int main(int argc, char** argv) {
 
 	renderSystem.storage3d = &storage3d;
 	renderSystem.storage2d = &storage2d;
+	renderSystem.particleSystem_.setBufferStorage(&particleStorage);
 
 	CameraSystem cameraSystem{ &scene };
 	//add them to the system manager
@@ -403,6 +404,8 @@ int main(int argc, char** argv) {
 		0, 1, 2, 2, 3, 0
 	};
 
+	renderSystem.particleSystem_.setMesh(0, &mat_part, &model_part[0], colorAtlas.regions[0].second);
+
 	//create entities
 	oak::EntityId player = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
@@ -410,16 +413,25 @@ int main(int argc, char** argv) {
 	oak::addComponent<CameraComponent>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
 	scene.activateEntity(player);
 
-	oak::EntityId box = scene.createEntity();
-	oak::addComponent<oak::PrefabComponent>(scene, box, std::hash<oak::string>{}("box"));
-	oak::addComponent<TransformComponent>(scene, box, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 2.0f, 32.0f }));
-	oak::addComponent<MeshComponent>(scene, box, &model_box[0], &mat_box, colorAtlas.regions[2].second, 0u);
-	scene.activateEntity(box);
+	oak::Prefab fab_box{ "box", scene };
+	fab_box.addComponent<TransformComponent>();
+	fab_box.addComponent<MeshComponent>(&model_box[0], &mat_box, colorAtlas.regions[2].second, 0u);
+
+	for (int i = -8; i < 8; i++) {
+		for (int j = 0; j < 16; j++) {
+			for (int k = -8; k < 8; k++) {
+				auto e = fab_box.createInstance();
+				oak::getComponent<TransformComponent>(scene, e).transform = glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f + i * 2.5f, 2.0f + j * 2.5f, 32.0f + k * 2.5f });
+				scene.activateEntity(e);
+			}
+		}
+	}
+	
 
 	oak::EntityId floor = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, floor, std::hash<oak::string>{}("floor"));
 	oak::addComponent<TransformComponent>(scene, floor, glm::mat4{ 1.0f });
-	oak::addComponent<MeshComponent>(scene, floor, &mesh_floor, &mat_box, colorAtlas.regions[2].second, 0u);
+	oak::addComponent<MeshComponent>(scene, floor, &mesh_floor, &mat_box, colorAtlas.regions[1].second, 0u);
 	scene.activateEntity(floor);
 
 	//first frame time

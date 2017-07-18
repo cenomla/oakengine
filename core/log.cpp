@@ -6,9 +6,9 @@
 
 namespace oak::log {
 
-	Logger cout{ "stdout" };
-	Logger cwarn{ "stdwarn" };
-	Logger cerr{ "stderr" };
+	Logger cout{ "msg" };
+	Logger cwarn{ "warn" };
+	Logger cerr{ "err" };
 
 	Logger::Logger(const char* name) : name_{ name } {
 
@@ -37,7 +37,7 @@ namespace oak::log {
 				name_, text);
 		break;
 		case Level::VERBOSE:
-			sprintf(buffer_, "[%i:%i:%i %i/%i/%i][%s]:%s \n\t[file]:%s:%i \n", 
+			sprintf(buffer_, "[%i:%i:%i %i/%i/%i][%s]: %s\t[file]:%s:%i\n", 
 				tm->tm_hour, tm->tm_min, tm->tm_sec,
 				tm->tm_mon+1, tm->tm_mday, 1900+tm->tm_year, 
 				name_, text, file, line);

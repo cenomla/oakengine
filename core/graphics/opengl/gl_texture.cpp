@@ -4,7 +4,6 @@
 
 #include <glad/glad.h>
 
-#define STBI_ONLY_PNG
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -46,7 +45,8 @@ namespace oak::graphics::GLTexture {
 	static const GLenum types[] = {
 		GL_TEXTURE_2D,
 		GL_TEXTURE_3D,
-		GL_TEXTURE_2D_ARRAY
+		GL_TEXTURE_2D_ARRAY,
+		GL_TEXTURE_CUBE_MAP
 	};
 
 	static const GLenum filter[] = {
@@ -68,7 +68,7 @@ namespace oak::graphics::GLTexture {
 		glBindTexture(types[static_cast<int>(texture.info.type)], texture.id);
 	}
 
-	Texture create(const char *path, TextureInfo& info) {
+	Texture create(const char *path, const TextureInfo& info) {
 		int w, h, comp;
 		stbi_uc *data = stbi_load(path, &w, &h, &comp, components[static_cast<int>(info.format)]);
 
@@ -76,10 +76,11 @@ namespace oak::graphics::GLTexture {
 			log_print_warn("failed to load texture: %s", path);
 		}
 
-		info.width = w;
-		info.height = h;
+		TextureInfo ti = info;
+		ti.width = w;
+		ti.height = h;
 
-		const Texture& tex = create(info, data);
+		const Texture& tex = create(ti, data);
 
 		if (static_cast<int>(info.minFilter) >= static_cast<int>(TextureFilter::LINEAR_MIP_LINEAR)) {
 			glGenerateMipmap(GL_TEXTURE_2D);
@@ -223,6 +224,62 @@ namespace oak::graphics::GLTexture {
 		atlas.texture = texture;
 
 		return atlas;
+	}
+
+	Texture createCubemap(const oak::vector<const char*>& paths, const TextureInfo& info) {
+		Texture texture;
+
+		if (info.type != TextureType::CUBEMAP || paths.size() != 6) {
+			log_print_warn("cubemap not valid");
+			return texture;
+		}
+		texture.info = info;
+
+		const auto& format = formats[static_cast<int>(info.format)];
+
+		GLenum type = types[static_cast<int>(info.type)];
+		GLenum mag = filter[static_cast<int>(info.magFilter)];
+		GLenum min = filter[static_cast<int>(info.minFilter)];
+
+		GLenum xw = wrap[static_cast<int>(info.xWrap)];
+		GLenum yw = wrap[static_cast<int>(info.yWrap)];
+
+		int rcomp = components[static_cast<int>(info.format)];
+
+		glGenTextures(1, &texture.id);
+		glBindTexture(type, texture.id);
+
+		int w, h, comp, i = 0;
+		stbi_uc *data;
+		for (auto path : paths) {
+			data = stbi_load(path, &w, &h, &comp, rcomp);
+
+			if (data == nullptr) {
+				log_print_warn("failed to load texture: %s", path);
+			}
+
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format[0], w, h, 0, format[1], format[2], data);
+
+			stbi_image_free(data);
+			i++;
+		}
+
+		glTexParameteri(type, GL_TEXTURE_MAG_FILTER, mag);
+		glTexParameteri(type, GL_TEXTURE_MIN_FILTER, min);
+		glTexParameteri(type, GL_TEXTURE_WRAP_S, xw);
+		glTexParameteri(type, GL_TEXTURE_WRAP_T, yw);
+		glTexParameteri(type, GL_TEXTURE_WRAP_R, yw);
+
+		if (min >= static_cast<int>(TextureFilter::LINEAR_MIP_LINEAR)) {
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		}
+
+		glBindTexture(type, 0);
+
+		texture.info.width = w;
+		texture.info.height = h;
+
+		return texture;
 	}
 
 	void destroy(Texture& texture) {

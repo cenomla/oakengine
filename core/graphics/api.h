@@ -19,7 +19,8 @@ namespace oak::graphics {
 	enum class TextureType {
 		IMAGE_2D,
 		IMAGE_3D,
-		ARRAY_2D
+		ARRAY_2D,
+		CUBEMAP
 	};
 
 	enum class TextureFilter {

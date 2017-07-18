@@ -80,8 +80,13 @@ void RenderSystem::run() {
 
 
 	//make batches
+	oak::vector<oak::graphics::Batch> batches;
+	pipeline_.batches = &batches;
 	batcher_.run();
-	pipeline_.batches = &batcher_.getBatches();
+	particleSystem_.run();
+	batches.insert(std::end(batches), std::begin(batcher_.getBatches()), std::end(batcher_.getBatches()));
+	batches.push_back(particleSystem_.getBatch());
+
 
 	//render the layers
 	for (auto layer : layers_) {

@@ -78,4 +78,93 @@ namespace oak::graphics {
 		return meshes;
 	}
 
+	static glm::vec3 findSupport(const glm::vec3& dir, const Mesh& A, const Mesh& B) {
+		float max = -1.0f;
+		glm::vec3 sA = -dir, sB = dir;
+		float d;
+		//find support point in mesh a
+		for (const auto& v : A.vertices) {
+			d = glm::dot(v.position, dir);
+			if (d > max) {
+				max = d;
+				sA = v.position;
+			}
+		}
+		max = -1.0f;
+		//find support point in mesh b
+		for (const auto& v : B.vertices) {
+			d = glm::dot(v.position, -dir);
+			if (d > max) {
+				max = d;
+				sB = v.position;
+			}
+		}
+
+		return sA - sB;
+	}
+
+	struct Simplex {
+		glm::vec3 points[4];
+		int c = 0;
+	};
+
+	static bool processSimplexLine(Simplex& splex, glm::vec3& D) {
+		glm::vec3 AB = splex.points[1] - splex.points[0];
+		glm::vec3 AO = -splex.points[1];
+		if (glm::dot(AB, AO) > 0.0f) {
+			//set direction vector to a vector that is perpindicular to the AB plane and points towards the origin
+			D = glm::cross(glm::cross(AB, AO), AB);
+			return false;
+		}
+		splex.points[0] = splex.points[1];
+		splex.c = 1;
+		D = AO;
+		return false;
+	}
+
+	static bool processSimplexTriangle(Simplex& splex, glm::vec3& D) {
+		glm::vec3 AB = splex.points[2] - splex.points[1];
+		glm::vec3 AC = splex.points[2] - splex.points[0];
+		glm::vec3 ABC = glm::cross(AB, AC);
+		glm::vec3 AO = -splex.points[2];
+
+		if (glm::dot(glm::cross(ABC, AC), AO) > 0.0f) {
+			if (glm::dot(AC, AO) > 0.0f) {
+				splex.points[1] = splex.points[2];
+				splex.c = 2;
+				D = glm::cross(glm::cross(AC, AO), AC);
+				return false;
+			}
+			
+		}
+
+		return false;
+	}
+
+	static bool processSimplexTetrahedral(Simplex& splex, glm::vec3& D) {
+		return false;
+	}
+
+	static bool(*simplexTable[])(Simplex&, glm::vec3&) = {
+		nullptr,
+		&processSimplexLine,
+		&processSimplexTriangle,
+		&processSimplexTetrahedral
+	};
+
+	static void gjk(const Mesh& A, const Mesh& B) {
+		Simplex splex;
+		auto S = findSupport(glm::vec3{ 1.0f }, A, B);
+		splex.points[splex.c++] = S;
+		auto D = -S;
+		while (true) {
+			S = findSupport(D, A, B);
+			if (glm::dot(D, S) < 0) { return; }
+			splex.points[splex.c++] = S;
+			if (simplexTable[splex.c](splex, D)) { return; }
+		}
+
+	}
+
+
 }

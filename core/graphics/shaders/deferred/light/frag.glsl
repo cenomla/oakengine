@@ -19,7 +19,7 @@ layout (std140, binding = 4) uniform LightBlock {
 	Light data[8];
 } u_lights;
 
-uniform vec3 u_ambientColor = vec3(0.01);
+uniform vec3 u_ambientColor = vec3(0.5);
 
 in vec2 passUV;
 
@@ -97,7 +97,7 @@ void main() {
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metalness);
 
-	float ao = 1.0;
+	float ao = blurAo();
 
 	vec3 Lo = vec3(0.0);
 	//calculate radiance
