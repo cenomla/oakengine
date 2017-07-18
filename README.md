@@ -1,7 +1,7 @@
 # Oak Engine
 ### Overview:
  
-Oak engine is small game engine aimed at being lightweight, fast and extensible that is still in very early stages. Oak engine is written using modern c++ and uses lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small demo detailing the use of the engine and a few additional systems. The goal of this engine is not to provide everything a game may need (physically based rendering, rigid body physics, etc..), as so many librarys do these things already, but rather to provide a solid framework to build a game off of and extend with additional functionality.
+Oak engine is small game engine aimed at being lightweight, fast and extensible and is still in it's very early stages. Oak engine is written using modern c++ and uses lua as a scripting language, I plan to add bindings for javascript and possibly c# in the future. The engine is designed to use multi-threading at its core and will support vulkan to take full advantage of this. The sandbox folder contains a small demo detailing the use of the engine and a few additional systems.
 
 ### Features:
 - Multi-threaded task manager
@@ -10,7 +10,7 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 - Component based entity system
 - Lua scripting
 - Prefab system with shared components
-- Simple opengl sprite batcher
+- Opengl 4 renderer
 - Easily extendable
 
 ### Libraries Used:
@@ -23,6 +23,7 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 | lua | www.lua.org |
 | enet | www.enet.bespin.org |
 | stb | www.github.com/nothings/stb |
+| oail | www.assimp.sourceforge.net |
 
 ### Building:
 
@@ -40,7 +41,7 @@ scons
 ~~~~
 or
 ~~~~
-scons <flavor>
+scons <debug|release>
 ~~~~
 
 ##### Windows/Mac:
