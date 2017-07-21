@@ -25,6 +25,7 @@ namespace oak::graphics {
 		TextureWrap yWrap = TextureWrap::REPEAT;
 
 		uint32_t width, height;
+		int mipLevels = 1;
 	};
 
 	struct Texture {

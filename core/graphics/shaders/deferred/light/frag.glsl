@@ -19,7 +19,7 @@ layout (std140, binding = 4) uniform LightBlock {
 	Light data[8];
 } u_lights;
 
-uniform vec3 u_ambientColor = vec3(0.5);
+uniform vec3 u_ambientColor = vec3(0.1);
 
 in vec2 passUV;
 
@@ -64,18 +64,6 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0) {
 	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-float blurAo() {
-	vec2 ts = 1.0 / vec2(textureSize(texAo, 0));
-	float r = 0.0;
-	for (int x = -2; x < 2; x++) {
-		for (int y = -2; y < 2; y++) {
-			vec2 o = vec2(float(x), float(y)) * ts;
-			r += texture(texAo, passUV + o).x;
-		}
-	}
-	return r / 16.0;
-}
-
 void main() {
 
 	vec4 s_ar = texture(texAlbedo, passUV);
@@ -97,7 +85,7 @@ void main() {
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, albedo, metalness);
 
-	float ao = blurAo();
+	float ao = texture(texAo, passUV).x;
 
 	vec3 Lo = vec3(0.0);
 	//calculate radiance
@@ -121,11 +109,11 @@ void main() {
 		vec3 spec = nom / denom;
 
 		float NdotL = max(dot(N, L), 0.0);
-		Lo += (dif * albedo / c_PI + spec) * radiance * NdotL * ao;
+		Lo += (dif * albedo / c_PI + spec) * radiance * NdotL;
 	}
 
 	//end radiance calculation
-	vec3 ambient = u_ambientColor * albedo * ao;
+	vec3 ambient = u_ambientColor * albedo;
 	vec3 color = (ambient + Lo);
 	//tone map HDR to LDR
 	color = color / (color + vec3(1.0));
@@ -133,5 +121,5 @@ void main() {
 	color = pow(color, vec3(1.0 / 2.2));
 
 
-	o_color = vec4(color, 1.0);
+	o_color = vec4(vec3(ao), 1.0);
 }

@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/compatibility.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -13,68 +14,39 @@
 #include <random>
 
 void DeferredRenderer::init() {
-	std::random_device rd;
- 
-	std::mt19937 re{ rd() };
-
-	std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-
-	struct {
-		glm::vec4 samples[128];
-		float radius = 1.27;
-		float power = 4.0;
-		int count = 16;
-	} kernel;
-	for (size_t i = 0; i < 128; i ++) {
-		kernel.samples[i] = {
-			dist(re) * 2.0f - 1.0f,
-			dist(re) * 2.0f - 1.0f,
-			dist(re), 1.0f
-		};
-		kernel.samples[i] *= dist(re);
-		float scale = static_cast<float>(i) / 64.0f;
-		scale = glm::lerp(0.1f, 1.0f, scale * scale);
-		kernel.samples[i] *= scale;
-		kernel.samples[i] = glm::normalize(kernel.samples[i]);
-	}
-
-	oak::vector<glm::vec3> noise;
-	noise.resize(16);
-
-	for (size_t i = 0; i < noise.size(); i++) {
-		noise[i] = {
-			dist(re) * 2.0f - 1.0f,
-			dist(re) * 2.0f - 1.0f,
-			0.0f
-		};
-		noise[i] = glm::normalize(noise[i]);
-	}
-
-	oak::graphics::TextureInfo texInfo;
-	texInfo.format = oak::graphics::TextureFormat::FLOAT_RGB;
-	texInfo.width = 4;
-	texInfo.height = 4;
-	texInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
-	texInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
-	texInfo.xWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
-	texInfo.yWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
-	noise_ = oak::graphics::texture::create(texInfo, noise.data());
-
-
-	//create kernel buffer
-	oak::graphics::BufferInfo bufferInfo;
-	bufferInfo.base = 3;
-	bufferInfo.type = oak::graphics::BufferType::UNIFORM;
-	bufferInfo.hint = oak::graphics::BufferHint::STATIC;
-	kernelBuffer_ = oak::graphics::buffer::create(bufferInfo);
-	oak::graphics::buffer::bind(kernelBuffer_);
-	oak::graphics::buffer::data(kernelBuffer_, sizeof(kernel), &kernel);
 
 	//create shaders
 	oak::graphics::ShaderInfo shaderInfo;
-	shaderInfo.vertex = "core/graphics/shaders/deferred/ssao/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/ssao/frag.glsl";
-	ssao_ = oak::graphics::shader::create(shaderInfo);
+	shaderInfo.vertex = "core/graphics/shaders/deferred/sao/vert.glsl";
+	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/ao.glsl";
+	sao_ = oak::graphics::shader::create(shaderInfo);
+	//set sao uniforms
+	glm::mat4 proj = glm::perspective(glm::radians(90.0f), (1920.0f)/(1080.0f), 0.5f, 500.0f);
+	oak::graphics::shader::bind(sao_); 
+	oak::graphics::shader::setUniform(sao_, "projInfo", 
+	glm::vec4{ 
+		-2.0f / ((1920.0f) * proj[0][0]), 
+		-2.0f / ((1080.0f) * proj[1][1]),
+		(1.0f - proj[0][2]) / proj[0][0],
+		(1.0f + proj[1][2]) / proj[1][1]
+	});
+	oak::graphics::shader::setUniform(sao_, "projScale", 256.0f);
+	oak::graphics::shader::setUniform(sao_, "CS_Z_buffer", 2); //depth texture location
+	oak::graphics::shader::setUniform(sao_, "radius", 10.0f); //radius in meters
+	oak::graphics::shader::setUniform(sao_, "bias", 0.012f);
+	oak::graphics::shader::setUniform(sao_, "intensityDivR6", 4.0f / powf(10.0f, 6.0f));
+	oak::graphics::shader::unbind();
+	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/reconstruct.glsl";
+	reconstruct_ = oak::graphics::shader::create(shaderInfo);
+	oak::graphics::shader::bind(reconstruct_);
+	oak::graphics::shader::setUniform(reconstruct_, "clipInfo", glm::vec3{ 0.5f * 500.0f, 0.5f - 500.0f, 500.0f });
+	oak::graphics::shader::setUniform(reconstruct_, "DEPTH_AND_STENCIL_buffer", 2); 
+	oak::graphics::shader::unbind();
+	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/minify.glsl";
+	minify_ = oak::graphics::shader::create(shaderInfo);
+	oak::graphics::shader::bind(minify_);
+	oak::graphics::shader::setUniform(minify_, "texture", 2);
+	oak::graphics::shader::unbind();
 	shaderInfo.vertex = "core/graphics/shaders/deferred/light/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/light/frag.glsl";
 	light_ = oak::graphics::shader::create(shaderInfo);
@@ -84,6 +56,12 @@ void DeferredRenderer::init() {
 	shaderInfo.vertex = "core/graphics/shaders/deferred/box/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/box/frag.glsl";
 	box_ = oak::graphics::shader::create(shaderInfo);
+	shaderInfo.vertex = "core/graphics/shaders/deferred/sao/vert.glsl";
+	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/blur.glsl";
+	aaBlur_ = oak::graphics::shader::create(shaderInfo);
+	oak::graphics::shader::bind(aaBlur_);
+	oak::graphics::shader::setUniform(aaBlur_, "source", 3);
+	oak::graphics::shader::unbind();
 	
 	oak::graphics::AttributeLayout layoutScreen{ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION2D
@@ -160,17 +138,32 @@ void DeferredRenderer::init() {
 	skyBuffer_.data(0, sizeof(sdata), sdata);
 	skyBuffer_.unbind();
 
+
+	oak::graphics::TextureInfo texInfo;
+	texInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
+	texInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
+	texInfo.xWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
+	texInfo.yWrap = oak::graphics::TextureWrap::CLAMP_EDGE;
 	//setup framebuffer for deferred rendering
 	texInfo.format = oak::graphics::TextureFormat::BYTE_RGBA;
-	texInfo.width = pipeline_->width;
-	texInfo.height = pipeline_->height;
+	texInfo.width = pipeline_->width + 512;
+	texInfo.height = pipeline_->height + 512;
 	albedo_ = oak::graphics::texture::create(texInfo, nullptr);
 	normal_ = oak::graphics::texture::create(texInfo, nullptr);
-	aa_ = oak::graphics::texture::create(texInfo, nullptr);
+	//create depth textures
 	texInfo.format = oak::graphics::TextureFormat::DEPTH_24;
 	depth_ = oak::graphics::texture::create(texInfo, nullptr);
-	texInfo.format = oak::graphics::TextureFormat::BYTE_R;
+	texInfo.mipLevels = 5;
+	texInfo.format = oak::graphics::TextureFormat::FLOAT_R;
+	csz_ = oak::graphics::texture::create(texInfo, nullptr);
+	//post process textures
+	texInfo.mipLevels = 1;
+	texInfo.format = oak::graphics::TextureFormat::BYTE_RGB;
 	ao_ = oak::graphics::texture::create(texInfo, nullptr);
+	blur_[0] = oak::graphics::texture::create(texInfo, nullptr);
+	blur_[1] = oak::graphics::texture::create(texInfo, nullptr);
+	texInfo.format = oak::graphics::TextureFormat::BYTE_RGBA;
+	aa_ = oak::graphics::texture::create(texInfo, nullptr);
 
 	texInfo.type = oak::graphics::TextureType::CUBEMAP;
 	texInfo.format = oak::graphics::TextureFormat::BYTE_RGBA;
@@ -192,7 +185,7 @@ void DeferredRenderer::init() {
 	framebufferInfo.height = pipeline_->height;
 	framebufferInfo.attachments.push_back({ &ao_, oak::graphics::FramebufferAttachment::COLOR0 });
 
-	ssaobuffer_ = oak::graphics::framebuffer::create(framebufferInfo);
+	saobuffer_ = oak::graphics::framebuffer::create(framebufferInfo);
 
 	//gbuffer
 	framebufferInfo.attachments.clear();
@@ -208,24 +201,43 @@ void DeferredRenderer::init() {
 	framebufferInfo.attachments.push_back({ &depth_, oak::graphics::FramebufferAttachment::DEPTH });
 
 	post_ = oak::graphics::framebuffer::create(framebufferInfo);
+
+	//csz
+
+	for (int i = 0; i < 5; i++) {
+		framebufferInfo.attachments.clear();
+		framebufferInfo.attachments.push_back({ &csz_, oak::graphics::FramebufferAttachment::COLOR0, i });
+		cszBuffer_[i] = oak::graphics::framebuffer::create(framebufferInfo);
+	}
+
+	//blur
+	framebufferInfo.attachments.clear();
+	framebufferInfo.attachments.push_back({ &blur_[0], oak::graphics::FramebufferAttachment::COLOR0 });
+
+	blurBuffer_[0] = oak::graphics::framebuffer::create(framebufferInfo);
+
+	framebufferInfo.attachments.clear();
+	framebufferInfo.attachments.push_back({ &blur_[1], oak::graphics::FramebufferAttachment::COLOR0 });
+
+	blurBuffer_[1] = oak::graphics::framebuffer::create(framebufferInfo);
+
 }
 
 void DeferredRenderer::terminate() {
 	oak::graphics::shader::destroy(light_);
-	oak::graphics::shader::destroy(ssao_);
+	oak::graphics::shader::destroy(sao_);
 	oak::graphics::shader::destroy(fxaa_);
 	oak::graphics::shader::destroy(box_);
 	buffer_.destroy();
 	skyBuffer_.destroy();
 	oak::graphics::buffer::destroy(kernelBuffer_);
 	oak::graphics::framebuffer::destroy(gbuffer_);
-	oak::graphics::framebuffer::destroy(ssaobuffer_);
+	oak::graphics::framebuffer::destroy(saobuffer_);
 	oak::graphics::framebuffer::destroy(post_);
 
 	oak::graphics::texture::destroy(albedo_);
 	oak::graphics::texture::destroy(normal_);
 	oak::graphics::texture::destroy(depth_);
-	oak::graphics::texture::destroy(noise_);
 	oak::graphics::texture::destroy(aa_);
 	oak::graphics::texture::destroy(ao_);
 	oak::graphics::texture::destroy(sky_);
@@ -238,7 +250,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glViewport(pipeline_->x, pipeline_->y, pipeline_->width, pipeline_->height);
+	glViewport(pipeline_->x, pipeline_->y, pipeline_->width + 512, pipeline_->height + 512);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	//do rendering stuff
 	oak::graphics::framebuffer::bind(gbuffer_);
@@ -272,16 +284,55 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::texture::bind(albedo_, 0);
 	oak::graphics::texture::bind(normal_, 1);
 	oak::graphics::texture::bind(depth_, 2);
-	oak::graphics::texture::bind(noise_, 3);
 
 	//bind the fullscreen quad buffer
 	buffer_.bind();
 
-	//render ssao
-	oak::graphics::framebuffer::bind(ssaobuffer_);
+	//prerender sao
+	oak::graphics::framebuffer::bind(cszBuffer_[0]);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	oak::graphics::shader::bind(ssao_);
+	oak::graphics::shader::bind(reconstruct_);
+	
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	oak::graphics::texture::bind(csz_, 2);
+	oak::graphics::shader::bind(minify_);
+
+	for (int i = 1; i < 5 ; i++) {
+		oak::graphics::framebuffer::bind(cszBuffer_[i]);
+		glClear(GL_COLOR_BUFFER_BIT);
+		
+		oak::graphics::shader::setUniform(minify_, "previousMIPNumber", i - 1);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	}
+
+	//render ssao
+	//now only rendering to screen
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(256, 256, pipeline_->width, pipeline_->height);
+	oak::graphics::framebuffer::bind(blurBuffer_[0]);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	oak::graphics::shader::bind(sao_);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	//blur pass
+	oak::graphics::framebuffer::bind(blurBuffer_[1]);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	oak::graphics::shader::bind(aaBlur_);
+	oak::graphics::shader::setUniform(aaBlur_, "axis", glm::ivec2{ 0, 1 });
+	oak::graphics::texture::bind(blur_[0], 3);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	oak::graphics::framebuffer::bind(saobuffer_);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
+	oak::graphics::shader::setUniform(aaBlur_, "axis", glm::ivec2{ 1, 0 });
+	oak::graphics::texture::bind(blur_[1], 3);
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -291,13 +342,16 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	//bind ao texture to slot 3
 	oak::graphics::texture::bind(ao_, 3);
+	oak::graphics::texture::bind(depth_, 2);
 
 	oak::graphics::shader::bind(light_);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//render skybox
+	
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glDepthMask(GL_FALSE);
 	oak::graphics::shader::bind(box_);
 	oak::graphics::texture::bind(sky_, 0);
 
@@ -305,11 +359,14 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	glDepthMask(GL_TRUE);
 	glDisable(GL_DEPTH_TEST);
 	
 	
 	//aa
 	oak::graphics::framebuffer::unbind();
+	glViewport(pipeline_->x - 256, pipeline_->y - 256, pipeline_->width + 512, pipeline_->height + 512);
+	glScissor(0, 0, pipeline_->width, pipeline_->height);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	oak::graphics::texture::bind(aa_, 0);
@@ -319,6 +376,6 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+	glDisable(GL_SCISSOR_TEST);
 	oak::graphics::vertex_array::unbind();
-	
 }

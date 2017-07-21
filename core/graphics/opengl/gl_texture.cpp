@@ -106,7 +106,11 @@ namespace oak::graphics::GLTexture {
 
 		glGenTextures(1, &tex);
 		glBindTexture(type, tex);
-		glTexImage2D(type, 0, format[0], info.width, info.height, 0, format[1], format[2], data);
+		if (data != nullptr) {
+			glTexImage2D(type, 0, format[0], info.width, info.height, 0, format[1], format[2], data);
+		} else {
+			glTexStorage2D(type, info.mipLevels, format[0], info.width, info.height);
+		}
 		
 		glTexParameteri(type, GL_TEXTURE_MAG_FILTER, mag);
 		glTexParameteri(type, GL_TEXTURE_MIN_FILTER, min);

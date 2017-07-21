@@ -85,8 +85,20 @@ namespace oak::graphics::GLShader {
 		glUniformMatrix4fv(glGetUniformLocation(shader.id, name), 1, GL_FALSE, &value[0][0]);
 	}
 
+	void setUniform(const Shader& shader, const char *name, const glm::ivec2& value) {
+		glUniform2iv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	}
+
+	void setUniform(const Shader& shader, const char *name, const glm::vec2& value) {
+		glUniform2fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	}
+
 	void setUniform(const Shader& shader, const char *name, const glm::vec3& value) {
 		glUniform3fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	}
+
+	void setUniform(const Shader& shader, const char *name, const glm::vec4& value) {
+		glUniform4fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
 	}
 
 	void setUniform(const Shader& shader, const char *name, unsigned int value) {

@@ -15,10 +15,13 @@ namespace oak::graphics::GLShader {
 	void bind(const Shader& shader);
 	void unbind();
 
-	void setUniform(const Shader& shader, const char* name, const glm::mat4& value);
-	void setUniform(const Shader& shader, const char* name, const glm::vec3& value);
-	void setUniform(const Shader& shader, const char* name, unsigned int value);
-	void setUniform(const Shader& shader, const char* name, int value);
-	void setUniform(const Shader& shader, const char* name, float value);
+	void setUniform(const Shader& shader, const char *name, const glm::mat4& value);
+	void setUniform(const Shader& shader, const char *name, const glm::ivec2& value);
+	void setUniform(const Shader& shader, const char *name, const glm::vec2& value);
+	void setUniform(const Shader& shader, const char *name, const glm::vec3& value);
+	void setUniform(const Shader& shader, const char *name, const glm::vec4& value);
+	void setUniform(const Shader& shader, const char *name, unsigned int value);
+	void setUniform(const Shader& shader, const char *name, int value);
+	void setUniform(const Shader& shader, const char *name, float value);
 
 }

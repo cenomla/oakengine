@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
 		glm::mat4 proj;
 		glm::mat4 view;
 	} matrix;
-	matrix.proj = glm::perspective(70.0f, 1280.0f / 720.0f, 0.5f, 500.0f);
+	matrix.proj = glm::perspective(glm::radians(90.0f), (1920.0f)/(1080.0f), 0.5f, 500.0f);
 
 	struct {
 		glm::mat4 invProj;
