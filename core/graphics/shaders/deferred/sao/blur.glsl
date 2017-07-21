@@ -1,5 +1,4 @@
-#version 120 // -*- c++ -*-
-#extension GL_EXT_gpu_shader4 : require
+#version 450 core
 /** 
   \file SAO_blur.pix
   \author Morgan McGuire and Michael Mara, NVIDIA Research
@@ -24,7 +23,7 @@
 // Tunable Parameters:
 
 /** Increase to make depth edges crisper. Decrease to reduce flicker. */
-#define EDGE_SHARPNESS     (1.0)
+#define EDGE_SHARPNESS (1.0)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
     first AO pass.  This constant can be increased while R decreases to improve
@@ -34,69 +33,50 @@
     unobjectionable after shading was applied but eliminated most temporal incoherence
     from using small numbers of sample taps.
     */
-#define SCALE               (2)
+#define SCALE (2)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
-#define R                   (4)
+#define R (4)
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 /** Type of data to read from source.  This macro allows
     the same blur shader to be used on different kinds of input data. */
-#define VALUE_TYPE        float
+#define VALUE_TYPE float
 
 /** Swizzle to use to extract the channels of source. This macro allows
     the same blur shader to be used on different kinds of input data. */
-#define VALUE_COMPONENTS   r
+#define VALUE_COMPONENTS r
 
-#define VALUE_IS_KEY       0
+#define VALUE_IS_KEY 0
 
 /** Channel encoding the bilateral key value (which must not be the same as VALUE_COMPONENTS) */
-#define KEY_COMPONENTS     gb
+#define KEY_COMPONENTS gb
 
-
-#if __VERSION__ >= 330
 // Gaussian coefficients
 const float gaussian[R + 1] = 
 //    float[](0.356642, 0.239400, 0.072410, 0.009869);
 //    float[](0.398943, 0.241971, 0.053991, 0.004432, 0.000134);  // stddev = 1.0
     float[](0.153170, 0.144893, 0.122649, 0.092902, 0.062970);  // stddev = 2.0
 //      float[](0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108); // stddev = 3.0
-#endif
 
-uniform sampler2D   source;
+layout (binding = 3) uniform sampler2D source;
 
 /** (1, 0) or (0, 1)*/
-uniform ivec2       axis;
+uniform ivec2 axis;
 
-#if __VERSION__ == 120
-#   define          texelFetch texelFetch2D
-#else
-out vec3            gl_FragColor;
-#endif
+layout (location = 0) out vec3 o_color;
 
-#define  result         gl_FragColor.VALUE_COMPONENTS
-#define  keyPassThrough gl_FragColor.KEY_COMPONENTS
+#define  result         o_color.VALUE_COMPONENTS
+#define  keyPassThrough o_color.KEY_COMPONENTS
 
 /** Returns a number on (0, 1) */
 float unpackKey(vec2 p) {
     return p.x * (256.0 / 257.0) + p.y * (1.0 / 257.0);
 }
 
-
 void main() {
-#   if __VERSION__ < 330
-        float gaussian[R + 1];
-#       if R == 3
-            gaussian[0] = 0.153170; gaussian[1] = 0.144893; gaussian[2] = 0.122649; gaussian[3] = 0.092902;  // stddev = 2.0
-#       elif R == 4
-            gaussian[0] = 0.153170; gaussian[1] = 0.144893; gaussian[2] = 0.122649; gaussian[3] = 0.092902; gaussian[4] = 0.062970;  // stddev = 2.0
-#       elif R == 6
-            gaussian[0] = 0.111220; gaussian[1] = 0.107798; gaussian[2] = 0.098151; gaussian[3] = 0.083953; gaussian[4] = 0.067458; gaussian[5] = 0.050920; gaussian[6] = 0.036108;
-#       endif
-#   endif
-
     ivec2 ssC = ivec2(gl_FragCoord.xy);
 
     vec4 temp = texelFetch(source, ssC, 0);

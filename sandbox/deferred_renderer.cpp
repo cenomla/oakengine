@@ -40,13 +40,9 @@ void DeferredRenderer::init() {
 	reconstruct_ = oak::graphics::shader::create(shaderInfo);
 	oak::graphics::shader::bind(reconstruct_);
 	oak::graphics::shader::setUniform(reconstruct_, "clipInfo", glm::vec3{ 0.5f * 500.0f, 0.5f - 500.0f, 500.0f });
-	oak::graphics::shader::setUniform(reconstruct_, "DEPTH_AND_STENCIL_buffer", 2); 
 	oak::graphics::shader::unbind();
 	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/minify.glsl";
 	minify_ = oak::graphics::shader::create(shaderInfo);
-	oak::graphics::shader::bind(minify_);
-	oak::graphics::shader::setUniform(minify_, "texture", 2);
-	oak::graphics::shader::unbind();
 	shaderInfo.vertex = "core/graphics/shaders/deferred/light/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/light/frag.glsl";
 	light_ = oak::graphics::shader::create(shaderInfo);
@@ -59,9 +55,6 @@ void DeferredRenderer::init() {
 	shaderInfo.vertex = "core/graphics/shaders/deferred/sao/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/blur.glsl";
 	aaBlur_ = oak::graphics::shader::create(shaderInfo);
-	oak::graphics::shader::bind(aaBlur_);
-	oak::graphics::shader::setUniform(aaBlur_, "source", 3);
-	oak::graphics::shader::unbind();
 	
 	oak::graphics::AttributeLayout layoutScreen{ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION2D

@@ -1,6 +1,4 @@
-#version 120 // -*- c++ -*-
-#extension GL_EXT_gpu_shader4 : require
-#extension GL_ARB_gpu_shader5 : enable
+#version 450 core
 /**
  \file reconstruct.glsl
  \author Morgan McGuire, NVIDIA Research
@@ -111,16 +109,9 @@ uniform float           bias;
 /** intensity / radius^6 */
 uniform float           intensityDivR6;
 
-// Compatibility with future versions of GLSL: the shader still works if you change the 
-// version line at the top to something like #version 330 compatibility.
-#if __VERSION__ == 120
-#   define texelFetch   texelFetch2D
-#   define textureSize  textureSize2D
-#   else
-    out vec3            gl_FragColor;
-#endif
-#define visibility      gl_FragColor.r
-#define bilateralKey    gl_FragColor.gb
+layout (location = 0) out vec3 o_color;
+#define visibility      o_color.r
+#define bilateralKey    o_color.gb
 
 /////////////////////////////////////////////////////////
 
@@ -169,11 +160,7 @@ vec3 getPosition(ivec2 ssP) {
 vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
     // Derivation:
     //  mipLevel = floor(log(ssR / MAX_OFFSET));
-#   ifdef GL_EXT_gpu_shader5
-        int mipLevel = clamp(findMSB(int(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
-#   else
-        int mipLevel = clamp(int(floor(log2(ssR))) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
-#   endif
+    int mipLevel = clamp(findMSB(int(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
 
     ivec2 ssP = ivec2(ssR * unitOffset) + ssC;
     

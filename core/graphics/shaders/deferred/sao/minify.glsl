@@ -1,9 +1,4 @@
-#version 120// -*- c++ -*-
-#extension GL_EXT_gpu_shader4 : require
-
-#if __VERSION__ == 120
-#   define textureSize  textureSize2D
-#endif
+#version 450 core
 
 /**
  \file SAO_minify.pix
@@ -22,13 +17,16 @@
 
   */
 
-uniform sampler2D texture;
-uniform int       previousMIPNumber;    
+layout (binding = 2) uniform sampler2D texture;
+
+uniform int previousMIPNumber;    
+
+layout (location = 0) out float o_result;
 
 void main() {
     ivec2 ssP = ivec2(gl_FragCoord.xy);
 
     // Rotated grid subsampling to avoid XY directional bias or Z precision bias while downsampling.
     // On DX9, the bit-and can be implemented with floating-point modulo
-    gl_FragColor = texelFetch2D(texture, clamp(ssP * 2 + ivec2(ssP.y & 1, ssP.x & 1), ivec2(0), textureSize(texture, previousMIPNumber) - ivec2(1)), previousMIPNumber);
+    o_result = texelFetch(texture, clamp(ssP * 2 + ivec2(ssP.y & 1, ssP.x & 1), ivec2(0), textureSize(texture, previousMIPNumber) - ivec2(1)), previousMIPNumber).x;
 }

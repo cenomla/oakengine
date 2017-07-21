@@ -109,11 +109,11 @@ void main() {
 		vec3 spec = nom / denom;
 
 		float NdotL = max(dot(N, L), 0.0);
-		Lo += (dif * albedo / c_PI + spec) * radiance * NdotL;
+		Lo += (dif * albedo / c_PI + spec) * radiance * NdotL * ao;
 	}
 
 	//end radiance calculation
-	vec3 ambient = u_ambientColor * albedo;
+	vec3 ambient = u_ambientColor * albedo * ao;
 	vec3 color = (ambient + Lo);
 	//tone map HDR to LDR
 	color = color / (color + vec3(1.0));
@@ -121,5 +121,5 @@ void main() {
 	color = pow(color, vec3(1.0 / 2.2));
 
 
-	o_color = vec4(vec3(ao), 1.0);
+	o_color = vec4(color, 1.0);
 }
