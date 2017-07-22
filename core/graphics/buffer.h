@@ -17,6 +17,8 @@ namespace oak::graphics {
 	struct Buffer {
 		uint32_t id = 0;
 		BufferInfo info;
+		
+		void destroy();
 	};
 
 }

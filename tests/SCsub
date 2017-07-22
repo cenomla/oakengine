@@ -3,13 +3,12 @@ Import('*')
 module_targets = dict()
 unit_libs = ['oak', 'vulkan', 'GL', 'glad', 'lua', 'enet', 'glfw3', 'X11', 'Xrandr', 'Xinerama', 'Xcursor', 'Xxf86vm', 'Xi', 'm', 'pthread', 'dl']
 
-tm_sources = ['buffer.cpp']
-module_targets['buffer'] = env.Program(target = 'buffer', source = tm_sources, LIBS = unit_libs)
+def buildTest(name):
+	module_targets[name] = env.Program(target = name, source = [name + '.cpp'], LIBS = unit_libs)
 
-tm_sources = ['equeue.cpp']
-module_targets['equeue'] = env.Program(target = 'equeue', source = tm_sources, LIBS = unit_libs)
-
-tm_sources = ['benchmark.cpp']
-module_targets['benchmark'] = env.Program(target = 'benchmark', source = tm_sources, LIBS = unit_libs)
+buildTest('buffer')
+buildTest('equeue')
+buildTest('benchmark')
+buildTest('resource_handler')
 
 Return('module_targets')

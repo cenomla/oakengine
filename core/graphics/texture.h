@@ -31,11 +31,15 @@ namespace oak::graphics {
 	struct Texture {
 		uint32_t id = 0;
 		TextureInfo info;
+		
+		void destroy();
 	};
 
 	struct TextureAtlas {
 		Texture texture;
 		oak::vector<std::pair<oak::string, TextureRegion>> regions;
+		
+		void destroy();
 	};
 
 }

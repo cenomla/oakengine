@@ -293,5 +293,4 @@ namespace oak::graphics::GLTexture {
 		}
 	}
 
-
 }

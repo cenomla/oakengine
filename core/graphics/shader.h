@@ -14,6 +14,8 @@ namespace oak::graphics {
 	struct Shader {
 		uint32_t id = 0;
 		ShaderInfo info;
+		
+		void destroy();
 	};
 
 }

@@ -217,23 +217,8 @@ void DeferredRenderer::init() {
 }
 
 void DeferredRenderer::terminate() {
-	oak::graphics::shader::destroy(light_);
-	oak::graphics::shader::destroy(sao_);
-	oak::graphics::shader::destroy(fxaa_);
-	oak::graphics::shader::destroy(box_);
 	buffer_.destroy();
 	skyBuffer_.destroy();
-	oak::graphics::buffer::destroy(kernelBuffer_);
-	oak::graphics::framebuffer::destroy(gbuffer_);
-	oak::graphics::framebuffer::destroy(saobuffer_);
-	oak::graphics::framebuffer::destroy(post_);
-
-	oak::graphics::texture::destroy(albedo_);
-	oak::graphics::texture::destroy(normal_);
-	oak::graphics::texture::destroy(depth_);
-	oak::graphics::texture::destroy(aa_);
-	oak::graphics::texture::destroy(ao_);
-	oak::graphics::texture::destroy(sky_);
 }
 
 void DeferredRenderer::render(oak::graphics::Api *api) {

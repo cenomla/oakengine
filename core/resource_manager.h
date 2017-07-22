@@ -1,7 +1,7 @@
 #pragma once
 
 #include "oak_assert.h"
-
+#include "resource.h"
 #include "util/type_id.h"
 #include "container.h"
 #include "log.h"
@@ -11,32 +11,6 @@ namespace oak {
 	namespace detail {
 		struct BaseResource {};
 	}
-
-	class ResourceListHandlerBase {
-	public:
-		virtual ~ResourceListHandlerBase() {}
-	};
-
-	template<class T>
-	class ResourceListHandler : public ResourceListHandlerBase {
-	public:
-		template<class... TArgs>
-		T* addResource(size_t id, TArgs&&... args) {
-			auto it = resources_.insert_or_assign(id, T{ std::forward<TArgs>(args)... });
-			return &it.first->second;
-		}
-
-		const T* getResource(size_t id) const {
-			const auto it = resources_.find(id);
-			if (it != std::end(resources_)) {
-				return &it->second;
-			} else {
-				return nullptr;
-			}
-		}
-	private:
-		oak::unordered_map<size_t, T> resources_;
-	};
 
 	class ResourceManager {
 	private:
@@ -50,58 +24,50 @@ namespace oak {
 		ResourceManager();
 		~ResourceManager();
 
-		template<class T, class... TArgs>
-		T& add(const oak::string &name, TArgs&&... args) {
+		template<class T>
+		void add(ResourceHandler<T> *handler) {
 			size_t tid = util::type_id<detail::BaseResource, T>::id;
 
 			if (resourceHandles_.size() <= tid) { 
 				resourceHandles_.resize(tid+1);
 			}
-			if (resourceHandles_[tid] == nullptr) { 
-				auto ptr = static_cast<ResourceListHandler<T>*>(oak_allocator.allocate(sizeof(ResourceListHandler<T>)));
-				new (ptr) ResourceListHandler<T>{};
-				resourceHandles_[tid] = ptr;
+			if (resourceHandles_[tid] == nullptr) {
+				resourceHandles_[tid] = handler;
+			} else {
+				log_print_warn("resouce handler already exists");
 			}
-
-			auto ptr = static_cast<ResourceListHandler<T>*>(resourceHandles_[tid]);
-			return *ptr->addResource(std::hash<oak::string>{}(name), std::forward<TArgs>(args)...);
 		}
 
 		template<class T>
-		const T* try_require(size_t id) {
+		ResourceHandler<T>& get() {
 			size_t tid = util::type_id<detail::BaseResource, T>::id;
-			
-			if (tid < resourceHandles_.size() && resourceHandles_[tid] != nullptr) {
-				const auto handle = static_cast<ResourceListHandler<T>*>(resourceHandles_[tid]);
 
-				const auto res = handle->getResource(id);
-				if (res != nullptr) {
-					return res;
-				}
+			if (!(tid < resourceHandles_.size() && resourceHandles_[tid])) {
+				log_print_err("resource handler does not exist");
+				abort();
 			}
 
-			return nullptr;
+			return *static_cast<ResourceHandler<T>*>(resourceHandles_[tid]);
 		}
 
 		template<class T>
-		const T& require(size_t id) {
-			const auto res = try_require<T>(id);
+		T* require(size_t id) {
+			return get<T>().require(id);
+		}
 
-			if (res != nullptr) {
-				return *res;
+		template<class T>
+		T& require(const oak::string &name) {
+			size_t id = std::hash<oak::string>{}(name);
+			auto r = require<T>(id);
+			if (r) {
+				return *r;
 			}
-
-			log_print_out("failed to find resource: %u", id);
+			log_print_err("failed to find resource: %s", name.c_str());
 			abort();
 		}
 
-		template<class T>
-		const T& require(const oak::string &name) {
-			return require<T>(std::hash<oak::string>{}(name));
-		}
-
 	private:
-		oak::vector<ResourceListHandlerBase*> resourceHandles_;
+		oak::vector<void*> resourceHandles_;
 	};
 
 }

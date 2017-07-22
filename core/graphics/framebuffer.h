@@ -23,6 +23,8 @@ namespace oak::graphics {
 	struct Framebuffer {
 		uint32_t id = 0, rid = 0; //framebuffer id and renderbuffer id
 		FramebufferInfo info;
+	
+		void destroy();
 	};
 
 }

@@ -1,25 +1,21 @@
 #include <iostream>
-#include <fstream>
 #include <chrono>
 #include <cmath>
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <graphics/opengl/gl_texture.h>
 #include <graphics/opengl/gl_api.h>
 #include <graphics/opengl/gl_buffer_storage.h>
-#include <graphics/opengl/gl_buffer.h>
-#include <graphics/opengl/gl_shader.h>
-#include <graphics/opengl/gl_framebuffer.h>
 
+#include <graphics/texture.h>
+#include <graphics/shader.h>
 #include <mesh.h>
 #include <log.h>
 #include <system_manager.h>
 #include <resource_manager.h>
 #include <event_manager.h>
 #include <input_manager.h>
-#include <resource.h>
 #include <component_storage.h>
 #include <core_components.h>
 #include <input_events.h>
@@ -33,8 +29,6 @@
 #include "render_system.h"
 #include "deferred_renderer.h"
 #include "gui_renderer.h"
-
-#include <glad/glad.h>
 
 oak::graphics::Buffer matrix_ubo;
 oak::graphics::Buffer proj_ubo; 
@@ -263,6 +257,16 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(&modelStorage);
 	scene.addComponentStorage(&cameraStorage);
 
+	oak::ResourceHandler<oak::graphics::Texture> textureHandle;
+	oak::ResourceHandler<oak::graphics::TextureAtlas> atlasHandle;
+	oak::ResourceHandler<oak::graphics::Shader> shaderHandle;
+	oak::ResourceHandler<oak::graphics::Material> materialHandle;
+	resManager.add(&textureHandle);
+	resManager.add(&atlasHandle);
+	resManager.add(&shaderHandle);
+	resManager.add(&materialHandle);
+
+
 	//init the test renderer
 	sceneRenderer.init();
 	guiRenderer.init();
@@ -343,40 +347,40 @@ int main(int argc, char** argv) {
 	oak::graphics::ShaderInfo shaderInfo;
 	shaderInfo.vertex = "core/graphics/shaders/deferred/geometry/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/geometry/frag.glsl";
-	auto& sh_geometry = resManager.add<oak::graphics::Shader>("sh_geometry", oak::graphics::shader::create(shaderInfo));
+	auto& sh_geometry = shaderHandle.add("sh_geometry", oak::graphics::shader::create(shaderInfo));
 	shaderInfo.vertex = "core/graphics/shaders/forward/pass2d/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/forward/pass2d/frag.glsl";
-	auto& sh_pass2d = resManager.add<oak::graphics::Shader>("sh_pass2d", oak::graphics::shader::create(shaderInfo));
+	auto& sh_pass2d = shaderHandle.add("sh_pass2d", oak::graphics::shader::create(shaderInfo));
 	shaderInfo.vertex = "core/graphics/shaders/deferred/particle/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/particle/frag.glsl";
-	auto& sh_particle = resManager.add<oak::graphics::Shader>("sh_particle", oak::graphics::shader::create(shaderInfo));
+	auto& sh_particle = shaderHandle.add("sh_particle", oak::graphics::shader::create(shaderInfo));
 	//textures
 	oak::graphics::TextureInfo textureInfo;
 	textureInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
-	auto& tex_character = resManager.add<oak::graphics::Texture>("tex_character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
+	auto& tex_character = textureHandle.add("tex_character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
 	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
 	textureInfo.width = 4096;
 	textureInfo.height = 4096;
-	auto& colorAtlas = resManager.add<oak::graphics::TextureAtlas>("colorAtlas", 
+	auto& colorAtlas = atlasHandle.add("colorAtlas", 
 		oak::graphics::texture::createAtlas({ 
 			"sandbox/res/textures/pbr_rust/color.png",
 			"sandbox/res/textures/pbr_grass/color.png",
 			"sandbox/res/textures/pbr_rock/color.png",
 		}, textureInfo));
-	auto& normalAtlas = resManager.add<oak::graphics::TextureAtlas>("normalAtlas",
+	auto& normalAtlas = atlasHandle.add("normalAtlas",
 		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/normal.png",
 			"sandbox/res/textures/pbr_grass/normal.png"
 		},	textureInfo));
 	textureInfo.format = oak::graphics::TextureFormat::BYTE_R;
-	auto& metalAtlas = resManager.add<oak::graphics::TextureAtlas>("metalAtlas",
+	auto& metalAtlas = atlasHandle.add("metalAtlas",
 		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/metalness.png",
 			"sandbox/res/textures/pbr_grass/metalness.png",
 			"sandbox/res/textures/pbr_rock/metalness.png"
 		}, textureInfo));
-	auto& roughAtlas = resManager.add<oak::graphics::TextureAtlas>("roughAtlas",
+	auto& roughAtlas = atlasHandle.add("roughAtlas",
 		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/roughness.png",
 			"sandbox/res/textures/pbr_grass/roughness.png",
@@ -384,9 +388,9 @@ int main(int argc, char** argv) {
 		}, textureInfo));
 
 	//materials
-	auto& mat_box = resManager.add<oak::graphics::Material>("mat_box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
-	auto& mat_overlay = resManager.add<oak::graphics::Material>("mat_overlay", &layout2d, &sh_pass2d, &tex_character);
-	auto& mat_part = resManager.add<oak::graphics::Material>("mat_part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_box = materialHandle.add("mat_box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_overlay = materialHandle.add("mat_overlay", &layout2d, &sh_pass2d, &tex_character);
+	auto& mat_part = materialHandle.add("mat_part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 
 	//meshes
 	auto model_box = oak::graphics::loadModel("sandbox/res/models/box.obj");
