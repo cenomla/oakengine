@@ -2,7 +2,7 @@
 
 #include <graphics/renderer.h>
 
-class GuiRenderer : public oak::graphics::Renderer {
+class SpriteRenderer : public oak::graphics::Renderer {
 public:
 	void init();
 	void terminate();

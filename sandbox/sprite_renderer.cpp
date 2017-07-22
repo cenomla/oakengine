@@ -1,4 +1,4 @@
-#include "gui_renderer.h"
+#include "sprite_renderer.h"
 
 #include <glad/glad.h>
 
@@ -6,19 +6,20 @@
 #include <graphics/pipeline.h>
 #include <graphics/material.h>
 
-void GuiRenderer::init() {
+void SpriteRenderer::init() {
 
 }
 
-void GuiRenderer::terminate() {
+void SpriteRenderer::terminate() {
 
 }
 
 
-void GuiRenderer::render(oak::graphics::Api *api) {
+void SpriteRenderer::render(oak::graphics::Api *api) {
 	//do rendering stuff
 
 	glDisable(GL_DEPTH_TEST);
+	glViewport(pipeline_->x, pipeline_->y, pipeline_->width, pipeline_->height);
 
 	for (const auto& batch : *pipeline_->batches) {
 		if (batch.layer != 1) { continue; }

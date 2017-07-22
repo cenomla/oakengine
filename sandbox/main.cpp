@@ -28,7 +28,7 @@
 #include "components.h"
 #include "render_system.h"
 #include "deferred_renderer.h"
-#include "gui_renderer.h"
+#include "sprite_renderer.h"
 
 class CameraSystem : public oak::System {
 public:
@@ -200,9 +200,9 @@ int main(int argc, char** argv) {
 
 	//basic test renderer
 	DeferredRenderer sceneRenderer;
-	GuiRenderer guiRenderer;
+	SpriteRenderer spriteRenderer;
 	renderSystem.pushLayerBack(&sceneRenderer);
-	renderSystem.pushLayerBack(&guiRenderer);
+	renderSystem.pushLayerBack(&spriteRenderer);
 
 	//define vertex attribute layouts that will be used in the scene
 	oak::graphics::AttributeLayout layout3d{ oak::vector<oak::graphics::AttributeType>{ 
@@ -232,26 +232,32 @@ int main(int argc, char** argv) {
 	chs.addHandle<oak::EventComponent>("event");
 	chs.addHandle<oak::PrefabComponent>("prefab");
 	chs.addHandle<TransformComponent>("transform");
+	chs.addHandle<Transform2dComponent>("transform2d");
 	chs.addHandle<MeshComponent>("mesh");
+	chs.addHandle<SpriteComponent>("sprite");
 	chs.addHandle<CameraComponent>("camera");
 
 	//create component storage
 	oak::ComponentStorage eventStorage{ "event" };
 	oak::ComponentStorage prefabStorage{ "prefab" };
 	oak::ComponentStorage transformStorage{ "transform" };
+	oak::ComponentStorage transform2dStorage{ "transform2d" };
 	oak::ComponentStorage modelStorage{ "mesh" };
+	oak::ComponentStorage spriteStorage{ "sprite" };
 	oak::ComponentStorage cameraStorage{ "camera" };
 
 	//add component storage to scene
 	scene.addComponentStorage(&eventStorage);
 	scene.addComponentStorage(&prefabStorage);
 	scene.addComponentStorage(&transformStorage);
+	scene.addComponentStorage(&transform2dStorage);
 	scene.addComponentStorage(&modelStorage);
+	scene.addComponentStorage(&spriteStorage);
 	scene.addComponentStorage(&cameraStorage);
 
 	//init the test renderer
 	sceneRenderer.init();
-	guiRenderer.init();
+	spriteRenderer.init();
 
 	//setup uniforms
 	struct {
@@ -324,40 +330,40 @@ int main(int argc, char** argv) {
 	oak::graphics::ShaderInfo shaderInfo;
 	shaderInfo.vertex = "core/graphics/shaders/deferred/geometry/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/geometry/frag.glsl";
-	auto& sh_geometry = shaderHandle.add("sh_geometry", oak::graphics::shader::create(shaderInfo));
+	auto& sh_geometry = shaderHandle.add("geometry", oak::graphics::shader::create(shaderInfo));
 	shaderInfo.vertex = "core/graphics/shaders/forward/pass2d/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/forward/pass2d/frag.glsl";
-	auto& sh_pass2d = shaderHandle.add("sh_pass2d", oak::graphics::shader::create(shaderInfo));
+	auto& sh_pass2d = shaderHandle.add("pass2d", oak::graphics::shader::create(shaderInfo));
 	shaderInfo.vertex = "core/graphics/shaders/deferred/particle/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/particle/frag.glsl";
-	auto& sh_particle = shaderHandle.add("sh_particle", oak::graphics::shader::create(shaderInfo));
+	auto& sh_particle = shaderHandle.add("particle", oak::graphics::shader::create(shaderInfo));
 	//textures
 	oak::graphics::TextureInfo textureInfo;
 	textureInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
-	auto& tex_character = textureHandle.add("tex_character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
+	auto& tex_character = textureHandle.add("character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
 	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
 	textureInfo.width = 4096;
 	textureInfo.height = 4096;
-	auto& colorAtlas = atlasHandle.add("colorAtlas", 
+	auto& colorAtlas = atlasHandle.add("color", 
 		oak::graphics::texture::createAtlas({ 
 			"sandbox/res/textures/pbr_rust/color.png",
 			"sandbox/res/textures/pbr_grass/color.png",
 			"sandbox/res/textures/pbr_rock/color.png",
 		}, textureInfo));
-	auto& normalAtlas = atlasHandle.add("normalAtlas",
+	auto& normalAtlas = atlasHandle.add("normal",
 		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/normal.png",
 			"sandbox/res/textures/pbr_grass/normal.png"
 		},	textureInfo));
 	textureInfo.format = oak::graphics::TextureFormat::BYTE_R;
-	auto& metalAtlas = atlasHandle.add("metalAtlas",
+	auto& metalAtlas = atlasHandle.add("metal",
 		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/metalness.png",
 			"sandbox/res/textures/pbr_grass/metalness.png",
 			"sandbox/res/textures/pbr_rock/metalness.png"
 		}, textureInfo));
-	auto& roughAtlas = atlasHandle.add("roughAtlas",
+	auto& roughAtlas = atlasHandle.add("rough",
 		oak::graphics::texture::createAtlas({
 			"sandbox/res/textures/pbr_rust/roughness.png",
 			"sandbox/res/textures/pbr_grass/roughness.png",
@@ -365,9 +371,9 @@ int main(int argc, char** argv) {
 		}, textureInfo));
 
 	//materials
-	auto& mat_box = materialHandle.add("mat_box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
-	auto& mat_overlay = materialHandle.add("mat_overlay", &layout2d, &sh_pass2d, &tex_character);
-	auto& mat_part = materialHandle.add("mat_part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_box = materialHandle.add("box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_overlay = materialHandle.add("overlay", &layout2d, &sh_pass2d, &tex_character);
+	auto& mat_part = materialHandle.add("part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 
 	//meshes
 	auto model_box = oak::graphics::loadModel("sandbox/res/models/box.obj");
@@ -385,6 +391,8 @@ int main(int argc, char** argv) {
 		0, 1, 2, 2, 3, 0
 	};
 
+	oak::graphics::Sprite spr_overlay{ 0.0f, 0.0f, 64.0f, 64.0f, { glm::vec2{ 0.0f }, glm::vec2{ 1.0f } } };
+
 	//create entities
 	oak::EntityId player = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
@@ -396,6 +404,11 @@ int main(int argc, char** argv) {
 	oak::addComponent<oak::PrefabComponent>(scene, particle, std::hash<oak::string>{}("particle"));
 	oak::addComponent<MeshComponent>(scene, particle, &model_part[0], &mat_part, colorAtlas.regions[0].second);
 	scene.activateEntity(particle);
+
+	oak::EntityId overlay = scene.createEntity();
+	oak::addComponent<Transform2dComponent>(scene, overlay, glm::mat3{ 1.0f });
+	oak::addComponent<SpriteComponent>(scene, overlay, &spr_overlay, &mat_overlay, 1u);
+	scene.activateEntity(overlay);
 
 	oak::Prefab fab_box{ "box", scene };
 	fab_box.addComponent<TransformComponent>();

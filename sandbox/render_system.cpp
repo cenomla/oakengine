@@ -33,14 +33,20 @@ void RenderSystem::init() {
 
 	auto& lrs = oak::ResourceManager::inst().get<oak::graphics::AttributeLayout>();
 
-	auto& layout3d = lrs.add("layout3d", 
+	auto& layoutMesh = lrs.add("mesh", 
 	oak::vector<oak::graphics::AttributeType>{
 		oak::graphics::AttributeType::POSITION,
 		oak::graphics::AttributeType::NORMAL,
 		oak::graphics::AttributeType::UV
 	});
 
-	auto& layoutParticle = lrs.add("layoutParticle", 
+	auto& layoutSprite = lrs.add("sprite",
+	oak::vector<oak::graphics::AttributeType>{
+		oak::graphics::AttributeType::POSITION2D,
+		oak::graphics::AttributeType::UV
+	});
+
+	auto& layoutParticle = lrs.add("particle", 
 	oak::vector<oak::graphics::AttributeType> {
 		oak::graphics::AttributeType::POSITION,
 		oak::graphics::AttributeType::NORMAL,
@@ -48,17 +54,24 @@ void RenderSystem::init() {
 		oak::graphics::AttributeType::INSTANCE_POSITION
 	});
 
-	storage3d_.create(&layout3d);
+	storageMesh_.create(&layoutMesh);
+	storageSprite_.create(&layoutSprite);
 	storageParticle_.create(&layoutParticle);
 
-	batcher_.setBufferStorage(&storage3d_);
+	meshBatcher_.setBufferStorage(&storageMesh_);
+	spriteBatcher_.setBufferStorage(&storageSprite_);
 	particleSystem_.setBufferStorage(&storageParticle_);
 
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
 
+	spriteCache_.requireComponent<Transform2dComponent>();
+	spriteCache_.requireComponent<SpriteComponent>();
+
 	particleCache_.requirePrefab(std::hash<oak::string>{}("particle"));
 	particleCache_.requireComponent<MeshComponent>();
+
+	pipeline_.batches = &batches_;
 }
 
 void RenderSystem::terminate() {
@@ -82,17 +95,20 @@ void RenderSystem::removeLayer(oak::graphics::Renderer& renderer) {
 void RenderSystem::run() {
 
 	auto& ts = oak::getComponentStorage<const TransformComponent>(*scene_);
+	auto& t2s = oak::getComponentStorage<const Transform2dComponent>(*scene_);
 	auto& ms = oak::getComponentStorage<const MeshComponent>(*scene_);
+	auto& ss = oak::getComponentStorage<const SpriteComponent>(*scene_);
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityDeactivateEvent>()) {
 		//check for meshes to remove
 		if (meshCache_.contains(*scene_, evt.entity)) {
 			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
-			batcher_.removeMesh(mc.mesh);
+			meshBatcher_.removeMesh(mc.mesh);
 		}
 	}
 
 	meshCache_.update(*scene_);
+	spriteCache_.update(*scene_);
 	particleCache_.update(*scene_);
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityActivateEvent>()) {
@@ -100,7 +116,7 @@ void RenderSystem::run() {
 		if (meshCache_.contains(*scene_, evt.entity)) {
 			auto& tc = oak::getComponent<const TransformComponent>(ts, evt.entity);
 			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
-			batcher_.addMesh(mc.layer, mc.material, mc.mesh, tc.transform, mc.region);
+			meshBatcher_.addMesh(mc.layer, mc.material, mc.mesh, tc.transform, mc.region);
 		}
 		//check for particles to add
 		if (particleCache_.contains(*scene_, evt.entity)) {
@@ -109,14 +125,20 @@ void RenderSystem::run() {
 		}
 	}
 
+	for (const auto& entity : spriteCache_.entities()) {
+		auto& t2c = oak::getComponent<const Transform2dComponent>(t2s, entity);
+		auto& sc = oak::getComponent<const SpriteComponent>(ss, entity);
+		spriteBatcher_.addSprite(sc.layer, sc.material, sc.sprite, t2c.transform);
+	}
+
 
 	//make batches
-	oak::vector<oak::graphics::Batch> batches;
-	pipeline_.batches = &batches;
-	batcher_.run();
+	meshBatcher_.run();
+	spriteBatcher_.run();
 	particleSystem_.run();
-	batches.insert(std::end(batches), std::begin(batcher_.getBatches()), std::end(batcher_.getBatches()));
-	batches.push_back(particleSystem_.getBatch());
+	batches_.insert(std::end(batches_), std::begin(meshBatcher_.getBatches()), std::end(meshBatcher_.getBatches()));
+	batches_.insert(std::end(batches_), std::begin(spriteBatcher_.getBatches()), std::end(spriteBatcher_.getBatches()));
+	batches_.push_back(particleSystem_.getBatch());
 
 
 	//render the layers

@@ -2,6 +2,7 @@
 
 #include <graphics/opengl/gl_buffer_storage.h>
 #include <graphics/static_batcher.h>
+#include <graphics/sprite_batcher.h>
 #include <graphics/particle_system.h>
 #include <graphics/pipeline.h>
 #include <system.h>
@@ -32,6 +33,7 @@ public:
 private:
 	oak::Scene *scene_;
 	oak::EntityCache meshCache_;
+	oak::EntityCache spriteCache_;
 	oak::EntityCache particleCache_;
 
 	oak::graphics::Api *api_;
@@ -39,9 +41,11 @@ private:
 	oak::vector<oak::graphics::Renderer*> layers_;
 	oak::vector<oak::graphics::Batch> batches_;
 	
-	oak::graphics::GLBufferStorage storage3d_;
+	oak::graphics::GLBufferStorage storageMesh_;
+	oak::graphics::GLBufferStorage storageSprite_;
 	oak::graphics::GLBufferStorage storageParticle_;
 
-	oak::graphics::StaticBatcher batcher_;
+	oak::graphics::StaticBatcher meshBatcher_;
+	oak::graphics::SpriteBatcher spriteBatcher_;
 	oak::graphics::ParticleSystem particleSystem_;
 };

@@ -8,9 +8,6 @@
 
 namespace oak::graphics {
 
-
-	StaticBatcher::StaticBatcher() {}
-
 	void StaticBatcher::setBufferStorage(BufferStorage *storage) {
 		//add the buffer to the list and hash its layout for quick comparison
 		bufferInfo_.storage = storage;
@@ -35,10 +32,6 @@ namespace oak::graphics {
 		meshes_.erase(std::remove_if(std::begin(meshes_), std::end(meshes_), [&mesh](const MeshInfo& info){ return info.mesh == mesh; }), std::end(meshes_));
 		needsRebatch_ = true;
 	}
-
-	void StaticBatcher::update() {
-		needsRebatch_ = true;
-	}	
 
 	void StaticBatcher::run() {
 		if (meshes_.empty() || !needsRebatch_) { return; }

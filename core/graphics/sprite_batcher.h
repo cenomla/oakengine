@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "mesh.h"
+#include "sprite.h"
 #include "batch.h"
 #include "material.h"
 
@@ -10,14 +10,10 @@ namespace oak::graphics {
 
 	class BufferStorage;
 
-	class StaticBatcher {
+	class SpriteBatcher {
 	public:
 		void setBufferStorage(BufferStorage *storage);
-
-		void addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
-		void updateMesh(const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
-		void removeMesh(const Mesh *mesh);
-		
+		void addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const glm::mat3& transform);
 		void run();
 		
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
@@ -30,24 +26,21 @@ namespace oak::graphics {
 			void *map[2]{ nullptr };
 		} bufferInfo_;
 
-		struct MeshInfo {
+		struct SpriteInfo {
 			uint64_t layer;
 			const Material *material;
-			const Mesh *mesh;
-			glm::mat4 transform;
-			TextureRegion region;
+			const Sprite *sprite;
+			glm::mat3 transform;
 
-			inline bool operator<(const MeshInfo& rhs) const { 
+			inline bool operator<(const SpriteInfo& rhs) const { 
 				return layer == rhs.layer ? 
 					material < rhs.material : 
 					layer < rhs.layer; 
 			}
 		};
 
-		oak::vector<MeshInfo> meshes_;
+		oak::vector<SpriteInfo> sprites_;
 		oak::vector<Batch> batches_;
-
-		bool needsRebatch_;
 	};
 
 }
