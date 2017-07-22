@@ -6,10 +6,10 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 ### Features:
 - Multi-threaded task manager
 - Event/Messaging system
-- Efficent memory allocation system
+- Efficent memory allocation management
 - Component based entity system
 - Lua scripting
-- Prefab system with shared components
+- Prefabs with shared components
 - Opengl 4 renderer
 - Easily extendable
 
