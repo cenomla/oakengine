@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <GLFW/glfw3.h>
+#include <glm/gtx/matrix_transform_2d.hpp>
 
 #include <graphics/api.h>
 #include <graphics/renderer.h>
@@ -68,6 +69,9 @@ void RenderSystem::init() {
 	spriteCache_.requireComponent<Transform2dComponent>();
 	spriteCache_.requireComponent<SpriteComponent>();
 
+	textCache_.requireComponent<Transform2dComponent>();
+	textCache_.requireComponent<TextComponent>();
+
 	particleCache_.requirePrefab(std::hash<oak::string>{}("particle"));
 	particleCache_.requireComponent<MeshComponent>();
 
@@ -98,6 +102,7 @@ void RenderSystem::run() {
 	auto& t2s = oak::getComponentStorage<const Transform2dComponent>(*scene_);
 	auto& ms = oak::getComponentStorage<const MeshComponent>(*scene_);
 	auto& ss = oak::getComponentStorage<const SpriteComponent>(*scene_);
+	auto& txs = oak::getComponentStorage<const TextComponent>(*scene_);
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityDeactivateEvent>()) {
 		//check for meshes to remove
@@ -109,6 +114,7 @@ void RenderSystem::run() {
 
 	meshCache_.update(*scene_);
 	spriteCache_.update(*scene_);
+	textCache_.update(*scene_);
 	particleCache_.update(*scene_);
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityActivateEvent>()) {
@@ -129,6 +135,21 @@ void RenderSystem::run() {
 		auto& t2c = oak::getComponent<const Transform2dComponent>(t2s, entity);
 		auto& sc = oak::getComponent<const SpriteComponent>(ss, entity);
 		spriteBatcher_.addSprite(sc.layer, sc.material, sc.sprite, t2c.transform);
+	}
+
+	for (const auto& entity : textCache_.entities()) {
+		auto& t2c = oak::getComponent<const Transform2dComponent>(t2s, entity);
+		auto& txc = oak::getComponent<const TextComponent>(txs, entity);
+
+		glm::vec2 pos{ 0.0f };
+		for (const auto& c : txc.text) {
+			auto& glyph = txc.font->glyphs[c];
+			spriteBatcher_.addSprite(txc.layer, txc.material, &glyph.sprite, glm::translate(t2c.transform, pos));
+			pos.x += glyph.advance;
+			if (c == '\n') {
+				pos.y += txc.font->size;
+			}
+		}
 	}
 
 

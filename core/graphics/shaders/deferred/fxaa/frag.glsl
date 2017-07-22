@@ -13,7 +13,7 @@ uniform float u_maxSpan = 8.0;
 
 in vec2 passUV;
 
-layout (location = 0) out vec4 fragColor;
+layout (location = 0) out vec4 o_color;
 
 // see FXAA
 // http://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf
@@ -106,5 +106,5 @@ vec3 fxaa() {
 void main(void) {
 	vec3 cl = fxaa();
 
-	fragColor = vec4(cl, 1.0);
+	o_color = vec4(cl, 1.0);
 }

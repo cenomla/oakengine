@@ -1,12 +1,14 @@
 #pragma once
 
+#include "sprite.h"
 #include "container.h"
 
 namespace oak::graphics {
 
 	struct Font {
 		struct Glyph {
-			float dx, dy, dw, dh, xoffset, yoffset, width, height, advance;
+			Sprite sprite;
+			float advance;
 			char id;
 		};
 
@@ -15,5 +17,4 @@ namespace oak::graphics {
 	};
 	
 	Font loadFont(const oak::string& path);
-
 }

@@ -22,6 +22,8 @@ namespace oak::graphics {
 
 		std::sort(std::begin(sprites_), std::end(sprites_));
 
+		batches_.clear();
+
 		//create batches 
 		const Material *mat = sprites_[0].material;
 		uint32_t layer = sprites_[0].layer;

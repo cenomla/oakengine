@@ -44,14 +44,14 @@ namespace oak::graphics {
 				Font::Glyph glyph;
 
 				glyph.id = std::stoi(token.substr(8, 7).c_str());
-				glyph.dx = std::stof(token.substr(18, 4).c_str()) * (1.0f / fhi.width);
-				glyph.dy = std::stof(token.substr(25, 4).c_str()) * (1.0f / fhi.height);
-				glyph.dw = std::stof(token.substr(36, 4).c_str()) * (1.0f / fhi.width);
-				glyph.dh = std::stof(token.substr(48, 4).c_str()) * (1.0f / fhi.height);
-				glyph.xoffset = std::stof(token.substr(61, 4).c_str());
-				glyph.yoffset = std::stof(token.substr(74, 4).c_str());
-				glyph.width = std::stof(token.substr(36, 4).c_str());
-				glyph.height = std::stof(token.substr(48, 4).c_str());
+				glyph.sprite.region.pos.x = std::stof(token.substr(18, 4).c_str()) * (1.0f / fhi.width);
+				glyph.sprite.region.pos.y = std::stof(token.substr(25, 4).c_str()) * (1.0f / fhi.height);
+				glyph.sprite.region.extent.x = std::stof(token.substr(36, 4).c_str()) * (1.0f / fhi.width);
+				glyph.sprite.region.extent.y = std::stof(token.substr(48, 4).c_str()) * (1.0f / fhi.height);
+				glyph.sprite.centerX = -std::stof(token.substr(61, 4).c_str());
+				glyph.sprite.centerY = -std::stof(token.substr(74, 4).c_str());
+				glyph.sprite.width = std::stof(token.substr(36, 4).c_str());
+				glyph.sprite.height = std::stof(token.substr(48, 4).c_str());
 				glyph.advance = std::stof(token.substr(88, 4).c_str());
 				//ensure size
 				if (static_cast<size_t>(glyph.id) >= font.glyphs.size()) {

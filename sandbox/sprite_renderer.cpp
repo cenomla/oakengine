@@ -16,10 +16,15 @@ void SpriteRenderer::terminate() {
 
 
 void SpriteRenderer::render(oak::graphics::Api *api) {
-	//do rendering stuff
 
+
+	//do rendering stuff
 	glDisable(GL_DEPTH_TEST);
 	glViewport(pipeline_->x, pipeline_->y, pipeline_->width, pipeline_->height);
+	glEnable(GL_BLEND);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
 	for (const auto& batch : *pipeline_->batches) {
 		if (batch.layer != 1) { continue; }
@@ -38,4 +43,5 @@ void SpriteRenderer::render(oak::graphics::Api *api) {
 
 	oak::graphics::GLVertexArray::unbind();
 
+	glDisable(GL_BLEND);
 }

@@ -2,8 +2,9 @@
 #include <chrono>
 #include <cmath>
 
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <graphics/opengl/gl_api.h>
 #include <graphics/opengl/gl_buffer_storage.h>
@@ -235,6 +236,7 @@ int main(int argc, char** argv) {
 	chs.addHandle<Transform2dComponent>("transform2d");
 	chs.addHandle<MeshComponent>("mesh");
 	chs.addHandle<SpriteComponent>("sprite");
+	chs.addHandle<TextComponent>("text");
 	chs.addHandle<CameraComponent>("camera");
 
 	//create component storage
@@ -244,6 +246,7 @@ int main(int argc, char** argv) {
 	oak::ComponentStorage transform2dStorage{ "transform2d" };
 	oak::ComponentStorage modelStorage{ "mesh" };
 	oak::ComponentStorage spriteStorage{ "sprite" };
+	oak::ComponentStorage textStorage{ "text" };
 	oak::ComponentStorage cameraStorage{ "camera" };
 
 	//add component storage to scene
@@ -253,6 +256,7 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(&transform2dStorage);
 	scene.addComponentStorage(&modelStorage);
 	scene.addComponentStorage(&spriteStorage);
+	scene.addComponentStorage(&textStorage);
 	scene.addComponentStorage(&cameraStorage);
 
 	//init the test renderer
@@ -334,6 +338,9 @@ int main(int argc, char** argv) {
 	shaderInfo.vertex = "core/graphics/shaders/forward/pass2d/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/forward/pass2d/frag.glsl";
 	auto& sh_pass2d = shaderHandle.add("pass2d", oak::graphics::shader::create(shaderInfo));
+	shaderInfo.vertex = "core/graphics/shaders/forward/font/vert.glsl";
+	shaderInfo.fragment = "core/graphics/shaders/forward/font/frag.glsl";
+	auto& sh_font = shaderHandle.add("font", oak::graphics::shader::create(shaderInfo));
 	shaderInfo.vertex = "core/graphics/shaders/deferred/particle/vert.glsl";
 	shaderInfo.fragment = "core/graphics/shaders/deferred/particle/frag.glsl";
 	auto& sh_particle = shaderHandle.add("particle", oak::graphics::shader::create(shaderInfo));
@@ -341,6 +348,9 @@ int main(int argc, char** argv) {
 	oak::graphics::TextureInfo textureInfo;
 	textureInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
 	auto& tex_character = textureHandle.add("character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
+	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR;
+	textureInfo.magFilter = oak::graphics::TextureFilter::LINEAR;
+	auto& tex_font = textureHandle.add("font", oak::graphics::texture::create("sandbox/res/fonts/dejavu_sans/atlas.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
 	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
 	textureInfo.width = 4096;
@@ -374,6 +384,7 @@ int main(int argc, char** argv) {
 	auto& mat_box = materialHandle.add("box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 	auto& mat_overlay = materialHandle.add("overlay", &layout2d, &sh_pass2d, &tex_character);
 	auto& mat_part = materialHandle.add("part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_font = materialHandle.add("font", &layout2d, &sh_font, &tex_font);
 
 	//meshes
 	auto model_box = oak::graphics::loadModel("sandbox/res/models/box.obj");
@@ -393,6 +404,8 @@ int main(int argc, char** argv) {
 
 	oak::graphics::Sprite spr_overlay{ 0.0f, 0.0f, 64.0f, 64.0f, { glm::vec2{ 0.0f }, glm::vec2{ 1.0f } } };
 
+	oak::graphics::Font fnt_dejavu = oak::graphics::loadFont("sandbox/res/fonts/dejavu_sans/glyphs.fnt");
+
 	//create entities
 	oak::EntityId player = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
@@ -408,7 +421,12 @@ int main(int argc, char** argv) {
 	oak::EntityId overlay = scene.createEntity();
 	oak::addComponent<Transform2dComponent>(scene, overlay, glm::mat3{ 1.0f });
 	oak::addComponent<SpriteComponent>(scene, overlay, &spr_overlay, &mat_overlay, 1u);
-	scene.activateEntity(overlay);
+	//scene.activateEntity(overlay);
+
+	oak::EntityId fps = scene.createEntity();
+	oak::addComponent<Transform2dComponent>(scene, fps, glm::translate(glm::mat3{ 0.15f }, glm::vec2{ 8.0f }));
+	oak::addComponent<TextComponent>(scene, fps, "fps: ", &fnt_dejavu, &mat_font, 1u);
+	scene.activateEntity(fps);
 
 	oak::Prefab fab_box{ "box", scene };
 	fab_box.addComponent<TransformComponent>();
@@ -478,7 +496,7 @@ int main(int argc, char** argv) {
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
 		lastFrame = currentFrame;
 
-		printf("dt: %f\n", dt.count());
+		oak::getComponent<TextComponent>(scene, fps).text = "fps: " + std::to_string(1.0f / dt.count());
 
 		//do engine things
 		evtManager.clear();

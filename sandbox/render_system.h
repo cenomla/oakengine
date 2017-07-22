@@ -34,6 +34,7 @@ private:
 	oak::Scene *scene_;
 	oak::EntityCache meshCache_;
 	oak::EntityCache spriteCache_;
+	oak::EntityCache textCache_;
 	oak::EntityCache particleCache_;
 
 	oak::graphics::Api *api_;
