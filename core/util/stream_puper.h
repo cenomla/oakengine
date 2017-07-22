@@ -6,11 +6,11 @@
 
 namespace oak {
 
-	class ByteBuffer;
+	class Stream;
 
-	class BufferPuper : public Puper {
+	class StreamPuper : public Puper {
 	public:
-		BufferPuper(ByteBuffer *buffer);
+		StreamPuper(Stream *stream);
 
 		void pup(int8_t& data, const ObjInfo& info) override;
 		void pup(int16_t& data, const ObjInfo& info) override;
@@ -26,7 +26,7 @@ namespace oak {
 		void pup(oak::string& data, const ObjInfo& info) override;
 
 	private:
-		ByteBuffer *buffer_;
+		Stream *stream_;
 	};
 
 }

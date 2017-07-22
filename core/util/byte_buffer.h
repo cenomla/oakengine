@@ -1,14 +1,13 @@
 #pragma once
 
 #include <cstddef>
-#include <cinttypes>
 
 #include "oak_alloc.h"
-#include "container.h"
+#include "stream.h"
 
 namespace oak {
 
-	class ByteBuffer {
+	class ByteBuffer : public BufferBase {
 	public:
 		ByteBuffer(size_t size, Allocator *allocator = &oalloc_freelist);
 		ByteBuffer(void *data, size_t size);
@@ -20,15 +19,13 @@ namespace oak {
 		ByteBuffer(ByteBuffer&& other);
 		void operator=(ByteBuffer&& other);
 
-		template<class T> void write(T data);
-		template<class T> T read();
+		void read(size_t size, void *data) override;
+		void write(size_t size, const void *data) override;
 
-		void set();
-		void reset();
-		void rewind();
+		void set() override;
+		void reset() override;
+		void rewind() override;
 		void resize(size_t nsize);
-
-		void checkResize(size_t size);
 
 		inline size_t capacity() const { return capacity_; }
 		inline size_t pos() const { return pos_; }
@@ -45,35 +42,7 @@ namespace oak {
 
 		void init();
 		void destroy();
+		void checkResize(size_t size);
 	};
-
-	template<> void ByteBuffer::write(int8_t data);
-	template<> void ByteBuffer::write(int16_t data);
-	template<> void ByteBuffer::write(int32_t data);
-	template<> void ByteBuffer::write(int64_t data);
-
-	template<> void ByteBuffer::write(uint8_t data);
-	template<> void ByteBuffer::write(uint16_t data);
-	template<> void ByteBuffer::write(uint32_t data);
-	template<> void ByteBuffer::write(uint64_t data);
-
-	template<> void ByteBuffer::write(float data);
-	template<> void ByteBuffer::write(double data);
-	template<> void ByteBuffer::write(oak::string data);
-	template<> void ByteBuffer::write(const char* data);
-
-	template<> int8_t ByteBuffer::read();
-	template<> int16_t ByteBuffer::read();
-	template<> int32_t ByteBuffer::read();
-	template<> int64_t ByteBuffer::read();
-
-	template<> uint8_t ByteBuffer::read();
-	template<> uint16_t ByteBuffer::read();
-	template<> uint32_t ByteBuffer::read();
-	template<> uint64_t ByteBuffer::read();
-
-	template<> float ByteBuffer::read();
-	template<> double ByteBuffer::read();
-	template<> oak::string ByteBuffer::read();
 
 }

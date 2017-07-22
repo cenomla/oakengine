@@ -2,9 +2,8 @@
 
 #include <experimental/filesystem>
 
+#include "util/byte_buffer.h"
 #include "util/string_util.h"
-
-#include "log.h"
 
 namespace oak {
 namespace fs = std::experimental::filesystem;
@@ -102,14 +101,36 @@ namespace fs = std::experimental::filesystem;
 
 		for (const auto& it : dir->links) {
 			oak::string fullPath = it + pathSuffix;
-			FILE *file = fopen(fullPath.c_str(), "r");
-			if (file) {
-				fclose(file);
+			if (fs::exists(fullPath)) {
 				return fullPath;
 			}
 		}
 
 		return "";
+	}
+
+	Stream FileManager::openFile(const oak::string& path) {
+		const oak::string resolvedPath = resolvePath(path);
+		FILE *file = fopen(resolvedPath.c_str(), "r+b");
+
+		fseek(file, 0, SEEK_END);
+		size_t size = ftell(file);
+		fseek(file, 0, SEEK_SET);
+
+		ByteBuffer *buffer = static_cast<ByteBuffer*>(oalloc_freelist.allocate(sizeof(ByteBuffer)));
+		new (buffer) ByteBuffer{ size + 1 };
+		memset(buffer->data(), 0, size + 1);
+		fread(buffer->data(), 1, size, file);
+
+		fclose(file);
+
+		return { buffer };
+	}
+
+	void FileManager::closeFile(Stream& stream) {
+		stream.buffer->~BufferBase();
+		oalloc_freelist.deallocate(stream.buffer, sizeof(ByteBuffer));
+		stream.buffer = nullptr;
 	}
 
 }

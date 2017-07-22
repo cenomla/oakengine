@@ -3,7 +3,7 @@
 #include <cstdio>
 
 #include "oak_assert.h"
-#include "util/byte_buffer.h"
+#include "util/stream.h"
 #include "container.h"
 
 namespace oak {
@@ -31,8 +31,8 @@ namespace oak {
 
 		oak::string resolvePath(const oak::string& path);
 
-		ByteBuffer&& readFile(const oak::string& path);
-		void writeFile(const oak::string& path, const ByteBuffer& buffer);
+		Stream openFile(const oak::string& path);
+		void closeFile(Stream& stream);
 	private:
 		VirtualDirectory root_;
 	};
