@@ -30,13 +30,6 @@
 #include "deferred_renderer.h"
 #include "gui_renderer.h"
 
-oak::graphics::Buffer matrix_ubo;
-oak::graphics::Buffer proj_ubo; 
-oak::graphics::Buffer ortho_ubo;
-oak::graphics::Buffer light_ubo;
-
-oak::CursorMode cmode;
-
 class CameraSystem : public oak::System {
 public:
 	CameraSystem(oak::Scene *scene) : scene_{ scene } {}
@@ -60,7 +53,7 @@ public:
 			//temp camera
 			//look
 			
-			if (cmode == oak::CursorMode::DISABLED) {
+			if (inputManager.getCursorMode() == oak::CursorMode::DISABLED) {
 				for (const auto& evt : oak::EventManager::inst().getQueue<oak::CursorEvent>()) {
 					//translate to zero
 					cc.rotation.y -= glm::radians(evt.x - px) / 6.0f;
@@ -189,6 +182,13 @@ int main(int argc, char** argv) {
 	evtManager.addQueue<oak::TickEvent>();
 	evtManager.addQueue<oak::SimulateEvent>();
 
+	//get references to resource storage containers
+	auto& bufferHandle = resManager.get<oak::graphics::Buffer>();
+	auto& textureHandle = resManager.get<oak::graphics::Texture>();
+	auto& atlasHandle = resManager.get<oak::graphics::TextureAtlas>();
+	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
+	auto& materialHandle = resManager.get<oak::graphics::Material>();
+
 	//create the scene
 	oak::Scene scene;
 
@@ -223,14 +223,6 @@ int main(int argc, char** argv) {
 		oak::graphics::AttributeType::INSTANCE_POSITION
 	} };
 
-	oak::graphics::GLBufferStorage storage3d;
-	oak::graphics::GLBufferStorage storage2d;
-	oak::graphics::GLBufferStorage particleStorage;
-
-	renderSystem.storage3d = &storage3d;
-	renderSystem.storage2d = &storage2d;
-	renderSystem.particleSystem_.setBufferStorage(&particleStorage);
-
 	CameraSystem cameraSystem{ &scene };
 	//add them to the system manager
 	sysManager.addSystem(&renderSystem, "render_system");
@@ -257,24 +249,9 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(&modelStorage);
 	scene.addComponentStorage(&cameraStorage);
 
-	oak::ResourceHandler<oak::graphics::Texture> textureHandle;
-	oak::ResourceHandler<oak::graphics::TextureAtlas> atlasHandle;
-	oak::ResourceHandler<oak::graphics::Shader> shaderHandle;
-	oak::ResourceHandler<oak::graphics::Material> materialHandle;
-	resManager.add(&textureHandle);
-	resManager.add(&atlasHandle);
-	resManager.add(&shaderHandle);
-	resManager.add(&materialHandle);
-
-
 	//init the test renderer
 	sceneRenderer.init();
 	guiRenderer.init();
-
-	//initialize the buffer storage
-	storage3d.create(&layout3d);
-	storage2d.create(&layout2d);
-	particleStorage.create(&particleLayout);
 
 	//setup uniforms
 	struct {
@@ -302,16 +279,16 @@ int main(int argc, char** argv) {
 	bufferInfo.type = oak::graphics::BufferType::UNIFORM;
 	bufferInfo.hint = oak::graphics::BufferHint::STREAM;
 	bufferInfo.base = 0;
-	matrix_ubo = oak::graphics::buffer::create(bufferInfo);
+	auto& matrix_ubo = bufferHandle.add("matrix", oak::graphics::buffer::create(bufferInfo));
 	//create proj invProj buffer
 	bufferInfo.hint = oak::graphics::BufferHint::STATIC;
 	bufferInfo.base = 2;
-	proj_ubo = oak::graphics::buffer::create(bufferInfo);
+	auto& proj_ubo = bufferHandle.add("proj", oak::graphics::buffer::create(bufferInfo));
 	oak::graphics::buffer::bind(proj_ubo);
 	oak::graphics::buffer::data(proj_ubo, sizeof(pmatrix), &pmatrix);
 	//create ortho matrix buffer
 	bufferInfo.base = 1;
-	ortho_ubo = oak::graphics::buffer::create(bufferInfo);
+	auto& ortho_ubo = bufferHandle.add("ortho", oak::graphics::buffer::create(bufferInfo));
 	oak::graphics::buffer::bind(ortho_ubo);
 	oak::graphics::buffer::data(ortho_ubo, sizeof(omatrix), &omatrix);
 
@@ -341,7 +318,7 @@ int main(int argc, char** argv) {
 
 	bufferInfo.hint = oak::graphics::BufferHint::STREAM;
 	bufferInfo.base = 4;
-	light_ubo = oak::graphics::buffer::create(bufferInfo);
+	auto& light_ubo = bufferHandle.add("light", oak::graphics::buffer::create(bufferInfo));
 	
 	//shader setup
 	oak::graphics::ShaderInfo shaderInfo;
@@ -408,14 +385,17 @@ int main(int argc, char** argv) {
 		0, 1, 2, 2, 3, 0
 	};
 
-	renderSystem.particleSystem_.setMesh(0, &mat_part, &model_part[0], colorAtlas.regions[0].second);
-
 	//create entities
 	oak::EntityId player = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
 	oak::addComponent<TransformComponent>(scene, player);
 	oak::addComponent<CameraComponent>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
 	scene.activateEntity(player);
+
+	oak::EntityId particle = scene.createEntity();
+	oak::addComponent<oak::PrefabComponent>(scene, particle, std::hash<oak::string>{}("particle"));
+	oak::addComponent<MeshComponent>(scene, particle, &model_part[0], &mat_part, colorAtlas.regions[0].second);
+	scene.activateEntity(particle);
 
 	oak::Prefab fab_box{ "box", scene };
 	fab_box.addComponent<TransformComponent>();
@@ -430,7 +410,6 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	
 
 	oak::EntityId floor = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, floor, std::hash<oak::string>{}("floor"));
@@ -442,21 +421,15 @@ int main(int argc, char** argv) {
 	std::chrono::high_resolution_clock::time_point lastFrame = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> dt;
 
-
-	cmode = oak::CursorMode::NORMAL;
-	oak::EventManager::inst().getQueue<oak::CursorModeEvent>().emit({ cmode });
-
 	//main game loop
 	isRunning = true;
 	while (isRunning) {
 		if (inputManager.getKey(oak::key::esc)) {
-			if (cmode == oak::CursorMode::NORMAL) {
-				cmode = oak::CursorMode::DISABLED;
+			if (inputManager.getCursorMode() == oak::CursorMode::NORMAL) {
+				evtManager.getQueue<oak::CursorModeEvent>().emit({ oak::CursorMode::DISABLED });
 			} else {
-				cmode = oak::CursorMode::NORMAL;
+				evtManager.getQueue<oak::CursorModeEvent>().emit({ oak::CursorMode::NORMAL });
 			}
-
-			evtManager.getQueue<oak::CursorModeEvent>().emit({ cmode });
 			inputManager.setKey(oak::key::esc, 0);
 		}
 		inputManager.update();

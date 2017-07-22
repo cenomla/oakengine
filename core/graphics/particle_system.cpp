@@ -23,7 +23,7 @@ namespace oak::graphics {
 		region_ = region;
 
 		storage_->bind();
-		storage_->instance(mesh_->vertices.size() * sizeof(Mesh::Vertex));
+		storage_->instance(material->layout, mesh_->vertices.size() * sizeof(Mesh::Vertex));
 		storage_->unbind();
 	}
 
@@ -51,10 +51,10 @@ namespace oak::graphics {
 		batch_.storage = storage_;
 		batch_.count = mesh_->indices.size();
 		batch_.offset = 0;
-		batch_.instances = 640;
+		batch_.instances = 1000;
 		batch_.layer = layer_;
 		
-		storage_->data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 640 * sizeof(glm::vec3), nullptr);
+		storage_->data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(glm::vec3), nullptr);
 		storage_->data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);
 
 		void *data = storage_->map(0);
@@ -73,14 +73,13 @@ namespace oak::graphics {
 		}
 
 		//upload rest of data
-		for (int i = 0; i < 640; i++) {
+		for (int i = 0; i < 1000; i++) {
 			*static_cast<glm::vec3*>(data) = particles_[i].position;
 			data = static_cast<glm::vec3*>(data) + 1;
 		}
 
 		storage_->unmap(0);
 		storage_->unmap(1);
-
 	}
 
 }

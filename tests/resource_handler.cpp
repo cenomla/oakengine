@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
 
 	oak::ResourceManager resManager;
 
-	oak::ResourceHandler<Res> resHandler{ &alloc };
+	oak::ResourceStorage<Res> resHandler{ &alloc };
 	resManager.add(&resHandler);
 
 	auto& res = resHandler.add("mamoth", oak::vector<int>{ 95, 64, 12 }, 55.5f, 90.0f);

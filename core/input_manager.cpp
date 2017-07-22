@@ -92,6 +92,18 @@ namespace oak {
 		glfwGetCursorPos(window_, xpos, ypos);
 	}
 
+	CursorMode InputManager::getCursorMode() const {
+		if (window_) {
+			int mode = glfwGetInputMode(window_, GLFW_CURSOR);
+			switch (mode) {
+				case GLFW_CURSOR_NORMAL: return CursorMode::NORMAL;
+				case GLFW_CURSOR_HIDDEN: return CursorMode::HIDDEN;
+				case GLFW_CURSOR_DISABLED: return CursorMode::DISABLED;
+			}
+		}
+		return CursorMode::NORMAL;
+	}
+
 	static void closeCallback(GLFWwindow *window) {
 		EventManager::inst().getQueue<WindowCloseEvent>().emit({ window });
 	}

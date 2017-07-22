@@ -25,7 +25,7 @@ namespace oak {
 		~ResourceManager();
 
 		template<class T>
-		void add(ResourceHandler<T> *handler) {
+		void add(ResourceStorage<T> *handler) {
 			size_t tid = util::type_id<detail::BaseResource, T>::id;
 
 			if (resourceHandles_.size() <= tid) { 
@@ -39,15 +39,20 @@ namespace oak {
 		}
 
 		template<class T>
-		ResourceHandler<T>& get() {
+		ResourceStorage<T>& get() {
 			size_t tid = util::type_id<detail::BaseResource, T>::id;
 
 			if (!(tid < resourceHandles_.size() && resourceHandles_[tid])) {
-				log_print_err("resource handler does not exist");
-				abort();
+				if (resourceHandles_.size() <= tid) { 
+					resourceHandles_.resize(tid+1);
+				}
+				auto ptr = static_cast<ResourceStorage<T>*>(oak_allocator.allocate(sizeof(ResourceStorage<T>)));
+				new (ptr) ResourceStorage<T>{};
+				resourceHandles_[tid] = ptr;
+				return *ptr;
 			}
 
-			return *static_cast<ResourceHandler<T>*>(resourceHandles_[tid]);
+			return *static_cast<ResourceStorage<T>*>(resourceHandles_[tid]);
 		}
 
 		template<class T>
@@ -67,7 +72,7 @@ namespace oak {
 		}
 
 	private:
-		oak::vector<void*> resourceHandles_;
+		oak::vector<detail::ResourceStorageBase*> resourceHandles_;
 	};
 
 }

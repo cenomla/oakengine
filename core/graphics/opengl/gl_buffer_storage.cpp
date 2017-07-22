@@ -8,8 +8,6 @@
 namespace oak::graphics {
 
 	void GLBufferStorage::create(const AttributeLayout *layout) {
-		//set layout
-		layout_ = layout;
 		//standard opengl vertex array setup with index buffer
 		vao_ = GLVertexArray::create();
 		GLVertexArray::bind(vao_);
@@ -20,7 +18,7 @@ namespace oak::graphics {
 
 		vbo_ = GLBuffer::create(info);
 		GLBuffer::bind(vbo_);
-		GLVertexArray::attribDescription(layout_);
+		GLVertexArray::attribDescription(layout);
 		GLBuffer::unbind(vbo_);
 
 		info.type = BufferType::ELEMENT;
@@ -30,9 +28,9 @@ namespace oak::graphics {
 		GLVertexArray::unbind();
 	}
 
-	void GLBufferStorage::instance(size_t offset) {
+	void GLBufferStorage::instance(const AttributeLayout *layout, size_t offset) {
 		GLBuffer::bind(vbo_);
-		GLVertexArray::instanceAttribDescription(layout_, offset);
+		GLVertexArray::instanceAttribDescription(layout, offset);
 		GLBuffer::unbind(vbo_);
 	}
 

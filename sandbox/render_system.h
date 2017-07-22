@@ -29,16 +29,19 @@ public:
 	void terminate() override;
 	void run() override;
 	
-	oak::graphics::BufferStorage *storage3d;
-	oak::graphics::BufferStorage *storage2d;
-	oak::graphics::ParticleSystem particleSystem_;
 private:
 	oak::Scene *scene_;
-	oak::EntityCache cache_;
+	oak::EntityCache meshCache_;
+	oak::EntityCache particleCache_;
 
 	oak::graphics::Api *api_;
 	oak::graphics::Pipeline pipeline_;
 	oak::vector<oak::graphics::Renderer*> layers_;
 	oak::vector<oak::graphics::Batch> batches_;
+	
+	oak::graphics::GLBufferStorage storage3d_;
+	oak::graphics::GLBufferStorage storageParticle_;
+
 	oak::graphics::StaticBatcher batcher_;
+	oak::graphics::ParticleSystem particleSystem_;
 };

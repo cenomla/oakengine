@@ -219,6 +219,34 @@ void DeferredRenderer::init() {
 void DeferredRenderer::terminate() {
 	buffer_.destroy();
 	skyBuffer_.destroy();
+
+	gbuffer_.destroy();
+	saobuffer_.destroy();
+	post_.destroy();
+	for (int i = 0; i < 5; i++) {
+		cszBuffer_[i].destroy();
+	}
+	for (int i = 0; i < 2; i++) {
+		blurBuffer_[i].destroy();
+	}
+	light_.destroy();
+	sao_.destroy();
+	reconstruct_.destroy();
+	minify_.destroy();
+	aaBlur_.destroy();
+	fxaa_.destroy();
+	box_.destroy();
+
+	albedo_.destroy();
+	normal_.destroy();
+	depth_.destroy();
+	aa_.destroy();
+	ao_.destroy();
+	sky_.destroy();
+	csz_.destroy();
+	for (int i = 0; i < 2; i++) {
+		blur_[i].destroy();
+	}
 }
 
 void DeferredRenderer::render(oak::graphics::Api *api) {

@@ -10,6 +10,11 @@ namespace oak {
 
 	namespace detail {
 
+		class ResourceStorageBase {
+		public:
+			virtual ~ResourceStorageBase() {};
+		};
+
 		template<typename T>
 		struct has_destroy {
 			template<typename U, void (U::*)()> struct SFINAE {};
@@ -30,13 +35,13 @@ namespace oak {
 	}
 
 	template<class T>
-	class ResourceHandler {
+	class ResourceStorage : public detail::ResourceStorageBase {
 	public:
 		typedef T value_type;
 
-		ResourceHandler(oak::Allocator *allocator = &oalloc_freelist) : allocator_{ allocator } {};
+		ResourceStorage(oak::Allocator *allocator = &oalloc_freelist) : allocator_{ allocator } {};
 		
-		~ResourceHandler() {
+		~ResourceStorage() {
 			for (auto it : resources_) {
 				detail::Resource<T>::destroy(*it.second);
 				it.second->~T();

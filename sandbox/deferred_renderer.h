@@ -33,7 +33,6 @@ private:
 	oak::graphics::Shader box_;
 	oak::graphics::GLBufferStorage buffer_;
 	oak::graphics::GLBufferStorage skyBuffer_;
-	oak::graphics::Buffer kernelBuffer_;
 	oak::graphics::Texture albedo_;
 	oak::graphics::Texture normal_;
 	oak::graphics::Texture depth_;

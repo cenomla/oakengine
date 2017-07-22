@@ -6,10 +6,12 @@
 #include <graphics/api.h>
 #include <graphics/renderer.h>
 
+#include <core_components.h>
 #include <scene_events.h>
 #include <scene_utils.h>
 #include <event_manager.h>
 #include <input_manager.h>
+#include <resource_manager.h>
 #include <log.h>
 
 #include "components.h"
@@ -29,11 +31,34 @@ void RenderSystem::init() {
 	pipeline_.width = frameWidth;
 	pipeline_.height = frameHeight;
 
-	batcher_.addBufferStorage(storage3d);
-	batcher_.addBufferStorage(storage2d);
+	auto& lrs = oak::ResourceManager::inst().get<oak::graphics::AttributeLayout>();
 
-	cache_.requireComponent<TransformComponent>();
-	cache_.requireComponent<MeshComponent>();
+	auto& layout3d = lrs.add("layout3d", 
+	oak::vector<oak::graphics::AttributeType>{
+		oak::graphics::AttributeType::POSITION,
+		oak::graphics::AttributeType::NORMAL,
+		oak::graphics::AttributeType::UV
+	});
+
+	auto& layoutParticle = lrs.add("layoutParticle", 
+	oak::vector<oak::graphics::AttributeType> {
+		oak::graphics::AttributeType::POSITION,
+		oak::graphics::AttributeType::NORMAL,
+		oak::graphics::AttributeType::UV,
+		oak::graphics::AttributeType::INSTANCE_POSITION
+	});
+
+	storage3d_.create(&layout3d);
+	storageParticle_.create(&layoutParticle);
+
+	batcher_.setBufferStorage(&storage3d_);
+	particleSystem_.setBufferStorage(&storageParticle_);
+
+	meshCache_.requireComponent<TransformComponent>();
+	meshCache_.requireComponent<MeshComponent>();
+
+	particleCache_.requirePrefab(std::hash<oak::string>{}("particle"));
+	particleCache_.requireComponent<MeshComponent>();
 }
 
 void RenderSystem::terminate() {
@@ -61,20 +86,26 @@ void RenderSystem::run() {
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityDeactivateEvent>()) {
 		//check for meshes to remove
-		if (cache_.contains(*scene_, evt.entity)) {
+		if (meshCache_.contains(*scene_, evt.entity)) {
 			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
 			batcher_.removeMesh(mc.mesh);
 		}
 	}
 
-	cache_.update(*scene_);
+	meshCache_.update(*scene_);
+	particleCache_.update(*scene_);
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityActivateEvent>()) {
 		//check for meshes to add
-		if (cache_.contains(*scene_, evt.entity)) {
+		if (meshCache_.contains(*scene_, evt.entity)) {
 			auto& tc = oak::getComponent<const TransformComponent>(ts, evt.entity);
 			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
 			batcher_.addMesh(mc.layer, mc.material, mc.mesh, tc.transform, mc.region);
+		}
+		//check for particles to add
+		if (particleCache_.contains(*scene_, evt.entity)) {
+			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
+			particleSystem_.setMesh(mc.layer, mc.material, mc.mesh, mc.region);
 		}
 	}
 
