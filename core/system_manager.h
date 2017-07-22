@@ -56,6 +56,14 @@ namespace oak {
 			return names_[tid];
 		}
 
+		template<class TSystem>
+		bool hasSystem() {
+			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
+			return (tid < systems_.size() && systems_[tid]);
+		}
+
+		void clear();
+
 	private:
 		oak::vector<System*> systems_;
 		oak::vector<oak::string> names_;

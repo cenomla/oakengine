@@ -2,11 +2,9 @@
 
 #include <cstring>
 
-#include "oak_alloc.h"
+namespace oak {
 
-namespace oak::util {
-
-	ByteBuffer::ByteBuffer(size_t size) : capacity_{ size }, buffer_{ nullptr }, pos_{ 0 }, mark_{ 0 }, owns_{ true } {
+	ByteBuffer::ByteBuffer(size_t size, Allocator *allocator) : allocator_{ allocator }, capacity_{ size }, buffer_{ nullptr }, pos_{ 0 }, mark_{ 0 }, owns_{ true } {
 		init();
 	}
 
@@ -25,13 +23,12 @@ namespace oak::util {
 	void ByteBuffer::operator=(const ByteBuffer& other) {
 		destroy();
 		capacity_ = other.capacity_;
-		buffer_ = static_cast<char*>(oak_allocator.allocate(capacity_));
+		buffer_ = static_cast<char*>(allocator_->allocate(capacity_));
 		pos_ = other.pos_;
 		mark_ = other.mark_;
 		owns_ = other.owns_;
 
 		memcpy(buffer_, other.buffer_, capacity_);
-
 	}
 
 	ByteBuffer::ByteBuffer(ByteBuffer&& other) {
@@ -68,12 +65,11 @@ namespace oak::util {
 	void ByteBuffer::resize(size_t nsize) {
 		if (owns_ && buffer_ != nullptr) {
 			if (nsize > capacity_) {
-				char *temp = static_cast<char*>(oak_allocator.allocate(nsize));
+				char *temp = static_cast<char*>(allocator_->allocate(nsize));
 				memcpy(temp, buffer_, capacity_);
-				oak_allocator.deallocate(buffer_, capacity_);
+				allocator_->deallocate(buffer_, capacity_);
 				buffer_ = temp;
 				capacity_ = nsize;
-
 			}
 		}
 	}
@@ -86,13 +82,13 @@ namespace oak::util {
 
 	void ByteBuffer::init() {
 		if (buffer_ == nullptr) {
-			buffer_ = static_cast<char*>(oak_allocator.allocate(capacity_));
+			buffer_ = static_cast<char*>(allocator_->allocate(capacity_));
 		}
 	}
 
 	void ByteBuffer::destroy() {
 		if (buffer_ != nullptr && owns_) {
-			oak_allocator.deallocate(buffer_, capacity_);
+			allocator_->deallocate(buffer_, capacity_);
 			buffer_ = nullptr;
 			capacity_ = 0;
 			pos_ = 0;

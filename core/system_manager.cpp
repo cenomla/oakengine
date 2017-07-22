@@ -11,6 +11,10 @@ namespace oak {
 
 	SystemManager::~SystemManager() {
 		instance = nullptr;
+		clear();
+	}
+
+	void SystemManager::clear() {
 		//terminate systems
 		for (auto system : systems_) {
 			if (system != nullptr) {

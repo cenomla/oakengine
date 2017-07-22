@@ -2,15 +2,15 @@
 
 #include <cstddef>
 #include <cinttypes>
-#include <cstring>
 
+#include "oak_alloc.h"
 #include "container.h"
 
-namespace oak::util {
+namespace oak {
 
 	class ByteBuffer {
 	public:
-		ByteBuffer(size_t size);
+		ByteBuffer(size_t size, Allocator *allocator = &oalloc_freelist);
 		ByteBuffer(void *data, size_t size);
 		~ByteBuffer();
 		
@@ -36,6 +36,7 @@ namespace oak::util {
 		inline char* data() { return buffer_; }
 		inline const char* data() const { return buffer_; }
 	private:
+		Allocator *allocator_;
 		size_t capacity_;
 		char *buffer_;
 		size_t pos_;

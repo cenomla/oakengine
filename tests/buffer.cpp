@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 	const float f32 = 10.001;
 
 	void *mem = oak::oak_allocator.allocate(512);
-	oak::util::ByteBuffer buffer{ mem, 512 };
+	oak::ByteBuffer buffer{ mem, 512 };
 	buffer.write(i32);
 	buffer.write(u64);
 	buffer.write(i16);

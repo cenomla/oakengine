@@ -37,10 +37,10 @@ namespace oak::log {
 				name_, text);
 		break;
 		case Level::VERBOSE:
-			sprintf(buffer_, "[%i:%i:%i %i/%i/%i][%s]: %s\t[file]:%s:%i\n", 
+			sprintf(buffer_, "[%i:%i:%i %i/%i/%i][file]:%s:%i[%s]: %s\n", 
 				tm->tm_hour, tm->tm_min, tm->tm_sec,
 				tm->tm_mon+1, tm->tm_mday, 1900+tm->tm_year, 
-				name_, text, file, line);
+				file, line, name_, text);
 		break;
 		}
 		flush();

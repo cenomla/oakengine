@@ -10,5 +10,6 @@ buildTest('buffer')
 buildTest('equeue')
 buildTest('benchmark')
 buildTest('resource_handler')
+buildTest('filesystem')
 
 Return('module_targets')
