@@ -2,7 +2,7 @@
 
 #include <experimental/filesystem>
 
-#include "util/byte_buffer.h"
+#include "util/file_buffer.h"
 #include "util/string_util.h"
 
 namespace oak {
@@ -113,23 +113,15 @@ namespace fs = std::experimental::filesystem;
 		const oak::string resolvedPath = resolvePath(path);
 		FILE *file = fopen(resolvedPath.c_str(), "r+b");
 
-		fseek(file, 0, SEEK_END);
-		size_t size = ftell(file);
-		fseek(file, 0, SEEK_SET);
-
-		ByteBuffer *buffer = static_cast<ByteBuffer*>(oalloc_freelist.allocate(sizeof(ByteBuffer)));
-		new (buffer) ByteBuffer{ size + 1 };
-		memset(buffer->data(), 0, size + 1);
-		fread(buffer->data(), 1, size, file);
-
-		fclose(file);
+		FileBuffer *buffer = static_cast<FileBuffer*>(oalloc_freelist.allocate(sizeof(FileBuffer)));
+		new (buffer) FileBuffer{ file };
 
 		return { buffer };
 	}
 
 	void FileManager::closeFile(Stream& stream) {
 		stream.buffer->~BufferBase();
-		oalloc_freelist.deallocate(stream.buffer, sizeof(ByteBuffer));
+		oalloc_freelist.deallocate(stream.buffer, sizeof(FileBuffer));
 		stream.buffer = nullptr;
 	}
 

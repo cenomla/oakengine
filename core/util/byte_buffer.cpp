@@ -96,15 +96,22 @@ namespace oak {
 		}
 	}
 
-	void ByteBuffer::read(size_t size, void *data) {
+	size_t ByteBuffer::read(size_t size, void *data) {
+		if (pos_ + size > capacity_) {
+			size = capacity_ - pos_;
+		}
+		if (size == 0) { return 0; }
 		memcpy(data, buffer_ + pos_, size);
 		pos_ += size;
+		return size;
 	}
 	
-	void ByteBuffer::write(size_t size, const void *data) {
+	size_t ByteBuffer::write(size_t size, const void *data) {
+		if (size == 0) { return 0; }
 		checkResize(size);
 		memcpy(buffer_ + pos_, data, size);
 		pos_ += size;
+		return size;
 	}
 
 }

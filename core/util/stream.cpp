@@ -11,12 +11,12 @@ namespace oak {
 	}
 
 	template<> oak::string Stream::read() {
+		size_t n;
 		char c;
 		oak::string str;
-		do {
-			buffer->read(1, &c);
+		while ((n = buffer->read(1, &c)) > 0) {
 			str.push_back(c);
-		} while (c != '\0');
+		}
 		return str;
 	}
 

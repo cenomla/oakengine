@@ -19,8 +19,8 @@ namespace oak {
 		ByteBuffer(ByteBuffer&& other);
 		void operator=(ByteBuffer&& other);
 
-		void read(size_t size, void *data) override;
-		void write(size_t size, const void *data) override;
+		size_t read(size_t size, void *data) override;
+		size_t write(size_t size, const void *data) override;
 
 		void set() override;
 		void reset() override;
