@@ -38,4 +38,12 @@ namespace oak {
 		return fwrite(data, 1, size, file_);
 	}
 
+	size_t FileBuffer::size() const {
+		size_t pos = ftell(file_);
+		fseek(file_, 0, SEEK_END);
+		size_t size = ftell(file_);
+		fseek(file_, pos, SEEK_SET);
+		return size;
+	}
+
 }

@@ -39,6 +39,8 @@ namespace oak {
 		
 		virtual size_t read(size_t size, void *data) = 0;
 		virtual size_t write(size_t size, const void *data) = 0;
+
+		virtual size_t size() const = 0;
 	};
 
 	struct Stream {

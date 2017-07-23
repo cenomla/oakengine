@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 
 #include "graphics/shader.h"
-#include "util/file_util.h"
+#include "file_manager.h"
 #include "log.h"
 
 namespace oak::graphics::GLShader {
@@ -113,8 +113,10 @@ namespace oak::graphics::GLShader {
 		glUniform1f(glGetUniformLocation(shader.id, name), value);
 	}
 
-	GLuint load(const char *path, GLenum type) {	
-		const oak::string code = util::readFileAsString(path);
+	GLuint load(const char *path, GLenum type) {
+		auto file = FileManager::inst().openFile(path);
+		const oak::string code = file.read<oak::string>();
+		FileManager::inst().closeFile(file);
 		const char *cstr = code.c_str();
 
 		GLuint shader = glCreateShader(type);

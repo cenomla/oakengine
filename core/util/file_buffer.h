@@ -19,6 +19,8 @@ namespace oak {
 		size_t read(size_t size, void *data) override;
 		size_t write(size_t size, const void *data) override;
 
+		size_t size() const override;
+
 	private:
 		FILE *file_ = nullptr;
 		int mark_ = 0;

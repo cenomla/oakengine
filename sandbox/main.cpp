@@ -13,6 +13,7 @@
 #include <graphics/shader.h>
 #include <mesh.h>
 #include <log.h>
+#include <file_manager.h>
 #include <system_manager.h>
 #include <resource_manager.h>
 #include <event_manager.h>
@@ -155,6 +156,7 @@ int main(int argc, char** argv) {
 	//init engine managers
 	oak::EventManager evtManager;
 	oak::InputManager inputManager;
+	oak::FileManager fileManager;
 	oak::SystemManager sysManager;
 	oak::ComponentTypeManager chs;
 	oak::ResourceManager resManager;
@@ -165,6 +167,9 @@ int main(int argc, char** argv) {
 	inputManager.bind("strafe_right", oak::key::d, true);
 	inputManager.bind("move_up", oak::key::space, true);
 	inputManager.bind("move_down", oak::key::lshift, true);
+
+	fileManager.mount("{$cwd}/sandbox/res", "/res");
+	fileManager.mount("{$cwd}/core/graphics/shaders", "/res/shaders");
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
@@ -332,53 +337,53 @@ int main(int argc, char** argv) {
 	
 	//shader setup
 	oak::graphics::ShaderInfo shaderInfo;
-	shaderInfo.vertex = "core/graphics/shaders/deferred/geometry/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/geometry/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/geometry/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/geometry/frag.glsl";
 	auto& sh_geometry = shaderHandle.add("geometry", oak::graphics::shader::create(shaderInfo));
-	shaderInfo.vertex = "core/graphics/shaders/forward/pass2d/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/forward/pass2d/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/forward/pass2d/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/forward/pass2d/frag.glsl";
 	auto& sh_pass2d = shaderHandle.add("pass2d", oak::graphics::shader::create(shaderInfo));
-	shaderInfo.vertex = "core/graphics/shaders/forward/font/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/forward/font/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/forward/font/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/forward/font/frag.glsl";
 	auto& sh_font = shaderHandle.add("font", oak::graphics::shader::create(shaderInfo));
-	shaderInfo.vertex = "core/graphics/shaders/deferred/particle/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/particle/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/particle/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/particle/frag.glsl";
 	auto& sh_particle = shaderHandle.add("particle", oak::graphics::shader::create(shaderInfo));
 	//textures
 	oak::graphics::TextureInfo textureInfo;
 	textureInfo.minFilter = oak::graphics::TextureFilter::NEAREST;
-	auto& tex_character = textureHandle.add("character", oak::graphics::texture::create("sandbox/res/textures/character.png", textureInfo));
+	auto& tex_character = textureHandle.add("character", oak::graphics::texture::create("/res/textures/character.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR;
 	textureInfo.magFilter = oak::graphics::TextureFilter::LINEAR;
-	auto& tex_font = textureHandle.add("font", oak::graphics::texture::create("sandbox/res/fonts/dejavu_sans/atlas.png", textureInfo));
+	auto& tex_font = textureHandle.add("font", oak::graphics::texture::create("/res/fonts/dejavu_sans/atlas.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
 	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
-	auto& tex_car = textureHandle.add("car", oak::graphics::texture::create("sandbox/res/textures/car.png", textureInfo));
+	auto& tex_car = textureHandle.add("car", oak::graphics::texture::create("/res/textures/car.png", textureInfo));
 	textureInfo.width = 4096;
 	textureInfo.height = 4096;
 	auto& colorAtlas = atlasHandle.add("color", 
 		oak::graphics::texture::createAtlas({ 
-			"sandbox/res/textures/pbr_rust/color.png",
-			"sandbox/res/textures/pbr_grass/color.png",
-			"sandbox/res/textures/pbr_rock/color.png",
+			"/res/textures/pbr_rust/color.png",
+			"/res/textures/pbr_grass/color.png",
+			"/res/textures/pbr_rock/color.png",
 		}, textureInfo));
 	auto& normalAtlas = atlasHandle.add("normal",
 		oak::graphics::texture::createAtlas({
-			"sandbox/res/textures/pbr_rust/normal.png",
-			"sandbox/res/textures/pbr_grass/normal.png"
+			"/res/textures/pbr_rust/normal.png",
+			"/res/textures/pbr_grass/normal.png"
 		},	textureInfo));
 	textureInfo.format = oak::graphics::TextureFormat::BYTE_R;
 	auto& metalAtlas = atlasHandle.add("metal",
 		oak::graphics::texture::createAtlas({
-			"sandbox/res/textures/pbr_rust/metalness.png",
-			"sandbox/res/textures/pbr_grass/metalness.png",
-			"sandbox/res/textures/pbr_rock/metalness.png"
+			"/res/textures/pbr_rust/metalness.png",
+			"/res/textures/pbr_grass/metalness.png",
+			"/res/textures/pbr_rock/metalness.png"
 		}, textureInfo));
 	auto& roughAtlas = atlasHandle.add("rough",
 		oak::graphics::texture::createAtlas({
-			"sandbox/res/textures/pbr_rust/roughness.png",
-			"sandbox/res/textures/pbr_grass/roughness.png",
-			"sandbox/res/textures/pbr_rock/roughness.png"
+			"/res/textures/pbr_rust/roughness.png",
+			"/res/textures/pbr_grass/roughness.png",
+			"/res/textures/pbr_rock/roughness.png"
 		}, textureInfo));
 
 	//materials
@@ -389,9 +394,9 @@ int main(int argc, char** argv) {
 	auto& mat_font = materialHandle.add("font", &layout2d, &sh_font, &tex_font);
 
 	//meshes
-	auto model_box = oak::graphics::loadModel("sandbox/res/models/box.obj");
-	auto model_part = oak::graphics::loadModel("sandbox/res/models/bit.obj");
-	auto model_car = oak::graphics::loadModel("sandbox/res/models/car.obj");
+	auto model_box = oak::graphics::loadModel("/res/models/box.obj");
+	auto model_part = oak::graphics::loadModel("/res/models/bit.obj");
+	auto model_car = oak::graphics::loadModel("/res/models/car.obj");
 	oak::graphics::Mesh mesh_floor;
 
 	mesh_floor.vertices = {
@@ -407,7 +412,7 @@ int main(int argc, char** argv) {
 
 	oak::graphics::Sprite spr_overlay{ 0.0f, 0.0f, 64.0f, 64.0f, { glm::vec2{ 0.0f }, glm::vec2{ 1.0f } } };
 
-	oak::graphics::Font fnt_dejavu = oak::graphics::loadFont("sandbox/res/fonts/dejavu_sans/glyphs.fnt");
+	oak::graphics::Font fnt_dejavu = oak::graphics::loadFont("/res/fonts/dejavu_sans/glyphs.fnt");
 
 	//create entities
 	oak::EntityId player = scene.createEntity();

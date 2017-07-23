@@ -27,7 +27,7 @@ namespace oak {
 		void rewind() override;
 		void resize(size_t nsize);
 
-		inline size_t capacity() const { return capacity_; }
+		inline size_t size() const override { return capacity_; }
 		inline size_t pos() const { return pos_; }
 
 		inline char* data() { return buffer_; }

@@ -2,6 +2,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "file_manager.h"
 #include "mesh.h"
 #include "log.h"
 
@@ -63,7 +64,7 @@ namespace oak::graphics {
 
 		Assimp::Importer importer;
 
-		const aiScene *scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+		const aiScene *scene = importer.ReadFile(FileManager::inst().resolvePath(path).c_str(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 			log_print_err("failed to load model: %s, error: %s", path.c_str(), importer.GetErrorString());

@@ -10,8 +10,8 @@
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <stb_rect_pack.h>
 
-
 #include "graphics/texture.h"
+#include "file_manager.h"
 #include "log.h"
 
 namespace oak::graphics::GLTexture {
@@ -70,7 +70,7 @@ namespace oak::graphics::GLTexture {
 
 	Texture create(const char *path, const TextureInfo& info) {
 		int w, h, comp;
-		stbi_uc *data = stbi_load(path, &w, &h, &comp, components[static_cast<int>(info.format)]);
+		stbi_uc *data = stbi_load(FileManager::inst().resolvePath(path).c_str(), &w, &h, &comp, components[static_cast<int>(info.format)]);
 
 		if (data == nullptr) {
 			log_print_warn("failed to load texture: %s", path);
@@ -143,7 +143,7 @@ namespace oak::graphics::GLTexture {
 		//load textures
 		for (auto path : paths) {
 			int w, h, c;
-			stbi_uc *data = stbi_load(path, &w, &h, &c, rcomp);
+			stbi_uc *data = stbi_load(FileManager::inst().resolvePath(path).c_str(), &w, &h, &c, rcomp);
 			images.push_back({ path, data, w, h, c});
 		}
 
@@ -256,7 +256,7 @@ namespace oak::graphics::GLTexture {
 		int w, h, comp, i = 0;
 		stbi_uc *data;
 		for (auto path : paths) {
-			data = stbi_load(path, &w, &h, &comp, rcomp);
+			data = stbi_load(FileManager::inst().resolvePath(path).c_str(), &w, &h, &comp, rcomp);
 
 			if (data == nullptr) {
 				log_print_warn("failed to load texture: %s", path);

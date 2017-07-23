@@ -17,8 +17,8 @@ void DeferredRenderer::init() {
 
 	//create shaders
 	oak::graphics::ShaderInfo shaderInfo;
-	shaderInfo.vertex = "core/graphics/shaders/deferred/sao/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/ao.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/sao/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/sao/ao.glsl";
 	sao_ = oak::graphics::shader::create(shaderInfo);
 	//set sao uniforms
 	glm::mat4 proj = glm::perspective(glm::radians(90.0f), (1920.0f)/(1080.0f), 0.5f, 500.0f);
@@ -36,24 +36,24 @@ void DeferredRenderer::init() {
 	oak::graphics::shader::setUniform(sao_, "bias", 0.012f);
 	oak::graphics::shader::setUniform(sao_, "intensityDivR6", 1.0f / powf(8.0f, 6.0f));
 	oak::graphics::shader::unbind();
-	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/reconstruct.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/sao/reconstruct.glsl";
 	reconstruct_ = oak::graphics::shader::create(shaderInfo);
 	oak::graphics::shader::bind(reconstruct_);
 	oak::graphics::shader::setUniform(reconstruct_, "clipInfo", glm::vec3{ 0.5f * 500.0f, 0.5f - 500.0f, 500.0f });
 	oak::graphics::shader::unbind();
-	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/minify.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/sao/minify.glsl";
 	minify_ = oak::graphics::shader::create(shaderInfo);
-	shaderInfo.vertex = "core/graphics/shaders/deferred/light/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/light/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/light/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/light/frag.glsl";
 	light_ = oak::graphics::shader::create(shaderInfo);
-	shaderInfo.vertex = "core/graphics/shaders/deferred/fxaa/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/fxaa/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/fxaa/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/fxaa/frag.glsl";
 	fxaa_ = oak::graphics::shader::create(shaderInfo);
-	shaderInfo.vertex = "core/graphics/shaders/deferred/box/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/box/frag.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/box/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/box/frag.glsl";
 	box_ = oak::graphics::shader::create(shaderInfo);
-	shaderInfo.vertex = "core/graphics/shaders/deferred/sao/vert.glsl";
-	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/blur.glsl";
+	shaderInfo.vertex = "/res/shaders/deferred/sao/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/deferred/sao/blur.glsl";
 	aaBlur_ = oak::graphics::shader::create(shaderInfo);
 	
 	oak::graphics::AttributeLayout layoutScreen{ oak::vector<oak::graphics::AttributeType>{ 
@@ -163,12 +163,12 @@ void DeferredRenderer::init() {
 	texInfo.magFilter = oak::graphics::TextureFilter::LINEAR;
 	texInfo.minFilter = oak::graphics::TextureFilter::LINEAR;
 	sky_ = oak::graphics::texture::createCubemap({
-		"sandbox/res/textures/envmap_ocean/right.jpg",
-		"sandbox/res/textures/envmap_ocean/left.jpg",
-		"sandbox/res/textures/envmap_ocean/top.jpg",
-		"sandbox/res/textures/envmap_ocean/bottom.jpg",
-		"sandbox/res/textures/envmap_ocean/back.jpg",
-		"sandbox/res/textures/envmap_ocean/front.jpg"
+		"/res/textures/envmap_ocean/right.jpg",
+		"/res/textures/envmap_ocean/left.jpg",
+		"/res/textures/envmap_ocean/top.jpg",
+		"/res/textures/envmap_ocean/bottom.jpg",
+		"/res/textures/envmap_ocean/back.jpg",
+		"/res/textures/envmap_ocean/front.jpg"
 	}, texInfo);
 
 	//ssao buffer

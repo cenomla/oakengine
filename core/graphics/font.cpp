@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "util/file_util.h"
+#include "file_manager.h"
 
 namespace oak::graphics {
 
@@ -12,15 +12,17 @@ namespace oak::graphics {
 	};
 
 	Font loadFont(const oak::string& path) {
-		const oak::string file = util::readFileAsString(path.c_str());
+		auto file = FileManager::inst().openFile(path);
+		const oak::string glyphInfo = file.read<oak::string>();
+		FileManager::inst().closeFile(file);
 		size_t pos = 0, len = 0;
 
 		Font font;
 		FontHeaderInfo fhi;
 		//parse header
 
-		while((len = file.find(' ', pos)) != oak::string::npos) {
-			const oak::string &token = file.substr(pos, len - pos);
+		while((len = glyphInfo.find(' ', pos)) != oak::string::npos) {
+			const oak::string &token = glyphInfo.substr(pos, len - pos);
 			
 			if (token.compare(0, 4, "size") == 0) {
 				fhi.size = std::stoull(token.substr(5).c_str());
@@ -37,8 +39,8 @@ namespace oak::graphics {
 		}
 
 		//parse glyphs
-		while((len = file.find('\n', pos)) != oak::string::npos) {
-			const oak::string &token = file.substr(pos, len - pos);
+		while((len = glyphInfo.find('\n', pos)) != oak::string::npos) {
+			const oak::string &token = glyphInfo.substr(pos, len - pos);
 			
 			if (token.compare(0, 4, "char") == 0) {
 				Font::Glyph glyph;
