@@ -353,6 +353,7 @@ int main(int argc, char** argv) {
 	auto& tex_font = textureHandle.add("font", oak::graphics::texture::create("sandbox/res/fonts/dejavu_sans/atlas.png", textureInfo));
 	textureInfo.minFilter = oak::graphics::TextureFilter::LINEAR_MIP_NEAREST;
 	textureInfo.magFilter = oak::graphics::TextureFilter::NEAREST;
+	auto& tex_car = textureHandle.add("car", oak::graphics::texture::create("sandbox/res/textures/car.png", textureInfo));
 	textureInfo.width = 4096;
 	textureInfo.height = 4096;
 	auto& colorAtlas = atlasHandle.add("color", 
@@ -382,6 +383,7 @@ int main(int argc, char** argv) {
 
 	//materials
 	auto& mat_box = materialHandle.add("box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_car = materialHandle.add("car", &layout3d, &sh_geometry, &tex_car);
 	auto& mat_overlay = materialHandle.add("overlay", &layout2d, &sh_pass2d, &tex_character);
 	auto& mat_part = materialHandle.add("part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
 	auto& mat_font = materialHandle.add("font", &layout2d, &sh_font, &tex_font);
@@ -389,6 +391,7 @@ int main(int argc, char** argv) {
 	//meshes
 	auto model_box = oak::graphics::loadModel("sandbox/res/models/box.obj");
 	auto model_part = oak::graphics::loadModel("sandbox/res/models/bit.obj");
+	auto model_car = oak::graphics::loadModel("sandbox/res/models/car.obj");
 	oak::graphics::Mesh mesh_floor;
 
 	mesh_floor.vertices = {
@@ -413,6 +416,11 @@ int main(int argc, char** argv) {
 	oak::addComponent<CameraComponent>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
 	scene.activateEntity(player);
 
+	oak::EntityId car = scene.createEntity();
+	oak::addComponent<TransformComponent>(scene, car, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 1.0f, 32.0f }));
+	oak::addComponent<MeshComponent>(scene, car, &model_car[0], &mat_car);
+	scene.activateEntity(car);
+
 	oak::EntityId particle = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, particle, std::hash<oak::string>{}("particle"));
 	oak::addComponent<MeshComponent>(scene, particle, &model_part[0], &mat_part, colorAtlas.regions[0].second);
@@ -431,16 +439,6 @@ int main(int argc, char** argv) {
 	oak::Prefab fab_box{ "box", scene };
 	fab_box.addComponent<TransformComponent>();
 	fab_box.addComponent<MeshComponent>(&model_box[0], &mat_box, colorAtlas.regions[2].second, 0u);
-
-	for (int i = -8; i < 8; i++) {
-		for (int j = 0; j < 16; j++) {
-			for (int k = -8; k < 8; k++) {
-				auto e = fab_box.createInstance();
-				oak::getComponent<TransformComponent>(scene, e).transform = glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f + i * 2.5f, 2.0f + j * 2.5f, 32.0f + k * 2.5f });
-				scene.activateEntity(e);
-			}
-		}
-	}
 
 	oak::EntityId floor = scene.createEntity();
 	oak::addComponent<oak::PrefabComponent>(scene, floor, std::hash<oak::string>{}("floor"));

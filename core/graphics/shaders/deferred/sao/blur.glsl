@@ -23,7 +23,7 @@
 // Tunable Parameters:
 
 /** Increase to make depth edges crisper. Decrease to reduce flicker. */
-#define EDGE_SHARPNESS (1.0)
+#define EDGE_SHARPNESS (0.2)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
     first AO pass.  This constant can be increased while R decreases to improve
@@ -33,7 +33,7 @@
     unobjectionable after shading was applied but eliminated most temporal incoherence
     from using small numbers of sample taps.
     */
-#define SCALE (2)
+#define SCALE (1)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
 #define R (4)

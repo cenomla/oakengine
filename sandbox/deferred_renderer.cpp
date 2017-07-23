@@ -32,9 +32,9 @@ void DeferredRenderer::init() {
 	});
 	oak::graphics::shader::setUniform(sao_, "projScale", 256.0f);
 	oak::graphics::shader::setUniform(sao_, "CS_Z_buffer", 2); //depth texture location
-	oak::graphics::shader::setUniform(sao_, "radius", 10.0f); //radius in meters
+	oak::graphics::shader::setUniform(sao_, "radius", 8.0f); //radius in meters
 	oak::graphics::shader::setUniform(sao_, "bias", 0.012f);
-	oak::graphics::shader::setUniform(sao_, "intensityDivR6", 4.0f / powf(10.0f, 6.0f));
+	oak::graphics::shader::setUniform(sao_, "intensityDivR6", 1.0f / powf(8.0f, 6.0f));
 	oak::graphics::shader::unbind();
 	shaderInfo.fragment = "core/graphics/shaders/deferred/sao/reconstruct.glsl";
 	reconstruct_ = oak::graphics::shader::create(shaderInfo);
@@ -347,7 +347,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	//bind ao texture to slot 3
-	oak::graphics::texture::bind(ao_, 3);
+	oak::graphics::texture::bind(blur_[0], 3);
 	oak::graphics::texture::bind(depth_, 2);
 
 	oak::graphics::shader::bind(light_);
