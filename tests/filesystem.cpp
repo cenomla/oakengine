@@ -30,8 +30,9 @@ int main(int argc, char **argv) {
 	printf("resolved path: %s -> %s\n", "/config/how_to_fly/flying101", fm.resolvePath("/config/how_to_fly/flying101").c_str());
 
 	oak::Stream stream = fm.openFile("/config/engine");
-	
 	oak::string str = stream.read<oak::string>();
+	fm.closeFile(stream);
+
 
 	printf("%s\n", str.c_str());
 
