@@ -110,6 +110,7 @@ namespace oak::graphics {
 	};
 
 	static bool processSimplexLine(Simplex& splex, glm::vec3& D) {
+		oak_assert(splex.c == 2);
 		glm::vec3 AB = splex.points[1] - splex.points[0];
 		glm::vec3 AO = -splex.points[1];
 		if (glm::dot(AB, AO) > 0.0f) {
@@ -124,6 +125,7 @@ namespace oak::graphics {
 	}
 
 	static bool processSimplexTriangle(Simplex& splex, glm::vec3& D) {
+		oak_assert(splex.c == 3);
 		glm::vec3 AB = splex.points[2] - splex.points[1];
 		glm::vec3 AC = splex.points[2] - splex.points[0];
 		glm::vec3 ABC = glm::cross(AB, AC);
@@ -134,11 +136,36 @@ namespace oak::graphics {
 				splex.points[1] = splex.points[2];
 				splex.c = 2;
 				D = glm::cross(glm::cross(AC, AO), AC);
-				return false;
+			} else {
+				goto star;
 			}
-			
+		} else {
+			if (glm::dot(glm::cross(AB, ABC), AO) > 0.0f) {
+				goto star;
+			} else {
+				if (glm::dot(ABC, AO) > 0.0f) {
+					D = ABC;
+				} else {
+					auto& t = splex.points[1];
+					splex.points[1] = splex.points[0];
+					splex.points[0] = t;
+					D = -ABC;
+				}
+			}
 		}
+		return false;
 
+		star: 
+		if (glm::dot(AB, AO) > 0.0f) {
+			splex.points[0] = splex.points[1];
+			splex.points[1] = splex.points[2];
+			splex.c = 2;
+			D = glm::cross(glm::cross(AB, AO), AB);
+		} else {
+			splex.points[0] = splex.points[2];
+			splex.c = 1;
+			D = AO;
+		}
 		return false;
 	}
 
@@ -160,9 +187,9 @@ namespace oak::graphics {
 		auto D = -S;
 		while (true) {
 			S = findSupport(D, A, B);
-			if (glm::dot(D, S) < 0) { return; }
+			if (glm::dot(D, S) < 0) { return; } //does not intersect
 			splex.points[splex.c++] = S;
-			if (simplexTable[splex.c](splex, D)) { return; }
+			if (simplexTable[splex.c](splex, D)) { return; } //intersect
 		}
 
 	}

@@ -13,12 +13,7 @@
 namespace oak {
 
 	template<class T>
-	ComponentStorage& getComponentStorage(Scene& scene) {
-		return scene.getComponentStorage(util::type_id<detail::BaseComponent, typename std::remove_const<T>::type>::id);
-	}
-
-	template<class T>
-	const ComponentStorage& getComponentStorage(const Scene& scene) {
+	mpl::const_type<T, ComponentStorage>& getComponentStorage(mpl::const_type<T, Scene>& scene) {
 		return scene.getComponentStorage(util::type_id<detail::BaseComponent, typename std::remove_const<T>::type>::id);
 	}
 

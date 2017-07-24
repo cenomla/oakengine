@@ -49,6 +49,7 @@ def modules():
 	yield 'lib'
 	yield 'core'
 	yield 'sandbox'
+	yield 'platform'
 	yield 'tests'
 
 def flavors():

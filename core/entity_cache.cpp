@@ -78,10 +78,10 @@ namespace oak {
 	bool EntityCache::filter(const Scene& scene, EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter) {
 		return (compFilter & componentFilter_) == componentFilter_ &&
 			(compFilter[ecid] ? 
-				(getComponent<const EventComponent>(getComponentStorage<EventComponent>(scene), entity).filter & eventFilter_) == eventFilter_ :
+				(getComponent<const EventComponent>(scene, entity).filter & eventFilter_) == eventFilter_ :
 				true) &&
 			(compFilter[pcid] && prefabFilter_ != 0 ? 
-				getComponent<const PrefabComponent>(getComponentStorage<PrefabComponent>(scene), entity).id == prefabFilter_ :
+				getComponent<const PrefabComponent>(scene, entity).id == prefabFilter_ :
 				true);
 	}
 }

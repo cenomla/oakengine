@@ -5,7 +5,11 @@
 #include <graphics/sprite.h>
 #include <graphics/font.h>
 #include <mesh.h>
-#include <pup.h>
+
+namespace oak {
+	class Puper;
+	struct ObjInfo;
+}
 
 struct TransformComponent {
 	glm::mat4 transform;
