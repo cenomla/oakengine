@@ -56,10 +56,9 @@ void DeferredRenderer::init() {
 	shaderInfo.fragment = "/res/shaders/deferred/sao/blur.glsl";
 	aaBlur_ = oak::graphics::shader::create(shaderInfo);
 	
-	oak::graphics::AttributeLayout layoutScreen{ oak::vector<oak::graphics::AttributeType>{ 
+	buffer_.create({ oak::vector<oak::graphics::AttributeType>{ 
 		oak::graphics::AttributeType::POSITION2D
-	} };
-	buffer_.create(&layoutScreen);
+	} });
 
 	const float vdata[] = {
 		-1.0f, -1.0f,
@@ -77,10 +76,9 @@ void DeferredRenderer::init() {
 	buffer_.data(1, sizeof(edata), edata);
 	buffer_.unbind();
 
-	oak::graphics::AttributeLayout layoutSky{ oak::vector<oak::graphics::AttributeType>{
+	skyBuffer_.create({ oak::vector<oak::graphics::AttributeType>{
 		oak::graphics::AttributeType::POSITION
-	} };
-	skyBuffer_.create(&layoutSky);
+	} });
 
 	const float sdata[] = {
 		 // positions          

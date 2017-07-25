@@ -12,8 +12,19 @@ namespace oak::graphics {
 
 	}
 
-	void ParticleSystem::setBufferStorage(BufferStorage *storage) {
-		storage_ = storage;
+	void ParticleSystem::init() {
+		layout_.attributes = oak::vector<AttributeType> {
+			AttributeType::POSITION,
+			AttributeType::NORMAL,
+			AttributeType::UV,
+			AttributeType::INSTANCE_POSITION
+		};
+
+		storage_.create(layout_);
+	}
+
+	void ParticleSystem::terminate() {
+		storage_.destroy();
 	}
 
 	void ParticleSystem::setMesh(uint32_t layer, const Material *material, const Mesh *mesh, const TextureRegion& region) {
@@ -22,9 +33,9 @@ namespace oak::graphics {
 		mesh_ = mesh;
 		region_ = region;
 
-		storage_->bind();
-		storage_->instance(material->layout, mesh_->vertices.size() * sizeof(Mesh::Vertex));
-		storage_->unbind();
+		storage_.bind();
+		storage_.instance(layout_, mesh_->vertices.size() * sizeof(Mesh::Vertex));
+		storage_.unbind();
 	}
 
 	void ParticleSystem::run() {
@@ -48,17 +59,17 @@ namespace oak::graphics {
 
 		//create the batch
 		batch_.material = material_;
-		batch_.storage = storage_;
+		batch_.storage = &storage_;
 		batch_.count = mesh_->indices.size();
 		batch_.offset = 0;
 		batch_.instances = 1000;
 		batch_.layer = layer_;
 		
-		storage_->data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(glm::vec3), nullptr);
-		storage_->data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);
+		storage_.data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(glm::vec3), nullptr);
+		storage_.data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);
 
-		void *data = storage_->map(0);
-		void *idata = storage_->map(1);
+		void *data = storage_.map(0);
+		void *idata = storage_.map(1);
 
 
 		memcpy(data, mesh_->vertices.data(), mesh_->vertices.size() * sizeof(Mesh::Vertex));
@@ -78,8 +89,8 @@ namespace oak::graphics {
 			data = static_cast<glm::vec3*>(data) + 1;
 		}
 
-		storage_->unmap(0);
-		storage_->unmap(1);
+		storage_.unmap(0);
+		storage_.unmap(1);
 	}
 
 }

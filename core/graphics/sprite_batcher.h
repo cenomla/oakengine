@@ -12,7 +12,9 @@ namespace oak::graphics {
 
 	class SpriteBatcher {
 	public:
-		void setBufferStorage(BufferStorage *storage);
+		void init();
+		void terminate();
+
 		void addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const glm::mat3& transform);
 		void run();
 		
@@ -20,7 +22,7 @@ namespace oak::graphics {
 
 	private:
 		struct BufferInfo {
-			BufferStorage *storage = nullptr;
+			BufferStorage storage;
 			size_t size[2]{ 0 }, capacity[2]{ 0 };
 			size_t offset = 0, count = 0;
 			void *map[2]{ nullptr };

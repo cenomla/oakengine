@@ -7,7 +7,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <graphics/opengl/gl_api.h>
-#include <graphics/opengl/gl_buffer_storage.h>
+#include <graphics/buffer_storage.h>
 
 #include <graphics/texture.h>
 #include <graphics/shader.h>
@@ -201,35 +201,14 @@ int main(int argc, char** argv) {
 	//create all the systems
 	oak::graphics::GLApi api;
 
-	//create the rendering system
 	RenderSystem renderSystem{ &scene, &api };
-
-	//basic test renderer
 	DeferredRenderer sceneRenderer;
 	SpriteRenderer spriteRenderer;
 	renderSystem.pushLayerBack(&sceneRenderer);
 	renderSystem.pushLayerBack(&spriteRenderer);
 
-	//define vertex attribute layouts that will be used in the scene
-	oak::graphics::AttributeLayout layout3d{ oak::vector<oak::graphics::AttributeType>{ 
-		oak::graphics::AttributeType::POSITION,
-		oak::graphics::AttributeType::NORMAL,
-		oak::graphics::AttributeType::UV
-	} };
-
-	oak::graphics::AttributeLayout layout2d{ oak::vector<oak::graphics::AttributeType>{ 
-		oak::graphics::AttributeType::POSITION2D,
-		oak::graphics::AttributeType::UV
-	} };
-
-	oak::graphics::AttributeLayout particleLayout{ oak::vector<oak::graphics::AttributeType> {
-		oak::graphics::AttributeType::POSITION,
-		oak::graphics::AttributeType::NORMAL,
-		oak::graphics::AttributeType::UV,
-		oak::graphics::AttributeType::INSTANCE_POSITION
-	} };
-
 	CameraSystem cameraSystem{ &scene };
+
 	//add them to the system manager
 	sysManager.addSystem(&renderSystem, "render_system");
 	sysManager.addSystem(&cameraSystem, "camera_system");
@@ -387,11 +366,11 @@ int main(int argc, char** argv) {
 		}, textureInfo));
 
 	//materials
-	auto& mat_box = materialHandle.add("box", &layout3d, &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
-	auto& mat_car = materialHandle.add("car", &layout3d, &sh_geometry, &tex_car);
-	auto& mat_overlay = materialHandle.add("overlay", &layout2d, &sh_pass2d, &tex_character);
-	auto& mat_part = materialHandle.add("part", &particleLayout, &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
-	auto& mat_font = materialHandle.add("font", &layout2d, &sh_font, &tex_font);
+	auto& mat_box = materialHandle.add("box", &sh_geometry, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_car = materialHandle.add("car", &sh_geometry, &tex_car);
+	auto& mat_overlay = materialHandle.add("overlay", &sh_pass2d, &tex_character);
+	auto& mat_part = materialHandle.add("part", &sh_particle, &colorAtlas.texture, &roughAtlas.texture, &metalAtlas.texture);
+	auto& mat_font = materialHandle.add("font", &sh_font, &tex_font);
 
 	//meshes
 	auto model_box = oak::graphics::loadModel("/res/models/box.obj");

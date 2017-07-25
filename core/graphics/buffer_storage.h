@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cinttypes>
 
+#include "buffer.h"
 #include "attribute_layout.h"
 
 namespace oak::graphics {
@@ -10,18 +11,22 @@ namespace oak::graphics {
 	class BufferStorage {
 	public:
 
-		virtual void create(const AttributeLayout *layout) = 0;
-		virtual void destroy() = 0;
+		void create(const AttributeLayout& layout);
+		void destroy();
 
-		virtual void instance(const AttributeLayout *layout, size_t offset) = 0;
+		void instance(const AttributeLayout& layout, size_t offset);
 
-		virtual void bind() const = 0;
-		virtual void unbind() const = 0;
+		void bind() const;
+		void unbind() const;
 
-		virtual void* map(int index) = 0;
-		virtual void unmap(int index) = 0;
+		void* map(int index);
+		void unmap(int index);
 
-		virtual void data(int index, size_t size, const void *data) = 0;
+		void data(int index, size_t size, const void *data);
+
+	private:
+		uint32_t vao_;
+		Buffer buffers_[2];
 	};
 
 }

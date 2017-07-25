@@ -1,6 +1,6 @@
 #pragma once
 
-#include <graphics/opengl/gl_buffer_storage.h>
+#include <graphics/buffer_storage.h>
 #include <graphics/static_batcher.h>
 #include <graphics/sprite_batcher.h>
 #include <graphics/particle_system.h>
@@ -39,5 +39,5 @@ private:
 	oak::vector<oak::graphics::Renderer*> layers_;
 	oak::vector<oak::graphics::Batch> batches_;
 	
-	oak::graphics::GLBufferStorage storageMesh_;
+	oak::graphics::BufferStorage storageMesh_;
 };

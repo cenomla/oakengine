@@ -78,10 +78,10 @@ namespace oak::graphics::GLVertexArray {
 		}
 	}
 
-	void attribDescription(const AttributeLayout *layout) {
-		const size_t stride = layout->stride();
+	void attribDescription(const AttributeLayout& layout) {
+		const size_t stride = layout.stride();
 		size_t offset = 0;
-		for (const auto& attrib : layout->attributes) {
+		for (const auto& attrib : layout.attributes) {
 			int type = static_cast<int>(attrib);
 			if (divisor[type] > 0) { continue; }
 			glEnableVertexAttribArray(type);
@@ -90,9 +90,9 @@ namespace oak::graphics::GLVertexArray {
 		}
 	}
 
-	void instanceAttribDescription(const AttributeLayout *layout, size_t offset) {
-		const size_t stride = layout->instance_stride();
-		for (const auto& attrib : layout->attributes) {
+	void instanceAttribDescription(const AttributeLayout& layout, size_t offset) {
+		const size_t stride = layout.instance_stride();
+		for (const auto& attrib : layout.attributes) {
 			int type = static_cast<int>(attrib);
 			if (divisor[type] < 1) { continue; }
 			glEnableVertexAttribArray(type);

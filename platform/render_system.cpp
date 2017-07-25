@@ -33,15 +33,13 @@ void RenderSystem::init() {
 	pipeline_.width = frameWidth;
 	pipeline_.height = frameHeight;
 
-	auto& lrs = oak::ResourceManager::inst().get<oak::graphics::AttributeLayout>();
-
-	auto& layoutMesh = lrs.add("mesh", 
-	oak::vector<oak::graphics::AttributeType>{
-		oak::graphics::AttributeType::POSITION2D,
-		oak::graphics::AttributeType::COLOR
+	storageMesh_.create({
+		oak::vector<oak::graphics::AttributeType> {
+			oak::graphics::AttributeType::POSITION2D,
+			oak::graphics::AttributeType::COLOR
+		}
 	});
 
-	storageMesh_.create(&layoutMesh);
 
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
@@ -51,6 +49,7 @@ void RenderSystem::init() {
 }
 
 void RenderSystem::terminate() {
+	storageMesh_.destroy();
 	api_->terminate();
 }
 
@@ -72,7 +71,7 @@ void RenderSystem::run() {
 
 	auto& ts = oak::getComponentStorage<const TransformComponent>(*scene_);
 	auto& ms = oak::getComponentStorage<const MeshComponent>(*scene_);
-	auto& cs = oak::getComponentStorage<const ManifoldComponent>(*scene_);
+	auto& cs = oak::getComponentStorage<ManifoldComponent>(*scene_);
 
 	meshCache_.update(*scene_);
 
@@ -86,12 +85,13 @@ void RenderSystem::run() {
 	for (const auto& entity : meshCache_.entities()) {
 		auto& t2c = oak::getComponent<const TransformComponent>(ts, entity);
 		auto& sc = oak::getComponent<const MeshComponent>(ms, entity);
-		auto& mc = oak::getComponent<const ManifoldComponent>(cs, entity);
+		auto& mc = oak::getComponent<ManifoldComponent>(cs, entity);
 
 		for (const auto& v : sc.mesh->vertices) {
 			data.push_back({ glm::vec2{ t2c.transform * glm::vec3{ v.position, 1.0f } }, { mc.collides ? 255 : 0, mc.collides ? 0 : 255, 0, 255 } });
 			count++;
 		}
+		mc.collides = 0;
 		batches_.push_back({ &storageMesh_, nullptr, offset, count });
 		offset += count;
 		count = 0;

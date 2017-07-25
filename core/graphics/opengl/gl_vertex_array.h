@@ -15,7 +15,7 @@ namespace oak::graphics::GLVertexArray {
 	void bind(uint32_t id);
 	void unbind();
 
-	void attribDescription(const AttributeLayout *attribs);
-	void instanceAttribDescription(const AttributeLayout *attribs, size_t offset);
+	void attribDescription(const AttributeLayout& attribs);
+	void instanceAttribDescription(const AttributeLayout& attribs, size_t offset);
 
 }

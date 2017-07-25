@@ -16,7 +16,9 @@ namespace oak::graphics {
 
 		ParticleSystem();
 
-		void setBufferStorage(BufferStorage *storage);
+		void init();
+		void terminate();
+
 		void setMesh(uint32_t layer, const Material *material, const Mesh *mesh, const TextureRegion& region);
 
 		void run();
@@ -40,7 +42,8 @@ namespace oak::graphics {
 		Particle particles_[1000];
 		Batch batch_;
 
-		BufferStorage *storage_;
+		BufferStorage storage_;
+		AttributeLayout layout_;
 	};
 
 }

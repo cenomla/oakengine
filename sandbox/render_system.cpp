@@ -32,36 +32,9 @@ void RenderSystem::init() {
 	pipeline_.width = frameWidth;
 	pipeline_.height = frameHeight;
 
-	auto& lrs = oak::ResourceManager::inst().get<oak::graphics::AttributeLayout>();
-
-	auto& layoutMesh = lrs.add("mesh", 
-	oak::vector<oak::graphics::AttributeType>{
-		oak::graphics::AttributeType::POSITION,
-		oak::graphics::AttributeType::NORMAL,
-		oak::graphics::AttributeType::UV
-	});
-
-	auto& layoutSprite = lrs.add("sprite",
-	oak::vector<oak::graphics::AttributeType>{
-		oak::graphics::AttributeType::POSITION2D,
-		oak::graphics::AttributeType::UV
-	});
-
-	auto& layoutParticle = lrs.add("particle", 
-	oak::vector<oak::graphics::AttributeType> {
-		oak::graphics::AttributeType::POSITION,
-		oak::graphics::AttributeType::NORMAL,
-		oak::graphics::AttributeType::UV,
-		oak::graphics::AttributeType::INSTANCE_POSITION
-	});
-
-	storageMesh_.create(&layoutMesh);
-	storageSprite_.create(&layoutSprite);
-	storageParticle_.create(&layoutParticle);
-
-	meshBatcher_.setBufferStorage(&storageMesh_);
-	spriteBatcher_.setBufferStorage(&storageSprite_);
-	particleSystem_.setBufferStorage(&storageParticle_);
+	meshBatcher_.init();
+	spriteBatcher_.init();
+	particleSystem_.init();
 
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
@@ -79,6 +52,9 @@ void RenderSystem::init() {
 }
 
 void RenderSystem::terminate() {
+	meshBatcher_.terminate();
+	spriteBatcher_.terminate();
+	particleSystem_.terminate();
 	api_->terminate();
 }
 

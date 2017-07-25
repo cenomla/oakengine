@@ -8,9 +8,15 @@
 
 namespace oak::graphics {
 
-	void SpriteBatcher::setBufferStorage(BufferStorage *storage) {
-		//add the buffer to the list and hash its layout for quick comparison
-		bufferInfo_.storage = storage;
+	void SpriteBatcher::init() {
+		bufferInfo_.storage.create({ oak::vector<AttributeType>{ 
+			AttributeType::POSITION2D,
+			AttributeType::UV
+		} });
+	}
+
+	void SpriteBatcher::terminate() {
+		bufferInfo_.storage.destroy();
 	}
 
 	void SpriteBatcher::addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const glm::mat3& transform) {
@@ -27,7 +33,7 @@ namespace oak::graphics {
 		//create batches 
 		const Material *mat = sprites_[0].material;
 		uint32_t layer = sprites_[0].layer;
-		Batch currentBatch{ bufferInfo_.storage, mat, bufferInfo_.offset, 0, layer }; //first batch
+		Batch currentBatch{ &bufferInfo_.storage, mat, bufferInfo_.offset, 0, layer }; //first batch
 		//iterate through the sorted object
 		for (auto& it : sprites_) {
 			//if the material is different use a different batch
@@ -39,7 +45,7 @@ namespace oak::graphics {
 				bufferInfo_.offset += currentBatch.count;
 				//make a new batch
 				batches_.push_back(currentBatch);
-				currentBatch = Batch{ bufferInfo_.storage, mat, bufferInfo_.offset, 0, layer };
+				currentBatch = Batch{ &bufferInfo_.storage, mat, bufferInfo_.offset, 0, layer };
 			}
 			currentBatch.count += 6;
 			bufferInfo_.size[0] += 4 * sizeof(Sprite::Vertex); //add to size of buffer total size of mesh
@@ -51,7 +57,7 @@ namespace oak::graphics {
 		for (int i = 0; i < 2; i++) {
 			if (bufferInfo_.size[i] > bufferInfo_.capacity[i]) {
 				bufferInfo_.capacity[i] = bufferInfo_.size[i];
-				bufferInfo_.storage->data(i, bufferInfo_.capacity[i], nullptr);
+				bufferInfo_.storage.data(i, bufferInfo_.capacity[i], nullptr);
 			}
 		}
 
@@ -59,7 +65,7 @@ namespace oak::graphics {
 		//map buffers
 		for (int i = 0; i < 2; i++) {
 			if (bufferInfo_.size[i] > 0) {
-				bufferInfo_.map[i] = bufferInfo_.storage->map(i);
+				bufferInfo_.map[i] = bufferInfo_.storage.map(i);
 			}
 		}
 
@@ -99,7 +105,7 @@ namespace oak::graphics {
 			if (bufferInfo_.map[i]) {
 				bufferInfo_.size[i] = 0;
 				bufferInfo_.map[i] = nullptr;
-				bufferInfo_.storage->unmap(i);
+				bufferInfo_.storage.unmap(i);
 			}
 		}
 		bufferInfo_.offset = 0;

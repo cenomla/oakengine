@@ -12,7 +12,8 @@ namespace oak::graphics {
 
 	class StaticBatcher {
 	public:
-		void setBufferStorage(BufferStorage *storage);
+		void init();
+		void terminate();
 
 		void addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
 		void updateMesh(const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
@@ -24,7 +25,7 @@ namespace oak::graphics {
 
 	private:
 		struct BufferInfo {
-			BufferStorage *storage = nullptr;
+			BufferStorage storage;
 			size_t size[2]{ 0 }, capacity[2]{ 0 };
 			size_t offset = 0, count = 0;
 			void *map[2]{ nullptr };
