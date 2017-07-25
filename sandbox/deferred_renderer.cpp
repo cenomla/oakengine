@@ -260,24 +260,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::framebuffer::bind(gbuffer_);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (const auto& batch : *pipeline_->batches) {
-		if (batch.layer != 0) { continue; }
-		//bind material 
-		oak::graphics::shader::bind(*batch.material->shader);
-		for (int i = 0; i < 16; i++) {
-			if (batch.material->textures[i] != nullptr) {
-				oak::graphics::texture::bind(*batch.material->textures[i], i);
-			}
-		}
-		batch.storage->bind();
-		//render stuff
-
-		if (batch.instances > 0) {
-			glDrawElementsInstanced(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4), batch.instances);
-		} else {
-			glDrawElements(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
-		}
-	}
+	api->draw(*pipeline_->batches[0]);
 
 	//set opengl state
 	glDisable(GL_DEPTH_TEST);

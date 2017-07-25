@@ -8,7 +8,7 @@ namespace oak::graphics {
 
 	struct Pipeline {
 		int x, y, width, height; //view info
-		const oak::vector<Batch> *batches; //list of batches
+		const oak::vector<Batch> *batches[2]; //list of batches
 	};
 
 }

@@ -2,6 +2,7 @@
 
 #include <graphics/renderer.h>
 #include <graphics/shader.h>
+#include <graphics/material.h>
 
 class PolyRenderer : public oak::graphics::Renderer {
 public:

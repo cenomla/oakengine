@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
 
-#include <graphics/api.h>
+#include <graphics/opengl/gl_api.h>
 #include <graphics/renderer.h>
 
 #include <core_components.h>
@@ -40,15 +40,23 @@ void RenderSystem::init() {
 		}
 	});
 
+	//load shader
+	oak::graphics::ShaderInfo shaderInfo;
+	shaderInfo.vertex = "/res/shaders/poly_shader/vert.glsl";
+	shaderInfo.fragment = "/res/shaders/poly_shader/frag.glsl";
+	shader_ = oak::graphics::shader::create(shaderInfo);
+
+	material_.shader = &shader_;
 
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
 	meshCache_.requireComponent<ManifoldComponent>();
 
-	pipeline_.batches = &batches_;
+	pipeline_.batches[0] = &batches_;
 }
 
 void RenderSystem::terminate() {
+	oak::graphics::shader::destroy(shader_);
 	storageMesh_.destroy();
 	api_->terminate();
 }
@@ -92,7 +100,7 @@ void RenderSystem::run() {
 			count++;
 		}
 		mc.collides = 0;
-		batches_.push_back({ &storageMesh_, nullptr, offset, count });
+		batches_.push_back({ &storageMesh_, &material_, offset, count, 0, oak::graphics::Batch::DRAW_LINE_LOOP, -1 });
 		offset += count;
 		count = 0;
 	}

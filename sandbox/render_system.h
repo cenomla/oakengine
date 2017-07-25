@@ -40,7 +40,6 @@ private:
 	oak::graphics::Api *api_;
 	oak::graphics::Pipeline pipeline_;
 	oak::vector<oak::graphics::Renderer*> layers_;
-	oak::vector<oak::graphics::Batch> batches_;
 
 	oak::graphics::StaticBatcher meshBatcher_;
 	oak::graphics::SpriteBatcher spriteBatcher_;

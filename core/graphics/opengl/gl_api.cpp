@@ -85,12 +85,12 @@ namespace oak::graphics {
 
 			if (batch.flags & Batch::INDEX) {
 				if (batch.instances > 0) {
-					glDrawElementsInstanced((batch.flags & Batch::DRAW_MASK >> 1) - 1, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4), batch.instances);
+					glDrawElementsInstanced(((batch.flags & Batch::DRAW_MASK) >> 1) - 1, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4), batch.instances);
 				} else {
-					glDrawElements((batch.flags & Batch::DRAW_MASK >> 1) - 1, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
+					glDrawElements(((batch.flags & Batch::DRAW_MASK) >> 1) - 1, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
 				}
 			} else {
-				glDrawArrays((batch.flags & Batch::DRAW_MASK >> 1) - 1, batch.offset, batch.count);
+				glDrawArrays(((batch.flags & Batch::DRAW_MASK) >> 1) - 1, batch.offset, batch.count);
 			}
 		}
 	}

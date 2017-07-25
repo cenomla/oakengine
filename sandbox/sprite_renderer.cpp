@@ -25,21 +25,7 @@ void SpriteRenderer::render(oak::graphics::Api *api) {
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
-	for (const auto& batch : *pipeline_->batches) {
-		if (batch.layer != 1) { continue; }
-		//bind material
-		oak::graphics::shader::bind(*batch.material->shader);
-		for (int i = 0; i < 16; i++) {
-			if (batch.material->textures[i] != nullptr) {
-				oak::graphics::texture::bind(*batch.material->textures[i], i);
-			}
-		}
-		batch.storage->bind();
-		//render stuff
-
-		glDrawElements(GL_TRIANGLES, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
-	}
+	api->draw(*pipeline_->batches[1]);
 
 	oak::graphics::GLVertexArray::unbind();
 

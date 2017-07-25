@@ -6,10 +6,6 @@
 #include <graphics/pipeline.h>
 
 void PolyRenderer::init() {
-	oak::graphics::ShaderInfo shaderInfo;
-	shaderInfo.vertex = "/res/shaders/poly_shader/vert.glsl";
-	shaderInfo.fragment = "/res/shaders/poly_shader/frag.glsl";
-	shader_ = oak::graphics::shader::create(shaderInfo);
 }
 
 void PolyRenderer::terminate() {
@@ -29,15 +25,7 @@ void PolyRenderer::render(oak::graphics::Api *api) {
 	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
-	for (const auto& batch : *pipeline_->batches) {
-		//bind material
-		oak::graphics::shader::bind(shader_);
-		batch.storage->bind();
-		//render stuff
-
-		glDrawArrays(GL_LINE_LOOP, batch.offset, batch.count);
-	}
+	api->draw(*pipeline_->batches[0]);
 
 	oak::graphics::GLVertexArray::unbind();
 }

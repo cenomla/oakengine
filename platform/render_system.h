@@ -40,4 +40,6 @@ private:
 	oak::vector<oak::graphics::Batch> batches_;
 	
 	oak::graphics::BufferStorage storageMesh_;
+	oak::graphics::Shader shader_;
+	oak::graphics::Material material_;
 };

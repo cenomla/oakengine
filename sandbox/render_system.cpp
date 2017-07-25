@@ -47,8 +47,6 @@ void RenderSystem::init() {
 
 	particleCache_.requirePrefab(std::hash<oak::string>{}("particle"));
 	particleCache_.requireComponent<MeshComponent>();
-
-	pipeline_.batches = &batches_;
 }
 
 void RenderSystem::terminate() {
@@ -133,10 +131,9 @@ void RenderSystem::run() {
 	meshBatcher_.run();
 	spriteBatcher_.run();
 	particleSystem_.run();
-	batches_.insert(std::end(batches_), std::begin(meshBatcher_.getBatches()), std::end(meshBatcher_.getBatches()));
-	batches_.insert(std::end(batches_), std::begin(spriteBatcher_.getBatches()), std::end(spriteBatcher_.getBatches()));
-	batches_.push_back(particleSystem_.getBatch());
 
+	pipeline_.batches[0] = &meshBatcher_.getBatches();
+	pipeline_.batches[1] = &spriteBatcher_.getBatches();
 
 	//render the layers
 	for (auto layer : layers_) {
@@ -145,7 +142,5 @@ void RenderSystem::run() {
 
 	//swap buffers
 	api_->swap();
-	//clear batches
-	batches_.clear();
 
 }
