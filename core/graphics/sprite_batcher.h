@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "buffer_storage.h"
 #include "sprite.h"
 #include "batch.h"
 #include "material.h"

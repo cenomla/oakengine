@@ -178,6 +178,7 @@ _GLFWmonitor* _glfwAllocMonitor(const char* name, int widthMM, int heightMM)
     // monitor->name = strdup(name);
     monitor->name = calloc(1, strlen(name) + 1);
     strcpy(monitor->name, name);
+
     
     monitor->widthMM = widthMM;
     monitor->heightMM = heightMM;

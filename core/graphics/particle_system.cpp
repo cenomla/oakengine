@@ -62,8 +62,8 @@ namespace oak::graphics {
 		batch_.storage = &storage_;
 		batch_.count = mesh_->indices.size();
 		batch_.offset = 0;
-		batch_.instances = 1000;
 		batch_.layer = layer_;
+		batch_.instances = 1000;
 		
 		storage_.data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(glm::vec3), nullptr);
 		storage_.data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);

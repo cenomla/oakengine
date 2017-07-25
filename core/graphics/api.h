@@ -1,6 +1,10 @@
 #pragma once
 
+#include "container.h"
+
 namespace oak::graphics {
+
+	struct Batch;
 
 	//graphical enums
 	enum class TextureFormat {
@@ -90,6 +94,8 @@ namespace oak::graphics {
 		virtual void init() = 0;
 		virtual void terminate() = 0;
 		
+		virtual void draw(const oak::vector<Batch>& batches) = 0;
+
 		virtual void swap() = 0;
 	};
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "system.h"
-#include "script/luah.h"
+#include "luah.h"
 
 namespace oak {
 

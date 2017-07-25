@@ -71,4 +71,28 @@ namespace oak::graphics {
 		glfwSwapBuffers(window_);
 	}
 
+	void GLApi::draw(const oak::vector<Batch>& batches) {
+		for (const auto& batch : batches) {
+			//bind material
+			oak::graphics::shader::bind(*batch.material->shader);
+			for (int i = 0; i < 16; i++) {
+				if (batch.material->textures[i] != nullptr) {
+					oak::graphics::texture::bind(*batch.material->textures[i], i);
+				}
+			}
+			batch.storage->bind();
+			//render stuff
+
+			if (batch.flags & Batch::INDEX) {
+				if (batch.instances > 0) {
+					glDrawElementsInstanced((batch.flags & Batch::DRAW_MASK >> 1) - 1, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4), batch.instances);
+				} else {
+					glDrawElements((batch.flags & Batch::DRAW_MASK >> 1) - 1, batch.count, GL_UNSIGNED_INT, reinterpret_cast<void*>(batch.offset * 4));
+				}
+			} else {
+				glDrawArrays((batch.flags & Batch::DRAW_MASK >> 1) - 1, batch.offset, batch.count);
+			}
+		}
+	}
+
 }

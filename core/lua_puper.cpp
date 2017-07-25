@@ -1,6 +1,6 @@
 #include "lua_puper.h"
 
-#include "script/luah.h"
+#include "luah.h"
 
 namespace oak {
 
