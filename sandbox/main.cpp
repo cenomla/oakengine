@@ -486,6 +486,8 @@ int main(int argc, char** argv) {
 	}
 
 	//clean up
+	sceneRenderer.terminate();
+	spriteRenderer.terminate();
 	scene.reset();
 
 	lfs.close();

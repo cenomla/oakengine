@@ -96,12 +96,10 @@ int main(int argc, char** argv) {
 	oak::ComponentTypeManager chs;
 	oak::ResourceManager resManager;
 
-	inputManager.bind("move_forward", oak::key::w, true);
-	inputManager.bind("move_backward", oak::key::s, true);
-	inputManager.bind("strafe_left", oak::key::a, true);
-	inputManager.bind("strafe_right", oak::key::d, true);
-	inputManager.bind("move_up", oak::key::space, true);
-	inputManager.bind("move_down", oak::key::lshift, true);
+	inputManager.bind("move_up", oak::key::w, true);
+	inputManager.bind("move_down", oak::key::s, true);
+	inputManager.bind("move_left", oak::key::a, true);
+	inputManager.bind("move_right", oak::key::d, true);
 
 	fileManager.mount("{$cwd}/platform/res", "/res");
 	fileManager.mount("{$cwd}/platform", "/res/shaders");
@@ -138,19 +136,10 @@ int main(int argc, char** argv) {
 
 	//create the rendering system
 	RenderSystem renderSystem{ &scene, &api };
-	CollisionSystem collisionSystem;
-	collisionSystem.scene = &scene;
-
-	//basic test renderer
 	PolyRenderer polyRenderer;
 	renderSystem.pushLayerBack(&polyRenderer);
-
-	//define vertex attribute layouts that will be used in the scene
-
-	oak::graphics::AttributeLayout layout2d{ oak::vector<oak::graphics::AttributeType>{ 
-		oak::graphics::AttributeType::POSITION2D,
-		oak::graphics::AttributeType::COLOR
-	} };
+	CollisionSystem collisionSystem;
+	collisionSystem.scene = &scene;
 
 	//add them to the system manager
 	sysManager.addSystem(&renderSystem, "render_system");
@@ -287,6 +276,7 @@ int main(int argc, char** argv) {
 	}
 
 	//clean up
+	polyRenderer.terminate();
 	scene.reset();
 
 	return 0;
