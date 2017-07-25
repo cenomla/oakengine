@@ -66,8 +66,8 @@ struct CollisionSystem : public oak::System {
 			
 			oak::Simplex splex{ &oak::oalloc_frame };
 			auto collides = oak::gjk(*Amc.mesh, Atc.transform, *Bmc.mesh, Btc.transform, splex);
-			Acc.collides = collides;
-			Bcc.collides = collides;
+			Acc.collides = Acc.collides ? 1 : collides;
+			Bcc.collides = Bcc.collides ? 1 : collides;
 			if (collides) {
 				glm::vec2 N;
 				float d;
