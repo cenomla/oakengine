@@ -11,7 +11,7 @@
 
 #include <graphics/texture.h>
 #include <graphics/shader.h>
-#include <mesh.h>
+#include <graphics/mesh.h>
 #include <log.h>
 #include <file_manager.h>
 #include <system_manager.h>

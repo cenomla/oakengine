@@ -4,7 +4,7 @@
 #include <graphics/material.h>
 #include <graphics/sprite.h>
 #include <graphics/font.h>
-#include <mesh.h>
+#include <graphics/mesh.h>
 
 namespace oak {
 	class Puper;
