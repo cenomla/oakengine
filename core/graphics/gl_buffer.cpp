@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include "graphics/buffer.h"
+#include "buffer.h"
 
 namespace oak::graphics::GLBuffer {
 

@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include "graphics/attribute_layout.h"
+#include "attribute_layout.h"
 
 namespace oak::graphics::GLVertexArray {
 

@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cinttypes>
 
-#include "graphics/api.h"
+#include "api.h"
 
 namespace oak::graphics {
 

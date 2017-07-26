@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <set>
 
-#include "event_manager.h"
-#include "input_events.h"
-#include "log.h"
+#include <event_manager.h>
+#include <input_events.h>
+#include <log.h>
 
 namespace oak::graphics {
 

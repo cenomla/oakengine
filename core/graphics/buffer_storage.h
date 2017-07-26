@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <cinttypes>
 
-#include "buffer.h"
 #include "attribute_layout.h"
+#include "buffer.h"
 
 namespace oak::graphics {
 

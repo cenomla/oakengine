@@ -1,18 +1,16 @@
 #include "gl_texture.h"
 
 #include <cmath>
-
 #include <glad/glad.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <stb_rect_pack.h>
 
-#include "graphics/texture.h"
-#include "file_manager.h"
-#include "log.h"
+#include <file_manager.h>
+#include <log.h>
+
+#include "texture.h"
 
 namespace oak::graphics::GLTexture {
 

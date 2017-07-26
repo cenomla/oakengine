@@ -2,8 +2,8 @@
 
 #include <cstddef>
 
-#include "graphics/texture.h"
-#include "container.h"
+#include <container.h>
+#include "texture.h"
 
 namespace oak::graphics {
 

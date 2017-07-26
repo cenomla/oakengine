@@ -2,8 +2,9 @@
 
 #include <glad/glad.h>
 
-#include "graphics/framebuffer.h"
-#include "log.h"
+#include <log.h>
+
+#include "framebuffer.h"
 
 namespace oak::graphics::GLFramebuffer {
 

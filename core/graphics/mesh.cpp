@@ -1,10 +1,11 @@
+#include "mesh.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "file_manager.h"
-#include "mesh.h"
-#include "log.h"
+#include <file_manager.h>
+#include <log.h>
 
 namespace oak::graphics {
 

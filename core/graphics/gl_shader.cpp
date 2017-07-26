@@ -2,9 +2,10 @@
 
 #include <glad/glad.h>
 
-#include "graphics/shader.h"
-#include "file_manager.h"
-#include "log.h"
+#include <file_manager.h>
+#include <log.h>
+
+#include "shader.h"
 
 namespace oak::graphics::GLShader {
 

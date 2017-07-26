@@ -3,9 +3,9 @@
 #include <glm/glm.hpp>
 
 #include "buffer_storage.h"
-#include "mesh.h"
-#include "batch.h"
 #include "material.h"
+#include "batch.h"
+#include "mesh.h"
 
 namespace oak::graphics {
 

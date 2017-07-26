@@ -1,14 +1,14 @@
 #pragma once
 
-#include "graphics/api.h"
-#include "graphics/batch.h"
-#include "graphics/buffer_storage.h"
 #include "gl_buffer.h"
 #include "gl_framebuffer.h"
 #include "gl_shader.h"
 #include "gl_texture.h"
 #include "gl_vertex_array.h"
 
+#include "api.h"
+#include "batch.h"
+#include "buffer_storage.h"
 
 struct GLFWwindow;
 

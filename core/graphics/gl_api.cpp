@@ -3,11 +3,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "graphics/material.h"
-#include "event_manager.h"
-#include "input_manager.h"
-#include "input_events.h"
-#include "log.h"
+#include <event_manager.h>
+#include <input_manager.h>
+#include <input_events.h>
+#include <log.h>
+
+#include "material.h"
 
 namespace oak::graphics {
 
