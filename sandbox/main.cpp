@@ -6,7 +6,7 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include <graphics/opengl/gl_api.h>
+#include <graphics/gl_api.h>
 #include <graphics/buffer_storage.h>
 
 #include <graphics/texture.h>

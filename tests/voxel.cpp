@@ -5,10 +5,10 @@
 
 #include <engine.h>
 #include <window.h>
-#include <graphics/opengl/gl_frame_renderer.h>
-#include <graphics/opengl/gl_shader.h>
-#include <graphics/opengl/gl_buffer.h>
-#include <graphics/opengl/gl_vertex_array.h>
+#include <graphics/gl_frame_renderer.h>
+#include <graphics/gl_shader.h>
+#include <graphics/gl_buffer.h>
+#include <graphics/gl_vertex_array.h>
 
 #include <GLFW/glfw3.h>
 

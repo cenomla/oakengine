@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include <graphics/opengl/gl_api.h>
+#include <graphics/gl_api.h>
 #include <graphics/pipeline.h>
 
 void PolyRenderer::init() {

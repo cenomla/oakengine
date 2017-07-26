@@ -1,6 +1,6 @@
 #include "buffer_storage.h"
 
-#include "graphics/opengl/gl_api.h"
+#include "graphics/gl_api.h"
 
 namespace oak::graphics {
 
