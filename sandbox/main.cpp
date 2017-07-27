@@ -50,7 +50,7 @@ public:
 		auto& inputManager = oak::InputManager::inst();
 
 		for (const auto& entity : cache_.entities()) {
-			auto& cc = oak::getComponent<CameraComponent>(cs, entity);
+			auto& cc = oak::getComponent<CameraComponent>(entity, cs);
 
 			//temp camera
 			//look
@@ -224,14 +224,14 @@ int main(int argc, char** argv) {
 	chs.addHandle<CameraComponent>("camera");
 
 	//create component storage
-	oak::ComponentStorage eventStorage{ "event" };
-	oak::ComponentStorage prefabStorage{ "prefab" };
-	oak::ComponentStorage transformStorage{ "transform" };
-	oak::ComponentStorage transform2dStorage{ "transform2d" };
-	oak::ComponentStorage modelStorage{ "mesh" };
-	oak::ComponentStorage spriteStorage{ "sprite" };
-	oak::ComponentStorage textStorage{ "text" };
-	oak::ComponentStorage cameraStorage{ "camera" };
+	oak::ComponentStorage eventStorage{ chs.getHandle("event") };
+	oak::ComponentStorage prefabStorage{ chs.getHandle("prefab") };
+	oak::ComponentStorage transformStorage{ chs.getHandle("transform") };
+	oak::ComponentStorage transform2dStorage{ chs.getHandle("transform2d") };
+	oak::ComponentStorage modelStorage{ chs.getHandle("mesh") };
+	oak::ComponentStorage spriteStorage{ chs.getHandle("sprite") };
+	oak::ComponentStorage textStorage{ chs.getHandle("text") };
+	oak::ComponentStorage cameraStorage{ chs.getHandle("camera") };
 
 	//add component storage to scene
 	scene.addComponentStorage(&eventStorage);
@@ -395,29 +395,29 @@ int main(int argc, char** argv) {
 
 	//create entities
 	oak::EntityId player = scene.createEntity();
-	oak::addComponent<oak::PrefabComponent>(scene, player, std::hash<oak::string>{}("player"));
-	oak::addComponent<TransformComponent>(scene, player);
-	oak::addComponent<CameraComponent>(scene, player, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
+	oak::addComponent<oak::PrefabComponent>(player, scene, std::hash<oak::string>{}("player"));
+	oak::addComponent<TransformComponent>(player, scene);
+	oak::addComponent<CameraComponent>(player, scene, glm::vec3{ 16.0f, 8.0f, 16.0f }, glm::vec3{ 0.0f, glm::pi<float>(), 0.0f });
 	scene.activateEntity(player);
 
 	oak::EntityId car = scene.createEntity();
-	oak::addComponent<TransformComponent>(scene, car, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 1.0f, 32.0f }));
-	oak::addComponent<MeshComponent>(scene, car, &model_car[0], &mat_car);
+	oak::addComponent<TransformComponent>(car, scene, glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 32.0f, 1.0f, 32.0f }));
+	oak::addComponent<MeshComponent>(car, scene, &model_car[0], &mat_car);
 	scene.activateEntity(car);
 
 	oak::EntityId particle = scene.createEntity();
-	oak::addComponent<oak::PrefabComponent>(scene, particle, std::hash<oak::string>{}("particle"));
-	oak::addComponent<MeshComponent>(scene, particle, &model_part[0], &mat_part, colorAtlas.regions[0].second);
+	oak::addComponent<oak::PrefabComponent>(particle, scene, std::hash<oak::string>{}("particle"));
+	oak::addComponent<MeshComponent>(particle, scene, &model_part[0], &mat_part, colorAtlas.regions[0].second);
 	scene.activateEntity(particle);
 
 	oak::EntityId overlay = scene.createEntity();
-	oak::addComponent<Transform2dComponent>(scene, overlay, glm::mat3{ 1.0f });
-	oak::addComponent<SpriteComponent>(scene, overlay, &spr_overlay, &mat_overlay, 1u);
+	oak::addComponent<Transform2dComponent>(overlay, scene, glm::mat3{ 1.0f });
+	oak::addComponent<SpriteComponent>(overlay, scene, &spr_overlay, &mat_overlay, 1u);
 	//scene.activateEntity(overlay);
 
 	oak::EntityId fps = scene.createEntity();
-	oak::addComponent<Transform2dComponent>(scene, fps, glm::translate(glm::mat3{ 0.15f }, glm::vec2{ 8.0f }));
-	oak::addComponent<TextComponent>(scene, fps, "fps: ", &fnt_dejavu, &mat_font, 1u);
+	oak::addComponent<Transform2dComponent>(fps, scene, glm::translate(glm::mat3{ 0.15f }, glm::vec2{ 8.0f }));
+	oak::addComponent<TextComponent>(fps, scene, "fps: ", &fnt_dejavu, &mat_font, 1u);
 	scene.activateEntity(fps);
 
 	oak::Prefab fab_box{ "box", scene };
@@ -425,9 +425,9 @@ int main(int argc, char** argv) {
 	fab_box.addComponent<MeshComponent>(&model_box[0], &mat_box, colorAtlas.regions[2].second, 0u);
 
 	oak::EntityId floor = scene.createEntity();
-	oak::addComponent<oak::PrefabComponent>(scene, floor, std::hash<oak::string>{}("floor"));
-	oak::addComponent<TransformComponent>(scene, floor, glm::mat4{ 1.0f });
-	oak::addComponent<MeshComponent>(scene, floor, &mesh_floor, &mat_box, colorAtlas.regions[1].second, 0u);
+	oak::addComponent<oak::PrefabComponent>(floor, scene, std::hash<oak::string>{}("floor"));
+	oak::addComponent<TransformComponent>(floor, scene, glm::mat4{ 1.0f });
+	oak::addComponent<MeshComponent>(floor, scene, &mesh_floor, &mat_box, colorAtlas.regions[1].second, 0u);
 	scene.activateEntity(floor);
 
 	//first frame time
@@ -451,7 +451,7 @@ int main(int argc, char** argv) {
 		//move camera
 		cameraSystem.run();
 		//update view
-		auto& cc = oak::getComponent<const CameraComponent>(scene, player);
+		auto& cc = oak::getComponent<const CameraComponent>(player, scene);
 		matrix.view = glm::mat4{ glm::quat{ cc.rotation } };
 		matrix.view[3] = glm::vec4{ cc.position, 1.0f };
 		matrix.view = glm::inverse(matrix.view); //move view instead of camera
@@ -478,7 +478,7 @@ int main(int argc, char** argv) {
 		dt = std::chrono::duration_cast<std::chrono::duration<float>>(currentFrame - lastFrame);
 		lastFrame = currentFrame;
 
-		oak::getComponent<TextComponent>(scene, fps).text = "fps: " + std::to_string(1.0f / dt.count());
+		oak::getComponent<TextComponent>(fps, scene).text = "fps: " + std::to_string(1.0f / dt.count());
 
 		//do engine things
 		evtManager.clear();

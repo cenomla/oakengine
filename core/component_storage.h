@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/type_handle.h"
 #include "entity_id.h"
 #include "container.h"
 
@@ -9,7 +10,7 @@ namespace oak {
 
 	class ComponentStorage {
 	public:
-		ComponentStorage(const oak::string& compName);
+		ComponentStorage(const TypeHandleBase *handle);
 		~ComponentStorage();
 
 		void* addComponent(EntityId entity);

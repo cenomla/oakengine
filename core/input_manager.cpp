@@ -71,6 +71,15 @@ namespace oak {
 		}
 	}
 
+	void InputManager::setAction(const oak::string& action, int state) {
+		const auto& it = bindings_.find(action);
+		if (it != std::end(bindings_)) {
+			actions_[it->second] = state;
+		} else {
+			log_print_out("action not bound: %s", action.c_str());
+		}
+	}
+
 	int InputManager::getKey(int key) const {
 		return actions_[key + button::max];
 	}

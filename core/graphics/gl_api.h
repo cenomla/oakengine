@@ -14,6 +14,10 @@ struct GLFWwindow;
 
 namespace oak::graphics {
 
+	namespace detail {
+		struct GLState;
+	};
+
 	namespace buffer = GLBuffer;
 	namespace shader = GLShader;
 	namespace texture = GLTexture;
@@ -36,6 +40,7 @@ namespace oak::graphics {
 
 	private:
 		GLFWwindow *window_;
+		oak::vector<detail::GLState*> states_;
 	};
 
 }

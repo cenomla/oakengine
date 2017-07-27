@@ -81,7 +81,7 @@ void RenderSystem::run() {
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityDeactivateEvent>()) {
 		//check for meshes to remove
 		if (meshCache_.contains(*scene_, evt.entity)) {
-			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
+			auto& mc = oak::getComponent<const MeshComponent>(evt.entity, ms);
 			meshBatcher_.removeMesh(mc.mesh);
 		}
 	}
@@ -94,26 +94,23 @@ void RenderSystem::run() {
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityActivateEvent>()) {
 		//check for meshes to add
 		if (meshCache_.contains(*scene_, evt.entity)) {
-			auto& tc = oak::getComponent<const TransformComponent>(ts, evt.entity);
-			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
+			auto [tc, mc] = oak::getComponents<const TransformComponent, const MeshComponent>(evt.entity, ts, ms);
 			meshBatcher_.addMesh(mc.layer, mc.material, mc.mesh, tc.transform, mc.region);
 		}
 		//check for particles to add
 		if (particleCache_.contains(*scene_, evt.entity)) {
-			auto& mc = oak::getComponent<const MeshComponent>(ms, evt.entity);
+			auto& mc = oak::getComponent<const MeshComponent>(evt.entity, ms);
 			particleSystem_.setMesh(mc.layer, mc.material, mc.mesh, mc.region);
 		}
 	}
 
 	for (const auto& entity : spriteCache_.entities()) {
-		auto& t2c = oak::getComponent<const Transform2dComponent>(t2s, entity);
-		auto& sc = oak::getComponent<const SpriteComponent>(ss, entity);
-		spriteBatcher_.addSprite(sc.layer, sc.material, sc.sprite, t2c.transform);
+		auto [tc, sc] = oak::getComponents<const Transform2dComponent, const SpriteComponent>(entity, t2s, ss);
+		spriteBatcher_.addSprite(sc.layer, sc.material, sc.sprite, tc.transform);
 	}
 
 	for (const auto& entity : textCache_.entities()) {
-		auto& t2c = oak::getComponent<const Transform2dComponent>(t2s, entity);
-		auto& txc = oak::getComponent<const TextComponent>(txs, entity);
+		auto [t2c, txc] = oak::getComponents<const Transform2dComponent, const TextComponent>(entity, t2s, txs);
 
 		glm::vec2 pos{ 0.0f };
 		for (const auto& c : txc.text) {

@@ -14,10 +14,7 @@ int main(int argc, char **argv) {
 
 	oak::ResourceManager resManager;
 
-	oak::ResourceStorage<Res> resHandler{ &alloc };
-	resManager.add(&resHandler);
-
-	auto& res = resHandler.add("mamoth", oak::vector<int>{ 95, 64, 12 }, 55.5f, 90.0f);
+	auto& res = resManager.get<Res>().add("mamoth", oak::vector<int>{ 95, 64, 12 }, 55.5f, 90.0f);
 
 	auto& r = resManager.require<Res>("mamoth");
 

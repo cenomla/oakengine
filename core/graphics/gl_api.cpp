@@ -12,6 +12,12 @@
 
 namespace oak::graphics {
 
+	struct GLState {
+		glm::vec4 view;
+		glm::vec4 scissor;
+		glm::vec4 color;
+	};
+
 	static void post_gl_call(const char *name, void *funcptr, int len_args, ...) {
 		GLenum error = glad_glGetError();
 		if (error != GL_NO_ERROR) {

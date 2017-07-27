@@ -59,10 +59,10 @@ void oak_bench() {
 	chs.addHandle<VelocityComponent>("velocity");
 	chs.addHandle<BoxComponent>("box");
 
-	oak::ComponentStorage ts{ "transform" };
-	oak::ComponentStorage ds{ "draw" };
-	oak::ComponentStorage vs{ "velocity" };
-	oak::ComponentStorage bs{ "box" };
+	oak::ComponentStorage ts{ chs.getHandle("transform") };
+	oak::ComponentStorage ds{ chs.getHandle("draw") };
+	oak::ComponentStorage vs{ chs.getHandle("velocity") };
+	oak::ComponentStorage bs{ chs.getHandle("box") };
 
 	scene.addComponentStorage(&ts);
 	scene.addComponentStorage(&ds);
@@ -83,13 +83,13 @@ void oak_bench() {
 	oak::EntityId entity;
 	for (size_t i = 0; i < 64000; i++) {
 		entity = scene.createEntity();
-		oak::addComponent<TransformComponent>(scene, entity, glm::vec2{ 1.0f }, 0.0f, 1.0f);
+		oak::addComponent<TransformComponent>(entity, scene, glm::vec2{ 1.0f }, 0.0f, 1.0f);
 		if (i % 2 == 0) {
-			oak::addComponent<DrawComponent>(scene, entity, 0u, 2u, 15.0f);
+			oak::addComponent<DrawComponent>(entity, scene, 0u, 2u, 15.0f);
 		}
 		if (i % 2 == 1) {
-			oak::addComponent<VelocityComponent>(scene, entity, glm::vec2{ 0.0f });
-			oak::addComponent<BoxComponent>(scene, entity, glm::vec2{ 16.0f }, glm::vec2{ 16.0f });
+			oak::addComponent<VelocityComponent>(entity, scene, glm::vec2{ 0.0f });
+			oak::addComponent<BoxComponent>(entity, scene, glm::vec2{ 16.0f }, glm::vec2{ 16.0f });
 		}
 		scene.activateEntity(entity);
 	}	
@@ -107,16 +107,13 @@ void oak_bench() {
 		physicsCache.update(scene);
 
 		for (const auto& entity : drawCache.entities()) {
-			const auto& tc = *static_cast<const TransformComponent*>(ts.getComponent(entity));
-			const auto& dc = *static_cast<const DrawComponent*>(ds.getComponent(entity));
+			auto [tc, dc] = oak::getComponents<const TransformComponent, const DrawComponent>(entity, ts, ds);
 		
 			draws.push_back({ tc.position, dc.spriteId });
 		}
 
 		for (const auto& entity : physicsCache.entities()) {
-			auto& tc = *static_cast<TransformComponent*>(ts.getComponent(entity));
-			auto& vc = *static_cast<VelocityComponent*>(vs.getComponent(entity));
-			auto& bc = *static_cast<BoxComponent*>(bs.getComponent(entity));
+			auto [tc, vc, bc] = oak::getComponents<TransformComponent, VelocityComponent, BoxComponent>(entity, ts, vs, bs);
 
 			if (bc.offset.x < bc.halfExtent.y) {
 				vc.velocity = glm::vec2{ 0.0f };

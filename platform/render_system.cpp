@@ -50,7 +50,6 @@ void RenderSystem::init() {
 
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
-	meshCache_.requireComponent<ManifoldComponent>();
 
 	pipeline_.batches[0] = &batches_;
 }
@@ -79,7 +78,6 @@ void RenderSystem::run() {
 
 	auto& ts = oak::getComponentStorage<const TransformComponent>(*scene_);
 	auto& ms = oak::getComponentStorage<const MeshComponent>(*scene_);
-	auto& cs = oak::getComponentStorage<ManifoldComponent>(*scene_);
 
 	meshCache_.update(*scene_);
 
@@ -91,15 +89,12 @@ void RenderSystem::run() {
 	size_t offset = 0, count = 0;
 
 	for (const auto& entity : meshCache_.entities()) {
-		auto& t2c = oak::getComponent<const TransformComponent>(ts, entity);
-		auto& sc = oak::getComponent<const MeshComponent>(ms, entity);
-		auto& mc = oak::getComponent<ManifoldComponent>(cs, entity);
+		auto [tc, mc] = oak::getComponents<const TransformComponent, const MeshComponent>(entity, ts, ms);
 
-		for (const auto& v : sc.mesh->vertices) {
-			data.push_back({ glm::vec2{ t2c.transform * glm::vec3{ v.position, 1.0f } }, { mc.collides ? 255 : 0, mc.collides ? 0 : 255, 0, 255 } });
+		for (const auto& v : mc.mesh->vertices) {
+			data.push_back({ glm::vec2{ tc.transform * glm::vec3{ v.position, 1.0f } }, { 0, 155, 155, 255 } });
 			count++;
 		}
-		mc.collides = 0;
 		batches_.push_back({ &storageMesh_, &material_, offset, count, 0, oak::graphics::Batch::DRAW_LINE_LOOP, -1 });
 		offset += count;
 		count = 0;

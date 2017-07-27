@@ -14,7 +14,7 @@ namespace oak {
 	EntityId Prefab::createInstance() const {
 		EntityId entity = scene_->createEntity();
 
-		oak::addComponent<PrefabComponent>(*scene_, entity, std::hash<oak::string>{}(name_));
+		oak::addComponent<PrefabComponent>(entity, *scene_, std::hash<oak::string>{}(name_));
 		
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];

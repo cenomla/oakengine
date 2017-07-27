@@ -25,20 +25,6 @@ namespace oak {
 		~ResourceManager();
 
 		template<class T>
-		void add(ResourceStorage<T> *handler) {
-			size_t tid = util::type_id<detail::BaseResource, T>::id;
-
-			if (resourceHandles_.size() <= tid) { 
-				resourceHandles_.resize(tid+1);
-			}
-			if (resourceHandles_[tid] == nullptr) {
-				resourceHandles_[tid] = handler;
-			} else {
-				log_print_warn("resouce handler already exists");
-			}
-		}
-
-		template<class T>
 		ResourceStorage<T>& get() {
 			size_t tid = util::type_id<detail::BaseResource, T>::id;
 

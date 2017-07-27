@@ -25,6 +25,7 @@ namespace oak {
 		void bind(const oak::string& action, int binding, bool key);
 
 		int getAction(const oak::string& action) const;
+		void setAction(const oak::string& action, int state);
 
 		int getKey(int key) const;
 		void setKey(int key, int action);

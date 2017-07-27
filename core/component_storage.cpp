@@ -5,10 +5,9 @@
 
 namespace oak {
 
-	ComponentStorage::ComponentStorage(const oak::string &compName) : 
-	handle_{ ComponentTypeManager::inst().getHandle(compName) },
-	allocator_{ &oalloc_freelist, 8192, handle_->getSize(), 8 }
-	{}
+	ComponentStorage::ComponentStorage(const TypeHandleBase *handle) : 
+		handle_{ handle }, 
+		allocator_{ &oalloc_freelist, 8192, handle->getSize(), 8 } {}
 
 	ComponentStorage::~ComponentStorage() {
 		size_t size = handle_->getSize();
