@@ -25,7 +25,6 @@
 #include <scene_utils.h>
 
 #include "render_system.h"
-#include "poly_renderer.h"
 #include "components.h"
 
 struct stdoutstream : public oak::log::Stream {
@@ -227,8 +226,6 @@ int main(int argc, char** argv) {
 
 	//create the rendering system
 	RenderSystem renderSystem{ &scene, &api };
-	PolyRenderer polyRenderer;
-	renderSystem.pushLayerBack(&polyRenderer);
 	CollisionSystem collisionSystem;
 	collisionSystem.scene = &scene;
 
@@ -259,9 +256,6 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(&velocityStorage);
 	scene.addComponentStorage(&meshStorage);
 	scene.addComponentStorage(&massStorage);
-
-	//init the test renderer
-	polyRenderer.init();
 
 	//setup uniforms
 	struct {
@@ -367,7 +361,6 @@ int main(int argc, char** argv) {
 	}
 
 	//clean up
-	polyRenderer.terminate();
 	scene.reset();
 
 	return 0;

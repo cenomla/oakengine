@@ -1,7 +1,5 @@
 #include "sprite_renderer.h"
 
-#include <glad/glad.h>
-
 #include <graphics/gl_api.h>
 #include <graphics/pipeline.h>
 #include <graphics/material.h>
@@ -17,17 +15,15 @@ void SpriteRenderer::terminate() {
 
 void SpriteRenderer::render(oak::graphics::Api *api) {
 
+	static oak::graphics::Api::State state;
+	state.viewport = oak::graphics::View{ pipeline_->x, pipeline_->y, pipeline_->width, pipeline_->height };
+	state.blendMode = oak::graphics::BlendMode::NORMAL;
 
-	//do rendering stuff
-	glDisable(GL_DEPTH_TEST);
-	glViewport(pipeline_->x, pipeline_->y, pipeline_->width, pipeline_->height);
-	glEnable(GL_BLEND);
-	
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	api->setState(state);
 
-	api->draw(*pipeline_->batches[1]);
+	for (const auto& batch : *pipeline_->batches[1]) {
+		api->draw(batch);
+	}
 
 	oak::graphics::GLVertexArray::unbind();
-
-	glDisable(GL_BLEND);
 }

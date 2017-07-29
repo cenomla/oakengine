@@ -249,23 +249,23 @@ void DeferredRenderer::terminate() {
 
 void DeferredRenderer::render(oak::graphics::Api *api) {
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glViewport(pipeline_->x, pipeline_->y, pipeline_->width + 512, pipeline_->height + 512);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	oak::graphics::Api::State state;
+	state.depthOp = oak::graphics::BoolOp::LESS;
+	state.viewport = oak::graphics::View{ pipeline_->x, pipeline_->y, pipeline_->width + 512, pipeline_->height + 512 };
+	
 	//do rendering stuff
+	api->setState(state);
 	oak::graphics::framebuffer::bind(gbuffer_);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	api->clear(true, true);
 
-	api->draw(*pipeline_->batches[0]);
+	for (const auto& batch : *pipeline_->batches[0]) {
+		api->draw(batch);
+	}
 
 	//set opengl state
-	glDisable(GL_DEPTH_TEST);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
+	state.depthOp = oak::graphics::BoolOp::NONE;
+	state.clearColor = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	api->setState(state);
 
 	//bind textures
 	oak::graphics::texture::bind(albedo_, 0);
@@ -277,7 +277,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	//prerender sao
 	oak::graphics::framebuffer::bind(cszBuffer_[0]);
-	glClear(GL_COLOR_BUFFER_BIT);
+	api->clear(true);
 
 	oak::graphics::shader::bind(reconstruct_);
 	
@@ -288,7 +288,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	for (int i = 1; i < 5 ; i++) {
 		oak::graphics::framebuffer::bind(cszBuffer_[i]);
-		glClear(GL_COLOR_BUFFER_BIT);
+		api->clear(true);
 		
 		oak::graphics::shader::setUniform(minify_, "previousMIPNumber", i - 1);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -296,10 +296,10 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	//render ssao
 	//now only rendering to screen
-	glEnable(GL_SCISSOR_TEST);
-	glScissor(256, 256, pipeline_->width, pipeline_->height);
+	state.scissorRect = oak::graphics::View{ 256, 256, pipeline_->width, pipeline_->height };
+	api->setState(state);
 	oak::graphics::framebuffer::bind(blurBuffer_[0]);
-	glClear(GL_COLOR_BUFFER_BIT);
+	api->clear(true);
 
 	oak::graphics::shader::bind(sao_);
 
@@ -307,7 +307,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	//blur pass
 	oak::graphics::framebuffer::bind(blurBuffer_[1]);
-	glClear(GL_COLOR_BUFFER_BIT);
+	api->clear(true);
 
 	oak::graphics::shader::bind(aaBlur_);
 	oak::graphics::shader::setUniform(aaBlur_, "axis", glm::ivec2{ 0, 1 });
@@ -316,7 +316,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	oak::graphics::framebuffer::bind(saobuffer_);
-	glClear(GL_COLOR_BUFFER_BIT);
+	api->clear(true);
 	
 	oak::graphics::shader::setUniform(aaBlur_, "axis", glm::ivec2{ 1, 0 });
 	oak::graphics::texture::bind(blur_[1], 3);
@@ -325,7 +325,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	//render lighting
 	oak::graphics::framebuffer::bind(post_);
-	glClear(GL_COLOR_BUFFER_BIT);
+	api->clear(true);
 
 	//bind ao texture to slot 3
 	oak::graphics::texture::bind(blur_[0], 3);
@@ -335,10 +335,9 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	//render skybox
-	
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glDepthMask(GL_FALSE);
+	state.depthOp = oak::graphics::BoolOp::LEQUAL;
+	state.drawMask.depth = false;	
+	api->setState(state);
 	oak::graphics::shader::bind(box_);
 	oak::graphics::texture::bind(sky_, 0);
 
@@ -346,15 +345,16 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	glDepthMask(GL_TRUE);
-	glDisable(GL_DEPTH_TEST);
+	state.depthOp = oak::graphics::BoolOp::NONE;
+	state.drawMask.depth = true;
 	
 	
 	//aa
 	oak::graphics::framebuffer::unbind();
-	glViewport(pipeline_->x - 256, pipeline_->y - 256, pipeline_->width + 512, pipeline_->height + 512);
-	glScissor(0, 0, pipeline_->width, pipeline_->height);
-	glClear(GL_COLOR_BUFFER_BIT);
+	state.viewport = oak::graphics::View{ pipeline_->x - 256, pipeline_->y - 256, pipeline_->width + 512, pipeline_->height + 512 };
+	state.scissorRect = oak::graphics::View{ 0, 0, pipeline_->width, pipeline_->height };
+	api->setState(state);
+	api->clear(true);
 
 	oak::graphics::texture::bind(aa_, 0);
 	oak::graphics::shader::bind(fxaa_);
@@ -363,6 +363,5 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-	glDisable(GL_SCISSOR_TEST);
 	oak::graphics::vertex_array::unbind();
 }

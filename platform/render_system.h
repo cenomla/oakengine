@@ -21,11 +21,6 @@ class RenderSystem : public oak::System {
 public:
 	RenderSystem(oak::Scene *scene, oak::graphics::Api *api);
 
-	void pushLayerFront(oak::graphics::Renderer *renderer);
-	void pushLayerBack(oak::graphics::Renderer *renderer);
-
-	void removeLayer(oak::graphics::Renderer& renderer);
-
 	void init() override;
 	void terminate() override;
 	void run() override;

@@ -60,20 +60,6 @@ void RenderSystem::terminate() {
 	api_->terminate();
 }
 
-void RenderSystem::pushLayerFront(oak::graphics::Renderer *renderer) {
-	renderer->setPipeline(&pipeline_);
-	layers_.insert(std::begin(layers_), renderer);
-}
-
-void RenderSystem::pushLayerBack(oak::graphics::Renderer *renderer) {
-	renderer->setPipeline(&pipeline_);
-	layers_.push_back(renderer);
-}
-
-void RenderSystem::removeLayer(oak::graphics::Renderer& renderer) {
-	layers_.erase(std::remove(std::begin(layers_), std::end(layers_), &renderer), std::end(layers_));
-}
-
 void RenderSystem::run() {
 
 	auto& ts = oak::getComponentStorage<const TransformComponent>(*scene_);
@@ -102,14 +88,23 @@ void RenderSystem::run() {
 	
 	storageMesh_.data(0, data.size() * sizeof(Vertex), data.data());
 
-	//render the layers
-	for (auto layer : layers_) {
-		layer->render(api_);
+	//render the things
+	static oak::graphics::Api::State state;
+	state.clearColor = glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f };
+	state.viewport = { pipeline_.x, pipeline_.y, pipeline_.width, pipeline_.height };
+	state.blendMode = oak::graphics::BlendMode::NORMAL;
+
+	api_->setState(state);
+	api_->clear(true);
+
+	for (const auto& batch : *pipeline_.batches[0]) {
+		api_->draw(batch);
 	}
+
+	oak::graphics::GLVertexArray::unbind();
 
 	//swap buffers
 	api_->swap();
 	//clear batches
 	batches_.clear();
-
 }

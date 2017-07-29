@@ -1,6 +1,6 @@
 #pragma once
 
-#include <container.h>
+#include <glm/glm.hpp>
 
 namespace oak::graphics {
 
@@ -88,14 +88,72 @@ namespace oak::graphics {
 		INSTANCE_COLOR
 	};
 
+	enum class BoolOp {
+		NONE = -1,
+		NEVER,
+		LESS,
+		EQUAL,
+		LEQUAL,
+		GREATER,
+		NOTEQUAL,
+		GEQUAL,
+		ALWAYS
+	};
+
+	enum class BlendMode {
+		NONE,
+		NORMAL,
+		ADD,
+		MULTIPLY
+	};
+
+	enum class FaceCull {
+		NONE = -1,
+		FRONT,
+		BACK
+	};
+
+	struct View {
+		int x = 0, y = 0, width = 0, height = 0;
+
+		inline bool operator==(const View& lhs) const {
+			return x == lhs.x && y == lhs.y && width == lhs.width && height == lhs.height;
+		}
+
+		inline bool operator!=(const View& lhs) const {
+			return !operator==(lhs);
+		}
+
+		inline bool empty() const {
+			return x == 0 && y == 0 && width == 0 && height == 0;
+		}
+	};
+
+	struct MaskState {
+		bool red = true, green = true, blue = true, alpha = true, depth = true, stencil = true;
+	};
+
 	class Api {
 	public:
+
+		struct State {
+			glm::vec4 clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
+			float clearDepth = 1.0f;
+			BoolOp depthOp = BoolOp::NONE;
+			View scissorRect;
+			MaskState drawMask;
+			FaceCull faceCull{ FaceCull::BACK };
+			View viewport;
+			BlendMode blendMode = BlendMode::NONE;
+		};
 
 		virtual void init() = 0;
 		virtual void terminate() = 0;
 		
-		virtual void draw(const oak::vector<Batch>& batches) = 0;
+		virtual void setState(const State& state) = 0;
 
+		virtual void clear(bool color = false, bool depth = false, bool stencil = false) = 0;
+		virtual void draw(const Batch& batch) = 0;
 		virtual void swap() = 0;
 	};
 

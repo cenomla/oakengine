@@ -7,16 +7,13 @@
 #include "gl_vertex_array.h"
 
 #include "api.h"
-#include "batch.h"
 #include "buffer_storage.h"
 
 struct GLFWwindow;
 
 namespace oak::graphics {
 
-	namespace detail {
-		struct GLState;
-	};
+	struct Batch;
 
 	namespace buffer = GLBuffer;
 	namespace shader = GLShader;
@@ -29,18 +26,16 @@ namespace oak::graphics {
 
 		void init() override;
 		void terminate() override;
+		
+		void setState(const Api::State& state) override;
 
-		void pushState();
-		void popState();
-		void draw(const oak::vector<Batch>& batches) override;
-		void setView();
-		void setBlend();
-
+		void clear(bool color, bool depth, bool stencil) override;
+		void draw(const Batch& batch) override;
 		void swap() override;
 
 	private:
 		GLFWwindow *window_;
-		oak::vector<detail::GLState*> states_;
+		Api::State currentState_;
 	};
 
 }
