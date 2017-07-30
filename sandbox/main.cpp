@@ -4,7 +4,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <graphics/gl_api.h>
 #include <graphics/buffer_storage.h>
@@ -12,6 +12,7 @@
 #include <graphics/texture.h>
 #include <graphics/shader.h>
 #include <graphics/mesh.h>
+#include <graphics/camera.h>
 #include <log.h>
 #include <file_manager.h>
 #include <system_manager.h>
@@ -248,25 +249,18 @@ int main(int argc, char** argv) {
 	spriteRenderer.init();
 
 	//setup uniforms
-	struct {
-		glm::mat4 proj;
-		glm::mat4 view;
-	} matrix;
-	matrix.proj = glm::perspective(glm::radians(90.0f), (1920.0f)/(1080.0f), 0.5f, 500.0f);
+	oak::graphics::Camera camera3d;
+	camera3d.proj = glm::perspective(glm::radians(90.0f), 1920.0f / 1080.0f, 0.5f, 500.0f);
+
+	oak::graphics::Camera camera2d;
+	camera2d.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, 1.0f, -1.0f);
 
 	struct {
 		glm::mat4 invProj;
 		glm::mat4 proj;
 	} pmatrix;
-	pmatrix.invProj = glm::inverse(matrix.proj);
-	pmatrix.proj = matrix.proj;
-
-	struct {
-		glm::mat4 proj;
-		glm::mat4 view;
-	} omatrix;
-	omatrix.view = glm::mat4{ 1.0f };
-	omatrix.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+	pmatrix.invProj = glm::inverse(camera3d.proj);
+	pmatrix.proj = camera3d.proj;
 
 	oak::graphics::BufferInfo bufferInfo;
 	//create matrix buffer
@@ -284,7 +278,7 @@ int main(int argc, char** argv) {
 	bufferInfo.base = 1;
 	auto& ortho_ubo = bufferHandle.add("ortho", oak::graphics::buffer::create(bufferInfo));
 	oak::graphics::buffer::bind(ortho_ubo);
-	oak::graphics::buffer::data(ortho_ubo, sizeof(omatrix), &omatrix);
+	oak::graphics::buffer::data(ortho_ubo, sizeof(camera2d), &camera2d);
 
 	//lights
 	struct {
@@ -452,17 +446,15 @@ int main(int argc, char** argv) {
 		cameraSystem.run();
 		//update view
 		auto& cc = oak::getComponent<const CameraComponent>(player, scene);
-		matrix.view = glm::mat4{ glm::quat{ cc.rotation } };
-		matrix.view[3] = glm::vec4{ cc.position, 1.0f };
-		matrix.view = glm::inverse(matrix.view); //move view instead of camera
+		camera3d.view3d(cc.position, glm::quat{ cc.rotation });
 		//update lights
 		for (int i = 0; i < 8; i++) {
-			lights[i].pos = glm::vec3{ matrix.view * glm::vec4{ lpos[i], 1.0f} };
+			lights[i].pos = glm::vec3{ camera3d.view * glm::vec4{ lpos[i], 1.0f} };
 		}
 
 		//upload buffers
 		oak::graphics::buffer::bind(matrix_ubo);
-		oak::graphics::buffer::data(matrix_ubo, sizeof(matrix), &matrix);
+		oak::graphics::buffer::data(matrix_ubo, sizeof(camera3d), &camera3d);
 		oak::graphics::buffer::bind(light_ubo);
 		oak::graphics::buffer::data(light_ubo, sizeof(lights), &lights);
 	

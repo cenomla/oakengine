@@ -7,7 +7,7 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 #include <graphics/gl_api.h>
-#include <graphics/shader.h>
+#include <graphics/camera.h>
 #include <collision.h>
 #include <log.h>
 #include <file_manager.h>
@@ -128,10 +128,9 @@ struct CollisionSystem : public oak::System {
 	}
 
 	void movePlayer() {
-		auto [tc, vc] = oak::getComponents<TransformComponent, VelocityComponent>(playerCache.entities()[0], *scene);
+		auto& vc = oak::getComponent<VelocityComponent>(playerCache.entities()[0], *scene);
 		if (oak::InputManager::inst().getAction("move_up") == oak::action::pressed) {
 			vc.velocity.y -= 244.0f;
-			// tc.transform[2] += glm::vec3{ 0.0f, -2.0f, 0.0f };
 			oak::InputManager::inst().setAction("move_up", oak::action::released);
 		}
 
@@ -258,12 +257,8 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(&massStorage);
 
 	//setup uniforms
-	struct {
-		glm::mat4 proj;
-		glm::mat4 view;
-	} omatrix;
-	omatrix.view = glm::mat4{ 1.0f };
-	omatrix.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+	oak::graphics::Camera camera;
+	camera.proj = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
 	oak::graphics::BufferInfo bufferInfo;
 	//create ortho matrix buffer
@@ -272,7 +267,7 @@ int main(int argc, char** argv) {
 	bufferInfo.base = 1;
 	auto& ortho_ubo = bufferHandle.add("ortho", oak::graphics::buffer::create(bufferInfo));
 	oak::graphics::buffer::bind(ortho_ubo);
-	oak::graphics::buffer::data(ortho_ubo, sizeof(omatrix), &omatrix);
+	oak::graphics::buffer::data(ortho_ubo, sizeof(camera), &camera);
 
 	oak::Mesh2d m1;
 	m1.vertices = oak::vector<oak::Mesh2d::Vertex>{
@@ -301,7 +296,7 @@ int main(int argc, char** argv) {
 	//create entities
 	oak::Prefab player{ "player", scene };
 	player.addComponent<TransformComponent>(glm::mat3{ 1.0f });
-	player.addComponent<VelocityComponent>(glm::vec2{ 0.0f }, glm::vec2{ 0.0f, 244.0f });
+	player.addComponent<VelocityComponent>(glm::vec2{ 0.0f }, glm::vec2{ 0.0f, 488.0f });
 	player.addComponent<MeshComponent>(&m1);
 	player.addComponent<RigidBodyComponent>(0.0f, 20.0f, 1.0f / 20.0f);
 
