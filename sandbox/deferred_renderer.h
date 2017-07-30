@@ -1,24 +1,23 @@
 #pragma once
 
-#include <glad/glad.h>
-
-#include <graphics/renderer.h>
 #include <graphics/framebuffer.h>
 #include <graphics/shader.h>
 #include <graphics/buffer.h>
 #include <graphics/buffer_storage.h>
 
-class DeferredRenderer : public oak::graphics::Renderer {
+#include "renderer.h"
+
+class DeferredRenderer : public Renderer {
 public:
 
 	void init();
 	void terminate();
 
 	void render(oak::graphics::Api *api) override;
-	inline void setPipeline(const oak::graphics::Pipeline *pipeline) override { pipeline_ = pipeline; }
+	inline void setPipeline(const Pipeline *pipeline) override { pipeline_ = pipeline; }
 
 private:
-	const oak::graphics::Pipeline *pipeline_;
+	const Pipeline *pipeline_;
 	oak::graphics::Framebuffer gbuffer_;
 	oak::graphics::Framebuffer saobuffer_;
 	oak::graphics::Framebuffer post_;

@@ -1,5 +1,7 @@
 #include "deferred_renderer.h"
 
+#include <random>
+
 #include <glm/glm.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -8,10 +10,9 @@
 #include <GLFW/glfw3.h>
 #include <graphics/material.h>
 #include <graphics/gl_api.h>
-#include <graphics/pipeline.h>
 #include <input_manager.h>
 
-#include <random>
+#include "pipeline.h"
 
 void DeferredRenderer::init() {
 

@@ -6,7 +6,6 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 #include <graphics/gl_api.h>
-#include <graphics/renderer.h>
 
 #include <core_components.h>
 #include <scene_events.h>
@@ -28,11 +27,6 @@ void RenderSystem::init() {
 
 	log_print_out("frame width: %i, frame height: %i", frameWidth, frameHeight);
 
-	pipeline_.x = 0;
-	pipeline_.y = 0;
-	pipeline_.width = frameWidth;
-	pipeline_.height = frameHeight;
-
 	storageMesh_.create({
 		oak::vector<oak::graphics::AttributeType> {
 			oak::graphics::AttributeType::POSITION2D,
@@ -48,10 +42,12 @@ void RenderSystem::init() {
 
 	material_.shader = &shader_;
 
+	state_.clearColor = glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f };
+	state_.viewport = { 0, 0, frameWidth, frameHeight };
+	state_.blendMode = oak::graphics::BlendMode::NORMAL;
+
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
-
-	pipeline_.batches[0] = &batches_;
 }
 
 void RenderSystem::terminate() {
@@ -89,15 +85,10 @@ void RenderSystem::run() {
 	storageMesh_.data(0, data.size() * sizeof(Vertex), data.data());
 
 	//render the things
-	static oak::graphics::Api::State state;
-	state.clearColor = glm::vec4{ 0.1f, 0.1f, 0.1f, 1.0f };
-	state.viewport = { pipeline_.x, pipeline_.y, pipeline_.width, pipeline_.height };
-	state.blendMode = oak::graphics::BlendMode::NORMAL;
-
-	api_->setState(state);
+	api_->setState(state_);
 	api_->clear(true);
 
-	for (const auto& batch : *pipeline_.batches[0]) {
+	for (const auto& batch : batches_) {
 		api_->draw(batch);
 	}
 

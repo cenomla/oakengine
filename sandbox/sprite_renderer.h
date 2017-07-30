@@ -1,15 +1,15 @@
 #pragma once
 
-#include <graphics/renderer.h>
+#include "renderer.h"
 
-class SpriteRenderer : public oak::graphics::Renderer {
+class SpriteRenderer : public Renderer {
 public:
 	void init();
 	void terminate();
 
 	void render(oak::graphics::Api *api) override;
-	inline void setPipeline(const oak::graphics::Pipeline *pipeline) override { pipeline_ = pipeline; }
+	inline void setPipeline(const Pipeline *pipeline) override { pipeline_ = pipeline; }
 
 private:
-	const oak::graphics::Pipeline *pipeline_;
+	const Pipeline *pipeline_;
 };

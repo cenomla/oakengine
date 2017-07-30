@@ -4,7 +4,6 @@
 #include <graphics/static_batcher.h>
 #include <graphics/sprite_batcher.h>
 #include <graphics/particle_system.h>
-#include <graphics/pipeline.h>
 #include <system.h>
 #include <entity_cache.h>
 
@@ -30,11 +29,12 @@ private:
 	oak::EntityCache meshCache_;
 
 	oak::graphics::Api *api_;
-	oak::graphics::Pipeline pipeline_;
 	oak::vector<oak::graphics::Renderer*> layers_;
 	oak::vector<oak::graphics::Batch> batches_;
 	
 	oak::graphics::BufferStorage storageMesh_;
 	oak::graphics::Shader shader_;
 	oak::graphics::Material material_;
+
+	oak::graphics::Api::State state_;
 };

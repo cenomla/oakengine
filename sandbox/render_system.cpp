@@ -5,7 +5,6 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 #include <graphics/api.h>
-#include <graphics/renderer.h>
 
 #include <core_components.h>
 #include <scene_events.h>
@@ -15,6 +14,7 @@
 #include <resource_manager.h>
 #include <log.h>
 
+#include "renderer.h"
 #include "components.h"
 
 RenderSystem::RenderSystem(oak::Scene *scene, oak::graphics::Api *api) : scene_{ scene }, api_{ api } {}
@@ -56,17 +56,17 @@ void RenderSystem::terminate() {
 	api_->terminate();
 }
 
-void RenderSystem::pushLayerFront(oak::graphics::Renderer *renderer) {
+void RenderSystem::pushLayerFront(Renderer *renderer) {
 	renderer->setPipeline(&pipeline_);
 	layers_.insert(std::begin(layers_), renderer);
 }
 
-void RenderSystem::pushLayerBack(oak::graphics::Renderer *renderer) {
+void RenderSystem::pushLayerBack(Renderer *renderer) {
 	renderer->setPipeline(&pipeline_);
 	layers_.push_back(renderer);
 }
 
-void RenderSystem::removeLayer(oak::graphics::Renderer& renderer) {
+void RenderSystem::removeLayer(Renderer& renderer) {
 	layers_.erase(std::remove(std::begin(layers_), std::end(layers_), &renderer), std::end(layers_));
 }
 

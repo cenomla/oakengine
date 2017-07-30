@@ -1,8 +1,9 @@
 #include "sprite_renderer.h"
 
 #include <graphics/gl_api.h>
-#include <graphics/pipeline.h>
 #include <graphics/material.h>
+
+#include "pipeline.h"
 
 void SpriteRenderer::init() {
 
