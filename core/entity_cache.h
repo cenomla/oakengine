@@ -5,6 +5,7 @@
 #include "util/type_id.h"
 #include "container.h"
 #include "component.h"
+#include "core_components.h"
 #include "entity_id.h"
 #include "events.h"
 
@@ -16,7 +17,7 @@ namespace oak {
 	public:
 
 		void update(const Scene& scene);
-		bool contains(const Scene& scene, EntityId entity);
+		bool contains(EntityId entity);
 
 		inline const oak::vector<EntityId>& entities() const { return entities_; }
 		inline void clear() { entities_.clear(); };
@@ -28,10 +29,12 @@ namespace oak {
 
 		template<class T>
 		inline void requireEvent() {
+			requireComponent<EventComponent>();
 			eventFilter_[util::type_id<detail::BaseEvent, T>::id] = true;
 		}
 
 		inline void requirePrefab(size_t id) {
+			requireComponent<PrefabComponent>();
 			prefabFilter_ = id;
 		}
 

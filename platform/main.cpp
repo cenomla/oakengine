@@ -26,6 +26,7 @@
 
 #include "render_system.h"
 #include "components.h"
+#include "console.h"
 
 struct stdoutstream : public oak::log::Stream {
 	void write(const void *source, size_t size) override {
@@ -80,7 +81,7 @@ struct CollisionSystem : public oak::System {
 		auto& vs = oak::getComponentStorage<VelocityComponent>(*scene);
 		auto& rbs = oak::getComponentStorage<const RigidBodyComponent>(*scene);
 		for (auto& manifold : manifolds_) {
-			if (!rigidBodyCache.contains(*scene, manifold.A) || !rigidBodyCache.contains(*scene, manifold.B)) { continue; }
+			if (!rigidBodyCache.contains(manifold.A) || !rigidBodyCache.contains(manifold.B)) { continue; }
 			//get components
 			auto [tcA, vcA, rbA] = oak::getComponents<TransformComponent, VelocityComponent, const RigidBodyComponent>(manifold.A, ts, vs, rbs);
 			auto [tcB, vcB, rbB] = oak::getComponents<TransformComponent, VelocityComponent, const RigidBodyComponent>(manifold.B, ts, vs, rbs);
@@ -191,8 +192,10 @@ int main(int argc, char** argv) {
 	inputManager.bind("move_right", oak::key::d, true);
 
 	fileManager.mount("{$cwd}/platform/res", "/res");
+	fileManager.mount("{$cwd}/platform", "/res");
 	fileManager.mount("{$cwd}/platform", "/res/shaders");
 	fileManager.mount("{$cwd}/core/graphics/shaders", "/res/shaders");
+	fileManager.mount("{$cwd}/core/graphics/shaders/forward", "/res/shaders");
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
@@ -211,27 +214,6 @@ int main(int argc, char** argv) {
 	evtManager.addQueue<oak::TickEvent>();
 	evtManager.addQueue<oak::SimulateEvent>();
 
-	//get references to resource storage containers
-	auto& bufferHandle = resManager.get<oak::graphics::Buffer>();
-	auto& textureHandle = resManager.get<oak::graphics::Texture>();
-	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
-	auto& materialHandle = resManager.get<oak::graphics::Material>();
-
-	//create the scene
-	oak::Scene scene;
-
-	//create all the systems
-	oak::graphics::GLApi api;
-
-	//create the rendering system
-	RenderSystem renderSystem{ &scene, &api };
-	CollisionSystem collisionSystem;
-	collisionSystem.scene = &scene;
-
-	//add them to the system manager
-	sysManager.addSystem(&renderSystem, "render_system");
-	sysManager.addSystem(&collisionSystem, "collision_system");
-
 	//create component type handles
 	chs.addHandle<oak::EventComponent>("event");
 	chs.addHandle<oak::PrefabComponent>("prefab");
@@ -239,6 +221,8 @@ int main(int argc, char** argv) {
 	chs.addHandle<VelocityComponent>("velocity");
 	chs.addHandle<MeshComponent>("mesh");
 	chs.addHandle<RigidBodyComponent>("rigid_body");
+	chs.addHandle<SpriteComponent>("sprite");
+	chs.addHandle<TextComponent>("text");
 
 	//create component storage
 	oak::ComponentStorage eventStorage{ chs.getHandle("event") };
@@ -247,7 +231,17 @@ int main(int argc, char** argv) {
 	oak::ComponentStorage velocityStorage{ chs.getHandle("velocity") };
 	oak::ComponentStorage meshStorage{ chs.getHandle("mesh") };
 	oak::ComponentStorage massStorage{ chs.getHandle("rigid_body") };
+	oak::ComponentStorage spriteStorage{ chs.getHandle("sprite") };
+	oak::ComponentStorage textStorage{ chs.getHandle("text") };
 
+	//get references to resource storage containers
+	auto& bufferHandle = resManager.get<oak::graphics::Buffer>();
+	auto& textureHandle = resManager.get<oak::graphics::Texture>();
+	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
+	auto& materialHandle = resManager.get<oak::graphics::Material>();
+
+	//create the scene
+	oak::Scene scene;
 	//add component storage to scene
 	scene.addComponentStorage(&eventStorage);
 	scene.addComponentStorage(&prefabStorage);
@@ -255,6 +249,22 @@ int main(int argc, char** argv) {
 	scene.addComponentStorage(&velocityStorage);
 	scene.addComponentStorage(&meshStorage);
 	scene.addComponentStorage(&massStorage);
+	scene.addComponentStorage(&spriteStorage);
+	scene.addComponentStorage(&textStorage);
+
+	//create all the systems
+	oak::graphics::GLApi api;
+
+	//create the rendering system
+	RenderSystem renderSystem{ &scene, &api };
+	CollisionSystem collisionSystem;
+	collisionSystem.scene = &scene;
+	Console console{ &scene };
+
+	//add them to the system manager
+	sysManager.addSystem(&renderSystem, "render_system");
+	sysManager.addSystem(&collisionSystem, "collision_system");
+	sysManager.addSystem(&console, "console");
 
 	//setup uniforms
 	oak::graphics::Camera camera;
@@ -334,6 +344,8 @@ int main(int argc, char** argv) {
 		inputManager.update();
 		//create / destroy / activate / deactivate entities
 		scene.update();
+
+		console.run();
 
 		collisionSystem.dt = dt.count();
 		collisionSystem.run();

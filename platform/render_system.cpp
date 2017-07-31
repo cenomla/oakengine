@@ -46,22 +46,45 @@ void RenderSystem::init() {
 	state_.viewport = { 0, 0, frameWidth, frameHeight };
 	state_.blendMode = oak::graphics::BlendMode::NORMAL;
 
+	batcher_.init();
+
 	meshCache_.requireComponent<TransformComponent>();
 	meshCache_.requireComponent<MeshComponent>();
+
+	textCache_.requireComponent<TransformComponent>();
+	textCache_.requireComponent<TextComponent>();
 }
 
 void RenderSystem::terminate() {
 	oak::graphics::shader::destroy(shader_);
 	storageMesh_.destroy();
+	batcher_.terminate();
 	api_->terminate();
 }
 
 void RenderSystem::run() {
 
+	meshCache_.update(*scene_);
+	textCache_.update(*scene_);
+
 	auto& ts = oak::getComponentStorage<const TransformComponent>(*scene_);
 	auto& ms = oak::getComponentStorage<const MeshComponent>(*scene_);
+	auto& txs = oak::getComponentStorage<const TextComponent>(*scene_);
 
-	meshCache_.update(*scene_);
+	//batch sprites
+	for (const auto& entity : textCache_.entities()) {
+		auto [tc, txc] = oak::getComponents<const TransformComponent, const TextComponent>(entity, ts, txs);
+		
+		glm::vec2 pos{ 0.0f };
+		for (const auto& c : txc.text) {
+			auto& glyph = txc.font->glyphs[c];			
+			batcher_.addSprite(txc.layer, txc.material, &glyph.sprite, glm::translate(tc.transform, pos));
+			pos.x += glyph.advance;
+			if (c == '\n') {
+				pos.y += txc.font->size;
+			}
+		}
+	}
 
 	struct Vertex {
 		glm::vec2 pos;
@@ -84,11 +107,17 @@ void RenderSystem::run() {
 	
 	storageMesh_.data(0, data.size() * sizeof(Vertex), data.data());
 
+	batcher_.run();
+
 	//render the things
 	api_->setState(state_);
 	api_->clear(true);
 
 	for (const auto& batch : batches_) {
+		api_->draw(batch);
+	}
+
+	for (const auto& batch : batcher_.getBatches()) {
 		api_->draw(batch);
 	}
 

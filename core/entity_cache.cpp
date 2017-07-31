@@ -7,7 +7,6 @@
 #include "scene.h"
 #include "scene_events.h"
 #include "scene_utils.h"
-#include "core_components.h"
 
 namespace oak {
 
@@ -45,9 +44,8 @@ namespace oak {
 		}
 	}
 
-	bool EntityCache::contains(const Scene& scene, EntityId entity) {
-		const auto& cf = scene.getComponentFilter(entity);
-		return filter(scene, entity, cf);
+	bool EntityCache::contains(EntityId entity) {
+		return contains_.size() > entity.index && contains_[entity];
 	}
 
 	void EntityCache::addEntity(EntityId entity) {

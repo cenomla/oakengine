@@ -49,5 +49,3 @@ void pup(oak::Puper& puper, MeshComponent& data, const oak::ObjInfo& info);
 void pup(oak::Puper& puper, RigidBodyComponent& data, const oak::ObjInfo& info);
 void pup(oak::Puper& puper, SpriteComponent& data, const oak::ObjInfo& info);
 void pup(oak::Puper& puper, TextComponent& data, const oak::ObjInfo& info);
-
-

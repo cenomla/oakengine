@@ -27,10 +27,13 @@ public:
 private:
 	oak::Scene *scene_;
 	oak::EntityCache meshCache_;
+	oak::EntityCache textCache_;
 
 	oak::graphics::Api *api_;
 	oak::vector<oak::graphics::Renderer*> layers_;
 	oak::vector<oak::graphics::Batch> batches_;
+
+	oak::graphics::SpriteBatcher batcher_;
 	
 	oak::graphics::BufferStorage storageMesh_;
 	oak::graphics::Shader shader_;

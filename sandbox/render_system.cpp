@@ -80,7 +80,7 @@ void RenderSystem::run() {
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityDeactivateEvent>()) {
 		//check for meshes to remove
-		if (meshCache_.contains(*scene_, evt.entity)) {
+		if (meshCache_.contains(evt.entity)) {
 			auto& mc = oak::getComponent<const MeshComponent>(evt.entity, ms);
 			meshBatcher_.removeMesh(mc.mesh);
 		}
@@ -93,12 +93,12 @@ void RenderSystem::run() {
 
 	for (const auto& evt : oak::EventManager::inst().getQueue<oak::EntityActivateEvent>()) {
 		//check for meshes to add
-		if (meshCache_.contains(*scene_, evt.entity)) {
+		if (meshCache_.contains(evt.entity)) {
 			auto [tc, mc] = oak::getComponents<const TransformComponent, const MeshComponent>(evt.entity, ts, ms);
 			meshBatcher_.addMesh(mc.layer, mc.material, mc.mesh, tc.transform, mc.region);
 		}
 		//check for particles to add
-		if (particleCache_.contains(*scene_, evt.entity)) {
+		if (particleCache_.contains(evt.entity)) {
 			auto& mc = oak::getComponent<const MeshComponent>(evt.entity, ms);
 			particleSystem_.setMesh(mc.layer, mc.material, mc.mesh, mc.region);
 		}

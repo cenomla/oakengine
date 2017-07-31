@@ -24,11 +24,11 @@ namespace oak::graphics {
 	}
 
 	void SpriteBatcher::run() {
+		batches_.clear();
 		if (sprites_.empty()) { return; }
 
 		std::sort(std::begin(sprites_), std::end(sprites_));
 
-		batches_.clear();
 
 		//create batches 
 		const Material *mat = sprites_[0].material;

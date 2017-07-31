@@ -44,9 +44,9 @@ namespace oak::graphics {
 	}
 
 	void StaticBatcher::run() {
-		if (meshes_.empty() || !needsRebatch_) { return; }
-	
+		if (!needsRebatch_) { return; }
 		batches_.clear();
+		if (meshes_.empty()) { return; }
 
 		std::sort(std::begin(meshes_), std::end(meshes_));
 
