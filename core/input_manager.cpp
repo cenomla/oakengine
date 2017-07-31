@@ -66,7 +66,17 @@ namespace oak {
 		if (it != std::end(bindings_)) {
 			return actions_[it->second];
 		} else {
-			log_print_out("action not bound: %s", action.c_str());
+			log_print_warn("action not bound: %s", action.c_str());
+			return 0;
+		}
+	}
+
+	int InputManager::getActionIndex(const oak::string& action) const {
+		const auto& it = bindings_.find(action);
+		if (it != std::end(bindings_)) {
+			return it->second - (it->second > button::max ? button::max : 0);
+		} else {
+			log_print_warn("action not bound: %s", action.c_str());
 			return 0;
 		}
 	}
@@ -76,7 +86,7 @@ namespace oak {
 		if (it != std::end(bindings_)) {
 			actions_[it->second] = state;
 		} else {
-			log_print_out("action not bound: %s", action.c_str());
+			log_print_warn("action not bound: %s", action.c_str());
 		}
 	}
 

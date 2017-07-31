@@ -16,6 +16,7 @@ namespace oak {
 	void pup(Puper& puper, float& data, const ObjInfo& info);
 	void pup(Puper& puper, double& data, const ObjInfo& info);
 	void pup(Puper& puper, bool& data, const ObjInfo& info);
+	void pup(Puper& puper, void*& data, const ObjInfo& info);
 	void pup(Puper& puper, oak::string& data, const ObjInfo& info);
 	void pup(Puper& puper, glm::vec2& data, const ObjInfo& info);
 	void pup(Puper& puper, glm::vec3& data, const ObjInfo& info);
@@ -23,20 +24,23 @@ namespace oak {
 	void pup(Puper& puper, glm::mat4& data, const ObjInfo& info);
 	
 	template<class T>
-	void pup(Puper& puper, oak::vector<T>& data, const ObjInfo& info) {
-		if (puper.getIo() == PuperIo::OUT) {
-			size_t size = data.size();
-			pup(puper, size, info + ObjInfo{ "", ObjInfo::SIZE_VAR });
-			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], info + ObjInfo{ std::to_string(i + 1).c_str() });
-			}
+	void pup(Puper& puper, T& data, const ObjInfo& info) {
+		if constexpr(std::is_pointer_v<T>) {
+			void *v = data;
+			pup(puper, v, info);
+			data = static_cast<T>(v);
 		} else {
-			size_t size = 0;
-			pup(puper, size, info + ObjInfo{ "", ObjInfo::SIZE_VAR });
-			data.resize(size);
-			for (size_t i = 0; i < size; i++) {
-				pup(puper, data[i], info + ObjInfo{ std::to_string(i + 1).c_str() });
-			}
+			static_assert("T is not a pointer type");
+		}
+	}
+
+	template<class T>
+	void pup(Puper& puper, oak::vector<T>& data, const ObjInfo& info) {
+		size_t size = data.size();
+		pup(puper, size, ObjInfo::make<size_t>(&info, "size", ObjInfo::LENGTH));
+		data.resize(size);
+		for (size_t i = 0; i < size; i++) {
+			pup(puper, data[i], ObjInfo::make<T>(&info, std::to_string(i).c_str()));
 		}
 	}
 }

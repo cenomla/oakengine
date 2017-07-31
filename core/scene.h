@@ -35,7 +35,8 @@ namespace oak {
 		ComponentStorage& getComponentStorage(size_t tid);
 		const ComponentStorage& getComponentStorage(size_t tid) const;
 
-		size_t getEntityCount() const { return entities_.size(); }
+		inline const oak::vector<EntityId>& getEntities() const { return entities_; }
+		inline size_t getEntityCount() const { return entities_.size(); }
 	private:
 		oak::vector<EntityId> entities_;
 		oak::vector<EntityId> killed_;

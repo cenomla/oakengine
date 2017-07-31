@@ -94,6 +94,14 @@ namespace oak {
 		}
 	}
 
+	void StreamPuper::pup(void*& data, const ObjInfo& info) {
+		if (io_ == PuperIo::OUT) {
+			stream_->write(data);
+		} else {
+			data = stream_->read<void*>();
+		}
+	}
+
 	void StreamPuper::pup(oak::string& data, const ObjInfo& info) {
 		if (io_ == PuperIo::OUT) {
 			stream_->write(data);

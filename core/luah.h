@@ -30,6 +30,7 @@ namespace oak {
 		void pushValue(lua_State *L, uint64_t v);
 		void pushValue(lua_State *L, float v);
 		void pushValue(lua_State *L, double v);
+		void pushValue(lua_State *L, void *v);
 		void pushValue(lua_State *L, const oak::string& v);
 
 		template<typename T>
@@ -42,6 +43,7 @@ namespace oak {
 		template<> float toValue(lua_State *L, int idx);
 		template<> double toValue(lua_State *L, int idx);
 		template<> bool toValue(lua_State *L, int idx);
+		template<> void* toValue(lua_State *L, int idx);
 		template<> oak::string toValue(lua_State *L, int idx);
 
 		bool isNil(lua_State *L, int idx);

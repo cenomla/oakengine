@@ -1,34 +1,26 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <type_traits>
 
 #include "container.h"
 
 namespace oak {
 
 	struct ObjInfo {
-		static constexpr uint32_t SIZE_VAR = 0x00000001;
-
-		oak::string name;
-		uint32_t flags = 0;
-
-		const ObjInfo& combine(const ObjInfo& other) {
-			if (!name.empty()) {
-				if (!other.name.empty()) {
-					name = other.name + "." + name;
-				}
-			} else {
-				name = other.name;
-			}
-			flags |= other.flags;
-			
-			return *this;
+		static constexpr uint32_t VOLATILE = 0x01; //data will not be the same across instances (eg. a pointer)
+		static constexpr uint32_t LENGTH = 0x02; //data will describe the parents length
+		
+		template<class T>
+		inline static ObjInfo make(const ObjInfo *p, const oak::string& n, uint32_t f = 0) {
+			return ObjInfo{ p, n, sizeof(T), f | (std::is_pointer_v<T> ? VOLATILE : 0) };
 		}
-	};
 
-	inline const ObjInfo& operator+(const ObjInfo& lhs, ObjInfo&& rhs) {
-		return rhs.combine(lhs);
-	}
+		const ObjInfo *parent;
+		oak::string name;
+		size_t size = 0;
+		uint32_t flags = 0;
+	};
 
 	enum class PuperIo {
 		IN,
@@ -50,12 +42,13 @@ namespace oak {
 		virtual void pup(float& data, const ObjInfo& info) = 0;
 		virtual void pup(double& data, const ObjInfo& info) = 0;
 		virtual void pup(bool& data, const ObjInfo& info) = 0;
+		virtual void pup(void*& data, const ObjInfo& info) = 0;
 		virtual void pup(oak::string& data, const ObjInfo& info) = 0;
 	
 		void setIo(PuperIo io) { io_ = io; }
-		PuperIo getIo() const { return io_; }
 	protected:
 		PuperIo io_ = PuperIo::OUT;
+
 	};
 
 }

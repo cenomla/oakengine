@@ -227,6 +227,10 @@ namespace oak {
 		lua_pushnumber(L, v);
 	}
 
+	void luah::pushValue(lua_State *L, void *v) {
+		lua_pushlightuserdata(L, v);
+	}
+
 	void luah::pushValue(lua_State *L, const oak::string &v) {
 		lua_pushstring(L, v.c_str());
 	}
@@ -257,6 +261,10 @@ namespace oak {
 
 	template<> bool luah::toValue(lua_State *L, int idx) {
 		return static_cast<bool>(lua_toboolean(L, idx));
+	}
+
+	template<> void* luah::toValue(lua_State *L, int idx) {
+		return lua_touserdata(L, idx);
 	}
 
 	template<> oak::string luah::toValue(lua_State *L, int idx) {
