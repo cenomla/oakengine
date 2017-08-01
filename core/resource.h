@@ -1,95 +1,60 @@
 #pragma once
 
-#include <type_traits>
+#include <atomic>
 
-#include "util/mpl.h"
-#include "oak_alloc.h"
+#include "resource_manager.h"
 #include "pup.h"
 
 namespace oak {
 
-	namespace detail {
+	template<class T>
+	struct Resource;
 
-		class ResourceStorageBase {
-		public:
-			virtual ~ResourceStorageBase() {};
-		};
-
-		template<typename T>
-		struct has_destroy {
-			template<typename U, void (U::*)()> struct SFINAE {};
-			template<typename U> static char Test(SFINAE<U, &U::destroy>*);
-			template<typename U> static int Test(...);
-			static constexpr bool value = sizeof(Test<T>(0)) == sizeof(char);
-		};
-
-		template<class T>
-		struct Resource {
-			static void destroy(T& res) {
-				if constexpr(has_destroy<T>::value) {
-					res.destroy();
-				}
-			}
-		};
-
+	template<class T>
+	void pup(Puper& puper, Resource<T>& resource, const ObjInfo& info) {
+		auto id = resource.id;
+		puper.pup(resource.id, info);
+		if (id != resource.id) {
+			resource.ptr = nullptr;
+		}
 	}
 
 	template<class T>
-	class ResourceStorage : public detail::ResourceStorageBase {
-	public:
-		typedef T value_type;
+	struct Resource {
+		template<class TF> 
+		friend void pup(Puper& puper, Resource<TF>& resource, const ObjInfo& info);
 
-		ResourceStorage(oak::Allocator *allocator = &oalloc_freelist) : allocator_{ allocator } {};
-		
-		~ResourceStorage() {
-			for (auto it : resources_) {
-				detail::Resource<T>::destroy(*it.second);
-				it.second->~T();
-				allocator_->deallocate(it.second, sizeof(T));
-			}
-			resources_.clear();
+		Resource() = default;
+		Resource(size_t i, const T* p = nullptr) : id{ i }, ptr{ p } {}
+		Resource(const oak::string& name) : Resource(std::hash<oak::string>{}(name)) {}
+
+		Resource(const Resource& other) : id{ other.id }, ptr{ other.ptr.load() } {}
+		inline void operator=(const Resource& other) { id = other.id; ptr = other.ptr.load(); }
+
+		inline const T operator*() const {
+			get();
+			return *ptr;
 		}
 
-		template<class... TArgs>
-		T& add(const oak::string& name, TArgs&&... args) {
-			size_t id = std::hash<oak::string>{}(name);
-
-			auto it = resources_.find(id);
-			if (it == std::end(resources_)) {
-				auto ptr = static_cast<T*>(allocator_->allocate(sizeof(T)));
-				new (ptr) T{ std::forward<TArgs>(args)... };
-				resources_.insert({ id, ptr });
-				return *ptr;
-			}
-
-			return *it->second;
+		inline const T* operator->() const {
+			get();
+			return ptr;
 		}
 
-		void remove(const oak::string& name) {
-			size_t id = std::hash<oak::string>{}(name);
-
-			auto it = resources_.find(id);
-			if (it != std::end(resources_)) {
-				detail::Resource<T>::destroy(*it.second);
-				it.second->~T();
-				allocator_->deallocate(it.second, sizeof(T));
-				resources_.erase(it);
-			}
+		inline operator const T*() const {
+			get();
+			return ptr;
 		}
 
-		T* require(size_t id) {
-			auto it = resources_.find(id);
-
-			if (it != std::end(resources_)) {
-				return it->second;
+		inline void get() const {
+			if (!ptr) {
+				ptr = ResourceManager::inst().require<T>(id);
 			}
-
-			return nullptr;
+			oak_assert(ptr);
 		}
 
-	private:
-		oak::unordered_map<size_t, T*> resources_;
-		oak::Allocator *allocator_;
+		size_t id = 0;
+		mutable std::atomic<const T*> ptr = nullptr;
 	};
 
 }

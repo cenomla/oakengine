@@ -5,11 +5,11 @@
 namespace oak {
 
 	void pup(Puper& puper, WindowCreateEvent& data, const ObjInfo& info) {
-		pup(puper, data.window, ObjInfo::make<void*>(&info, "window"));
+		//pup(puper, data.window, ObjInfo::make<void*>(&info, "window"));
 	}
 
 	void pup(Puper& puper, WindowCloseEvent& data, const ObjInfo& info) {
-		pup(puper, data.window, ObjInfo::make<void*>(&info, "window"));
+		//pup(puper, data.window, ObjInfo::make<void*>(&info, "window"));
 	}
 
 	void pup(Puper& puper, WindowResizeEvent& data, const ObjInfo& info) {

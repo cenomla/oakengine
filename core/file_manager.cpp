@@ -4,6 +4,7 @@
 
 #include "util/file_buffer.h"
 #include "util/string_util.h"
+#include "log.h"
 
 namespace oak {
 namespace fs = std::experimental::filesystem;
@@ -65,7 +66,7 @@ namespace fs = std::experimental::filesystem;
 		dir->links.push_back(resolvedPath);
 	}
 
-	oak::string FileManager::resolvePath(const oak::string& path) {
+	oak::string FileManager::resolvePath(const oak::string& path, bool canCreate) {
 		oak::string delimeters{ "/" };
 		oak::vector<oak::string> tokens;
 
@@ -90,7 +91,7 @@ namespace fs = std::experimental::filesystem;
 
 		//we now have the virtual directory so try to resolve the path with all of its links
 
-		//first reconstruct the path name
+		//first reconstruct the path namst reconstruct the path name
 		oak::string pathSuffix;
 
 		for (; it != end; ++it) {
@@ -99,19 +100,28 @@ namespace fs = std::experimental::filesystem;
 
 		//append path suffix to end of the virtual directories links and check if the resulting path is a valid file
 
-		for (const auto& it : dir->links) {
-			oak::string fullPath = it + pathSuffix;
+		for (const auto& link : dir->links) {
+			oak::string fullPath = link + pathSuffix;
 			if (fs::exists(fullPath)) {
 				return fullPath;
 			}
 		}
 
-		return "";
+		if (canCreate && !dir->links.empty()) {
+			return dir->links[0] + pathSuffix;
+		} else {
+			return "";
+		}
 	}
 
-	Stream FileManager::openFile(const oak::string& path) {
-		const oak::string resolvedPath = resolvePath(path);
-		FILE *file = fopen(resolvedPath.c_str(), "r+b");
+	Stream FileManager::openFile(const oak::string& path, bool canCreate) {
+		const oak::string resolvedPath = resolvePath(path, canCreate);
+		FILE *file = fopen(resolvedPath.c_str(), canCreate ? "w+b" : "r+b");
+
+		if (!file) {
+			log_print_err("failed to open file: %s", path.c_str());
+			abort();
+		}
 
 		FileBuffer *buffer = static_cast<FileBuffer*>(oalloc_freelist.allocate(sizeof(FileBuffer)));
 		new (buffer) FileBuffer{ file };

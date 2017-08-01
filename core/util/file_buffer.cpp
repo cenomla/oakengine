@@ -2,16 +2,12 @@
 
 namespace oak {
 
-	FileBuffer::FileBuffer(FILE *file) : file_{ file }, owns_{ false } {
+	FileBuffer::FileBuffer(FILE *file) : file_{ file } {
 
-	}
-
-	FileBuffer::FileBuffer(const char *path) : owns_{ true } {
-		file_ = fopen(path, "r+b");
 	}
 
 	FileBuffer::~FileBuffer() {
-		if (owns_ && file_) {
+		if (file_) {
 			fclose(file_);
 			file_ = nullptr;
 		}

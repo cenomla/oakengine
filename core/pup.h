@@ -21,18 +21,8 @@ namespace oak {
 	void pup(Puper& puper, glm::vec2& data, const ObjInfo& info);
 	void pup(Puper& puper, glm::vec3& data, const ObjInfo& info);
 	void pup(Puper& puper, glm::vec4& data, const ObjInfo& info);
+	void pup(Puper& puper, glm::mat3& data, const ObjInfo& info);
 	void pup(Puper& puper, glm::mat4& data, const ObjInfo& info);
-	
-	template<class T>
-	void pup(Puper& puper, T& data, const ObjInfo& info) {
-		if constexpr(std::is_pointer_v<T>) {
-			void *v = data;
-			pup(puper, v, info);
-			data = static_cast<T>(v);
-		} else {
-			static_assert("T is not a pointer type");
-		}
-	}
 
 	template<class T>
 	void pup(Puper& puper, oak::vector<T>& data, const ObjInfo& info) {

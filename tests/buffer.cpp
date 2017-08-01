@@ -7,7 +7,8 @@ int main(int argc, char **argv) {
 	const int32_t i32 = -2000000000;
 	const uint64_t u64 = 9000000000000;
 	const int16_t i16 = 901;
-	const float f32 = 10.001;
+	const float f32 = 10.001f;
+	const double f64 = 99.999881;
 
 	oak::ByteBuffer buffer{ 512 };
 
@@ -18,6 +19,7 @@ int main(int argc, char **argv) {
 	stream.write(i16);
 	stream.write(f32);
 	stream.write("hello world");
+	stream.write(f64);
 
 	buffer.rewind();
 
@@ -26,9 +28,10 @@ int main(int argc, char **argv) {
 	int16_t r2 = stream.read<int16_t>();
 	float r3 = stream.read<float>();
 	oak::string str = stream.read<oak::string>();
+	double r4 = stream.read<double>();
 
-	std::cout << "i32: " << r0 << ", u64: " << r1 << ", i16: " << r2 << ", f32: " << r3 << ", str: " << str << std::endl;
-	if (i32 != r0 || u64 != r1 || i16 != r2 || f32 != r3) {
+	std::cout << "i32: " << r0 << ", u64: " << r1 << ", i16: " << r2 << ", f32: " << r3 << ", str: " << str << "f64: " << r4 << std::endl;
+	if (i32 != r0 || u64 != r1 || i16 != r2 || f32 != r3 || f64 != r4) {
 		return 1;
 	}
 

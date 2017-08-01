@@ -5,6 +5,7 @@
 #include <graphics/sprite.h>
 #include <graphics/font.h>
 #include <collision.h>
+#include <resource.h>
 
 namespace oak {
 	class Puper;
@@ -21,25 +22,25 @@ struct VelocityComponent {
 };
 
 struct MeshComponent {
-	const oak::Mesh2d *mesh;
+	oak::Resource<oak::Mesh2d> mesh;
 };
 
 struct RigidBodyComponent {
-	float restituion = 0.2f;
+	float restitution = 0.2f;
 	float mass = 0.0f;
 	float invMass = mass == 0.0f ? 0.0f : 1.0f / mass;
 };
 
 struct SpriteComponent {
-	const oak::graphics::Sprite *sprite = nullptr;
-	const oak::graphics::Material *material = nullptr;
+	oak::Resource<oak::graphics::Sprite> sprite;
+	oak::Resource<oak::graphics::Material> material;
 	uint32_t layer = 0;
 };
 
 struct TextComponent {
 	oak::string text;
-	const oak::graphics::Font *font = nullptr;
-	const oak::graphics::Material *material = nullptr;
+	oak::Resource<oak::graphics::Font> font;
+	oak::Resource<oak::graphics::Material> material;
 	uint32_t layer = 0;
 };
 

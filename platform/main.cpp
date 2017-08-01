@@ -100,7 +100,7 @@ struct CollisionSystem : public oak::System {
 				continue; //do not solve velocities are separating
 			}
 			//integrate impulse
-			float e = glm::min(rbA.restituion, rbB.restituion);
+			float e = glm::min(rbA.restitution, rbB.restitution);
 			float ms = rbA.invMass + rbB.invMass;
 
 			if (ms < 0.0000001f) { continue; }
@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
 	inputManager.bind("move_left", oak::key::a, true);
 	inputManager.bind("move_right", oak::key::d, true);
 
-	fileManager.mount("{$cwd}/platform/res", "/res");
+	//fileManager.mount("{$cwd}/platform/res", "/res");
 	fileManager.mount("{$cwd}/platform", "/res");
 	fileManager.mount("{$cwd}/platform", "/res/shaders");
 	fileManager.mount("{$cwd}/core/graphics/shaders", "/res/shaders");
@@ -239,6 +239,7 @@ int main(int argc, char** argv) {
 	auto& textureHandle = resManager.get<oak::graphics::Texture>();
 	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
 	auto& materialHandle = resManager.get<oak::graphics::Material>();
+	auto& meshHandle = resManager.get<oak::Mesh2d>();
 
 	//create the scene
 	oak::Scene scene;
@@ -279,35 +280,32 @@ int main(int argc, char** argv) {
 	oak::graphics::buffer::bind(ortho_ubo);
 	oak::graphics::buffer::data(ortho_ubo, sizeof(camera), &camera);
 
-	oak::Mesh2d m1;
-	m1.vertices = oak::vector<oak::Mesh2d::Vertex>{
+	meshHandle.add("m1", oak::vector<oak::Mesh2d::Vertex>{
 		oak::Mesh2d::Vertex{ { 0.0f, 0.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 0.0f, 32.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 32.0f, 32.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 32.0f, 0.0f }, glm::vec2{ 1.0f } },
-	};
+	});
 
-	oak::Mesh2d m2;
-	m2.vertices = oak::vector<oak::Mesh2d::Vertex>{
+	meshHandle.add("m2", oak::vector<oak::Mesh2d::Vertex>{
 		oak::Mesh2d::Vertex{ { 0.0f, 0.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 16.0f, 16.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 32.0f, 0.0f }, glm::vec2{ 1.0f } },
-	};
+	});
 
-	oak::Mesh2d m3;
-	m3.vertices = oak::vector<oak::Mesh2d::Vertex>{
+	meshHandle.add("m3", oak::vector<oak::Mesh2d::Vertex>{
 		oak::Mesh2d::Vertex{ { -8.0f, 0.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { -12.0f, 16.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { -4.0f, 20.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 8.0f, 4.0f }, glm::vec2{ 1.0f } },
 		oak::Mesh2d::Vertex{ { 6.0f, 0.0f }, glm::vec2{ 1.0f } },
-	};
+	});
 
 	//create entities
 	oak::Prefab player{ "player", scene };
 	player.addComponent<TransformComponent>(glm::mat3{ 1.0f });
 	player.addComponent<VelocityComponent>(glm::vec2{ 0.0f }, glm::vec2{ 0.0f, 488.0f });
-	player.addComponent<MeshComponent>(&m1);
+	player.addComponent<MeshComponent>(oak::Resource<oak::Mesh2d>{ "m1" });
 	player.addComponent<RigidBodyComponent>(0.0f, 20.0f, 1.0f / 20.0f);
 
 	scene.activateEntity(player.createInstance());
@@ -315,23 +313,23 @@ int main(int argc, char** argv) {
 	oak::Prefab polygon{ "polygon", scene };
 	polygon.addComponent<TransformComponent>(glm::mat3{ 1.0f });
 	polygon.addComponent<VelocityComponent>();
-	polygon.addComponent<MeshComponent>(&m1);
+	polygon.addComponent<MeshComponent>(oak::Resource<oak::Mesh2d>{ "m1" });
 	polygon.addComponent<RigidBodyComponent>(0.0f, 0.0f, 0.0f);
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 6; i++) {
 		oak::EntityId e = polygon.createInstance();
-		oak::getComponent<TransformComponent>(e, scene).transform = glm::translate(glm::mat3{ 1.0f }, glm::vec2{ 64.0f + i * 33.0f, 512.0f }) * glm::rotate(glm::mat3{ 1.0f }, glm::radians(45.0f));
+		oak::getComponent<TransformComponent>(e, scene).transform = glm::translate(glm::mat3{ 1.0f }, glm::vec2{ 64.0f + i * 45.0f, 512.0f }) * glm::rotate(glm::mat3{ 1.0f }, glm::radians(45.0f));
 		scene.activateEntity(e);
 	}
 
 	oak::EntityId p2 = polygon.createInstance();
 	oak::getComponent<TransformComponent>(p2, scene).transform = glm::translate(glm::mat3{ 1.0f }, glm::vec2{ 64.0f });
-	oak::getComponent<MeshComponent>(p2, scene).mesh = &m2;
+	oak::getComponent<MeshComponent>(p2, scene).mesh = { "m2" };
 	scene.activateEntity(p2);
 
 	oak::EntityId p3 = polygon.createInstance();
 	oak::getComponent<TransformComponent>(p3, scene).transform = glm::translate(glm::mat3{ 1.0f }, glm::vec2{ 256.0f });
-	oak::getComponent<MeshComponent>(p3, scene).mesh = &m3;
+	oak::getComponent<MeshComponent>(p3, scene).mesh = { "m3" };
 	scene.activateEntity(p3);
 
 	//first frame time

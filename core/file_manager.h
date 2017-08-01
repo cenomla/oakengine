@@ -29,9 +29,9 @@ namespace oak {
 
 		void mount(const oak::string& path, const oak::string& mountPoint);
 
-		oak::string resolvePath(const oak::string& path);
+		oak::string resolvePath(const oak::string& path, bool canCreate = false);
 
-		Stream openFile(const oak::string& path);
+		Stream openFile(const oak::string& path, bool canCreate = false);
 		void closeFile(Stream& stream);
 	private:
 		VirtualDirectory root_;

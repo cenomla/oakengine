@@ -14,6 +14,13 @@ namespace oak {
 		constexpr int repeat = 2;
 	}
 
+	namespace mod_bit {
+		constexpr int shift = 0x01;
+		constexpr int control = 0x02;
+		constexpr int alt = 0x04;
+		constexpr int suprt = 0x08;
+	}
+
 	namespace button {
 		constexpr int left = 0;
 		constexpr int right = 1;
@@ -22,6 +29,7 @@ namespace oak {
 	}
 
 	namespace key {
+		//printable keys
 		constexpr int space = 32;
 		constexpr int apostrophe = 39;
 		constexpr int comma = 44;
@@ -73,7 +81,7 @@ namespace oak {
 		constexpr int w1 = 161; // non-US #1
 		constexpr int w2 = 162; // non-US #2
 
-		/* Function keys */
+		//functional keys
 		constexpr int esc = 256;
 		constexpr int enter = 257;
 		constexpr int tab = 258;

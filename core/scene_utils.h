@@ -50,6 +50,9 @@ namespace oak {
 		return scene.hasComponent(entity, util::type_id<detail::BaseComponent, T>::id);
 	}
 
+	void save(const oak::string& path, Scene& scene);
+	void load(const oak::string& path, Scene& scene);
+
 }
 
 

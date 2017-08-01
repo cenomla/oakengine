@@ -13,7 +13,7 @@ namespace oak {
 		virtual void construct(void *object, const void *src) const = 0;
 		virtual void copy(void *object, const void *src) const = 0;
 		virtual void destruct(void *object) const = 0;
-		virtual void serialize(Puper &puper, void *data, const ObjInfo &info) const = 0;
+		virtual void serialize(Puper &puper, void *data, const ObjInfo *parent) const = 0;
 		virtual size_t getId() const = 0;
 		size_t getSize() const { return size_; }
 		const oak::string& getName() const { return name_; }
@@ -42,8 +42,8 @@ namespace oak {
 			static_cast<T*>(object)->~T();
 		}
 
-		void serialize(Puper &puper, void *data, const ObjInfo &info) const override {
-			pup(puper, *static_cast<T*>(data), info);
+		void serialize(Puper &puper, void *data, const ObjInfo *parent) const override {
+			pup(puper, *static_cast<T*>(data), ObjInfo::make<T>(parent, name_));
 		}
 
 		size_t getId() const override {

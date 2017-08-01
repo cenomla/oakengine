@@ -9,7 +9,6 @@ namespace oak {
 	class FileBuffer : public BufferBase {
 	public:
 		FileBuffer(FILE *file);
-		FileBuffer(const char *path);
 		~FileBuffer();
 
 		void set() override;
@@ -24,7 +23,6 @@ namespace oak {
 	private:
 		FILE *file_ = nullptr;
 		int mark_ = 0;
-		bool owns_;
 	};
 
 }

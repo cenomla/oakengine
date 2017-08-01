@@ -27,6 +27,7 @@ namespace oak {
 	}
 
 	void Scene::destroyEntity(EntityId entity) {
+		deactivateEntity(entity);
 		generations_[entity]++;
 		killed_.push_back(entity);
 		EventManager::inst().getQueue<EntityDestroyEvent>().emit({ entity });
@@ -43,11 +44,11 @@ namespace oak {
 	}
 
 	bool Scene::isEntityAlive(EntityId entity) const {
-		return generations_[entity] == entity.generation;
+		return generations_.size() > entity.index ? generations_[entity] == entity.generation : false;
 	}
 
 	bool Scene::isEntityActive(EntityId entity) const {
-		return flags_[entity][0];
+		return flags_.size() > entity.index ? flags_[entity][0] : false;
 	}
 
 	void* Scene::addComponent(EntityId entity, size_t tid) {
@@ -95,7 +96,11 @@ namespace oak {
 	}
 
 	void Scene::reset() {
-		for (const auto& e : entities_) {
+		auto& deactivateQueue = EventManager::inst().getQueue<EntityDeactivateEvent>();
+		auto& destroyQueue = EventManager::inst().getQueue<EntityDestroyEvent>();
+		for (const auto& e : entities_) { 
+			deactivateQueue.emit({ e });			
+			destroyQueue.emit({ e });
 			removeAllComponents(e);
 		}
 		for (auto& a : flags_) {
@@ -104,7 +109,6 @@ namespace oak {
 		entities_.clear();
 		generations_.clear();
 		freeIndices_.clear();
-		componentPools_.clear();
 	}
 
 	void Scene::addComponentStorage(ComponentStorage *storage) {

@@ -34,6 +34,12 @@ namespace oak {
 		pup(puper, data.w, ObjInfo::make<float>(&info, "w"));
 	}
 
+	void pup(Puper& puper, glm::mat3& data, const ObjInfo& info) {
+		pup(puper, data[0], ObjInfo::make<glm::vec3>(&info, "[0]"));
+		pup(puper, data[1], ObjInfo::make<glm::vec3>(&info, "[1]"));
+		pup(puper, data[2], ObjInfo::make<glm::vec3>(&info, "[2]"));
+	}
+
 	void pup(Puper& puper, glm::mat4& data, const ObjInfo& info) {
 		pup(puper, data[0], ObjInfo::make<glm::vec4>(&info, "[0]"));
 		pup(puper, data[1], ObjInfo::make<glm::vec4>(&info, "[1]"));

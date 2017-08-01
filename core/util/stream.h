@@ -9,7 +9,7 @@ namespace oak {
 
 	template <class T>
 	T swap_endian(T u) {
-		if constexpr(1) {
+		if constexpr(0) {
 			static_assert(CHAR_BIT == 8, "CHAR_BIT != 8");
 
 			union {

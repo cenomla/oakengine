@@ -13,6 +13,15 @@ namespace oak {
 	void EntityCache::update(const Scene& scene) {
 		bool needsSort = false;
 
+		for (const auto& evt : EventManager::inst().getQueue<EntityDeactivateEvent>()) {
+			ensureSize(evt.entity.index);
+			//if the entity is contained then remove it
+			if (contains_[evt.entity]) {
+				removeEntity(evt.entity);
+				needsSort = true;
+			}
+		}
+
 		for (const auto& evt : EventManager::inst().getQueue<EntityActivateEvent>()) {
 			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
@@ -27,15 +36,6 @@ namespace oak {
 					removeEntity(evt.entity);
 					needsSort = true;
 				}
-			}
-		}
-
-		for (const auto& evt : EventManager::inst().getQueue<EntityDeactivateEvent>()) {
-			ensureSize(evt.entity.index);
-			//if the entity is contained then remove it
-			if (contains_[evt.entity]) {
-				removeEntity(evt.entity);
-				needsSort = true;
 			}
 		}
 
