@@ -56,26 +56,6 @@ void DeferredRenderer::init() {
 	shaderInfo.vertex = "/res/shaders/deferred/sao/vert.glsl";
 	shaderInfo.fragment = "/res/shaders/deferred/sao/blur.glsl";
 	aaBlur_ = oak::graphics::shader::create(shaderInfo);
-	
-	buffer_.create({ oak::vector<oak::graphics::AttributeType>{ 
-		oak::graphics::AttributeType::POSITION2D
-	} });
-
-	const float vdata[] = {
-		-1.0f, -1.0f,
-		1.0f, -1.0f, 
-		1.0f, 1.0f,
-		-1.0f, 1.0f
-	};
-
-	const unsigned int edata[] = {
-		0, 1, 2, 2, 3, 0
-	};
-
-	buffer_.bind();
-	buffer_.data(0, sizeof(vdata), vdata);
-	buffer_.data(1, sizeof(edata), edata);
-	buffer_.unbind();
 
 	skyBuffer_.create({ oak::vector<oak::graphics::AttributeType>{
 		oak::graphics::AttributeType::POSITION
@@ -170,6 +150,10 @@ void DeferredRenderer::init() {
 		"/res/textures/envmap_ocean/front.jpg"
 	}, texInfo);
 
+	//setup materials
+	skyMaterial_.shader = &box_;
+	skyMaterial_.textures[0] = &sky_;
+
 	//ssao buffer
 	oak::graphics::FramebufferInfo framebufferInfo;
 	framebufferInfo.useRenderbuffer = false;
@@ -216,7 +200,6 @@ void DeferredRenderer::init() {
 }
 
 void DeferredRenderer::terminate() {
-	buffer_.destroy();
 	skyBuffer_.destroy();
 
 	gbuffer_.destroy();
@@ -273,16 +256,13 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::texture::bind(normal_, 1);
 	oak::graphics::texture::bind(depth_, 2);
 
-	//bind the fullscreen quad buffer
-	buffer_.bind();
-
 	//prerender sao
 	oak::graphics::framebuffer::bind(cszBuffer_[0]);
 	api->clear(true);
 
 	oak::graphics::shader::bind(reconstruct_);
 	
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	api->drawFullscreen({});
 
 	oak::graphics::texture::bind(csz_, 2);
 	oak::graphics::shader::bind(minify_);
@@ -292,7 +272,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 		api->clear(true);
 		
 		oak::graphics::shader::setUniform(minify_, "previousMIPNumber", i - 1);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		api->drawFullscreen({});
 	}
 
 	//render ssao
@@ -304,7 +284,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 
 	oak::graphics::shader::bind(sao_);
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	api->drawFullscreen({});
 
 	//blur pass
 	oak::graphics::framebuffer::bind(blurBuffer_[1]);
@@ -314,7 +294,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::shader::setUniform(aaBlur_, "axis", glm::ivec2{ 0, 1 });
 	oak::graphics::texture::bind(blur_[0], 3);
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	api->drawFullscreen({});
 
 	oak::graphics::framebuffer::bind(saobuffer_);
 	api->clear(true);
@@ -322,7 +302,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::shader::setUniform(aaBlur_, "axis", glm::ivec2{ 1, 0 });
 	oak::graphics::texture::bind(blur_[1], 3);
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	api->drawFullscreen({});
 
 	//render lighting
 	oak::graphics::framebuffer::bind(post_);
@@ -333,22 +313,17 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::texture::bind(depth_, 2);
 
 	oak::graphics::shader::bind(light_);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	api->drawFullscreen({});
 
 	//render skybox
 	state.depthOp = oak::graphics::BoolOp::LEQUAL;
 	state.drawMask.depth = false;	
 	api->setState(state);
-	oak::graphics::shader::bind(box_);
-	oak::graphics::texture::bind(sky_, 0);
 
-	skyBuffer_.bind();
-
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	api->draw({ &skyBuffer_, &skyMaterial_, 0, 36, 0, oak::graphics::Batch::DRAW_TRIANGLES });
 
 	state.depthOp = oak::graphics::BoolOp::NONE;
 	state.drawMask.depth = true;
-	
 	
 	//aa
 	oak::graphics::framebuffer::unbind();
@@ -360,9 +335,7 @@ void DeferredRenderer::render(oak::graphics::Api *api) {
 	oak::graphics::texture::bind(aa_, 0);
 	oak::graphics::shader::bind(fxaa_);
 
-	buffer_.bind();
-
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	api->drawFullscreen({});
 
 	oak::graphics::vertex_array::unbind();
 }

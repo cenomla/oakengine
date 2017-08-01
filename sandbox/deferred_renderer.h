@@ -4,6 +4,7 @@
 #include <graphics/shader.h>
 #include <graphics/buffer.h>
 #include <graphics/buffer_storage.h>
+#include <graphics/material.h>
 
 #include "renderer.h"
 
@@ -30,7 +31,6 @@ private:
 	oak::graphics::Shader aaBlur_;
 	oak::graphics::Shader fxaa_;
 	oak::graphics::Shader box_;
-	oak::graphics::BufferStorage buffer_;
 	oak::graphics::BufferStorage skyBuffer_;
 	oak::graphics::Texture albedo_;
 	oak::graphics::Texture normal_;
@@ -40,4 +40,5 @@ private:
 	oak::graphics::Texture sky_;
 	oak::graphics::Texture csz_;
 	oak::graphics::Texture blur_[2];
+	oak::graphics::Material skyMaterial_;
 };

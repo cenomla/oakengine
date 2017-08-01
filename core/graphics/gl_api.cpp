@@ -162,6 +162,26 @@ namespace oak::graphics {
 			BlendMode::NONE
 		};
 
+		fullscreenBuffer_.create({ oak::vector<oak::graphics::AttributeType>{ 
+			oak::graphics::AttributeType::POSITION2D
+		} });
+
+		const float vdata[] = {
+			-1.0f, -1.0f,
+			1.0f, -1.0f, 
+			1.0f, 1.0f,
+			-1.0f, 1.0f
+		};
+
+		const unsigned int edata[] = {
+			0, 1, 2, 2, 3, 0
+		};
+
+		fullscreenBuffer_.bind();
+		fullscreenBuffer_.data(0, sizeof(vdata), vdata);
+		fullscreenBuffer_.data(1, sizeof(edata), edata);
+		fullscreenBuffer_.unbind();
+
 		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
 		InputManager::inst().update();
 	}
@@ -181,7 +201,9 @@ namespace oak::graphics {
 
 	void GLApi::draw(const Batch& batch) {
 		//bind material
-		oak::graphics::shader::bind(*batch.material->shader);
+		if (batch.material->shader) {
+			oak::graphics::shader::bind(*batch.material->shader);
+		}
 		for (int i = 0; i < 16; i++) {
 			if (batch.material->textures[i] != nullptr) {
 				oak::graphics::texture::bind(*batch.material->textures[i], i);
@@ -199,6 +221,19 @@ namespace oak::graphics {
 		} else {
 			glDrawArrays(((batch.flags & Batch::DRAW_MASK) >> 1) - 1, batch.offset, batch.count);
 		}
+	}
+
+	void GLApi::drawFullscreen(const Material& material) {
+		if (material.shader) {
+			oak::graphics::shader::bind(*material.shader);
+		}
+		for (int i = 0; i < 16; i++) {
+			if (material.textures[i] != nullptr) {
+				oak::graphics::texture::bind(*material.textures[i], i);
+			}
+		}
+		fullscreenBuffer_.bind();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
 
 	void GLApi::swap() {

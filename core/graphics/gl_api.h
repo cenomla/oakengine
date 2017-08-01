@@ -31,11 +31,13 @@ namespace oak::graphics {
 
 		void clear(bool color, bool depth, bool stencil) override;
 		void draw(const Batch& batch) override;
+		void drawFullscreen(const Material& material) override;
 		void swap() override;
 
 	private:
 		GLFWwindow *window_;
 		Api::State currentState_;
+		BufferStorage fullscreenBuffer_;
 	};
 
 }

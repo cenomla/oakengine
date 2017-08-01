@@ -5,6 +5,7 @@
 namespace oak::graphics {
 
 	struct Batch;
+	struct Material;
 
 	//graphical enums
 	enum class TextureFormat {
@@ -154,6 +155,7 @@ namespace oak::graphics {
 
 		virtual void clear(bool color = false, bool depth = false, bool stencil = false) = 0;
 		virtual void draw(const Batch& batch) = 0;
+		virtual void drawFullscreen(const Material& material) = 0;
 		virtual void swap() = 0;
 	};
 
