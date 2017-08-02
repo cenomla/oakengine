@@ -23,8 +23,9 @@ namespace fs = std::experimental::filesystem;
 	void FileManager::mount(const oak::string& path, const oak::string& mountPoint) {
 		//resolve path on real filesystem (replace {$variables})
 		oak::string resolvedPath;
+		const oak::string home = getenv("HOME");
+		const oak::string install = home + "/Workspace/OakEngine";
 		const oak::string cwd = ".";
-		const oak::string home = "~";
 		if (path.front() == '{') {
 			size_t pos = path.find('}');
 			const oak::string &t = path.substr(0, pos + 1);
@@ -32,7 +33,7 @@ namespace fs = std::experimental::filesystem;
 			if (t == "{$cwd}") {
 				resolvedPath = cwd + suffix;
 			} else if (t == "{$installDir}") {
-				resolvedPath = cwd + suffix;
+				resolvedPath = install + suffix;
 			} else if (t == "{$userHome}") {
 				resolvedPath = home + suffix;
 			} else {
