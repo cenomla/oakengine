@@ -27,21 +27,20 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 
 ### Building:
 
-Oak engine uses the sconstruct build system
+Oak engine uses the meson build system
 
 ##### Linux instructions:
 ~~~~
-sudo apt-get install scons
+sudo apt-get install meson
 ~~~~
 Or your distros equivalent command.
 
 Then from there you just cd to the directory where the source is located and
 ~~~~
-scons
-~~~~
-or
-~~~~
-scons <debug|release>
+mkdir build
+cd build
+meson ..
+ninja
 ~~~~
 
 ##### Windows/Mac:
