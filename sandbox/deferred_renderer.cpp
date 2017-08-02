@@ -6,7 +6,6 @@
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <graphics/material.h>
 #include <graphics/gl_api.h>
