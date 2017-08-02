@@ -17,10 +17,11 @@ Oak engine is small game engine aimed at being lightweight, fast and extensible 
 
 | Library | Site |
 | --- | --- |
-| glfw | www.glfw.org |
 | glad | www.github.com/Dav1dde/glad |
-| glm | www.glm.g-truc.net |
+| glfw | www.glfw.org |
+| soundio | www.libsound.io |
 | lua | www.lua.org |
+| glm | www.glm.g-truc.net |
 | stb | www.github.com/nothings/stb |
 | oail | www.assimp.sourceforge.net |
 
