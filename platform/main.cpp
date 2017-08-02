@@ -188,10 +188,10 @@ int main(int argc, char** argv) {
 	inputManager.bind("move_right", oak::key::d, true);
 
 	//fileManager.mount("{$cwd}/platform/res", "/res");
-	fileManager.mount("{$cwd}/platform", "/res");
-	fileManager.mount("{$cwd}/platform", "/res/shaders");
-	fileManager.mount("{$cwd}/core/graphics/shaders", "/res/shaders");
-	fileManager.mount("{$cwd}/core/graphics/shaders/forward", "/res/shaders");
+	fileManager.mount("{$installDir}/platform", "/res");
+	fileManager.mount("{$installDir}/platform", "/res/shaders");
+	fileManager.mount("{$installDir}/core/graphics/shaders", "/res/shaders");
+	fileManager.mount("{$installDir}/core/graphics/shaders/forward", "/res/shaders");
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();

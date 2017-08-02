@@ -8,6 +8,8 @@ namespace oak::graphics {
 
 class Renderer {
 public:
+	virtual ~Renderer() {};
+
 	virtual void render(oak::graphics::Api *api) = 0;
 	virtual void setPipeline(const Pipeline *pipeline) = 0;
 };

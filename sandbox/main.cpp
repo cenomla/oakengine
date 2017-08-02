@@ -141,8 +141,8 @@ int main(int argc, char** argv) {
 	inputManager.bind("move_up", oak::key::space, true);
 	inputManager.bind("move_down", oak::key::lshift, true);
 
-	fileManager.mount("{$cwd}/sandbox/res", "/res");
-	fileManager.mount("{$cwd}/core/graphics/shaders", "/res/shaders");
+	fileManager.mount("{$installDir}/sandbox/res", "/res");
+	fileManager.mount("{$installDir}/core/graphics/shaders", "/res/shaders");
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();

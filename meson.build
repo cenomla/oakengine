@@ -18,6 +18,8 @@ deps += cxx_compiler.find_library('m', required : false)
 deps += cxx_compiler.find_library('pthread', required : false)
 deps += cxx_compiler.find_library('dl', required : false)
 
+add_global_arguments('-Wno-pragmas', language : 'cpp')
+
 subdir('lib')
 subdir('core')
 subdir('sandbox')
