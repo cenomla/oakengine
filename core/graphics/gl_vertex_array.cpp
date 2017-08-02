@@ -6,6 +6,8 @@
 
 namespace oak::graphics::GLVertexArray {
 
+	static uint32_t bound;
+
 	uint32_t create() {
 		uint32_t id;
 		glGenVertexArrays(1, &id);
@@ -17,11 +19,17 @@ namespace oak::graphics::GLVertexArray {
 	}
 
 	void bind(uint32_t id) {
-		glBindVertexArray(id);
+		if (id != bound) {
+			glBindVertexArray(id);
+			bound = id;
+		}
 	}
 
 	void unbind() {
-		glBindVertexArray(0);
+		if (bound != 0) {
+			glBindVertexArray(0);
+			bound = 0;
+		}
 	}
 
 	static const GLenum gltype[] = {

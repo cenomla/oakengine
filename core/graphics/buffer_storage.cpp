@@ -4,8 +4,6 @@
 
 namespace oak::graphics {
 
-	uint32_t BufferStorage::bound = 0;
-
 	void BufferStorage::create(const AttributeLayout& layout) {
 		//standard opengl vertex array setup with index buffer
 		vao_ = vertex_array::create();
@@ -21,7 +19,7 @@ namespace oak::graphics {
 		info.type = BufferType::ELEMENT;
 		buffers_[1] = buffer::create(info);
 		buffer::bind(buffers_[1]);
-		
+
 		vertex_array::unbind();
 	}
 
@@ -38,17 +36,11 @@ namespace oak::graphics {
 	}
 
 	void BufferStorage::bind() const {
-		if (vao_ != bound) {
-			vertex_array::bind(vao_);
-			bound = vao_;
-		}
+		vertex_array::bind(vao_);
 	}
 
 	void BufferStorage::unbind() const {
-		if (bound != 0) {
-			vertex_array::unbind();
-			bound = 0;
-		}
+		vertex_array::unbind();
 	}
 
 	void* BufferStorage::map(int index) {

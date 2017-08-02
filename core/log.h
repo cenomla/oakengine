@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "util/byte_buffer.h"
+#include "util/stream.h"
 #include "container.h"
 
 #ifdef DEBUG
@@ -15,10 +15,6 @@
 #define log_print_err(t, ...) oak::log::cerr.printf(t, log_level, __FILE__, __LINE__, ##__VA_ARGS__)
 
 namespace oak::log {
-
-	struct Stream {
-		virtual void write(const void *source, size_t size) = 0;
-	};
 
 	enum class Level {
 		MINIMAL,

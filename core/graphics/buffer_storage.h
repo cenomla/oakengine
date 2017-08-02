@@ -25,7 +25,6 @@ namespace oak::graphics {
 		void data(int index, size_t size, const void *data);
 
 	private:
-		static uint32_t bound;
 		uint32_t vao_;
 		Buffer buffers_[2];
 	};
