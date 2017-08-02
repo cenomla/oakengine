@@ -8,6 +8,7 @@
 
 #include <graphics/gl_api.h>
 #include <graphics/camera.h>
+#include <util/file_buffer.h>
 #include <collision.h>
 #include <log.h>
 #include <file_manager.h>
@@ -27,12 +28,6 @@
 #include "render_system.h"
 #include "components.h"
 #include "console.h"
-
-struct stdoutstream : public oak::log::Stream {
-	void write(const void *source, size_t size) override {
-		fwrite(source, 1, size, stdout);
-	}
-};
 
 bool isRunning = false;
 
@@ -173,10 +168,11 @@ struct CollisionSystem : public oak::System {
 
 int main(int argc, char** argv) {
 	//setup log
-	stdoutstream sos;
-	oak::log::cout.addStream(&sos);
-	oak::log::cwarn.addStream(&sos);
-	oak::log::cerr.addStream(&sos);
+	oak::FileBuffer fb{ stdout };
+	oak::Stream stream{ &fb };
+	oak::log::cout.addStream(&stream);
+	oak::log::cwarn.addStream(&stream);
+	oak::log::cerr.addStream(&stream);
 
 	//init engine managers
 	oak::EventManager evtManager;

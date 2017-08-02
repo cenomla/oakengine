@@ -17,6 +17,7 @@ namespace oak {
 	class Allocator {
 	public:
 		Allocator(Allocator *parent, uint32_t alignment);
+		virtual ~Allocator();
 
 		virtual void* allocate(size_t size) = 0;
 		virtual void deallocate(void *ptr, size_t size) = 0;

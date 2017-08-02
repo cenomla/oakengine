@@ -148,6 +148,8 @@ namespace oak::graphics {
 			BlendMode blendMode = BlendMode::NONE;
 		};
 
+		virtual ~Api() {};
+
 		virtual void init() = 0;
 		virtual void terminate() = 0;
 		

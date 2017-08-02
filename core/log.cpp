@@ -23,6 +23,7 @@ namespace oak::log {
 	}
 
 	void Logger::print(const char* text, Level level, const char* file, int line) {
+		memset(buffer_, 0, 2048);
 		//get time info
 		time_t t = time(NULL);
 		struct tm *tm = localtime(&t);
@@ -48,7 +49,7 @@ namespace oak::log {
 
 	void Logger::flush() {
 		for (auto& stream : streams_) {
-			stream->write(buffer_, strlen(buffer_));
+			stream->write(buffer_);
 		}
 	}
 

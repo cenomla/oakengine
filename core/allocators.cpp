@@ -8,6 +8,8 @@ namespace oak {
 
 	Allocator::Allocator(Allocator *parent, uint32_t alignment) : parent_{ parent }, alignment_{ alignment } {}
 
+	Allocator::~Allocator() {}
+
 	ProxyAllocator::ProxyAllocator() : Allocator{ nullptr, 64 }, memList_{ nullptr }, numAllocs_{ 0 } {
 
 	}

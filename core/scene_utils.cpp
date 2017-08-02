@@ -43,7 +43,7 @@ namespace oak {
 			auto& filter = scene.getComponentFilter(entity);
 			auto active = scene.isEntityActive(entity);
 			auto componentCount = filter.count();
-			auto entityInfo = ObjInfo::make<EntityId>(&info, oak::string{ "entity[" + std::to_string(i) + "]" });
+			auto entityInfo = ObjInfo::make<EntityId>(&info, oak::string{ "entity[" } + std::to_string(i).c_str() + "]");
 			pup(puper, active, ObjInfo::make<size_t>(&entityInfo, "active"));
 			pup(puper, componentCount, ObjInfo::make<size_t>(&entityInfo, "componentCount"));
 			for (size_t j = 0; j < config::MAX_COMPONENTS; j++) {
@@ -77,7 +77,7 @@ namespace oak {
 		oak_assert(maxComponents == config::MAX_COMPONENTS);
 
 		for (size_t i = 0; i < entityCount; i++) {
-			auto entityInfo = ObjInfo::make<EntityId>(&info, oak::string{ "entity[" + std::to_string(i) + "]" });
+			auto entityInfo = ObjInfo::make<EntityId>(&info, oak::string{ "entity[" } + std::to_string(i).c_str() + "]");
 			EntityId entity = scene.createEntity();
 			bool active;
 			size_t componentCount;

@@ -13,6 +13,7 @@
 #include <graphics/shader.h>
 #include <graphics/mesh.h>
 #include <graphics/camera.h>
+#include <util/file_buffer.h>
 #include <log.h>
 #include <file_manager.h>
 #include <system_manager.h>
@@ -110,49 +111,20 @@ private:
 
 };
 
-struct stdoutstream : public oak::log::Stream {
-	void write(const void *source, size_t size) override {
-		fwrite(source, 1, size, stdout);
-	}
-};
-
-struct logfilestream : public oak::log::Stream {
-	void open() {
-		if (file == nullptr) {
-			file = fopen("log", "w");
-		}
-	}
-
-	void close() {
-		if (file != nullptr) {
-			fclose(file);
-			file = nullptr;
-		}
-	}
-
-	void write(const void *source, size_t size) override {
-		if (file != nullptr) {
-			fwrite(source, 1, size, file);
-			fflush(file);
-		}
-	}
-
-	FILE *file = nullptr;
-};
-
 bool isRunning = false;
 
 int main(int argc, char** argv) {
 	//setup log
-	stdoutstream sos;
-	logfilestream lfs;
-	lfs.open();
-	oak::log::cout.addStream(&sos);
-	oak::log::cout.addStream(&lfs);
-	oak::log::cwarn.addStream(&sos);
-	oak::log::cwarn.addStream(&lfs);
-	oak::log::cerr.addStream(&sos);
-	oak::log::cerr.addStream(&lfs);
+	oak::FileBuffer sfb{ stdout };
+	oak::FileBuffer lfb{ fopen("log", "w") };
+	oak::Stream ss{ &sfb };
+	oak::Stream ls{ &lfb };
+	oak::log::cout.addStream(&ss);
+	oak::log::cout.addStream(&ls);
+	oak::log::cwarn.addStream(&ss);
+	oak::log::cwarn.addStream(&ls);
+	oak::log::cerr.addStream(&ss);
+	oak::log::cerr.addStream(&ls);
 
 	//init engine managers
 	oak::EventManager evtManager;
@@ -481,8 +453,6 @@ int main(int argc, char** argv) {
 	sceneRenderer.terminate();
 	spriteRenderer.terminate();
 	scene.reset();
-
-	lfs.close();
 
 	return 0;
 }

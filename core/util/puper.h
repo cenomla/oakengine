@@ -13,7 +13,7 @@ namespace oak {
 		
 		template<class T>
 		inline static ObjInfo make(const ObjInfo *p, const oak::string& n, uint32_t f = 0) {
-			return ObjInfo{ p, n, sizeof(T), f | (std::is_pointer_v<T> ? VOLATILE : 0) };
+			return ObjInfo{ p, n, sizeof(T), f | (std::is_pointer<T>::value ? VOLATILE : 0) };
 		}
 
 		const ObjInfo *parent;

@@ -1,28 +1,24 @@
 #include <cstdio>
+#include <util/file_buffer.h>
 #include <file_manager.h>
 #include <log.h>
 
-struct stdoutstream : public oak::log::Stream {
-	void write(const void *source, size_t size) override {
-		fwrite(source, 1, size, stdout);
-	}
-};
-
 int main(int argc, char **argv) {
 	//setup log
-	stdoutstream sos;
-	oak::log::cout.addStream(&sos);
-	oak::log::cwarn.addStream(&sos);
-	oak::log::cerr.addStream(&sos);
+	oak::FileBuffer fb{ stdout };
+	oak::Stream ls{ &fb };
+	oak::log::cout.addStream(&ls);
+	oak::log::cwarn.addStream(&ls);
+	oak::log::cerr.addStream(&ls);
 	
 
 	oak::FileManager fm;
 
 	fm.mount("{$installDir}", "/");
-	fm.mount("{$cwd}", "/config");
-	fm.mount("{$cwd}/tests/res/options", "/config");
-	fm.mount("{$cwd}/tests/res/data/options", "/config");
-	fm.mount("{$cwd}/tests/res/options/subdir/settings/how_to_fly", "/config/how_to_fly");
+	fm.mount("{$installDir}", "/config");
+	fm.mount("{$installDir}/tests/res/options", "/config");
+	fm.mount("{$installDir}/tests/res/data/options", "/config");
+	fm.mount("{$installDir}/tests/res/options/subdir/settings/how_to_fly", "/config/how_to_fly");
 
 
 	printf("resolved path: %s -> %s\n", "/config/engine", fm.resolvePath("/config/engine").c_str());
@@ -35,8 +31,6 @@ int main(int argc, char **argv) {
 
 
 	printf("%s\n", str.c_str());
-
-	fm.closeFile(stream);
 
 	return 0;
 }

@@ -1,11 +1,8 @@
 .sconsign.dblite
 .vscode
 .luacheckrc
-bin/obj
-bin/debug
-bin/profile
+build
 log
-sandbox/save
 TODO
 gmon.out
 gprof.output

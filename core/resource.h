@@ -24,7 +24,7 @@ namespace oak {
 		template<class TF> 
 		friend void pup(Puper& puper, Resource<TF>& resource, const ObjInfo& info);
 
-		Resource() = default;
+		Resource() : id{ 0 }, ptr{ nullptr } {}
 		Resource(size_t i, const T* p = nullptr) : id{ i }, ptr{ p } {}
 		Resource(const oak::string& name) : Resource(std::hash<oak::string>{}(name)) {}
 
