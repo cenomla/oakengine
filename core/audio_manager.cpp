@@ -1,3 +1,4 @@
+
 #include "audio_manager.h"
 
 #define STB_VORBIS_HEADER_ONLY
@@ -10,18 +11,22 @@
 
 namespace oak {
 
-	static stb_vorbis *file = nullptr;
-	static stb_vorbis_info info;
+	struct AudioUserData {
+		stb_vorbis *vorbis;
+		stb_vorbis_info info;
+	};
+
+	static AudioUserData data;
+
 	static void write_callback(SoundIoOutStream *outStream, int frameCountMin, int frameCountMax) {
+		AudioUserData *ud = static_cast<AudioUserData*>(outStream->userdata);
 		const SoundIoChannelLayout *layout = &outStream->layout;
 		SoundIoChannelArea *areas;
 		int framesLeft = frameCountMax;
 		int err;
 
-		float br[1024];
-		float bl[1024];
-		float *buffer[2] { br, bl };
-		int offset = 1024, count = 0;
+		float sample;
+		float *buffer[16] { &sample };
 
 		while (framesLeft > 0) {
 			int frameCount = framesLeft;
@@ -36,27 +41,17 @@ namespace oak {
 				break;
 			}
 
-			const SoundIoChannelLayout *layout = &outStream->layout;
-
-			oak_assert(info.channels <= layout->channel_count);
-
-
-
 			//write to buffer
 			for (int f = 0; f < frameCount; f++) {
-				if (offset >= 1024) {
-					count = stb_vorbis_get_samples_float(file, info.channels, buffer, 1024);
-					offset = 0;
-					if (!count) {
-						stb_vorbis_seek_start(file);
-						break; 
-					}
+				int count = stb_vorbis_get_samples_float(ud->vorbis, ud->info.channels, buffer, 1);
+				if (!count) {
+					//stb_vorbis_seek_start(ud->vorbis);
+					return;
 				}
-				for (int c = 0; c < info.channels; c++) {
-					*reinterpret_cast<float*>(areas[c].ptr) = buffer[c][offset];
+				for (int c = 0; c < layout->channel_count; c++) {
+					*reinterpret_cast<float*>(areas[c].ptr) = *buffer[c % ud->info.channels]; 
 					areas[c].ptr += areas[c].step;
 				}
-				offset ++;
 			}
 
 			err = soundio_outstream_end_write(outStream);
@@ -85,25 +80,22 @@ namespace oak {
 		oak_assert(instance);
 		instance = nullptr;
 		disconnect();
-		if (file) {
-			stb_vorbis_close(file);
+		if (data.vorbis) {
+			stb_vorbis_close(data.vorbis);
 		}
 	}
 
 	void AudioManager::load(const oak::string& path) {
 		auto resolvedPath = FileManager::inst().resolvePath(path);
-		file = stb_vorbis_open_filename(resolvedPath.c_str(), nullptr, nullptr);
-		if (!file) {
+		data.vorbis = stb_vorbis_open_filename(resolvedPath.c_str(), nullptr, nullptr);
+		if (!data.vorbis) {
 			log_print_err("failed to open audio file: %s", path.c_str());
 			abort();
 		}
 
-		info = stb_vorbis_get_info(file);
-		if (info.channels == 2) {
-			//stereo
-		} else {
-			//mono
-		}
+		data.info = stb_vorbis_get_info(data.vorbis);
+		
+
 	}
 
 	void AudioManager::update() {
@@ -148,6 +140,7 @@ namespace oak {
 		}
 		stream_->format = SoundIoFormatFloat32NE;		
 		stream_->write_callback = write_callback;
+		stream_->userdata = &data;
 
 		err = soundio_outstream_open(stream_);
 		if (err) {
