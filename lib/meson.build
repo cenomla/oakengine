@@ -47,5 +47,7 @@ glm_include = include_directories('glm')
 
 stb_include = include_directories('stb')
 
+stb = static_library('stbvorbis', 'stb/stb_vorbis.c')
+
 lib_includes = [glad_include, glfw_include, sio_include, lua_include, glm_include, stb_include]
 

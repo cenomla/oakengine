@@ -2,6 +2,7 @@
 
 oak_sources = [
 	'allocators.cpp',
+	'audio_manager.cpp',
 	'collision.cpp',
 	'component_storage.cpp',
 	'core_components.cpp',
@@ -56,6 +57,17 @@ oak_include = include_directories('.')
 
 
 
-oak = static_library('oak', oak_sources, include_directories : lib_includes, cpp_args : '-std=c++17', objects : [ glad.extract_all_objects(), glfw.extract_all_objects(), lua.extract_all_objects() ])
+oak = static_library(
+	'oak', 
+	oak_sources, 
+	include_directories : lib_includes, 
+	cpp_args : '-std=c++17', 
+	objects : [
+		glad.extract_all_objects(), 
+		glfw.extract_all_objects(), 
+		sio.extract_all_objects(),
+		lua.extract_all_objects(), 
+		stb.extract_all_objects()
+	])
 
 lib_includes += oak_include

@@ -16,6 +16,7 @@
 #include <resource_manager.h>
 #include <event_manager.h>
 #include <input_manager.h>
+#include <audio_manager.h>
 #include <component_storage.h>
 #include <core_components.h>
 #include <input_events.h>
@@ -192,6 +193,8 @@ int main(int argc, char** argv) {
 	fileManager.mount("{$installDir}/platform", "/res/shaders");
 	fileManager.mount("{$installDir}/core/graphics/shaders", "/res/shaders");
 	fileManager.mount("{$installDir}/core/graphics/shaders/forward", "/res/shaders");
+	
+	oak::AudioManager audioManager;
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
