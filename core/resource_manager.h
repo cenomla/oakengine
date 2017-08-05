@@ -35,13 +35,13 @@ namespace oak {
 			}
 		}
 	public:
-		ResourceStorage(oak::Allocator *allocator = &oalloc_freelist) : allocator_{ allocator } {};
+		ResourceStorage(oak::Allocator *allocator = &oalloc_freelist, size_t pageSize = 10_mb) : allocator_{ allocator, pageSize, sizeof(T) } {};
 		
 		~ResourceStorage() {
 			for (auto it : resources_) {
 				destroy(*it.second);
 				it.second->~T();
-				allocator_->deallocate(it.second, sizeof(T));
+				allocator_.deallocate(it.second, sizeof(T));
 			}
 			resources_.clear();
 		}
@@ -52,7 +52,7 @@ namespace oak {
 
 			auto it = resources_.find(id);
 			if (it == std::end(resources_)) {
-				auto ptr = static_cast<T*>(allocator_->allocate(sizeof(T)));
+				auto ptr = static_cast<T*>(allocator_.allocate(sizeof(T)));
 				new (ptr) T{ std::forward<TArgs>(args)... };
 				resources_.insert({ id, ptr });
 				return *ptr;
@@ -68,7 +68,7 @@ namespace oak {
 			if (it != std::end(resources_)) {
 				destroy(*it.second);
 				it.second->~T();
-				allocator_->deallocate(it.second, sizeof(T));
+				allocator_.deallocate(it.second, sizeof(T));
 				resources_.erase(it);
 			}
 		}
@@ -85,8 +85,9 @@ namespace oak {
 
 	private:
 		oak::unordered_map<size_t, T*> resources_;
-		oak::Allocator *allocator_;
+		oak::PoolAllocator allocator_;
 	};
+
 
 	class ResourceManager {
 	private:
