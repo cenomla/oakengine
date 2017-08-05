@@ -15,6 +15,8 @@ namespace oak {
 			PAUSED = 0x02
 		};
 		SoundIoOutStream *stream = nullptr;
+
+		void destroy();
 	};
 
 	class AudioManager {
@@ -31,7 +33,7 @@ namespace oak {
 
 		void update();
 
-		void playSound(AudioSampler& sampler);
+		void playSound(AudioSampler& sampler, bool play);
 		AudioSampler createSound(const oak::string& path, uint32_t flags);		
 		void destroySound(AudioSampler& sampler);
 
@@ -41,8 +43,6 @@ namespace oak {
 
 		void connect();
 		void disconnect();
-
-		oak::vector<AudioSampler> streams_;
 	};
 
 }

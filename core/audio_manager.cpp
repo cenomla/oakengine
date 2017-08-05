@@ -35,7 +35,6 @@ namespace oak {
 			return;
 		}
 
-
 		while (framesLeft > 0) {
 			int frameCount = framesLeft;
 
@@ -50,7 +49,7 @@ namespace oak {
 			}
 
 			//write to buffer
-			for (int f = 0; f < frameCount; f++) {
+			for (int f = 0; f < frameCount;) {
 				int count = stb_vorbis_get_samples_float(ud->vorbis, ud->info.channels, buffer, 1);
 				if (!count) {
 					if (ud->flags & AudioSampler::LOOP) {
@@ -64,6 +63,7 @@ namespace oak {
 					*reinterpret_cast<float*>(areas[c].ptr) = *buffer[c % ud->info.channels]; 
 					areas[c].ptr += areas[c].step;
 				}
+				f += count;
 			}
 
 			err = soundio_outstream_end_write(outStream);
@@ -98,10 +98,10 @@ namespace oak {
 		disconnect();
 	}
 
-	void AudioManager::playSound(AudioSampler& sampler) {
+	void AudioManager::playSound(AudioSampler& sampler, bool play) {
 		auto ud = static_cast<AudioUserData*>(sampler.stream->userdata);
-		ud->flags &= (~AudioSampler::PAUSED); //unset paused flag
-		//soundio_outstream_pause(sampler.stream, ud->flags & AudioSampler::PAUSED);
+		ud->flags ^= ((play ? 0xffffffff : 0) ^ ud->flags) & AudioSampler::PAUSED; //set paused flag to play 
+		soundio_outstream_pause(sampler.stream, ud->flags & AudioSampler::PAUSED);
 	}
 
 	AudioSampler AudioManager::createSound(const oak::string& path, uint32_t flags) {
@@ -127,7 +127,7 @@ namespace oak {
 			log_print_err("soundio out of memory");
 			abort();
 		}
-		stream->format = SoundIoFormatFloat32NE;		
+		stream->format = SoundIoFormatFloat32NE;
 		stream->write_callback = write_callback;
 		stream->userdata = ud;
 
@@ -205,6 +205,9 @@ namespace oak {
 		soundio_device_unref(device_);
 		soundio_destroy(soundio_);
 	}
-	
+
+	void AudioSampler::destroy() {
+		AudioManager::inst().destroySound(*this);
+	}
 
 }
