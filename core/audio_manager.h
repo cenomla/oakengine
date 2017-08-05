@@ -9,6 +9,14 @@ struct SoundIoOutStream;
 
 namespace oak {
 
+	struct AudioSampler {
+		enum Flag: uint32_t {
+			LOOP = 0x01,
+			PAUSED = 0x02
+		};
+		SoundIoOutStream *stream = nullptr;
+	};
+
 	class AudioManager {
 	private:
 		static AudioManager *instance;
@@ -23,16 +31,18 @@ namespace oak {
 
 		void update();
 
-		void play();
-		void load(const oak::string& path);		
+		void playSound(AudioSampler& sampler);
+		AudioSampler createSound(const oak::string& path, uint32_t flags);		
+		void destroySound(AudioSampler& sampler);
 
 	private:
 		SoundIo *soundio_ = nullptr;
 		SoundIoDevice *device_ = nullptr;
-		SoundIoOutStream *stream_ = nullptr;
 
 		void connect();
 		void disconnect();
+
+		oak::vector<AudioSampler> streams_;
 	};
 
 }
