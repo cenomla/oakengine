@@ -178,6 +178,7 @@ int main(int argc, char** argv) {
 	//init engine managers
 	oak::EventManager evtManager;
 	oak::InputManager inputManager;
+	oak::AudioManager audioManager;
 	oak::FileManager fileManager;
 	oak::SystemManager sysManager;
 	oak::ComponentTypeManager chs;
@@ -194,7 +195,6 @@ int main(int argc, char** argv) {
 	fileManager.mount("{$installDir}/core/graphics/shaders", "/res/shaders");
 	fileManager.mount("{$installDir}/core/graphics/shaders/forward", "/res/shaders");
 	
-	oak::AudioManager audioManager;
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
@@ -239,6 +239,7 @@ int main(int argc, char** argv) {
 	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
 	auto& materialHandle = resManager.get<oak::graphics::Material>();
 	auto& meshHandle = resManager.get<oak::Mesh2d>();
+	auto& audioHandle = resManager.get<oak::AudioSampler>();
 
 	//create the scene
 	oak::Scene scene;
@@ -265,6 +266,10 @@ int main(int argc, char** argv) {
 	sysManager.addSystem(&renderSystem, "render_system");
 	sysManager.addSystem(&collisionSystem, "collision_system");
 	sysManager.addSystem(&console, "console");
+
+	//load audio file
+	audioHandle.add("chip", audioManager.createSound("/res/chip.ogg", oak::AudioSampler::LOOP));
+	audioHandle.add("test", audioManager.createSound("/res/test.ogg", oak::AudioSampler::LOOP));
 
 	//setup uniforms
 	oak::graphics::Camera camera;
@@ -339,6 +344,7 @@ int main(int argc, char** argv) {
 	isRunning = true;
 	while (isRunning) {
 		inputManager.update();
+		audioManager.update();
 		//create / destroy / activate / deactivate entities
 		scene.update();
 
