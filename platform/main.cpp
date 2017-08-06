@@ -268,8 +268,8 @@ int main(int argc, char** argv) {
 	sysManager.addSystem(&console, "console");
 
 	//load audio file
-	audioHandle.add("chip", audioManager.createSound("/res/chip.ogg", oak::AudioSampler::LOOP));
-	audioHandle.add("test", audioManager.createSound("/res/test.ogg", oak::AudioSampler::LOOP));
+	auto& snd_chip = audioHandle.add("chip", audioManager.createSound("/res/chip.ogg", oak::AudioSampler::PAUSED));
+	audioHandle.add("test", audioManager.createSound("/res/test.ogg", oak::AudioSampler::LOOP | oak::AudioSampler::PAUSED));
 
 	//setup uniforms
 	oak::graphics::Camera camera;
@@ -354,6 +354,12 @@ int main(int argc, char** argv) {
 		collisionSystem.run();
 	
 		renderSystem.run();
+
+		for (auto& evt : evtManager.getQueue<oak::KeyEvent>()) {
+			if (evt.key == oak::key::p && evt.action == oak::action::released) {
+				audioManager.playSound(snd_chip, true);
+			}
+		}
 
 		//check for exit
 		if (!evtManager.getQueue<oak::WindowCloseEvent>().empty()) {

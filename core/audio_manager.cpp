@@ -1,10 +1,11 @@
 #include "audio_manager.h"
 
 #include <algorithm>
+#include <cmath>
 #define STB_VORBIS_HEADER_ONLY
 #include <stb_vorbis.c>
 #include <soundio/soundio.h>
-#include <cmath>
+#include <glm/glm.hpp>
 
 #include "file_manager.h"
 #include "oak_alloc.h"
@@ -16,6 +17,12 @@ namespace oak {
 		struct AudioUserData {
 			stb_vorbis *vorbis = nullptr;
 			stb_vorbis_info info;
+
+			float *buffer = nullptr;
+			size_t pos = 0;
+
+			std::atomic<uint32_t> flags{ 0 };
+			std::atomic<float> volume{ 1.0f };
 		};
 	}
 
@@ -24,8 +31,12 @@ namespace oak {
 		if (!ud) { return; }
 		const SoundIoChannelLayout *layout = &outStream->layout;
 		SoundIoChannelArea *areas;
-		int framesLeft = frameCountMax;
-		int err;		
+		int framesLeft = std::clamp(frameCountMin, 4410, frameCountMax);
+		int err;
+		float sample;
+		float samples[2];
+		//soundio_outstream_clear_buffer(outStream);
+
 
 		while (framesLeft > 0) {
 			int frameCount = framesLeft;
@@ -42,16 +53,31 @@ namespace oak {
 
 			//write to buffer
 			for (int f = 0; f < frameCount; f++) {
-				if (ud->bufferReadPos_ >= ud->bufferLength_) {
-					ud->bufferReadPos_ = 0;
+				sample = 0.0f;
+				for (auto& sampler : ud->samplers_) {
+					if (sampler.data->flags & AudioSampler::PAUSED) {
+						continue;
+					}
+					if (sampler.data->buffer) {
+						sample += sampler.data->buffer[sampler.data->pos++];
+					} else if (sampler.data->vorbis) {
+						stb_vorbis_get_samples_float_interleaved(sampler.data->vorbis, ud->channelCount_, samples, 2);
+						sampler.data->pos++;
+						sample += samples[0];
+					}
+					if (sampler.data->pos >= sampler.length) {
+						sampler.data->pos = 0;
+						if (sampler.data->vorbis) {
+							stb_vorbis_seek_start(sampler.data->vorbis);
+						}
+						sampler.data->flags |= AudioSampler::PAUSED;
+					}
 				}
 
 				for (int c = 0; c < layout->channel_count; c++) {
-					*reinterpret_cast<float*>(areas[c].ptr) = ud->audioBuffer_[ud->bufferReadPos_]; 
+					*reinterpret_cast<float*>(areas[c].ptr) = sample; 
 					areas[c].ptr += areas[c].step;
 				}
-
-				ud->bufferReadPos_++;
 			}
 
 			err = soundio_outstream_end_write(outStream);
@@ -74,22 +100,19 @@ namespace oak {
 	AudioManager::AudioManager() : channelCount_{ 2 } {
 		oak_assert(!instance);
 		instance = this;
-		bufferLength_ = 96000 * channelCount_;
-		audioBuffer_ = static_cast<float*>(oalloc_freelist.allocate(bufferLength_ * 4));
 		connect();
-		createStreams();
+		createStream();
 	}
 
 	AudioManager::~AudioManager() {
 		oak_assert(instance);
 		instance = nullptr;
-		destroyStreams();
+		destroyStream();
 		disconnect();
-		oalloc_freelist.deallocate(audioBuffer_, bufferLength_ * 4);
 	}
 
 	void AudioManager::playSound(AudioSampler& sampler, bool play) {
-		sampler.flags ^= ((play ? 0xffffffff : 0) ^ sampler.flags) & AudioSampler::PAUSED; //set paused flag to play 
+		sampler.data->flags ^= ((play ? 0 : 0xffffffff) ^ sampler.data->flags) & AudioSampler::PAUSED; //set paused flag to play 
 	}
 
 	AudioSampler AudioManager::createSound(const oak::string& path, uint32_t flags) {
@@ -105,18 +128,31 @@ namespace oak {
 		}
 
 		ud->info = stb_vorbis_get_info(ud->vorbis);
+		ud->flags = flags;
 
 		size_t length = stb_vorbis_stream_length_in_samples(ud->vorbis);
 
-		samplers_.push_back({ ud, length, length, flags });
-		return samplers_.back();;
+		if (length < 1000000) {
+			ud->buffer = static_cast<float*>(oalloc_freelist.allocate(length * sizeof(float)));
+			stb_vorbis_get_samples_float_interleaved(ud->vorbis, 1, ud->buffer, length);
+		}
+
+		samplers_.push_back({ ud, length });
+		return samplers_.back();
 	}
 
 	void AudioManager::destroySound(AudioSampler& sampler) {
 		samplers_.erase(std::remove(std::begin(samplers_), std::end(samplers_), sampler), std::end(samplers_));
 
-		stb_vorbis_close(sampler.data->vorbis);
-		sampler.data->vorbis = nullptr;
+		if (sampler.data->buffer) {
+			oalloc_freelist.deallocate(sampler.data->buffer, sampler.length * sizeof(float));
+			sampler.data->buffer = nullptr;
+		}
+
+		if (sampler.data->vorbis) {
+			stb_vorbis_close(sampler.data->vorbis);
+			sampler.data->vorbis = nullptr;
+		}
 
 		sampler.data->detail::AudioUserData::~AudioUserData();
 		oalloc_freelist.deallocate(sampler.data, sizeof(detail::AudioUserData));
@@ -126,50 +162,6 @@ namespace oak {
 
 	void AudioManager::update() {
 		soundio_flush_events(soundio_);
-
-		float s0, s1, s2, s3, s4, s5, s6, s7;
-		float *sbuffer[8]{ &s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7 };
-
-		const size_t maxWrites = 2048;
-		size_t writes = 0;
-
-		//fill up ring buffer
-		while (bufferWritePos_ != bufferReadPos_) {
-			float totalSample[8]{ 0.0f };
-
-			//mix samplers
-			for (auto& sampler : samplers_) {
-				if (sampler.pos == 0 || samplers.flags & AudioSampler::PAUSED) {
-					continue;
-				}
-				int count = stb_vorbis_get_samples_float(sampler.data->vorbis, channelCount_, sbuffer, 1);
-				if (!count) {
-					continue;
-				}
-
-				for (int i = 0; i < 8; i++) {
-					totalSample[i] += *sbuffer[i] * sampler.volume;
-				}
-
-				sampler.pos--;
-				if (sampler.pos == 0) {
-					stb_vorbis_seek_start(sampler.data->vorbis);
-					sampler.pos = sampler.length;
-					if (!sampler.flags & AudioSampler::LOOP) {
-						//pause clip
-						sampler.flags &= ~AudioSampler::PAUSED;
-					}
-				}
-			}
-
-			audioBuffer_[bufferWritePos_++] = totalSample[0];
-			if (bufferWritePos_ >= bufferLength_) {
-				bufferWritePos_ = 0;
-			}
-			writes++;
-		}
-
-
 	}
 
 	void AudioManager::connect() {
@@ -208,42 +200,42 @@ namespace oak {
 		soundio_destroy(soundio_);
 	}
 
-	void AudioManager::createStreams() {
+	void AudioManager::createStream() {
 		int err = SoundIoErrorNone;
-		SoundIoOutStream *stream = soundio_outstream_create(device_);
-		if (!stream) {
+		stream_ = soundio_outstream_create(device_);
+		if (!stream_) {
 			log_print_err("soundio out of memory");
 			abort();
 		}
-		stream->format = SoundIoFormatFloat32NE;
-		stream->write_callback = write_callback;
-		stream->userdata = this;
+		stream_->format = SoundIoFormatFloat32NE;
+		stream_->write_callback = write_callback;
+		stream_->userdata = this;
+		// stream_->software_latency = 0.1;
 
-		err = soundio_outstream_open(stream);
+		err = soundio_outstream_open(stream_);
 		if (err) {
 			log_print_err("soundio error: %s", soundio_strerror(err));
 			abort();
 		}
 
-		if (stream->layout_error) {
-			log_print_err("layout error: %s", soundio_strerror(stream->layout_error));
+		if (stream_->layout_error) {
+			log_print_err("layout error: %s", soundio_strerror(stream_->layout_error));
 			abort();
 		}
 
-		err = soundio_outstream_start(stream);
+		err = soundio_outstream_start(stream_);
 		if (err) {
 			log_print_err("soundio err: %s", soundio_strerror(err));
 			abort();
 		}
 
-		streams_.push_back(stream);
+
+		log_print_out("audio latency: %f", stream_->software_latency);
 	}
 
-	void AudioManager::destroyStreams() {
-		for (auto& stream : streams_) {
-			soundio_outstream_destroy(stream);
-			stream = nullptr;
-		}
+	void AudioManager::destroyStream() {
+		soundio_outstream_destroy(stream_);
+		stream_ = nullptr;
 	}
 
 }

@@ -19,9 +19,7 @@ namespace oak {
 			PAUSED = 0x02
 		};
 		detail::AudioUserData *data = nullptr;
-		size_t length = 0, pos = 0;
-		uint32_t flags = 0;
-		float volume = 1.0f;
+		size_t length = 0;
 
 		void destroy();
 
@@ -35,7 +33,7 @@ namespace oak {
 	private:
 		static AudioManager *instance;
 	public:
-		inline static AudioManager& inst() { 
+		inline static AudioManager& inst() {
 			oak_assert(instance);
 			return *instance;
 		}
@@ -52,23 +50,16 @@ namespace oak {
 	private:
 		SoundIo *soundio_ = nullptr;
 		SoundIoDevice *device_ = nullptr;
+		SoundIoOutStream *stream_ = nullptr;
 
 		size_t channelCount_;
-
-		float *audioBuffer_ = nullptr;
-		size_t bufferLength_ = 0;
-		std::atomic<size_t> bufferReadPos_{ 0 };
-		std::atomic<size_t> bufferWritePos_{ 0 };
-
-		oak::vector<SoundIoOutStream*> streams_;
 		oak::vector<AudioSampler> samplers_;
-
 
 		void connect();
 		void disconnect();
 
-		void createStreams();
-		void destroyStreams();
+		void createStream();
+		void destroyStream();
 	};
 
 }
