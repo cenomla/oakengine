@@ -48,8 +48,9 @@ namespace oak::log {
 	}
 
 	void Logger::flush() {
+
 		for (auto& stream : streams_) {
-			stream->write(buffer_);
+			stream->buffer->write(strlen(buffer_), buffer_);
 		}
 	}
 
