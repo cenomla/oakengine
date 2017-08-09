@@ -16,6 +16,7 @@
 #include <resource_manager.h>
 #include <event_manager.h>
 #include <input_manager.h>
+#include <audio_manager.h>
 #include <component_storage.h>
 #include <core_components.h>
 #include <input_events.h>
@@ -177,6 +178,7 @@ int main(int argc, char** argv) {
 	//init engine managers
 	oak::EventManager evtManager;
 	oak::InputManager inputManager;
+	oak::AudioManager audioManager;
 	oak::FileManager fileManager;
 	oak::SystemManager sysManager;
 	oak::ComponentTypeManager chs;
@@ -192,6 +194,7 @@ int main(int argc, char** argv) {
 	fileManager.mount("{$installDir}/platform", "/res/shaders");
 	fileManager.mount("{$installDir}/core/graphics/shaders", "/res/shaders");
 	fileManager.mount("{$installDir}/core/graphics/shaders/forward", "/res/shaders");
+	
 
 	//add all events
 	evtManager.addQueue<oak::EntityCreateEvent>();
@@ -236,6 +239,7 @@ int main(int argc, char** argv) {
 	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
 	auto& materialHandle = resManager.get<oak::graphics::Material>();
 	auto& meshHandle = resManager.get<oak::Mesh2d>();
+	auto& audioHandle = resManager.get<oak::AudioObject>();
 
 	//create the scene
 	oak::Scene scene;
@@ -262,6 +266,10 @@ int main(int argc, char** argv) {
 	sysManager.addSystem(&renderSystem, "render_system");
 	sysManager.addSystem(&collisionSystem, "collision_system");
 	sysManager.addSystem(&console, "console");
+
+	//load audio file
+	auto& snd_chip = audioHandle.add("chip", audioManager.createSound("/res/chip.ogg"));
+	audioHandle.add("test", audioManager.createSound("/res/test.ogg"));
 
 	//setup uniforms
 	oak::graphics::Camera camera;
@@ -336,6 +344,7 @@ int main(int argc, char** argv) {
 	isRunning = true;
 	while (isRunning) {
 		inputManager.update();
+		audioManager.update();
 		//create / destroy / activate / deactivate entities
 		scene.update();
 
@@ -345,6 +354,12 @@ int main(int argc, char** argv) {
 		collisionSystem.run();
 	
 		renderSystem.run();
+
+		for (auto& evt : evtManager.getQueue<oak::KeyEvent>()) {
+			if (evt.key == oak::key::p && evt.action == oak::action::released) {
+				audioManager.playSound(snd_chip, 0, 1.0f);
+			}
+		}
 
 		//check for exit
 		if (!evtManager.getQueue<oak::WindowCloseEvent>().empty()) {
