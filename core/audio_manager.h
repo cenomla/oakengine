@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <mutex>
 
 #include "oak_assert.h"
 #include "container.h"
@@ -11,21 +12,26 @@ struct SoundIoOutStream;
 
 namespace oak {
 
-	namespace detail{ struct AudioUserData; }
+	namespace detail{ 
+		struct AudioSampler; 
 
-	struct AudioSampler {
+		struct AudioInstance {
+			AudioSampler *data = nullptr;
+			size_t pos = 0;
+			uint32_t flags = 0;
+			float volume = 1.0f;
+		};
+	}
+
+	struct AudioObject {
 		enum Flag: uint32_t {
 			LOOP = 0x01,
-			PAUSED = 0x02
+			PAUSED = 0x02,
+			DONE = 0x04
 		};
-		detail::AudioUserData *data = nullptr;
-		size_t length = 0;
+		int id = -1;
 
 		void destroy();
-
-		bool operator==(const AudioSampler& other) const {
-			return data == other.data;
-		}
 	};
 
 	class AudioManager {
@@ -33,6 +39,8 @@ namespace oak {
 	private:
 		static AudioManager *instance;
 	public:
+		static constexpr size_t MAX_AUDIO_INSTANCES = 128;
+
 		inline static AudioManager& inst() {
 			oak_assert(instance);
 			return *instance;
@@ -43,9 +51,9 @@ namespace oak {
 
 		void update();
 
-		void playSound(AudioSampler& sampler, bool play);
-		AudioSampler createSound(const oak::string& path, uint32_t flags);		
-		void destroySound(AudioSampler& sampler);
+		void playSound(AudioObject& audio, uint32_t flags, float volume);
+		AudioObject createSound(const oak::string& path);		
+		void destroySound(AudioObject& audio);
 
 	private:
 		SoundIo *soundio_ = nullptr;
@@ -53,7 +61,10 @@ namespace oak {
 		SoundIoOutStream *stream_ = nullptr;
 
 		size_t channelCount_;
-		oak::vector<AudioSampler> samplers_;
+		oak::vector<detail::AudioSampler*> samplers_;
+		oak::vector<detail::AudioInstance> playlist_;
+		detail::AudioInstance toAdd_;
+		std::atomic<bool> hasToAdd_;
 
 		void connect();
 		void disconnect();

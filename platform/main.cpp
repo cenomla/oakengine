@@ -239,7 +239,7 @@ int main(int argc, char** argv) {
 	auto& shaderHandle = resManager.get<oak::graphics::Shader>();
 	auto& materialHandle = resManager.get<oak::graphics::Material>();
 	auto& meshHandle = resManager.get<oak::Mesh2d>();
-	auto& audioHandle = resManager.get<oak::AudioSampler>();
+	auto& audioHandle = resManager.get<oak::AudioObject>();
 
 	//create the scene
 	oak::Scene scene;
@@ -268,8 +268,8 @@ int main(int argc, char** argv) {
 	sysManager.addSystem(&console, "console");
 
 	//load audio file
-	auto& snd_chip = audioHandle.add("chip", audioManager.createSound("/res/chip.ogg", oak::AudioSampler::PAUSED));
-	audioHandle.add("test", audioManager.createSound("/res/test.ogg", oak::AudioSampler::LOOP | oak::AudioSampler::PAUSED));
+	auto& snd_chip = audioHandle.add("chip", audioManager.createSound("/res/chip.ogg"));
+	audioHandle.add("test", audioManager.createSound("/res/test.ogg"));
 
 	//setup uniforms
 	oak::graphics::Camera camera;
@@ -357,7 +357,7 @@ int main(int argc, char** argv) {
 
 		for (auto& evt : evtManager.getQueue<oak::KeyEvent>()) {
 			if (evt.key == oak::key::p && evt.action == oak::action::released) {
-				audioManager.playSound(snd_chip, true);
+				audioManager.playSound(snd_chip, 0, 1.0f);
 			}
 		}
 
