@@ -70,7 +70,7 @@ namespace oak::graphics::GLTexture {
 		int w, h, comp;
 		stbi_uc *data = stbi_load(FileManager::inst().resolvePath(path).c_str(), &w, &h, &comp, components[static_cast<int>(info.format)]);
 
-		if (data == nullptr) {
+		if (!data) {
 			log_print_warn("failed to load texture: %s", path);
 		}
 
@@ -84,7 +84,9 @@ namespace oak::graphics::GLTexture {
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 
-		stbi_image_free(data);
+		if (data) {
+			stbi_image_free(data);
+		}
 
 		return tex;
 	}
@@ -142,6 +144,9 @@ namespace oak::graphics::GLTexture {
 		for (auto path : paths) {
 			int w, h, c;
 			stbi_uc *data = stbi_load(FileManager::inst().resolvePath(path).c_str(), &w, &h, &c, rcomp);
+			if (!data) {
+				log_print_warn("failed to load texture: %s", path.c_str());
+			}
 			images.push_back({ path, data, w, h, c});
 		}
 
@@ -220,7 +225,9 @@ namespace oak::graphics::GLTexture {
 		
 		//free image data
 		for (auto& image : images) {
-			stbi_image_free(image.data);
+			if (image.data) {
+				stbi_image_free(image.data);
+			}
 		}
 
 		atlas.texture = texture;
