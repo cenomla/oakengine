@@ -22,6 +22,10 @@ deps += cxx_compiler.find_library('dl', required : false)
 
 subdir('lib')
 subdir('core')
-subdir('sandbox')
-subdir('platform')
-subdir('tests')
+if get_option('buildexamples')
+	subdir('sandbox')
+	subdir('platform')
+endif
+if get_option('buildtests')
+	subdir('tests')
+endif

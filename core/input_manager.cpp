@@ -28,12 +28,11 @@ namespace oak {
 		glfwTerminate();
 	}
 
-	void InputManager::update() {
+	void InputManager::updateCache() {
 		for (const auto& evt : EventManager::inst().getQueue<WindowCreateEvent>()) {
 			window_ = evt.window;
 			setCallbacks(evt.window);
 		}
-		glfwPollEvents();
 		for (const auto& evt : EventManager::inst().getQueue<KeyEvent>()) {
 			actions_[evt.key + button::max] = evt.action;
 		}
@@ -55,6 +54,10 @@ namespace oak {
 					break;
 			}
 		}
+	}
+
+	void InputManager::poll() {
+		glfwPollEvents();
 	}
 
 	void InputManager::bind(const oak::string& action, int binding, bool key) {

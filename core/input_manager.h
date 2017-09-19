@@ -20,7 +20,8 @@ namespace oak {
 		InputManager();
 		~InputManager();
 
-		void update();
+		void updateCache();
+		void poll();
 
 		void bind(const oak::string& action, int binding, bool key);
 

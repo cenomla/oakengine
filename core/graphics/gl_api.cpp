@@ -183,7 +183,7 @@ namespace oak::graphics {
 		fullscreenBuffer_.unbind();
 
 		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
-		InputManager::inst().update();
+		InputManager::inst().updateCache();
 	}
 
 	void GLApi::terminate() {
