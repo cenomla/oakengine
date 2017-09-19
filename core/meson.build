@@ -23,7 +23,6 @@ oak_sources = [
 	'resource_manager.cpp',
 	'scene.cpp',
 	'scene_events.cpp',
-	'scene_utils.cpp',
 	'system.cpp',
 	'system_manager.cpp',
 	'update_events.cpp',

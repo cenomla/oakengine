@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/type_handle.h"
+#include "type_handle.h"
 #include "entity_id.h"
 #include "container.h"
 

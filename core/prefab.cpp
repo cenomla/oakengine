@@ -1,7 +1,7 @@
 #include "prefab.h"
 
+#include "oakengine.h"
 #include "core_components.h"
-#include "scene_utils.h"
 
 namespace oak {
 

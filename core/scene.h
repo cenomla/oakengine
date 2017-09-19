@@ -31,6 +31,9 @@ namespace oak {
 		void update();
 		void reset();
 
+		void save(const oak::string& path);
+		void load(const oak::string& path);
+
 		void addComponentStorage(ComponentStorage *storage);
 		ComponentStorage& getComponentStorage(size_t tid);
 		const ComponentStorage& getComponentStorage(size_t tid) const;

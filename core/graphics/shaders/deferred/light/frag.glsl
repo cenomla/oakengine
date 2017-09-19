@@ -121,5 +121,5 @@ void main() {
 	color = pow(color, vec3(1.0 / 2.2));
 
 
-	o_color = vec4(vec3(ao), 1.0);
+	o_color = vec4(color, 1.0);
 }

@@ -1,6 +1,6 @@
 #include "component_storage.h"
 
-#include "util/type_handle.h"
+#include "type_handle.h"
 #include "component.h"
 
 namespace oak {

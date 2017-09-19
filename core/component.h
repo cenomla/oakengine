@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "util/type_manager.h"
+#include "type_manager.h"
 
 namespace oak {
 

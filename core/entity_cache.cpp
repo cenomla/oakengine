@@ -2,11 +2,9 @@
 
 #include <algorithm>
 
-#include "event_manager.h"
+#include "oakengine.h"
 #include "event_queue.h"
-#include "scene.h"
 #include "scene_events.h"
-#include "scene_utils.h"
 
 namespace oak {
 

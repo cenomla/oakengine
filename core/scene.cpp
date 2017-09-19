@@ -2,7 +2,9 @@
 
 #include <algorithm>
 
+#include "util/stream_puper.h"
 #include "event_manager.h"
+#include "file_manager.h"
 #include "scene_events.h"
 #include "component_storage.h"
 
@@ -109,6 +111,91 @@ namespace oak {
 		entities_.clear();
 		generations_.clear();
 		freeIndices_.clear();
+	}
+
+	void Scene::save(const oak::string& path) {
+		auto file = FileManager::inst().openFile(path, true);
+		
+		auto info = ObjInfo::make<Scene>(nullptr, "scene");
+
+		//header:
+		//version
+		//entity count
+		//max component count
+		//text:
+		//for each entity:
+		//	active
+		//	component count
+		//	for each component:
+		//		component id
+		//		component data
+
+		StreamPuper puper{ &file };
+
+		size_t version = 0;
+		size_t entityCount = entities_.size();
+		size_t maxComponents = config::MAX_COMPONENTS;
+
+		pup(puper, version, ObjInfo::make<size_t>(&info, "version"));
+		pup(puper, entityCount, ObjInfo::make<size_t>(&info, "entityCount"));
+		pup(puper, maxComponents, ObjInfo::make<size_t>(&info, "maxComponents"));
+
+		size_t i = 0;
+		for (auto& entity : entities_) {
+			auto& filter = getComponentFilter(entity);
+			auto active = isEntityActive(entity);
+			auto componentCount = filter.count();
+			auto entityInfo = ObjInfo::make<EntityId>(&info, oak::string{ "entity[" } + std::to_string(i).c_str() + "]");
+			pup(puper, active, ObjInfo::make<size_t>(&entityInfo, "active"));
+			pup(puper, componentCount, ObjInfo::make<size_t>(&entityInfo, "componentCount"));
+			for (size_t j = 0; j < config::MAX_COMPONENTS; j++) {
+				if (filter[j]) {
+					pup(puper, j, ObjInfo::make<size_t>(&entityInfo, "componentId"));
+					ComponentTypeManager::inst().getHandle(j)->serialize(puper, getComponent(entity, j), &entityInfo);
+				}
+			}
+			i++;
+		}
+
+		FileManager::inst().closeFile(file);
+	}
+
+	void Scene::load(const oak::string& path) {
+		reset();
+
+		auto file = FileManager::inst().openFile(path);
+		
+		auto info = ObjInfo::make<Scene>(nullptr, "scene");
+
+		StreamPuper puper{ &file };
+		puper.setIo(PuperIo::IN);
+
+		size_t version, entityCount, maxComponents;
+
+		pup(puper, version, ObjInfo::make<size_t>(&info, "version"));
+		pup(puper, entityCount, ObjInfo::make<size_t>(&info, "entityCount"));
+		pup(puper, maxComponents, ObjInfo::make<size_t>(&info, "maxComponents"));
+
+		oak_assert(maxComponents == config::MAX_COMPONENTS);
+
+		for (size_t i = 0; i < entityCount; i++) {
+			auto entityInfo = ObjInfo::make<EntityId>(&info, oak::string{ "entity[" } + std::to_string(i).c_str() + "]");
+			EntityId entity = createEntity();
+			bool active;
+			size_t componentCount;
+			pup(puper, active, ObjInfo::make<bool>(&entityInfo, "active"));
+			pup(puper, componentCount, ObjInfo::make<size_t>(&entityInfo, "componentCount"));
+			for (size_t j = 0; j < componentCount; j++) {
+				size_t componentId;
+				pup(puper, componentId, ObjInfo::make<size_t>(&entityInfo, "componentId"));
+				auto comp = addComponent(entity, componentId);
+				ComponentTypeManager::inst().getHandle(componentId)->serialize(puper, comp, &entityInfo);
+			}
+			if (active) {
+				activateEntity(entity);
+			}
+		}
+		FileManager::inst().closeFile(file);
 	}
 
 	void Scene::addComponentStorage(ComponentStorage *storage) {
