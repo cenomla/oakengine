@@ -151,7 +151,8 @@ namespace oak {
 			for (size_t j = 0; j < config::MAX_COMPONENTS; j++) {
 				if (filter[j]) {
 					pup(puper, j, ObjInfo::make<size_t>(&entityInfo, "componentId"));
-					ComponentTypeManager::inst().getHandle(j)->serialize(puper, getComponent(entity, j), &entityInfo);
+					auto ti = ComponentTypeManager::inst().getTypeInfo(j);
+					ti->serialize(puper, getComponent(entity, j), &entityInfo, ti->name);
 				}
 			}
 			i++;
@@ -189,7 +190,8 @@ namespace oak {
 				size_t componentId;
 				pup(puper, componentId, ObjInfo::make<size_t>(&entityInfo, "componentId"));
 				auto comp = addComponent(entity, componentId);
-				ComponentTypeManager::inst().getHandle(componentId)->serialize(puper, comp, &entityInfo);
+				auto ti = ComponentTypeManager::inst().getTypeInfo(componentId);
+				ti->serialize(puper, comp, &entityInfo, ti->name);
 			}
 			if (active) {
 				activateEntity(entity);
@@ -199,7 +201,7 @@ namespace oak {
 	}
 
 	void Scene::addComponentStorage(ComponentStorage *storage) {
-		size_t tid = storage->getHandle()->getId();
+		size_t tid = storage->getTypeInfo()->id;
 		if (componentPools_.size() <= tid) {
 			componentPools_.resize(tid + 1);
 		}

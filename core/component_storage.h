@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type_handle.h"
+#include "type_info.h"
 #include "entity_id.h"
 #include "container.h"
 
@@ -10,7 +10,7 @@ namespace oak {
 
 	class ComponentStorage {
 	public:
-		ComponentStorage(const TypeHandleBase *handle);
+		ComponentStorage(const TypeInfo *tinfo);
 		~ComponentStorage();
 
 		void* addComponent(EntityId entity);
@@ -20,10 +20,10 @@ namespace oak {
 		void* getComponent(EntityId entity);
 		const void* getComponent(EntityId entity) const;
 
-		const TypeHandleBase* getHandle() const { return handle_; }
+		const TypeInfo* getTypeInfo() const { return tinfo_; }
 
 	private:
-		const TypeHandleBase *handle_;
+		const TypeInfo *tinfo_;
 		PoolAllocator allocator_;
 		oak::vector<void*> components_;
 

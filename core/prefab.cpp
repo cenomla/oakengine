@@ -27,9 +27,9 @@ namespace oak {
 	}
 
 	void* Prefab::addComponent(size_t tid) {
-		const auto& handle = ComponentTypeManager::inst().getHandle(tid);
-		void *comp = oak_allocator.allocate(handle->getSize());
-		handle->construct(comp);
+		const auto ti = ComponentTypeManager::inst().getTypeInfo(tid);
+		void *comp = oak_allocator.allocate(ti->size);
+		ti->construct(comp);
 		//ensure size
 		if (tid >= storage_.size()) {
 			storage_.resize(tid + 1);
@@ -42,9 +42,9 @@ namespace oak {
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];
 			if (it != nullptr) {
-				const auto& handle = ComponentTypeManager::inst().getHandle(i);
-				handle->destruct(it);
-				oak_allocator.deallocate(it, handle->getSize());
+				const auto ti = ComponentTypeManager::inst().getTypeInfo(i);
+				ti->destruct(it);
+				oak_allocator.deallocate(it, ti->size);
 			}
 		}
 		storage_.clear();
