@@ -145,7 +145,7 @@ namespace oak::graphics::GLTexture {
 			int w, h, c;
 			stbi_uc *data = stbi_load(FileManager::inst().resolvePath(path).c_str(), &w, &h, &c, rcomp);
 			if (!data) {
-				log_print_warn("failed to load texture: %s", path.c_str());
+				log_print_warn("failed to load texture: %s", path);
 			}
 			images.push_back({ path, data, w, h, c});
 		}
