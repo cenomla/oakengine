@@ -2,6 +2,7 @@
 
 #include <bitset>
 
+#include "container.h"
 #include "component.h"
 #include "entity_id.h"
 

@@ -24,13 +24,13 @@ namespace oak {
 		
 		template<class T>
 		inline void requireComponent() {
-			componentFilter_[util::type_id<detail::BaseComponent, T>::id] = true;
+			componentFilter_[T::typeInfo.id] = true;
 		}
 
 		template<class T>
 		inline void requireEvent() {
 			requireComponent<EventComponent>();
-			eventFilter_[util::type_id<detail::BaseEvent, T>::id] = true;
+			eventFilter_[T::typeInfo.id] = true;
 		}
 
 		inline void requirePrefab(size_t id) {

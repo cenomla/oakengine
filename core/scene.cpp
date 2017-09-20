@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "util/stream_puper.h"
+#include "type_manager.h"
 #include "event_manager.h"
 #include "file_manager.h"
 #include "scene_events.h"
@@ -152,7 +153,7 @@ namespace oak {
 				if (filter[j]) {
 					pup(puper, j, ObjInfo::make<size_t>(&entityInfo, "componentId"));
 					auto ti = ComponentTypeManager::inst().getTypeInfo(j);
-					ti->serialize(puper, getComponent(entity, j), &entityInfo, ti->name);
+					ti->serialize(puper, getComponent(entity, j), entityInfo, ti->name);
 				}
 			}
 			i++;
@@ -191,7 +192,7 @@ namespace oak {
 				pup(puper, componentId, ObjInfo::make<size_t>(&entityInfo, "componentId"));
 				auto comp = addComponent(entity, componentId);
 				auto ti = ComponentTypeManager::inst().getTypeInfo(componentId);
-				ti->serialize(puper, comp, &entityInfo, ti->name);
+				ti->serialize(puper, comp, entityInfo, ti->name);
 			}
 			if (active) {
 				activateEntity(entity);
@@ -202,6 +203,7 @@ namespace oak {
 
 	void Scene::addComponentStorage(ComponentStorage *storage) {
 		size_t tid = storage->getTypeInfo()->id;
+		printf("tid: %lu, name: %s", tid, storage->getTypeInfo()->name.c_str());
 		if (componentPools_.size() <= tid) {
 			componentPools_.resize(tid + 1);
 		}

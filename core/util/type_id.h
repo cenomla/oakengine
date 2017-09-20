@@ -13,15 +13,13 @@ namespace oak {
 
 		template<class TBase, class T>
 		struct type_id : public type_id_base<TBase> {
-			const static size_t id;
+			inline static size_t id() {
+				return type_id_base<TBase>::nextTypeId++;
+			}
 		};
 
 		template<class TBase>
 		size_t type_id_base<TBase>::nextTypeId = 0;
-
-		template<class TBase, class T>
-		const size_t type_id<TBase, T>::id = type_id_base<TBase>::nextTypeId++;
-
 	}
 
 }

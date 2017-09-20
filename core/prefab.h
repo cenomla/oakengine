@@ -16,7 +16,7 @@ namespace oak {
 
 		template <class T, class... TArgs>
 		T& addComponent(TArgs&&... args) {
-			size_t tid = util::type_id<detail::BaseComponent, T>::id;
+			size_t tid = T::typeInfo.id;
 			void* comp = addComponent(tid);
 			new (comp) T{ std::forward<TArgs>(args)...};
 			return *static_cast<T*>(comp);

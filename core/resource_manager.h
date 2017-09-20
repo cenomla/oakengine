@@ -103,7 +103,7 @@ namespace oak {
 
 		template<class T>
 		inline ResourceStorage<T>& get() {
-			size_t tid = util::type_id<detail::BaseResource, T>::id;
+			size_t tid = util::type_id<detail::BaseResource, T>::id();
 
 			if (!(tid < resourceHandles_.size() && resourceHandles_[tid])) {
 				if (resourceHandles_.size() <= tid) { 

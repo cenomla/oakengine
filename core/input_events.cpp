@@ -4,6 +4,16 @@
 
 namespace oak {
 
+	const TypeInfo WindowCreateEvent::typeInfo = makeEventInfo<WindowCreateEvent>("window_created");
+	const TypeInfo WindowCloseEvent::typeInfo = makeEventInfo<WindowCloseEvent>("window_closed");
+	const TypeInfo WindowResizeEvent::typeInfo = makeEventInfo<WindowResizeEvent>("window_resized");
+	const TypeInfo FrameSizeEvent::typeInfo = makeEventInfo<FrameSizeEvent>("frame_resized");
+	const TypeInfo KeyEvent::typeInfo = makeEventInfo<KeyEvent>("key_changed");
+	const TypeInfo ButtonEvent::typeInfo = makeEventInfo<ButtonEvent>("button_changed");
+	const TypeInfo CursorEvent::typeInfo = makeEventInfo<CursorEvent>("cursor_moved");
+	const TypeInfo TextEvent::typeInfo = makeEventInfo<TextEvent>("text_input");
+	const TypeInfo CursorModeEvent::typeInfo = makeEventInfo<CursorModeEvent>("cusor_mode");
+
 	void pup(Puper& puper, WindowCreateEvent& data, const ObjInfo& info) {
 		//pup(puper, data.window, ObjInfo::make<void*>(&info, "window"));
 	}
@@ -42,6 +52,12 @@ namespace oak {
 
 	void pup(Puper& puper, TextEvent& data, const ObjInfo& info) {
 		pup(puper, data.codepoint, ObjInfo::make<int>(&info, "codepoint"));
+	}
+
+	void pup(Puper& puper, CursorModeEvent& data, const ObjInfo& info) {
+		int m = static_cast<int>(data.mode);
+		pup(puper, m, ObjInfo::make<int>(&info, "mode"));
+		data.mode = static_cast<CursorMode>(m);
 	}
 
 }

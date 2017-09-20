@@ -1,6 +1,7 @@
 #include "prefab.h"
 
 #include "oakengine.h"
+#include "type_manager.h"
 #include "core_components.h"
 
 namespace oak {
@@ -27,7 +28,7 @@ namespace oak {
 	}
 
 	void* Prefab::addComponent(size_t tid) {
-		const auto ti = ComponentTypeManager::inst().getTypeInfo(tid);
+		auto ti = ComponentTypeManager::inst().getTypeInfo(tid);
 		void *comp = oak_allocator.allocate(ti->size);
 		ti->construct(comp);
 		//ensure size
@@ -42,7 +43,7 @@ namespace oak {
 		for (size_t i = 0; i < storage_.size(); i++) {
 			const auto& it = storage_[i];
 			if (it != nullptr) {
-				const auto ti = ComponentTypeManager::inst().getTypeInfo(i);
+				auto ti = ComponentTypeManager::inst().getTypeInfo(i);
 				ti->destruct(it);
 				oak_allocator.deallocate(it, ti->size);
 			}

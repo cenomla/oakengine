@@ -26,7 +26,7 @@ namespace oak {
 
 		template<class TSystem>
 		void addSystem(TSystem *system, const oak::string& name) {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
+			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
 			if (tid >= systems_.size()) {
 				systems_.resize(tid + 1);
 				names_.resize(tid + 1);
@@ -38,7 +38,7 @@ namespace oak {
 
 		template<class TSystem>
 		void removeSystem() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
+			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
 			systems_[tid]->terminate();
 			systems_[tid] = nullptr;
 			names_[tid].clear();
@@ -46,19 +46,19 @@ namespace oak {
 
 		template<class TSystem>
 		TSystem& getSystem() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
+			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
 			return *static_cast<TSystem*>(systems_[tid]);
 		}
 
 		template<class TSystem>
 		oak::string getSystemName() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
+			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
 			return names_[tid];
 		}
 
 		template<class TSystem>
 		bool hasSystem() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id;
+			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
 			return (tid < systems_.size() && systems_[tid]);
 		}
 

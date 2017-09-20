@@ -2,8 +2,6 @@
 
 #include <cstddef>
 
-#include "type_manager.h"
-
 namespace oak {
 
 	namespace config {
@@ -14,6 +12,5 @@ namespace oak {
 		struct BaseComponent {};
 	}
 
-	using ComponentTypeManager = TypeManager<detail::BaseComponent>;
 
 }

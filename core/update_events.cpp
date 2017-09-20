@@ -4,6 +4,9 @@
 
 namespace oak {
 
+	const TypeInfo TickEvent::typeInfo = makeEventInfo<TickEvent>("tick");
+	const TypeInfo SimulateEvent::typeInfo = makeEventInfo<SimulateEvent>("simulate");
+
 	void pup(Puper& puper, TickEvent& data, const ObjInfo& info) {
 	}
 

@@ -1,8 +1,12 @@
 #include "core_components.h"
 
+#include "type_info.h"
 #include "pup.h"
 
 namespace oak {
+
+	const TypeInfo EventComponent::typeInfo = makeComponentInfo<EventComponent>("event");
+	const TypeInfo PrefabComponent::typeInfo = makeComponentInfo<PrefabComponent>("prefab");
 
 	void pup(Puper& puper, EventComponent& data, const ObjInfo& info) {
 		oak::string f = data.filter.to_string().c_str();

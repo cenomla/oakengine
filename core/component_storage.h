@@ -20,10 +20,10 @@ namespace oak {
 		void* getComponent(EntityId entity);
 		const void* getComponent(EntityId entity) const;
 
-		const TypeInfo* getTypeInfo() const { return tinfo_; }
+		const TypeInfo* getTypeInfo() const { return typeInfo_; }
 
 	private:
-		const TypeInfo *tinfo_;
+		const TypeInfo *typeInfo_;
 		PoolAllocator allocator_;
 		oak::vector<void*> components_;
 

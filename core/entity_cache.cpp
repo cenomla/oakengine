@@ -68,15 +68,12 @@ namespace oak {
 		}
 	}
 
-	static const size_t ecid = util::type_id<detail::BaseComponent, EventComponent>::id;
-	static const size_t pcid = util::type_id<detail::BaseComponent, PrefabComponent>::id;
-
 	bool EntityCache::filter(const Scene& scene, EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter) {
 		return (compFilter & componentFilter_) == componentFilter_ &&
-			(compFilter[ecid] ? 
+			(compFilter[EventComponent::typeInfo.id] ? 
 				(getComponent<const EventComponent>(entity, scene).filter & eventFilter_) == eventFilter_ :
 				true) &&
-			(compFilter[pcid] && prefabFilter_ != 0 ? 
+			(compFilter[PrefabComponent::typeInfo.id] && prefabFilter_ != 0 ? 
 				getComponent<const PrefabComponent>(entity, scene).id == prefabFilter_ :
 				true);
 	}

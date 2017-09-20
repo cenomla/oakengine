@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entity_id.h"
+#include "type_info.h"
 
 namespace oak {
 
@@ -8,18 +9,22 @@ namespace oak {
 	struct ObjInfo;
 
 	struct EntityCreateEvent {
+		static const TypeInfo typeInfo;
 		EntityId entity;
 	};
 
 	struct EntityDestroyEvent {
+		static const TypeInfo typeInfo;
 		EntityId entity;
 	};
 
 	struct EntityActivateEvent {
+		static const TypeInfo typeInfo;
 		EntityId entity;
 	};
 
 	struct EntityDeactivateEvent {
+		static const TypeInfo typeInfo;
 		EntityId entity;
 	};
 

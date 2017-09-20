@@ -7,12 +7,15 @@ namespace oak {
 
 	class Puper;
 	struct ObjInfo;
+	struct TypeInfo;
 
 	struct EventComponent {
+		static const TypeInfo typeInfo;
 		std::bitset<config::MAX_EVENTS> filter;
 	};
 
 	struct PrefabComponent {
+		static const TypeInfo typeInfo;
 		size_t id;
 	};
 

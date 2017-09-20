@@ -25,7 +25,7 @@ namespace oak {
 
 		template<class TEvent>
 		void addQueue() {
-			size_t tid = util::type_id<detail::BaseEvent, TEvent>::id;
+			size_t tid = TEvent::typeInfo.id;
 			void *ptr = oak_allocator.allocate(sizeof(EventQueueBase));
 			new (ptr) EventQueue<TEvent>{};
 			if (queues_.size() <= tid) {
@@ -36,7 +36,7 @@ namespace oak {
 
 		template<class TEvent>
 		EventQueue<TEvent>& getQueue() {
-			size_t tid = util::type_id<detail::BaseEvent, TEvent>::id;
+			size_t tid = TEvent::typeInfo.id;
 			return *static_cast<EventQueue<TEvent>*>(queues_[tid]);
 		}
 

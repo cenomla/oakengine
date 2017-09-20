@@ -1,24 +1,24 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <type_traits>
 
 #include "container.h"
 
 namespace oak {
 
+	struct TypeInfo;
+
 	struct ObjInfo {
 		static constexpr uint32_t VOLATILE = 0x01; //data will not be the same across instances (eg. a pointer)
 		static constexpr uint32_t LENGTH = 0x02; //data will describe the parents length
 		
 		template<class T>
-		inline static ObjInfo make(const ObjInfo *p, const oak::string& n, uint32_t f = 0) {
-			return ObjInfo{ p, n, sizeof(T), f | (std::is_pointer<T>::value ? VOLATILE : 0) };
+		inline static ObjInfo make(const ObjInfo *p, const oak::string& name, uint32_t f = 0) {
+			return ObjInfo{ p, name, f | (std::is_pointer<T>::value ? VOLATILE : 0) };
 		}
 
 		const ObjInfo *parent;
-		oak::string name;
-		size_t size = 0;
+		const oak::string name;
 		uint32_t flags = 0;
 	};
 
