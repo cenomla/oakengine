@@ -85,6 +85,25 @@ namespace oak {
 		return componentMasks_[entity];
 	}
 
+	void Scene::init() {
+		//create component storages for types in ComponentTypeManager
+		for (auto it : ComponentTypeManager::inst().getTypes()) {
+			auto ptr = static_cast<ComponentStorage*>(oak_allocator.allocate(sizeof(ComponentStorage)));
+			new (ptr) ComponentStorage(it);
+			ownsPools_.push_back(ptr);
+			addComponentStorage(ptr);
+		}
+	}
+
+	void Scene::terminate() {
+		reset();
+		for (auto it : ownsPools_) {
+			it->~ComponentStorage();
+			oak_allocator.deallocate(it, sizeof(ComponentStorage));
+		}
+		ownsPools_.clear();
+	}
+
 	void Scene::update() {
 		for (const auto& e : killed_) {
 			//remove all the entities components
@@ -203,7 +222,6 @@ namespace oak {
 
 	void Scene::addComponentStorage(ComponentStorage *storage) {
 		size_t tid = storage->getTypeInfo()->id;
-		printf("tid: %lu, name: %s", tid, storage->getTypeInfo()->name.c_str());
 		if (componentPools_.size() <= tid) {
 			componentPools_.resize(tid + 1);
 		}

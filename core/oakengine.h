@@ -48,7 +48,6 @@ namespace oak {
 
 	template<class T, class... TArgs>
 	T& addComponent(EntityId entity, Scene& scene, TArgs&&... args) {
-		log_print_out("tid: %lu, name: %s", T::typeInfo.id, T::typeInfo.name.c_str());
 		T* comp = static_cast<T*>(scene.addComponent(entity, T::typeInfo.id));
 		new (comp) T{ std::forward<TArgs>(args)... };
 		return *static_cast<T*>(comp);

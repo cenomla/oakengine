@@ -28,6 +28,7 @@ namespace oak::graphics {
 		void terminate() override;
 		
 		void setState(const Api::State& state) override;
+		const State& getState() const override;
 
 		void clear(bool color, bool depth, bool stencil) override;
 		void draw(const Batch& batch) override;

@@ -105,13 +105,26 @@ namespace oak {
 		return actions_[button];
 	}
 
-	void InputManager::getCursorPos(double *xpos, double *ypos) const {
+	void InputManager::setButton(int button, int action) {
+		actions_[button] = action;
+	}
+
+	glm::vec2 InputManager::getCursorPos() const {
 		if (!window_) {
-			*xpos = 0.0f;
-			*ypos = 0.0f;
-			return;
+			return { 0, 0 };
 		}
-		glfwGetCursorPos(window_, xpos, ypos);
+		double x, y;
+		glfwGetCursorPos(window_, &x, &y);
+		return { x, y };
+	}
+
+	glm::ivec2 InputManager::getWindowSize() const {
+		if (!window_) {
+			return { 0, 0 };
+		}
+		glm::ivec2 size;
+		glfwGetWindowSize(window_, &size.x, &size.y);
+		return size;
 	}
 
 	CursorMode InputManager::getCursorMode() const {

@@ -23,17 +23,17 @@ namespace oak::graphics {
 	static void change_gl_state(const Api::State& state, const Api::State& change) {
 		//viewport
 		if (state.viewport != change.viewport) {
-			glViewport(change.viewport.x, change.viewport.y, change.viewport.width, change.viewport.height);
+			glViewport(change.viewport.x, change.viewport.y, change.viewport.z, change.viewport.w);
 		}
 		//scissor test
 		if (state.scissorRect != change.scissorRect) {
-			if (change.scissorRect.empty()) {
+			if (change.scissorRect == View{ 0 }) {
 				glDisable(GL_SCISSOR_TEST);
 			} else {
-				if (state.scissorRect.empty()) {
+				if (state.scissorRect == View{ 0 }) {
 					glEnable(GL_SCISSOR_TEST);
 				}
-				glScissor(change.scissorRect.x, change.scissorRect.y, change.scissorRect.width, change.scissorRect.height);
+				glScissor(change.scissorRect.x, change.scissorRect.y, change.scissorRect.z, change.scissorRect.w);
 			}
 		}
 		//depth test
@@ -151,14 +151,17 @@ namespace oak::graphics {
 
 		log_print_out("opengl version: %s", glGetString(GL_VERSION));
 
+		int ww, wh;
+		glfwGetWindowSize(window_, &ww, &wh);
+
 		currentState_ = Api::State{
 			glm::vec4{ 0.0f },
 			1.0f,
 			BoolOp::NONE,
-			View{},
+			View{ 0, 0, ww, wh },
 			MaskState{},
 			FaceCull::NONE,
-			View{},
+			View{ 0, 0, ww, wh },
 			BlendMode::NONE
 		};
 
@@ -193,6 +196,10 @@ namespace oak::graphics {
 	void GLApi::setState(const Api::State& state) {
 		change_gl_state(currentState_, state);
 		currentState_ = state;
+	}
+
+	const Api::State& GLApi::getState() const {
+		return currentState_;
 	}
 
 	void GLApi::clear(bool color, bool depth, bool stencil) {

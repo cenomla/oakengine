@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "input.h"
 #include "oak_assert.h"
 #include "container.h"
@@ -32,11 +34,12 @@ namespace oak {
 		int getKey(int key) const;
 		void setKey(int key, int action);
 		int getButton(int button) const;
-		void getCursorPos(double *xpos, double *ypos) const;
+		void setButton(int button, int action);
+		glm::vec2 getCursorPos() const;
+		glm::ivec2 getWindowSize() const;
 		
 		CursorMode getCursorMode() const;
 
-		
 		inline GLFWwindow* getWindow() const { return window_; }
 	private:
 		int actions_[1024];

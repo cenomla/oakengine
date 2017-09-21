@@ -114,21 +114,7 @@ namespace oak::graphics {
 		BACK
 	};
 
-	struct View {
-		int x = 0, y = 0, width = 0, height = 0;
-
-		inline bool operator==(const View& lhs) const {
-			return x == lhs.x && y == lhs.y && width == lhs.width && height == lhs.height;
-		}
-
-		inline bool operator!=(const View& lhs) const {
-			return !operator==(lhs);
-		}
-
-		inline bool empty() const {
-			return x == 0 && y == 0 && width == 0 && height == 0;
-		}
-	};
+	using View = glm::ivec4;
 
 	struct MaskState {
 		bool red = true, green = true, blue = true, alpha = true, depth = true, stencil = true;
@@ -154,6 +140,7 @@ namespace oak::graphics {
 		virtual void terminate() = 0;
 		
 		virtual void setState(const State& state) = 0;
+		virtual const State& getState() const = 0;
 
 		virtual void clear(bool color = false, bool depth = false, bool stencil = false) = 0;
 		virtual void draw(const Batch& batch) = 0;

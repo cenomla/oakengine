@@ -29,6 +29,9 @@ namespace oak {
 		bool hasComponent(EntityId entity, size_t tid) const;
 		const std::bitset<config::MAX_COMPONENTS>& getComponentFilter(EntityId entity) const;
 
+		void init();
+		void terminate();
+
 		void update();
 		void reset();
 
@@ -54,6 +57,7 @@ namespace oak {
 		oak::deque<uint32_t> freeIndices_;
 
 		oak::vector<ComponentStorage*> componentPools_;
+		oak::vector<ComponentStorage*> ownsPools_;
 		
 		void ensureSize(size_t size);
 		void removeAllComponents(EntityId entity);
