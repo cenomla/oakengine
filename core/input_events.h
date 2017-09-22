@@ -2,16 +2,13 @@
 
 #include <cinttypes>
 
+#include "event.h"
 #include "input.h"
-#include "type_info.h"
 
 struct GLFWwindow;
 
 namespace oak {
 
-	class Puper;
-	struct ObjInfo;
-	
 	struct WindowCreateEvent {
 		static const TypeInfo typeInfo;
 		GLFWwindow *window;

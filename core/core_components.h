@@ -1,13 +1,10 @@
 #pragma once
 
 #include <bitset>
-#include "events.h"
+#include "event.h"
+#include "component.h"
 
 namespace oak {
-
-	class Puper;
-	struct ObjInfo;
-	struct TypeInfo;
 
 	struct EventComponent {
 		static const TypeInfo typeInfo;

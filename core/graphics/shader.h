@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include "resource.h"
 
 namespace oak::graphics {
 
@@ -12,10 +13,14 @@ namespace oak::graphics {
 	};
 
 	struct Shader {
+		static const TypeInfo typeInfo;
+
 		uint32_t id = 0;
 		ShaderInfo info;
-		
+
 		void destroy();
 	};
+
+	void pup(Puper& puper, Shader& data, const ObjInfo& info);
 
 }

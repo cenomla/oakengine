@@ -48,7 +48,7 @@ namespace oak {
 
 		inline void get() const {
 			if (!ptr) {
-				ptr = ResourceManager::inst().require<T>(id);
+				ptr = static_cast<const T*>(ResourceManager::inst().get(&T::typeInfo).require(id));
 			}
 			oak_assert(ptr);
 		}

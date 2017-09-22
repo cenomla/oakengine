@@ -4,6 +4,7 @@
 #include <cinttypes>
 
 #include "api.h"
+#include "resource.h"
 
 namespace oak::graphics {
 
@@ -15,10 +16,14 @@ namespace oak::graphics {
 	};
 
 	struct Buffer {
+		static const TypeInfo typeInfo;
+
 		uint32_t id = 0;
 		BufferInfo info;
-		
+
 		void destroy();
 	};
+
+	void pup(Puper& puper, Buffer& data, const ObjInfo& info);
 
 }

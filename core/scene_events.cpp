@@ -1,7 +1,5 @@
 #include "scene_events.h"
 
-#include "pup.h"
-
 namespace oak {
 
 	const TypeInfo EntityCreateEvent::typeInfo = makeEventInfo<EntityCreateEvent>("entity_create");

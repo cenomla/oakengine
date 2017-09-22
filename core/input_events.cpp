@@ -1,7 +1,5 @@
 #include "input_events.h"
 
-#include "pup.h"
-
 namespace oak {
 
 	const TypeInfo WindowCreateEvent::typeInfo = makeEventInfo<WindowCreateEvent>("window_created");

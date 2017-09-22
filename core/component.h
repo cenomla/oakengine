@@ -2,6 +2,8 @@
 
 #include <cstddef>
 
+#include "type_info.h"
+
 namespace oak {
 
 	namespace config {
@@ -10,6 +12,11 @@ namespace oak {
 
 	namespace detail {
 		struct BaseComponent {};
+	}
+
+	template<class T>
+	TypeInfo makeComponentInfo(const oak::string& name) {
+		return makeTypeInfo<detail::BaseComponent, T>(name);
 	}
 
 

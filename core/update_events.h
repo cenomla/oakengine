@@ -1,11 +1,8 @@
 #pragma once
 
-#include "type_info.h"
+#include "event.h"
 
 namespace oak {
-
-	class Puper;
-	struct ObjInfo;
 
 	struct TickEvent {
 		static const TypeInfo typeInfo;

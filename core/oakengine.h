@@ -13,6 +13,7 @@
 #include "scene.h"
 #include "component.h"
 #include "component_storage.h"
+#include "log.h"
 
 namespace oak {
 
@@ -20,6 +21,42 @@ namespace oak {
 	void addQueue(EventManager& manager) {
 	}
 
+	//resource api
+	template<class T, class... TArgs>
+	T& setDefaultResource(TArgs&&... args) {
+		auto& storage = ResourceManager::inst().get(&T::typeInfo);
+		auto ptr = storage.setDefault();
+		new (ptr) T{ std::forward<TArgs>(args)... };
+		return *ptr;
+	}
+	
+	template<class T, class... TArgs>
+	T& addResource(const oak::string& name, TArgs&&... args) {
+		auto& storage = ResourceManager::inst().get(&T::typeInfo);
+		auto ptr = storage.add(name);
+		new (ptr) T{ std::forward<TArgs>(args)... };
+		return *static_cast<T*>(ptr);
+	}
+
+	template<class T>
+	const T* requireResource(size_t id) {
+		return static_cast<const T*>(ResourceManager::inst().get(&T::typeInfo).require(id));
+	}
+
+	template<class T>
+	const T& requireResource(const oak::string& name) {
+		auto id = std::hash<oak::string>{}(name);
+		auto ptr = requireResource<T>(id);
+		if (ptr) {
+			return *ptr;
+		}
+		log_print_err("failed to find resource: %s", name.c_str());
+		abort();
+	}
+
+
+
+	//entity component api
 	template<class T>
 	mpl::const_type<T, ComponentStorage>& getComponentStorage(mpl::const_type<T, Scene>& scene) {
 		return scene.getComponentStorage(T::typeInfo.id);

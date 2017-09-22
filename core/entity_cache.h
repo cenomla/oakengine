@@ -7,7 +7,7 @@
 #include "component.h"
 #include "core_components.h"
 #include "entity_id.h"
-#include "events.h"
+#include "event.h"
 
 namespace oak {
 

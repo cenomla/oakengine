@@ -1,7 +1,5 @@
 #include "update_events.h"
 
-#include "pup.h"
-
 namespace oak {
 
 	const TypeInfo TickEvent::typeInfo = makeEventInfo<TickEvent>("tick");

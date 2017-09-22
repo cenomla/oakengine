@@ -1,12 +1,9 @@
 #pragma once
 
 #include "entity_id.h"
-#include "type_info.h"
+#include "event.h"
 
 namespace oak {
-
-	class Puper;
-	struct ObjInfo;
 
 	struct EntityCreateEvent {
 		static const TypeInfo typeInfo;
