@@ -26,6 +26,7 @@ namespace oak {
 		void* add(const oak::string& name);
 		void remove(const oak::string& name);
 		const void* require(const oak::string& name);
+		const void* require(size_t id);
 	private:
 		oak::unordered_map<size_t, void*> resources_;
 		void *defaultResource_;

@@ -4,10 +4,14 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <file_manager.h>
-#include <log.h>
+#include "file_manager.h"
+#include "log.h"
 
 namespace oak::graphics {
+
+	const TypeInfo Mesh::typeInfo = makeResourceInfo<Mesh>("mesh");
+
+	void pup(Puper& puper, Mesh& data, const ObjInfo& info) {}
 
 	static void processMesh(oak::vector<Mesh>& meshes, const aiScene *scene, aiMesh *mesh) {
 		

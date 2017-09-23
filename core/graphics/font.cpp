@@ -7,6 +7,10 @@
 
 namespace oak::graphics {
 
+	const TypeInfo Font::typeInfo = makeResourceInfo<Font>("font");
+
+	void pup(Puper& puper, Font& font, const ObjInfo& data) {}
+
 	struct FontHeaderInfo {
 		size_t size, width, height;
 	};

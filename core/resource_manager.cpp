@@ -56,7 +56,10 @@ namespace oak {
 
 	const void* ResourceStorage::require(const oak::string& name) {
 		auto id = std::hash<oak::string>{}(name);
+		return require(id);
+	}
 
+	const void* ResourceStorage::require(size_t id) {
 		auto it = resources_.find(id);
 		if (it != std::end(resources_)) {
 			return it->second;

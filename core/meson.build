@@ -45,6 +45,7 @@ oak_sources = [
 	'graphics/static_batcher.cpp',
 	'graphics/texture.cpp',
 	'graphics/material.cpp',
+	'graphics/sprite.cpp',
 	'graphics/vk_api.cpp',
 
 	'util/byte_buffer.cpp',
