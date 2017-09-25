@@ -55,13 +55,23 @@ namespace oak {
 	}
 
 	void* Scene::addComponent(EntityId entity, size_t tid) {
-		componentMasks_[entity][tid] = true;
-		return componentPools_[tid]->addComponent(entity);
+		auto& mask = componentMasks_[entity][tid];
+		auto pool = componentPools_[tid];
+		if (mask) {
+			pool->removeComponent(entity);
+		}
+		mask = true;
+		return pool->addComponent(entity);
 	}
 
 	void Scene::addComponent(EntityId entity, size_t tid, const void *ptr) {
-		componentMasks_[entity][tid] = true;
-		componentPools_[tid]->addComponent(entity, ptr);
+		auto& mask = componentMasks_[entity][tid];
+		auto pool = componentPools_[tid];
+		if (mask) {
+			pool->removeComponent(entity);
+		}
+		mask = true;
+		pool->addComponent(entity, ptr);
 	}
 
 	void Scene::removeComponent(EntityId entity, size_t tid) {
