@@ -3,10 +3,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <event_manager.h>
-#include <input_manager.h>
-#include <input_events.h>
-#include <log.h>
+#include "oakengine.h"
+#include "input_events.h"
+#include "log.h"
 
 #include "material.h"
 #include "batch.h"
@@ -185,7 +184,7 @@ namespace oak::graphics {
 		fullscreenBuffer_.data(1, sizeof(edata), edata);
 		fullscreenBuffer_.unbind();
 
-		getEventQueue<WindowCreateEvent>().emit({ window_ });
+		emitEvent<WindowCreateEvent>(window_);
 		InputManager::inst().updateCache();
 	}
 

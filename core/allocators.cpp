@@ -74,6 +74,7 @@ namespace oak {
 
 	LinearAllocator::LinearAllocator(Allocator *parent, size_t pageSize, uint32_t alignment) : Allocator{ parent, alignment }, pageSize_{ pageSize } {
 		oak_assert(pageSize_ > sizeof(detail::Block));
+		oak_assert(parent->getAlignment() >= alignment);
 		start_ = parent_->allocate(pageSize_ + sizeof(detail::Block));
 		detail::Block *header = static_cast<detail::Block*>(start_);
 		header->next = nullptr;

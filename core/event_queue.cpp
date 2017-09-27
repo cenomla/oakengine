@@ -2,21 +2,21 @@
 
 namespace oak {
 
-	EventQueue::EventQueue(const TypeInfo *tinfo) :
+	EventQueueBase::EventQueueBase(const TypeInfo *tinfo) :
 		alignedSize{ ptrutil::alignSize(tinfo->size, 16) },
 		size{ 0 },
 		allocator{ &oalloc_freelist, 256 * alignedSize, 16 } {}
 
-	void EventQueue::clear() {
+	void EventQueueBase::clear() {
 		allocator.clear();
 		size = 0;
 	}
 
-	void EventQueue::empty() {
+	bool EventQueueBase::empty() {
 		return size == 0;
 	}
 
-	void* EventQueue::emit() {
+	void* EventQueueBase::next() {
 		size++;
 		return allocator.allocate(alignedSize);
 	}

@@ -8,46 +8,54 @@
 
 namespace oak {
 
-	struct EventQueue {
-		EventQueue(const TypeInfo *tinfo); 
+	struct EventQueueBase {
+		EventQueueBase(const TypeInfo *tinfo); 
 
 		void clear();
-		void empty();
-		void* emit();
+		bool empty();
+		void* next();
 
 		size_t alignedSize, size;
 		LinearAllocator allocator;
 	};
 
 	template<class T>
-	struct EventQueueIter : public EventQueue {
-		using EventQueue::EventQueue;
+	struct EventQueue: public EventQueueBase {
 
-		class EventIterator : public std::iterator<std::forward_iterator_tag, T> {
+		EventQueue() : EventQueueBase(&T::typeInfo) {}
+
+		template<class... TArgs>
+		void emit(TArgs&&... args) {
+			auto ptr = next();
+			new (ptr) T{ std::forward<TArgs>(args)... };
+		}
+
+		class const_iterator : public std::iterator<std::forward_iterator_tag, T> {
 		public:
 			static constexpr size_t ALIGNED_SIZE = ptrutil::alignSize(detail::size_of_void<T>::value, 16);
 
-			explicit EventIterator(const detail::Block *header, size_t count = 0) :
+			explicit const_iterator(const detail::Block *header, size_t count = 0) :
 			header_{ header },
 			ptr_{ static_cast<const T*>(ptrutil::add(header_, sizeof(detail::Block))) },
-			count_{ count }, left_{ (header->size - sizeof(detail::Block) / ALIGNED_SIZE } {}
+			count_{ count - 1 },
+			left_{ 256 } {}
 
-			EventIterator& operator++() {
-				ptr_ = static_cast<const T*>(ptrutil::add(ptr_, ALIGNED_SIZE));
+			const_iterator& operator++() {
 				count_--;
 				left_--;
+				ptr_ = static_cast<const T*>(ptrutil::add(ptr_, ALIGNED_SIZE));
 				if (left_ > 0) {
 					return *this;
 				} else {
 					header_ = static_cast<const detail::Block*>(header_->next);
 					ptr_ = static_cast<const T*>(ptrutil::add(header_, sizeof(detail::Block)));
-					left_ = (header_->size - sizeof(detail::Block)) / ALIGNED_SIZE;
+					left_ = 256;
 					return *this;
 				}
 			}
 
-			bool operator==(const EventIterator& other) const { return count_ == other.count_; }
-			bool operator!=(const EventIterator& other) const { return !operator==(other); }
+			bool operator==(const const_iterator& other) const { return count_ == other.count_; }
+			bool operator!=(const const_iterator& other) const { return !operator==(other); }
 
 			const T& operator*() const { return *ptr_; }
 		private:
@@ -57,8 +65,9 @@ namespace oak {
 		};
 
 
-		EventIterator begin() { return EventIterator{ static_cast<detail::Block*>(allocator.getStart()), size }; }
-		EventIterator end() { return EventIterator{ nullptr, 0 }; }
+		const_iterator begin() { return const_iterator{ static_cast<const detail::Block*>(allocator.getStart()), size }; }
+		const_iterator end() { return const_iterator{ nullptr, 0 }; }
+
 	};
 
 }

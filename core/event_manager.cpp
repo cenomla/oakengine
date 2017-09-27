@@ -12,8 +12,8 @@ namespace oak {
 
 	EventManager::~EventManager() {
 		for (auto& queue : queues_) {
-			queue->~EventQueue();
-			oak_allocator.deallocate(queue, sizeof(EventQueue));
+			queue->~EventQueueBase();
+			oak_allocator.deallocate(queue, sizeof(EventQueueBase));
 		}
 		queues_.clear();
 		instance = nullptr;
@@ -27,15 +27,15 @@ namespace oak {
 
 	void EventManager::addQueue(const TypeInfo *tinfo) {
 		size_t tid = tinfo->id;
-		auto *ptr = static_cast<EventQueue*>(oak_allocator.allocate(sizeof(EventQueue)));
-		new (ptr) EventQueue{ tinfo };
+		auto *ptr = static_cast<EventQueueBase*>(oak_allocator.allocate(sizeof(EventQueueBase)));
+		new (ptr) EventQueueBase{ tinfo };
 		if (queues_.size() <= tid) {
 			queues_.resize(tid + 1);
 		}
 		queues_[tid] = ptr;
 	}
 
-	EventQueue& EventManager::getQueue(const TypeInfo *tinfo) {
+	EventQueueBase& EventManager::getQueue(const TypeInfo *tinfo) {
 		size_t tid = tinfo->id;
 		return *queues_[tid];
 	}

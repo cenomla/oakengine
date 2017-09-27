@@ -3,7 +3,7 @@
 namespace oak {
 
 	ProxyAllocator oalloc_proxy;
-	FreelistAllocator oalloc_freelist{ &oalloc_proxy, 128_mb };
+	FreelistAllocator oalloc_freelist{ &oalloc_proxy, 128_mb, 64 };
 	LinearAllocator oalloc_frame{ &oalloc_freelist };
 
 	OakAllocator<void> oak_allocator{ &oalloc_freelist };

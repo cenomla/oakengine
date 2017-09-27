@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <set>
 
-#include <event_manager.h>
-#include <input_events.h>
-#include <log.h>
+#include "oakengine.h"
+#include "input_events.h"
+#include "log.h"
 
 namespace oak::graphics {
 
@@ -26,7 +26,7 @@ namespace oak::graphics {
 			abort();
 		}
 
-		getEventQueue<WindowCreateEvent>().emit({ window_ });
+		emitEvent<WindowCreateEvent>(window_);
 
 		//init surface
 		VkResult result = glfwCreateWindowSurface(instance_, window_, nullptr, &surface_);

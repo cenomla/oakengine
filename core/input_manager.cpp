@@ -140,27 +140,27 @@ namespace oak {
 	}
 
 	static void closeCallback(GLFWwindow *window) {
-		getEventQueue<WindowCloseEvent>().emit({ window });
+		emitEvent<WindowCloseEvent>(window);
 	}
 
 	static void resizeCallback(GLFWwindow *window, int width, int height) {
-		getEventQueue<WindowResizeEvent>().emit({ width, height });
+		emitEvent<WindowResizeEvent>(width, height);
 	}
 
 	static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-		getEventQueue<KeyEvent>().emit({ key, scancode, action, mods });
+		emitEvent<KeyEvent>(key, scancode, action, mods);
 	}
 
 	static void buttonCallback(GLFWwindow *window, int button, int action, int mods) {
-		getEventQueue<ButtonEvent>().emit({ button, action, mods });
+		emitEvent<ButtonEvent>(button, action, mods);
 	}
 
 	static void cursorCallback(GLFWwindow *window, double xpos, double ypos) {
-		getEventQueue<CursorEvent>().emit({ static_cast<float>(xpos), static_cast<float>(ypos) });
+		emitEvent<CursorEvent>(static_cast<float>(xpos), static_cast<float>(ypos));
 	}
 
 	static void charCallback(GLFWwindow *window, uint32_t codepoint) {
-		getEventQueue<TextEvent>().emit(TextEvent{ codepoint });
+		emitEvent<TextEvent>(codepoint);
 	}
 
 	void setCallbacks(GLFWwindow *window) {

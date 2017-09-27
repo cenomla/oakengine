@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 
 #include "oak_assert.h"
 
@@ -24,8 +25,13 @@ namespace oak {
 	}
 
 	template<class T>
-	EventQueueIter<T>& getEventQueue() {
-		return static_cast<EventQueueIter<T>&>(EventManager::inst().getQueue(&T::typeInfo));
+	EventQueue<T>& getEventQueue() {
+		return static_cast<EventQueue<T>&>(EventManager::inst().getQueue(&T::typeInfo));
+	}
+
+	template<class T, class... TArgs>
+	void emitEvent(TArgs&&... args) {
+		getEventQueue<T>().emit(std::forward<TArgs>(args)...);
 	}
 
 	//resource api

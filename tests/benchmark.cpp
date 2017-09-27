@@ -1,36 +1,45 @@
 #include <glm/glm.hpp>
 
-#include <event_manager.h>
 #include <scene_events.h>
 #include <input_events.h>
-#include <scene.h>
-#include <scene_utils.h>
-#include <component_storage.h>
+#include <oakengine.h>
 #include <entity_id.h>
 #include <entity_cache.h>
 #include <container.h>
 #include <chrono>
 
 struct TransformComponent {
+	static const oak::TypeInfo typeInfo;
 	glm::vec2 position;
 	float rotation;
 	float scale;
 };
 
+const oak::TypeInfo TransformComponent::typeInfo = oak::makeComponentInfo<TransformComponent>("transform");
+
 struct DrawComponent {
+	static const oak::TypeInfo typeInfo;
 	size_t spriteId;
 	uint32_t layer;
 	float depth;
 };
 
+const oak::TypeInfo DrawComponent::typeInfo = oak::makeComponentInfo<DrawComponent>("draw");
+
 struct VelocityComponent {
+	static const oak::TypeInfo typeInfo;
 	glm::vec2 velocity;
 };
 
+const oak::TypeInfo VelocityComponent::typeInfo = oak::makeComponentInfo<VelocityComponent>("velocity");
+
 struct BoxComponent {
+	static const oak::TypeInfo typeInfo;
 	glm::vec2 offset;
 	glm::vec2 halfExtent;
 };
+
+const oak::TypeInfo BoxComponent::typeInfo = oak::makeComponentInfo<BoxComponent>("box");
 
 void pup(oak::Puper& puper, TransformComponent& data, const oak::ObjInfo& info) {}
 void pup(oak::Puper& puper, DrawComponent& data, const oak::ObjInfo& info) {}
@@ -46,28 +55,26 @@ void oak_bench() {
 
 	oak::EventManager evtManager;
 	
-	evtManager.addQueue<oak::EntityCreateEvent>();
-	evtManager.addQueue<oak::EntityDestroyEvent>();
-	evtManager.addQueue<oak::EntityActivateEvent>();
-	evtManager.addQueue<oak::EntityDeactivateEvent>();
+	oak::addEventQueue<oak::EntityCreateEvent>();
+	oak::addEventQueue<oak::EntityDestroyEvent>();
+	oak::addEventQueue<oak::EntityActivateEvent>();
+	oak::addEventQueue<oak::EntityDeactivateEvent>();
 
 	oak::Scene scene;
-	oak::ComponentTypeManager chs;
+	oak::ComponentTypeManager ctm;
 
-	chs.addHandle<TransformComponent>("transform");
-	chs.addHandle<DrawComponent>("draw");
-	chs.addHandle<VelocityComponent>("velocity");
-	chs.addHandle<BoxComponent>("box");
+	ctm.addType<TransformComponent>();
+	ctm.addType<DrawComponent>();
+	ctm.addType<VelocityComponent>();
+	ctm.addType<BoxComponent>();
 
-	oak::ComponentStorage ts{ chs.getHandle("transform") };
-	oak::ComponentStorage ds{ chs.getHandle("draw") };
-	oak::ComponentStorage vs{ chs.getHandle("velocity") };
-	oak::ComponentStorage bs{ chs.getHandle("box") };
+	scene.init();
 
-	scene.addComponentStorage(&ts);
-	scene.addComponentStorage(&ds);
-	scene.addComponentStorage(&vs);
-	scene.addComponentStorage(&bs);
+	auto& ts = oak::getComponentStorage<TransformComponent>(scene);
+	auto& ds = oak::getComponentStorage<DrawComponent>(scene);
+	auto& vs = oak::getComponentStorage<VelocityComponent>(scene);
+	auto& bs = oak::getComponentStorage<BoxComponent>(scene);
+
 
 	oak::EntityCache drawCache;
 	drawCache.requireComponent<TransformComponent>();

@@ -1,22 +1,26 @@
 #include <iostream>
-#include <resource_manager.h>
-#include <container.h>
-#include <oak_alloc.h>
+#include <resource.h>
+#include <oakengine.h>
 
 struct Res {
+	static const oak::TypeInfo typeInfo;
+
 	oak::vector<int> list;
 	float x, y;
 };
 
-int main(int argc, char **argv) {
+const oak::TypeInfo Res::typeInfo = oak::makeResourceInfo<Res>("res");
 
-	oak::PoolAllocator alloc{ &oak::oalloc_freelist, oak::operator""_mb(48), sizeof(Res) };
+void pup(oak::Puper& puper, Res& data, const oak::ObjInfo& info) {}
+
+int main(int argc, char **argv) {
 
 	oak::ResourceManager resManager;
 
-	auto& res = resManager.get<Res>().add("mamoth", oak::vector<int>{ 95, 64, 12 }, 55.5f, 90.0f);
+	auto& res = oak::addResource<Res>("mamoth", oak::vector<int>{ 95, 64, 12 }, 55.5f, 90.0f);
 
-	auto& r = resManager.require<Res>("mamoth");
+
+	auto& r = oak::requireResource<Res>("mamoth");
 
 	r.x = -1.0f;
 	res.y = -20.0f;

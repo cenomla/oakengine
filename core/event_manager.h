@@ -26,11 +26,11 @@ namespace oak {
 		void init();
 
 		void addQueue(const TypeInfo *tinfo);
-		EventQueue& getQueue(const TypeInfo *tinfo);
+		EventQueueBase& getQueue(const TypeInfo *tinfo);
 
 		void clear();
 	private:
-		oak::vector<EventQueue*> queues_;
+		oak::vector<EventQueueBase*> queues_;
 	};
 
 }

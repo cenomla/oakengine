@@ -25,7 +25,7 @@ namespace oak {
 		ensureSize(id.index);
 
 		entities_.push_back(id);
-		getEventQueue<EntityCreateEvent>().emit({ id });
+		emitEvent<EntityCreateEvent>(id);
 		return id;
 	}
 
@@ -33,17 +33,17 @@ namespace oak {
 		deactivateEntity(entity);
 		generations_[entity]++;
 		killed_.push_back(entity);
-		getEventQueue<EntityDestroyEvent>().emit({ entity });
+		emitEvent<EntityDestroyEvent>(entity);
 	}
 
 	void Scene::activateEntity(EntityId entity) {
 		flags_[entity][0] = true;
-		getEventQueue<EntityActivateEvent>().emit({ entity });
+		emitEvent<EntityActivateEvent>(entity);
 	}
 
 	void Scene::deactivateEntity(EntityId entity) {
 		flags_[entity][0] = false;
-		getEventQueue<EntityDeactivateEvent>().emit({ entity });
+		emitEvent<EntityDeactivateEvent>(entity);
 	}
 
 	bool Scene::isEntityAlive(EntityId entity) const {
@@ -131,8 +131,8 @@ namespace oak {
 		auto& deactivateQueue = getEventQueue<EntityDeactivateEvent>();
 		auto& destroyQueue = getEventQueue<EntityDestroyEvent>();
 		for (const auto& e : entities_) { 
-			deactivateQueue.emit({ e });			
-			destroyQueue.emit({ e });
+			deactivateQueue.emit(e);			
+			destroyQueue.emit(e);
 			removeAllComponents(e);
 		}
 		for (auto& a : flags_) {
