@@ -23,10 +23,10 @@ namespace oak {
 		~ResourceStorage();
 
 		void* setDefault();
-		void* add(const oak::string& name);
-		void remove(const oak::string& name);
-		const void* require(const oak::string& name);
-		const void* require(size_t id);
+		void* add(size_t id);
+		void remove(size_t id);
+		void* require(size_t id);
+		bool has(size_t id);
 	private:
 		oak::unordered_map<size_t, void*> resources_;
 		void *defaultResource_;

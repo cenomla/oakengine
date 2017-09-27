@@ -11,6 +11,7 @@ oak_sources = [
 	'entity_cache.cpp',
 	'entity_id.cpp',
 	'event_manager.cpp',
+	'event_queue.cpp',
 	'file_manager.cpp',
 	'input_events.cpp',
 	'input_manager.cpp',

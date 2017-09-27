@@ -7,7 +7,6 @@
 #include "component.h"
 #include "core_components.h"
 #include "entity_id.h"
-#include "event.h"
 
 namespace oak {
 
@@ -27,12 +26,6 @@ namespace oak {
 			componentFilter_[T::typeInfo.id] = true;
 		}
 
-		template<class T>
-		inline void requireEvent() {
-			requireComponent<EventComponent>();
-			eventFilter_[T::typeInfo.id] = true;
-		}
-
 		inline void requirePrefab(size_t id) {
 			requireComponent<PrefabComponent>();
 			prefabFilter_ = id;
@@ -43,7 +36,6 @@ namespace oak {
 		oak::vector<EntityId> entities_;
 		oak::vector<bool> contains_;
 		std::bitset<config::MAX_COMPONENTS> componentFilter_;
-		std::bitset<config::MAX_EVENTS> eventFilter_;
 		size_t prefabFilter_ = 0;
 
 		void addEntity(EntityId entity);

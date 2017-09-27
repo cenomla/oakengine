@@ -23,26 +23,14 @@ namespace oak {
 		EventManager();
 		~EventManager();
 
-		template<class TEvent>
-		void addQueue() {
-			size_t tid = TEvent::typeInfo.id;
-			void *ptr = oak_allocator.allocate(sizeof(EventQueueBase));
-			new (ptr) EventQueue<TEvent>{};
-			if (queues_.size() <= tid) {
-				queues_.resize(tid + 1);
-			}
-			queues_[tid] = static_cast<EventQueueBase*>(ptr);
-		}
+		void init();
 
-		template<class TEvent>
-		EventQueue<TEvent>& getQueue() {
-			size_t tid = TEvent::typeInfo.id;
-			return *static_cast<EventQueue<TEvent>*>(queues_[tid]);
-		}
+		void addQueue(const TypeInfo *tinfo);
+		EventQueue& getQueue(const TypeInfo *tinfo);
 
 		void clear();
 	private:
-		oak::vector<EventQueueBase*> queues_;
+		oak::vector<EventQueue*> queues_;
 	};
 
 }

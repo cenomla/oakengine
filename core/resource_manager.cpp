@@ -25,9 +25,7 @@ namespace oak {
 		return defaultResource_;
 	}
 
-	void* ResourceStorage::add(const oak::string& name) {
-		auto id = std::hash<oak::string>{}(name);
-
+	void* ResourceStorage::add(size_t id) {
 		auto it = resources_.find(id);
 		if (it == std::end(resources_)) {
 			auto ptr = allocator_.allocate(typeInfo_->size);
@@ -41,9 +39,7 @@ namespace oak {
 		}
 	}
 
-	void ResourceStorage::remove(const oak::string& name) {
-		auto id = std::hash<oak::string>{}(name);
-
+	void ResourceStorage::remove(size_t id) {
 		auto it = resources_.find(id);
 		if (it != std::end(resources_)) {
 			auto ptr = it->second;
@@ -54,12 +50,7 @@ namespace oak {
 		}
 	}
 
-	const void* ResourceStorage::require(const oak::string& name) {
-		auto id = std::hash<oak::string>{}(name);
-		return require(id);
-	}
-
-	const void* ResourceStorage::require(size_t id) {
+	void* ResourceStorage::require(size_t id) {
 		auto it = resources_.find(id);
 		if (it != std::end(resources_)) {
 			return it->second;
@@ -67,6 +58,11 @@ namespace oak {
 			return defaultResource_;
 		}
 		return nullptr;
+	}
+
+	bool ResourceStorage::has(size_t id) {
+		auto it = resources_.find(id);
+		return it != std::end(resources_);
 	}
 
 	ResourceManager *ResourceManager::instance = nullptr;

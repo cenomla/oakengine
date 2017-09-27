@@ -4,7 +4,6 @@
 
 #include "util/type_id.h"
 #include "type_info.h"
-#include "component.h"
 #include "container.h"
 
 namespace oak {
@@ -66,6 +65,5 @@ namespace oak {
 	template<class U>
 	TypeManager<U>* TypeManager<U>::instance = nullptr;
 
-	using ComponentTypeManager = TypeManager<detail::BaseComponent>;
 
 }

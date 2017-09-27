@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "type_info.h"
+#include "type_manager.h"
 
 namespace oak {
 
@@ -19,5 +19,6 @@ namespace oak {
 		return makeTypeInfo<detail::BaseComponent, T>(name);
 	}
 
+	using ComponentTypeManager = TypeManager<detail::BaseComponent>;
 
 }

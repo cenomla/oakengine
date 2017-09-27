@@ -4,7 +4,7 @@
 
 #include "util/stream_puper.h"
 #include "type_manager.h"
-#include "event_manager.h"
+#include "oakengine.h"
 #include "file_manager.h"
 #include "scene_events.h"
 #include "component_storage.h"
@@ -25,7 +25,7 @@ namespace oak {
 		ensureSize(id.index);
 
 		entities_.push_back(id);
-		EventManager::inst().getQueue<EntityCreateEvent>().emit({ id });
+		getEventQueue<EntityCreateEvent>().emit({ id });
 		return id;
 	}
 
@@ -33,17 +33,17 @@ namespace oak {
 		deactivateEntity(entity);
 		generations_[entity]++;
 		killed_.push_back(entity);
-		EventManager::inst().getQueue<EntityDestroyEvent>().emit({ entity });
+		getEventQueue<EntityDestroyEvent>().emit({ entity });
 	}
 
 	void Scene::activateEntity(EntityId entity) {
 		flags_[entity][0] = true;
-		EventManager::inst().getQueue<EntityActivateEvent>().emit({ entity });
+		getEventQueue<EntityActivateEvent>().emit({ entity });
 	}
 
 	void Scene::deactivateEntity(EntityId entity) {
 		flags_[entity][0] = false;
-		EventManager::inst().getQueue<EntityDeactivateEvent>().emit({ entity });
+		getEventQueue<EntityDeactivateEvent>().emit({ entity });
 	}
 
 	bool Scene::isEntityAlive(EntityId entity) const {
@@ -55,22 +55,22 @@ namespace oak {
 	}
 
 	void* Scene::addComponent(EntityId entity, size_t tid) {
-		auto& mask = componentMasks_[entity][tid];
+		auto& mask = componentMasks_[entity];
 		auto pool = componentPools_[tid];
-		if (mask) {
+		if (mask[tid]) {
 			pool->removeComponent(entity);
 		}
-		mask = true;
+		mask[tid] = true;
 		return pool->addComponent(entity);
 	}
 
 	void Scene::addComponent(EntityId entity, size_t tid, const void *ptr) {
-		auto& mask = componentMasks_[entity][tid];
+		auto& mask = componentMasks_[entity];
 		auto pool = componentPools_[tid];
-		if (mask) {
+		if (mask[tid]) {
 			pool->removeComponent(entity);
 		}
-		mask = true;
+		mask[tid] = true;
 		pool->addComponent(entity, ptr);
 	}
 
@@ -128,8 +128,8 @@ namespace oak {
 	}
 
 	void Scene::reset() {
-		auto& deactivateQueue = EventManager::inst().getQueue<EntityDeactivateEvent>();
-		auto& destroyQueue = EventManager::inst().getQueue<EntityDestroyEvent>();
+		auto& deactivateQueue = getEventQueue<EntityDeactivateEvent>();
+		auto& destroyQueue = getEventQueue<EntityDestroyEvent>();
 		for (const auto& e : entities_) { 
 			deactivateQueue.emit({ e });			
 			destroyQueue.emit({ e });

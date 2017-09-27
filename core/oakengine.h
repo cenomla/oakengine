@@ -17,8 +17,15 @@
 
 namespace oak {
 
+	//event api
 	template<class T>
-	void addQueue(EventManager& manager) {
+	void addEventQueue() {
+		EventManager::inst().addQueue(&T::typeInfo);
+	}
+
+	template<class T>
+	EventQueueIter<T>& getEventQueue() {
+		return static_cast<EventQueueIter<T>&>(EventManager::inst().getQueue(&T::typeInfo));
 	}
 
 	//resource api
@@ -31,20 +38,37 @@ namespace oak {
 	}
 	
 	template<class T, class... TArgs>
-	T& addResource(const oak::string& name, TArgs&&... args) {
+	T* addResource(size_t id, TArgs&&... args) {
 		auto& storage = ResourceManager::inst().get(&T::typeInfo);
-		auto ptr = storage.add(name);
+		auto ptr = storage.add(id);
 		new (ptr) T{ std::forward<TArgs>(args)... };
-		return *static_cast<T*>(ptr);
+		return static_cast<T*>(ptr);
+	}
+
+	template<class T, class... TArgs>
+	T& addResource(const oak::string& name, TArgs&&... args) {
+		return *addResource<T>(std::hash<oak::string>{}(name), std::forward<TArgs>(args)...);
 	}
 
 	template<class T>
-	const T* requireResource(size_t id) {
-		return static_cast<const T*>(ResourceManager::inst().get(&T::typeInfo).require(id));
+	bool hasResource(size_t id) {
+		auto& storage = ResourceManager::inst().get(&T::typeInfo);
+		return storage.has(id);
+	}
+	
+	template<class T>
+	bool hasResource(const oak::string& name) {
+		auto id = std::hash<oak::string>{}(name);
+		return hasResource<T>(id);
 	}
 
 	template<class T>
-	const T& requireResource(const oak::string& name) {
+	T* requireResource(size_t id) {
+		return static_cast<T*>(ResourceManager::inst().get(&T::typeInfo).require(id));
+	}
+
+	template<class T>
+	T& requireResource(const oak::string& name) {
 		auto id = std::hash<oak::string>{}(name);
 		auto ptr = requireResource<T>(id);
 		if (ptr) {
@@ -96,3 +120,4 @@ namespace oak {
 	}
 
 }
+

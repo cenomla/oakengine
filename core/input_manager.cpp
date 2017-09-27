@@ -4,7 +4,7 @@
 
 #include "input.h"
 #include "input_events.h"
-#include "event_manager.h"
+#include "oakengine.h"
 #include "log.h"
 
 namespace oak {
@@ -29,18 +29,18 @@ namespace oak {
 	}
 
 	void InputManager::updateCache() {
-		for (const auto& evt : EventManager::inst().getQueue<WindowCreateEvent>()) {
+		for (const auto& evt : getEventQueue<WindowCreateEvent>()) {
 			window_ = evt.window;
 			setCallbacks(evt.window);
 		}
-		for (const auto& evt : EventManager::inst().getQueue<KeyEvent>()) {
+		for (const auto& evt : getEventQueue<KeyEvent>()) {
 			actions_[evt.key + button::max] = evt.action;
 		}
 
-		for (const auto& evt : EventManager::inst().getQueue<ButtonEvent>()) {
+		for (const auto& evt : getEventQueue<ButtonEvent>()) {
 			actions_[evt.button] = evt.action;
 		}
-		for (const auto& evt : EventManager::inst().getQueue<CursorModeEvent>()) {
+		for (const auto& evt : getEventQueue<CursorModeEvent>()) {
 			if (!window_) { break; }
 			switch (evt.mode) {
 				case CursorMode::NORMAL:
@@ -140,27 +140,27 @@ namespace oak {
 	}
 
 	static void closeCallback(GLFWwindow *window) {
-		EventManager::inst().getQueue<WindowCloseEvent>().emit({ window });
+		getEventQueue<WindowCloseEvent>().emit({ window });
 	}
 
 	static void resizeCallback(GLFWwindow *window, int width, int height) {
-		EventManager::inst().getQueue<WindowResizeEvent>().emit({ width, height });
+		getEventQueue<WindowResizeEvent>().emit({ width, height });
 	}
 
 	static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-		EventManager::inst().getQueue<KeyEvent>().emit({ key, scancode, action, mods });
+		getEventQueue<KeyEvent>().emit({ key, scancode, action, mods });
 	}
 
 	static void buttonCallback(GLFWwindow *window, int button, int action, int mods) {
-		EventManager::inst().getQueue<ButtonEvent>().emit({ button, action, mods });
+		getEventQueue<ButtonEvent>().emit({ button, action, mods });
 	}
 
 	static void cursorCallback(GLFWwindow *window, double xpos, double ypos) {
-		EventManager::inst().getQueue<CursorEvent>().emit({ static_cast<float>(xpos), static_cast<float>(ypos) });
+		getEventQueue<CursorEvent>().emit({ static_cast<float>(xpos), static_cast<float>(ypos) });
 	}
 
 	static void charCallback(GLFWwindow *window, uint32_t codepoint) {
-		EventManager::inst().getQueue<TextEvent>().emit(TextEvent{ codepoint });
+		getEventQueue<TextEvent>().emit(TextEvent{ codepoint });
 	}
 
 	void setCallbacks(GLFWwindow *window) {

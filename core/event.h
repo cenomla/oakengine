@@ -2,13 +2,9 @@
 
 #include <cstddef>
 
-#include "type_info.h"
+#include "type_manager.h"
 
 namespace oak {
-
-	namespace config {
-		constexpr size_t MAX_EVENTS = 128;
-	}
 
 	namespace detail {
 		struct BaseEvent {};
@@ -18,4 +14,6 @@ namespace oak {
 	TypeInfo makeEventInfo(const oak::string& name) {
 		return makeTypeInfo<detail::BaseEvent, T>(name);
 	}
+
+	using EventTypeManager = TypeManager<detail::BaseEvent>;
 }

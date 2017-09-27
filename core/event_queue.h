@@ -1,74 +1,64 @@
 #pragma once
 
+#include <iterator>
+
 #include "util/ptr_util.h"
-#include "container.h"
+#include "type_info.h"
+#include "allocators.h"
 
 namespace oak {
 
-	class EventQueueBase {
-	public:
-		EventQueueBase(size_t eventSize) : 
-		allocator_{ &oalloc_freelist, 1024 * eventSize, 8 },
-		size_{ 0 } {}
+	struct EventQueue {
+		EventQueue(const TypeInfo *tinfo); 
 
-		void clear() {
-			allocator_.clear();
-			size_ = 0;
-		}
+		void clear();
+		void empty();
+		void* emit();
 
-		bool empty() {
-			return size_ == 0;
-		}
-
-	protected:
-		LinearAllocator allocator_;
-		size_t size_;
+		size_t alignedSize, size;
+		LinearAllocator allocator;
 	};
 
-	template <class TEvent>
-	class EventQueue : public EventQueueBase {
-	public:
-		static constexpr size_t EVENT_SIZE = ptrutil::alignSize(detail::size_of_void<TEvent>::value, 8);
+	template<class T>
+	struct EventQueueIter : public EventQueue {
+		using EventQueue::EventQueue;
 
-		class const_iterator : public std::iterator<std::forward_iterator_tag, TEvent> {
+		class EventIterator : public std::iterator<std::forward_iterator_tag, T> {
 		public:
+			static constexpr size_t ALIGNED_SIZE = ptrutil::alignSize(detail::size_of_void<T>::value, 16);
 
-			explicit const_iterator(const detail::Block *header, size_t count = 0) : 
-			header_{ header }, 
-			ptr_{ static_cast<const TEvent*>(ptrutil::add(header_, sizeof(detail::Block))) },
-			count_{ count } {}
+			explicit EventIterator(const detail::Block *header, size_t count = 0) :
+			header_{ header },
+			ptr_{ static_cast<const T*>(ptrutil::add(header_, sizeof(detail::Block))) },
+			count_{ count }, left_{ (header->size - sizeof(detail::Block) / ALIGNED_SIZE } {}
 
-			const_iterator& operator++() {
-				ptr_ = static_cast<const TEvent*>(ptrutil::add(ptr_, EVENT_SIZE));
-				count_++;
-				if (ptrutil::add(ptr_, EVENT_SIZE) > ptrutil::add(header_, header_->size)) {
+			EventIterator& operator++() {
+				ptr_ = static_cast<const T*>(ptrutil::add(ptr_, ALIGNED_SIZE));
+				count_--;
+				left_--;
+				if (left_ > 0) {
+					return *this;
+				} else {
 					header_ = static_cast<const detail::Block*>(header_->next);
-					ptr_ = static_cast<const TEvent*>(ptrutil::add(header_, sizeof(detail::Block)));
+					ptr_ = static_cast<const T*>(ptrutil::add(header_, sizeof(detail::Block)));
+					left_ = (header_->size - sizeof(detail::Block)) / ALIGNED_SIZE;
+					return *this;
 				}
-
-				return *this;
 			}
 
-			bool operator==(const const_iterator& other) const { return count_ == other.count_; }
-			bool operator!=(const const_iterator& other) const { return !(*this == other); }
-			const TEvent& operator*() const { return *ptr_; }
+			bool operator==(const EventIterator& other) const { return count_ == other.count_; }
+			bool operator!=(const EventIterator& other) const { return !operator==(other); }
 
+			const T& operator*() const { return *ptr_; }
 		private:
 			const detail::Block *header_;
-			const TEvent *ptr_;
-			size_t count_;
+			const T *ptr_;
+			size_t count_, left_;
 		};
 
-		EventQueue() : EventQueueBase{ EVENT_SIZE } {}
 
-		const_iterator begin() const { return const_iterator{ static_cast<const detail::Block*>(allocator_.getStart()) }; }
-		const_iterator end() const { return const_iterator{ nullptr, size_ }; }
-
-		void emit(const TEvent& event) {
-			void *ptr = allocator_.allocate(EVENT_SIZE);
-			new (ptr) TEvent{ event };
-			size_++;
-		}
+		EventIterator begin() { return EventIterator{ static_cast<detail::Block*>(allocator.getStart()), size }; }
+		EventIterator end() { return EventIterator{ nullptr, 0 }; }
 	};
 
 }

@@ -11,7 +11,7 @@ namespace oak {
 	void EntityCache::update(const Scene& scene) {
 		bool needsSort = false;
 
-		for (const auto& evt : EventManager::inst().getQueue<EntityDeactivateEvent>()) {
+		for (const auto& evt : getEventQueue<EntityDeactivateEvent>()) {
 			ensureSize(evt.entity.index);
 			//if the entity is contained then remove it
 			if (contains_[evt.entity]) {
@@ -20,7 +20,7 @@ namespace oak {
 			}
 		}
 
-		for (const auto& evt : EventManager::inst().getQueue<EntityActivateEvent>()) {
+		for (const auto& evt : getEventQueue<EntityActivateEvent>()) {
 			ensureSize(evt.entity.index);
 			//check if the entity matches the filter
 			const auto& compFilter = scene.getComponentFilter(evt.entity);
@@ -70,9 +70,6 @@ namespace oak {
 
 	bool EntityCache::filter(const Scene& scene, EntityId entity, const std::bitset<config::MAX_COMPONENTS>& compFilter) {
 		return (compFilter & componentFilter_) == componentFilter_ &&
-			(compFilter[EventComponent::typeInfo.id] ? 
-				(getComponent<const EventComponent>(entity, scene).filter & eventFilter_) == eventFilter_ :
-				true) &&
 			(compFilter[PrefabComponent::typeInfo.id] && prefabFilter_ != 0 ? 
 				getComponent<const PrefabComponent>(entity, scene).id == prefabFilter_ :
 				true);

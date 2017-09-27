@@ -185,7 +185,7 @@ namespace oak::graphics {
 		fullscreenBuffer_.data(1, sizeof(edata), edata);
 		fullscreenBuffer_.unbind();
 
-		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
+		getEventQueue<WindowCreateEvent>().emit({ window_ });
 		InputManager::inst().updateCache();
 	}
 

@@ -26,13 +26,12 @@ namespace oak::graphics {
 			abort();
 		}
 
-		EventManager::inst().getQueue<WindowCreateEvent>().emit({ window_ });
+		getEventQueue<WindowCreateEvent>().emit({ window_ });
 
 		//init surface
 		VkResult result = glfwCreateWindowSurface(instance_, window_, nullptr, &surface_);
 		if (result != VK_SUCCESS) {
-			log_print_err("failed to create vulkan surface");
-			abort();
+			log_print_err("failed to create vulkan surface"); abort();
 		}
 
 		initDevice();
