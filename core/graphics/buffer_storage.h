@@ -19,7 +19,7 @@ namespace oak::graphics {
 		void bind() const;
 		void unbind() const;
 
-		void* map(int index);
+		void* map(int index, BufferAccess access);
 		void unmap(int index);
 
 		void data(int index, size_t size, const void *data);

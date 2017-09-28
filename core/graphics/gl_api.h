@@ -33,6 +33,7 @@ namespace oak::graphics {
 		void clear(bool color, bool depth, bool stencil) override;
 		void draw(const Batch& batch) override;
 		void drawFullscreen(const Material& material) override;
+		void readPixels(int x, int y, int width, int height, PixelReadFormat format, void *offset) override;
 		void swap() override;
 
 	private:

@@ -6,6 +6,7 @@
 namespace oak::graphics {
 	struct Buffer;
 	struct BufferInfo;
+	enum class BufferAccess;
 }
 
 namespace oak::graphics::GLBuffer {
@@ -16,7 +17,7 @@ namespace oak::graphics::GLBuffer {
 	Buffer create(const BufferInfo& info);
 	void destroy(Buffer& buffer);
 
-	void* map(const Buffer& buffer);
+	void* map(const Buffer& buffer, BufferAccess access);
 	void unmap(const Buffer& buffer);
 
 	void data(const Buffer& buffer, size_t size, const void *data);

@@ -45,14 +45,14 @@ namespace oak::graphics {
 		vertex_array::unbind();
 	}
 
-	void* BufferStorage::map(int index) {
+	void* BufferStorage::map(int index, BufferAccess access) {
 		if (index == 0) {
 			buffer::bind(buffers_[0]);
-			return buffer::map(buffers_[0]);
+			return buffer::map(buffers_[0], access);
 		}
 		if (index == 1) {
 			buffer::bind(buffers_[1]);
-			return buffer::map(buffers_[1]);
+			return buffer::map(buffers_[1], access);
 		}
 		return nullptr;
 	}

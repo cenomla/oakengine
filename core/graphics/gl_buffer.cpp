@@ -9,12 +9,20 @@ namespace oak::graphics::GLBuffer {
 	static const GLenum types[] = {
 		GL_ARRAY_BUFFER,
 		GL_ELEMENT_ARRAY_BUFFER,
-		GL_UNIFORM_BUFFER
+		GL_UNIFORM_BUFFER,
+		GL_PIXEL_PACK_BUFFER,
+		GL_PIXEL_UNPACK_BUFFER
 	};
 
 	static const GLenum hints[] = {
 		GL_STATIC_DRAW,
 		GL_STREAM_DRAW
+	};
+
+	static const GLenum buffer_access[] = {
+		GL_READ_ONLY,
+		GL_WRITE_ONLY,
+		GL_READ_WRITE
 	};
 
 	void bind(const Buffer& buffer) {
@@ -43,8 +51,8 @@ namespace oak::graphics::GLBuffer {
 		}
 	}
 
-	void *map(const Buffer& buffer) {
-		return glMapBuffer(types[static_cast<int>(buffer.info.type)], GL_WRITE_ONLY);
+	void *map(const Buffer& buffer, BufferAccess access) {
+		return glMapBuffer(types[static_cast<int>(buffer.info.type)], buffer_access[static_cast<int>(access)]);
 	}
 
 	void unmap(const Buffer& buffer) {

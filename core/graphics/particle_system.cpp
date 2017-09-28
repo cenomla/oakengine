@@ -68,8 +68,8 @@ namespace oak::graphics {
 		storage_.data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(glm::vec3), nullptr);
 		storage_.data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);
 
-		void *data = storage_.map(0);
-		void *idata = storage_.map(1);
+		void *data = storage_.map(0, BufferAccess::WRITE_ONLY);
+		void *idata = storage_.map(1, BufferAccess::WRITE_ONLY);
 
 
 		memcpy(data, mesh_->vertices.data(), mesh_->vertices.size() * sizeof(Mesh::Vertex));

@@ -7,6 +7,10 @@
 #include "entity_id.h"
 
 namespace oak {
+	
+	namespace config {
+		constexpr size_t MAX_FLAGS = 32;
+	}
 
 	class ComponentStorage;
 
@@ -49,7 +53,7 @@ namespace oak {
 		oak::vector<EntityId> killed_;
 
 		oak::vector<std::bitset<config::MAX_COMPONENTS>> componentMasks_;
-		oak::vector<std::bitset<4>> flags_;
+		oak::vector<std::bitset<config::MAX_FLAGS>> flags_;
 
 		//stores the generation of each entity
 		oak::vector<uint32_t> generations_;

@@ -86,7 +86,7 @@ namespace oak::graphics {
 		//map buffers
 		for (int i = 0; i < 2; i++) {
 			if (bufferInfo_.size[i] > 0) {
-				bufferInfo_.map[i] = bufferInfo_.storage.map(i);
+				bufferInfo_.map[i] = bufferInfo_.storage.map(i, BufferAccess::WRITE_ONLY);
 			}
 		}
 

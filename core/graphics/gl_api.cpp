@@ -242,6 +242,16 @@ namespace oak::graphics {
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
 
+	static const GLenum read_pixel_formats[] = {
+		GL_DEPTH_COMPONENT,
+		GL_RGB,
+		GL_RGBA
+	};
+
+	void GLApi::readPixels(int x, int y, int width, int height, PixelReadFormat format, void *offset) {
+		glReadPixels(x, y, width, height, read_pixel_formats[static_cast<int>(format)], GL_FLOAT, offset);
+	}
+
 	void GLApi::swap() {
 		glfwSwapBuffers(window_);
 	}
