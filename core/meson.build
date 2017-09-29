@@ -53,7 +53,11 @@ oak_sources = [
 	'util/file_buffer.cpp',
 	'util/puper.cpp',
 	'util/stream.cpp',
-	'util/stream_puper.cpp']
+	'util/stream_puper.cpp',
+	
+	'math/vec.cpp',
+	'math/mat.cpp',
+	'math/quat.cpp']
 
 oak_include = include_directories('.')
 
