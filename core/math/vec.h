@@ -2,6 +2,7 @@
 
 namespace oak::math {
 
+	struct Vec2;
 	struct Vec3;
 	struct Vec4;
 
@@ -36,6 +37,14 @@ namespace oak::math {
 		float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f;
 	};
 
+	bool operator==(const Vec2& a, const Vec2& b);
+	bool operator==(const Vec3& a, const Vec3& b);
+	bool operator==(const Vec4& a, const Vec4& b);
+
+	bool operator!=(const Vec2& a, const Vec2& b);
+	bool operator!=(const Vec3& a, const Vec3& b);
+	bool operator!=(const Vec4& a, const Vec4& b);
+
 	Vec2 operator+(const Vec2& a, const Vec2& b);
 	Vec3 operator+(const Vec3& a, const Vec3& b);
 	Vec4 operator+(const Vec4& a, const Vec4& b);
@@ -68,6 +77,11 @@ namespace oak::math {
 	float dot(const Vec3& a, const Vec3& b);
 
 	Vec3 cross(const Vec3& a, const Vec3& b);
+
+	Vec2 vectorTriple(const Vec2& a, const Vec2& b, const Vec2& c);
+	Vec3 vectorTriple(const Vec3& a, const Vec3& b, const Vec3& c);
+
+	float scalarTriple(const Vec3& a, const Vec3& b, const Vec3& c);
 
 	float length(const Vec2& v);
 	float length(const Vec3& v);

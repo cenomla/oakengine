@@ -30,6 +30,30 @@ namespace oak::math {
 
 	Vec4::Vec4(const Vec2& a, const Vec2& b) : Vec4{ a.x, a.y, b.x, b.y } {}
 
+	bool operator==(const Vec2& a, const Vec2& b) {
+		return a.x == b.x && a.y == b.y;
+	}
+
+	bool operator==(const Vec3& a, const Vec3& b) {
+		return a.x == b.x && a.y == b.y && a.z == b.z;
+	}
+
+	bool operator==(const Vec4& a, const Vec4& b) {
+		return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
+	}
+
+	bool operator!=(const Vec2& a, const Vec2& b) {
+		return a.x != b.x || a.y != b.y;
+	}
+
+	bool operator!=(const Vec3& a, const Vec3& b) {
+		return a.x != b.x || a.y != b.y || a.z != b.z;
+	}
+
+	bool operator!=(const Vec4& a, const Vec4& b) {
+		return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w;
+	}
+
 	Vec2 operator+(const Vec2& a, const Vec2& b) {
 		return Vec2{ a.x + b.x, a.y + b.y };
 	}
@@ -129,6 +153,18 @@ namespace oak::math {
 			a.x * b.y - a.y * b.x
 		};
 	}
+
+	Vec2 vectorTriple(const Vec2& a, const Vec2& b, const Vec2& c) {
+		return b * dot(c, a) - a * dot(c, b);
+	}
+
+	Vec3 vectorTriple(const Vec3& a, const Vec3& b, const Vec3& c) {
+		return cross(a, cross(b, c));
+	}
+
+	float scalarTriple(const Vec3& a, const Vec3& b, const Vec3& c) {
+		return dot(cross(a, b), c);
+	}	
 
 	float length(const Vec2& v) {
 		return std::sqrt(v.x * v.x + v.y * v.y);
