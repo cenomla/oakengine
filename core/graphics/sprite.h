@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
+#include "math.h"
 #include "texture.h"
 #include "resource.h"
 
@@ -11,8 +10,8 @@ namespace oak::graphics {
 		static const TypeInfo typeInfo;
 
 		struct Vertex {
-			glm::vec2 position;
-			glm::vec2 uv;
+			Vec2 position;
+			Vec2 uv;
 		};
 		
 		float centerX, centerY, width, height;

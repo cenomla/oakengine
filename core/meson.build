@@ -57,7 +57,8 @@ oak_sources = [
 	
 	'math/vec.cpp',
 	'math/mat.cpp',
-	'math/quat.cpp']
+	'math/quat.cpp',
+	'math/util.cpp']
 
 oak_include = include_directories('.')
 

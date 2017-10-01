@@ -1,5 +1,4 @@
-#include <glm/glm.hpp>
-
+#include <math.h>
 #include <scene_events.h>
 #include <input_events.h>
 #include <oakengine.h>
@@ -10,7 +9,7 @@
 
 struct TransformComponent {
 	static const oak::TypeInfo typeInfo;
-	glm::vec2 position;
+	oak::Vec2 position;
 	float rotation;
 	float scale;
 };
@@ -28,15 +27,15 @@ const oak::TypeInfo DrawComponent::typeInfo = oak::makeComponentInfo<DrawCompone
 
 struct VelocityComponent {
 	static const oak::TypeInfo typeInfo;
-	glm::vec2 velocity;
+	oak::Vec2 velocity;
 };
 
 const oak::TypeInfo VelocityComponent::typeInfo = oak::makeComponentInfo<VelocityComponent>("velocity");
 
 struct BoxComponent {
 	static const oak::TypeInfo typeInfo;
-	glm::vec2 offset;
-	glm::vec2 halfExtent;
+	oak::Vec2 offset;
+	oak::Vec2 halfExtent;
 };
 
 const oak::TypeInfo BoxComponent::typeInfo = oak::makeComponentInfo<BoxComponent>("box");
@@ -90,13 +89,13 @@ void oak_bench() {
 	oak::EntityId entity;
 	for (size_t i = 0; i < 64000; i++) {
 		entity = scene.createEntity();
-		oak::addComponent<TransformComponent>(entity, scene, glm::vec2{ 1.0f }, 0.0f, 1.0f);
+		oak::addComponent<TransformComponent>(entity, scene, oak::Vec2{ 1.0f }, 0.0f, 1.0f);
 		if (i % 2 == 0) {
 			oak::addComponent<DrawComponent>(entity, scene, 0u, 2u, 15.0f);
 		}
 		if (i % 2 == 1) {
-			oak::addComponent<VelocityComponent>(entity, scene, glm::vec2{ 0.0f });
-			oak::addComponent<BoxComponent>(entity, scene, glm::vec2{ 16.0f }, glm::vec2{ 16.0f });
+			oak::addComponent<VelocityComponent>(entity, scene, oak::Vec2{ 0.0f });
+			oak::addComponent<BoxComponent>(entity, scene, oak::Vec2{ 16.0f }, oak::Vec2{ 16.0f });
 		}
 		scene.activateEntity(entity);
 	}	
@@ -108,7 +107,7 @@ void oak_bench() {
 	//iterate
 	start = std::chrono::high_resolution_clock::now();
 	float dt = 1.0f/60.0f;
-	oak::vector<std::pair<glm::vec2, size_t>> draws;
+	oak::vector<std::pair<oak::Vec2, size_t>> draws;
 	for (size_t i = 0; i < 1024; i++) {
 		drawCache.update(scene);
 		physicsCache.update(scene);
@@ -123,12 +122,12 @@ void oak_bench() {
 			auto [tc, vc, bc] = oak::getComponents<TransformComponent, VelocityComponent, BoxComponent>(entity, ts, vs, bs);
 
 			if (bc.offset.x < bc.halfExtent.y) {
-				vc.velocity = glm::vec2{ 0.0f };
+				vc.velocity = oak::Vec2{ 0.0f };
 			} else {
 				bc.offset.x = bc.halfExtent.x + 4.0f;
 				bc.offset.y -= 0.02f;
 			}
-			vc.velocity += glm::vec2{ -0.05f, 0.009f };
+			vc.velocity += oak::Vec2{ -0.05f, 0.009f };
 			tc.position += vc.velocity * dt;
 		}
 

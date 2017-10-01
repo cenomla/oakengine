@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
+#include "math.h"
 #include "buffer_storage.h"
 #include "sprite.h"
 #include "batch.h"
@@ -16,7 +15,7 @@ namespace oak::graphics {
 		void init();
 		void terminate();
 
-		void addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const glm::mat3& transform);
+		void addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const Mat3& transform);
 		void run();
 		
 		inline const oak::vector<Batch>& getBatches() const { return batches_; }
@@ -33,7 +32,7 @@ namespace oak::graphics {
 			uint64_t layer;
 			const Material *material;
 			const Sprite *sprite;
-			glm::mat3 transform;
+			Mat3 transform;
 
 			inline bool operator<(const SpriteInfo& rhs) const { 
 				return layer == rhs.layer ? 

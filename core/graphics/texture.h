@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cinttypes>
-#include <glm/glm.hpp>
 
+#include "math.h"
 #include "container.h"
 #include "resource.h"
 #include "api.h"
@@ -10,8 +10,8 @@
 namespace oak::graphics {
 
 	struct TextureRegion {
-		glm::vec2 pos{ 0.0f };
-		glm::vec2 extent{ 1.0f };
+		Vec2 pos{ 0.0f };
+		Vec2 extent{ 1.0f };
 	};
 
 	struct TextureInfo {

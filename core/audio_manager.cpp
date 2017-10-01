@@ -5,7 +5,6 @@
 #define STB_VORBIS_HEADER_ONLY
 #include <stb_vorbis.c>
 #include <soundio/soundio.h>
-#include <glm/glm.hpp>
 
 #include "file_manager.h"
 #include "oak_alloc.h"

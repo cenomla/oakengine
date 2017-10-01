@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cinttypes>
-#include <glm/glm.hpp>
 
+#include "math.h"
 #include "container.h"
 #include "resource.h"
 
@@ -12,9 +12,9 @@ namespace oak::graphics {
 		static const TypeInfo typeInfo;
 
 		struct Vertex {
-			glm::vec3 position;
-			glm::vec3 normal;
-			glm::vec2 uv;
+			Vec3 position;
+			Vec3 normal;
+			Vec2 uv;
 		};
 
 		oak::vector<Vertex> vertices;

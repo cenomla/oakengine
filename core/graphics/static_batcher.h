@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
+#include "math.h"
 #include "buffer_storage.h"
 #include "material.h"
 #include "batch.h"
@@ -16,8 +15,8 @@ namespace oak::graphics {
 		void init();
 		void terminate();
 
-		void addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
-		void updateMesh(const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region);
+		void addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const oak::Mat4& transform, const TextureRegion& region);
+		void updateMesh(const Mesh *mesh, const oak::Mat4& transform, const TextureRegion& region);
 		void removeMesh(const Mesh *mesh);
 		
 		void run();
@@ -36,7 +35,7 @@ namespace oak::graphics {
 			uint64_t layer;
 			const Material *material;
 			const Mesh *mesh;
-			glm::mat4 transform;
+			oak::Mat4 transform;
 			TextureRegion region;
 
 			inline bool operator<(const MeshInfo& rhs) const { 

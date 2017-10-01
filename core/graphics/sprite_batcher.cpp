@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include "buffer_storage.h"
-
 #include "log.h"
 
 namespace oak::graphics {
@@ -19,7 +18,7 @@ namespace oak::graphics {
 		bufferInfo_.storage.destroy();
 	}
 
-	void SpriteBatcher::addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const glm::mat3& transform) {
+	void SpriteBatcher::addSprite(uint32_t layer, const Material *material, const Sprite *sprite, const Mat3& transform) {
 		sprites_.push_back({ layer, material, sprite, transform });
 	}
 
@@ -73,16 +72,16 @@ namespace oak::graphics {
 		for (auto& it : sprites_) {
 			if (bufferInfo_.map[0]) {
 				Sprite::Vertex *vd = static_cast<Sprite::Vertex*>(bufferInfo_.map[0]);
-				glm::vec2 center{ it.sprite->centerX, it.sprite->centerY };
-				vd[0].position = glm::vec2{ it.transform * glm::vec3{ -center, 1.0f } };
-				vd[1].position = glm::vec2{ it.transform * glm::vec3{ -center + glm::vec2{ 0.0f, it.sprite->height }, 1.0f } };
-				vd[2].position = glm::vec2{ it.transform * glm::vec3{ -center + glm::vec2{ it.sprite->width, it.sprite->height }, 1.0f } };
-				vd[3].position = glm::vec2{ it.transform * glm::vec3{ -center + glm::vec2{ it.sprite->width, 0.0f }, 1.0f } };
+				Vec2 center{ it.sprite->centerX, it.sprite->centerY };
+				vd[0].position = Vec2{ it.transform * Vec3{ -center, 1.0f } };
+				vd[1].position = Vec2{ it.transform * Vec3{ -center + Vec2{ 0.0f, it.sprite->height }, 1.0f } };
+				vd[2].position = Vec2{ it.transform * Vec3{ -center + Vec2{ it.sprite->width, it.sprite->height }, 1.0f } };
+				vd[3].position = Vec2{ it.transform * Vec3{ -center + Vec2{ it.sprite->width, 0.0f }, 1.0f } };
 
 				vd[0].uv = it.sprite->region.pos;
-				vd[1].uv = it.sprite->region.pos + glm::vec2{ 0.0f, it.sprite->region.extent.y };
-				vd[2].uv = it.sprite->region.pos + glm::vec2{ it.sprite->region.extent.x, it.sprite->region.extent.y };
-				vd[3].uv = it.sprite->region.pos + glm::vec2{ it.sprite->region.extent.x, 0.0f };
+				vd[1].uv = it.sprite->region.pos + Vec2{ 0.0f, it.sprite->region.extent.y };
+				vd[2].uv = it.sprite->region.pos + Vec2{ it.sprite->region.extent.x, it.sprite->region.extent.y };
+				vd[3].uv = it.sprite->region.pos + Vec2{ it.sprite->region.extent.x, 0.0f };
 
 				bufferInfo_.map[0] = static_cast<Sprite::Vertex*>(bufferInfo_.map[0]) + 4;
 			}

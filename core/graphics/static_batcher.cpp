@@ -23,12 +23,12 @@ namespace oak::graphics {
 		bufferInfo_.storage.destroy();
 	}
 
-	void StaticBatcher::addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region) {
+	void StaticBatcher::addMesh(uint32_t layer, const Material *material, const Mesh *mesh, const oak::Mat4& transform, const TextureRegion& region) {
 		meshes_.push_back({ layer, material, mesh, transform, region });
 		needsRebatch_ = true;
 	}
 
-	void StaticBatcher::updateMesh(const Mesh *mesh, const glm::mat4& transform, const TextureRegion& region) {
+	void StaticBatcher::updateMesh(const Mesh *mesh, const oak::Mat4& transform, const TextureRegion& region) {
 		for (auto& mi : meshes_) {
 			if (mi.mesh == mesh) {
 				mi.transform = transform;
@@ -96,8 +96,8 @@ namespace oak::graphics {
 				Mesh::Vertex *vd;
 				for (const auto& v : it.mesh->vertices) {
 					vd = static_cast<Mesh::Vertex*>(bufferInfo_.map[0]);
-					vd->position = glm::vec3{ it.transform * glm::vec4{ v.position, 1.0f } };
-					vd->normal = glm::vec3{ it.transform * glm::vec4{ v.normal, 0.0f } };
+					vd->position = oak::Vec3{ it.transform * oak::Vec4{ v.position, 1.0f } };
+					vd->normal = oak::Vec3{ it.transform * oak::Vec4{ v.normal, 0.0f } };
 					vd->uv = v.uv * it.region.extent + it.region.pos;
 					bufferInfo_.map[0] = static_cast<Mesh::Vertex*>(bufferInfo_.map[0]) + 1;
 				}

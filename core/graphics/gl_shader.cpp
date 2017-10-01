@@ -2,9 +2,8 @@
 
 #include <glad/glad.h>
 
-#include <file_manager.h>
-#include <log.h>
-
+#include "file_manager.h"
+#include "log.h"
 #include "shader.h"
 
 namespace oak::graphics::GLShader {
@@ -82,24 +81,24 @@ namespace oak::graphics::GLShader {
 	}
 
 
-	void setUniform(const Shader& shader, const char *name, const glm::mat4& value) {
-		glUniformMatrix4fv(glGetUniformLocation(shader.id, name), 1, GL_FALSE, &value[0][0]);
+	void setUniform(const Shader& shader, const char *name, const Mat4& value) {
+		glUniformMatrix4fv(glGetUniformLocation(shader.id, name), 1, GL_FALSE, reinterpret_cast<const float*>(&value));
 	}
 
-	void setUniform(const Shader& shader, const char *name, const glm::ivec2& value) {
-		glUniform2iv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	void setUniform(const Shader& shader, const char *name, const Ivec2& value) {
+		glUniform2iv(glGetUniformLocation(shader.id, name), 1, reinterpret_cast<const int*>(&value));
 	}
 
-	void setUniform(const Shader& shader, const char *name, const glm::vec2& value) {
-		glUniform2fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	void setUniform(const Shader& shader, const char *name, const Vec2& value) {
+		glUniform2fv(glGetUniformLocation(shader.id, name), 1, reinterpret_cast<const float*>(&value));
 	}
 
-	void setUniform(const Shader& shader, const char *name, const glm::vec3& value) {
-		glUniform3fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	void setUniform(const Shader& shader, const char *name, const Vec3& value) {
+		glUniform3fv(glGetUniformLocation(shader.id, name), 1, reinterpret_cast<const float*>(&value));
 	}
 
-	void setUniform(const Shader& shader, const char *name, const glm::vec4& value) {
-		glUniform4fv(glGetUniformLocation(shader.id, name), 1, &value[0]);
+	void setUniform(const Shader& shader, const char *name, const Vec4& value) {
+		glUniform4fv(glGetUniformLocation(shader.id, name), 1, reinterpret_cast<const float*>(&value));
 	}
 
 	void setUniform(const Shader& shader, const char *name, unsigned int value) {

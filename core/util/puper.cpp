@@ -19,33 +19,33 @@ namespace oak {
 	void pup(Puper& puper, void*& data, const ObjInfo& info) { puper.pup(data, info); }
 	void pup(Puper& puper, oak::string& data, const ObjInfo& info) { puper.pup(data, info); }
 	
-	void pup(Puper& puper, glm::vec2& data, const ObjInfo& info) {
+	void pup(Puper& puper, Vec2& data, const ObjInfo& info) {
 		pup(puper, data.x, ObjInfo::make<float>(&info, "x"));
 		pup(puper, data.y, ObjInfo::make<float>(&info, "y"));
 	}
-	void pup(Puper& puper, glm::vec3& data, const ObjInfo& info) {
+	void pup(Puper& puper, Vec3& data, const ObjInfo& info) {
 		pup(puper, data.x, ObjInfo::make<float>(&info, "x"));
 		pup(puper, data.y, ObjInfo::make<float>(&info, "y"));
 		pup(puper, data.z, ObjInfo::make<float>(&info, "z"));
 	}
-	void pup(Puper& puper, glm::vec4& data, const ObjInfo& info) {
+	void pup(Puper& puper, Vec4& data, const ObjInfo& info) {
 		pup(puper, data.x, ObjInfo::make<float>(&info, "x"));
 		pup(puper, data.y, ObjInfo::make<float>(&info, "y"));
 		pup(puper, data.z, ObjInfo::make<float>(&info, "z"));
 		pup(puper, data.w, ObjInfo::make<float>(&info, "w"));
 	}
 
-	void pup(Puper& puper, glm::mat3& data, const ObjInfo& info) {
-		pup(puper, data[0], ObjInfo::make<glm::vec3>(&info, "[0]"));
-		pup(puper, data[1], ObjInfo::make<glm::vec3>(&info, "[1]"));
-		pup(puper, data[2], ObjInfo::make<glm::vec3>(&info, "[2]"));
+	void pup(Puper& puper, Mat3& data, const ObjInfo& info) {
+		pup(puper, data.value[0], ObjInfo::make<Vec3>(&info, "[0]"));
+		pup(puper, data.value[1], ObjInfo::make<Vec3>(&info, "[1]"));
+		pup(puper, data.value[2], ObjInfo::make<Vec3>(&info, "[2]"));
 	}
 
-	void pup(Puper& puper, glm::mat4& data, const ObjInfo& info) {
-		pup(puper, data[0], ObjInfo::make<glm::vec4>(&info, "[0]"));
-		pup(puper, data[1], ObjInfo::make<glm::vec4>(&info, "[1]"));
-		pup(puper, data[2], ObjInfo::make<glm::vec4>(&info, "[2]"));
-		pup(puper, data[3], ObjInfo::make<glm::vec4>(&info, "[3]"));
+	void pup(Puper& puper, Mat4& data, const ObjInfo& info) {
+		pup(puper, data.value[0], ObjInfo::make<Vec4>(&info, "[0]"));
+		pup(puper, data.value[1], ObjInfo::make<Vec4>(&info, "[1]"));
+		pup(puper, data.value[2], ObjInfo::make<Vec4>(&info, "[2]"));
+		pup(puper, data.value[3], ObjInfo::make<Vec4>(&info, "[3]"));
 	}
 
 }

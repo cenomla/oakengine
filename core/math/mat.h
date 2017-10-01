@@ -33,6 +33,7 @@ namespace oak::math {
 			const column_type& b, 
 			const column_type& c
 		);
+		Mat3(const Mat2& v);
 		Mat3(const Mat4& v);
 
 		column_type value[3];
@@ -49,9 +50,15 @@ namespace oak::math {
 			const column_type& c, 
 			const column_type& d
 		);
+		Mat4(const Mat2& v);
+		Mat4(const Mat3& v);
 
 		column_type value[4];
 	};
+
+	Mat2 operator*(const Mat2& a, float v);
+	Mat3 operator*(const Mat3& a, float v);
+	Mat4 operator*(const Mat4& a, float v);
 
 	Mat2 operator*(const Mat2& a, const Mat2& b);
 	Mat3 operator*(const Mat3& a, const Mat3& b);
@@ -74,11 +81,16 @@ namespace oak::math {
 	Mat4 inverse(const Mat4& src);
 
 	Mat4 perspective(float fov, float ratio, float near, float far);
-	Mat4 lookAt(const Vec3& center, const Vec3& eye, const Vec3& up);
+	Mat4 lookAt(const Vec3& eye, const Vec3& center, const Vec3& up);
 	Mat4 ortho(float l, float r, float b, float t, float near, float far);
 
+	Mat3 rotate(const Mat3& src, float a);
 	Mat4 rotate(const Mat4& src, const Vec3& v);
+
+	Mat3 translate(const Mat3& src, const Vec2& v);
 	Mat4 translate(const Mat4& src, const Vec3& v);
+
+	Mat3 scale(const Mat3& src, const Vec2& v);
 	Mat4 scale(const Mat4& src, const Vec3& v);
 
 

@@ -6,7 +6,6 @@
 #include "oakengine.h"
 #include "input_events.h"
 #include "log.h"
-
 #include "material.h"
 #include "batch.h"
 
@@ -102,7 +101,7 @@ namespace oak::graphics {
 
 		//clear values
 		if (state.clearColor != change.clearColor) {
-			glClearColor(change.clearColor.r, change.clearColor.g, change.clearColor.b, change.clearColor.a);
+			glClearColor(change.clearColor.x, change.clearColor.y, change.clearColor.z, change.clearColor.w);
 		}
 		if (state.clearDepth != change.clearDepth) {
 			glClearDepth(change.clearDepth);
@@ -137,7 +136,7 @@ namespace oak::graphics {
 		}
 
 		glfwMakeContextCurrent(window_);
-		glfwSwapInterval(1);
+		glfwSwapInterval(0);
 
 		if (!gladLoadGL()) {
 			log_print_err("cannot load gl");
@@ -154,7 +153,7 @@ namespace oak::graphics {
 		glfwGetWindowSize(window_, &ww, &wh);
 
 		currentState_ = Api::State{
-			glm::vec4{ 0.0f },
+			Vec4{ 0.0f },
 			1.0f,
 			BoolOp::NONE,
 			View{ 0, 0, ww, wh },

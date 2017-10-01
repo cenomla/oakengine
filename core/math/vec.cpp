@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "mat.h"
+
 namespace oak::math {
 
 	Vec2::Vec2(float a, float b) : x{ a }, y{ b } {}
@@ -30,6 +32,18 @@ namespace oak::math {
 
 	Vec4::Vec4(const Vec2& a, const Vec2& b) : Vec4{ a.x, a.y, b.x, b.y } {}
 
+	bool operator==(const Ivec2& a, const Ivec2& b) {
+		return a.x == b.x && a.y == b.y;
+	}
+
+	bool operator==(const Ivec3& a, const Ivec3& b) {
+		return a.x == b.x && a.y == b.y && a.z == b.z;
+	}
+
+	bool operator==(const Ivec4& a, const Ivec4& b) {
+		return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
+	}
+
 	bool operator==(const Vec2& a, const Vec2& b) {
 		return a.x == b.x && a.y == b.y;
 	}
@@ -40,6 +54,18 @@ namespace oak::math {
 
 	bool operator==(const Vec4& a, const Vec4& b) {
 		return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
+	}
+
+	bool operator!=(const Ivec2& a, const Ivec2& b) {
+		return a.x != b.x || a.y != b.y;
+	}
+
+	bool operator!=(const Ivec3& a, const Ivec3& b) {
+		return a.x != b.x || a.y != b.y || a.z != b.z;
+	}
+
+	bool operator!=(const Ivec4& a, const Ivec4& b) {
+		return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w;
 	}
 
 	bool operator!=(const Vec2& a, const Vec2& b) {
@@ -54,16 +80,16 @@ namespace oak::math {
 		return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w;
 	}
 
-	Vec2 operator+(const Vec2& a, const Vec2& b) {
-		return Vec2{ a.x + b.x, a.y + b.y };
+	Ivec2 operator-(const Ivec2& v) {
+		return Ivec2{ -v.x, -v.y };
 	}
 
-	Vec3 operator+(const Vec3& a, const Vec3& b) {
-		return Vec3{ a.x + b.x, a.y + b.y, a.z + b.z };
+	Ivec3 operator-(const Ivec3& v) {
+		return Ivec3{ -v.x, -v.y, -v.z };
 	}
 
-	Vec4 operator+(const Vec4& a, const Vec4& b) {
-		return Vec4{ a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
+	Ivec4 operator-(const Ivec4& v) {
+		return Ivec4{ -v.x, -v.y, -v.z, -v.w };
 	}
 
 	Vec2 operator-(const Vec2& v) {
@@ -78,6 +104,42 @@ namespace oak::math {
 		return Vec4{ -v.x, -v.y, -v.z, -v.w };
 	}
 
+	Ivec2 operator+(const Ivec2& a, const Ivec2& b) {
+		return Ivec2{ a.x + b.x, a.y + b.y };
+	}
+
+	Ivec3 operator+(const Ivec3& a, const Ivec3& b) {
+		return Ivec3{ a.x + b.x, a.y + b.y, a.z + b.z };
+	}
+
+	Ivec4 operator+(const Ivec4& a, const Ivec4& b) {
+		return Ivec4{ a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
+	}
+
+	Vec2 operator+(const Vec2& a, const Vec2& b) {
+		return Vec2{ a.x + b.x, a.y + b.y };
+	}
+
+	Vec3 operator+(const Vec3& a, const Vec3& b) {
+		return Vec3{ a.x + b.x, a.y + b.y, a.z + b.z };
+	}
+
+	Vec4 operator+(const Vec4& a, const Vec4& b) {
+		return Vec4{ a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w };
+	}
+
+	Ivec2 operator-(const Ivec2& a, const Ivec2& b) {
+		return Ivec2{ a.x - b.x, a.y - b.y };
+	}
+
+	Ivec3 operator-(const Ivec3& a, const Ivec3& b) {
+		return Ivec3{ a.x - b.x, a.y - b.y, a.z - b.z };
+	}
+
+	Ivec4 operator-(const Ivec4& a, const Ivec4& b) {
+		return Ivec4{ a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
+	}
+
 	Vec2 operator-(const Vec2& a, const Vec2& b) {
 		return Vec2{ a.x - b.x, a.y - b.y };
 	}
@@ -88,6 +150,18 @@ namespace oak::math {
 
 	Vec4 operator-(const Vec4& a, const Vec4& b) {
 		return Vec4{ a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w };
+	}
+
+	Ivec2 operator*(const Ivec2& a, int b) {
+		return Ivec2{ a.x * b, a.y * b };
+	}
+
+	Ivec3 operator*(const Ivec3& a, int b) {
+		return Ivec3{ a.x * b, a.y * b, a.z * b };
+	}
+
+	Ivec4 operator*(const Ivec4& a, int b) {
+		return Ivec4{ a.x * b, a.y * b, a.z * b, a.w * b };
 	}
 
 	Vec2 operator*(const Vec2& a, float b) {
@@ -102,6 +176,18 @@ namespace oak::math {
 		return Vec4{ a.x * b, a.y * b, a.z * b, a.w * b };
 	}
 
+	Ivec2 operator*(const Ivec2& a, const Ivec2& b) {
+		return Ivec2{ a.x * b.x, a.y * b.y };
+	}
+
+	Ivec3 operator*(const Ivec3& a, const Ivec3& b) {
+		return Ivec3{ a.x * b.x, a.y * b.y, a.z * b.z };
+	}
+
+	Ivec4 operator*(const Ivec4& a, const Ivec4& b) {
+		return Ivec4{ a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
+	}
+	
 	Vec2 operator*(const Vec2& a, const Vec2& b) {
 		return Vec2{ a.x * b.x, a.y * b.y };
 	}
@@ -114,6 +200,18 @@ namespace oak::math {
 		return Vec4{ a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
 	}
 	
+	Ivec2 operator/(const Ivec2& a, int b) {
+		return Ivec2{ a.x / b, a.y / b };
+	}
+
+	Ivec3 operator/(const Ivec3& a, int b) {
+		return Ivec3{ a.x / b, a.y / b, a.z / b };
+	}
+
+	Ivec4 operator/(const Ivec4& a, int b) {
+		return Ivec4{ a.x / b, a.y / b, a.z / b, a.w / b };
+	}
+
 	Vec2 operator/(const Vec2& a, float b) {
 		return Vec2{ a.x / b, a.y / b };
 	}
@@ -124,6 +222,18 @@ namespace oak::math {
 
 	Vec4 operator/(const Vec4& a, float b) {
 		return Vec4{ a.x / b, a.y / b, a.z / b, a.w / b };
+	}
+
+	Ivec2 operator/(const Ivec2& a, const Ivec2& b) {
+		return Ivec2{ a.x / b.x, a.y / b.y };
+	}
+
+	Ivec3 operator/(const Ivec3& a, const Ivec3& b) {
+		return Ivec3{ a.x / b.x, a.y / b.y, a.z / b.z };
+	}
+
+	Ivec4 operator/(const Ivec4& a, const Ivec4& b) {
+		return Ivec4{ a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
 	}
 
 	Vec2 operator/(const Vec2& a, const Vec2& b) {
@@ -138,12 +248,292 @@ namespace oak::math {
 		return Vec4{ a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w };
 	}
 
+	Ivec2& operator+=(Ivec2& a, const Ivec2& b) {
+		a.x += b.x;
+		a.y += b.y;
+		return a;
+	}
+
+	Ivec3& operator+=(Ivec3& a, const Ivec3& b) {
+		a.x += b.x;
+		a.y += b.y;
+		a.z += b.z;
+		return a;
+	}
+
+	Ivec4& operator+=(Ivec4& a, const Ivec4& b) {
+		a.x += b.x;
+		a.y += b.y;
+		a.z += b.z;
+		a.w += b.w;
+		return a;
+	}
+
+	Vec2& operator+=(Vec2& a, const Vec2& b) {
+		a.x += b.x;
+		a.y += b.y;
+		return a;
+	}
+
+	Vec3& operator+=(Vec3& a, const Vec3& b) {
+		a.x += b.x;
+		a.y += b.y;
+		a.z += b.z;
+		return a;
+	}
+
+	Vec4& operator+=(Vec4& a, const Vec4& b) {
+		a.x += b.x;
+		a.y += b.y;
+		a.z += b.z;
+		a.w += b.w;
+		return a;
+	}
+
+	Ivec2& operator-=(Ivec2& a, const Ivec2& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		return a;
+	}
+
+	Ivec3& operator-=(Ivec3& a, const Ivec3& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		a.z -= b.z;
+		return a;
+	}
+
+	Ivec4& operator-=(Ivec4& a, const Ivec4& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		a.z -= b.z;
+		a.w -= b.w;
+		return a;
+	}
+
+	Vec2& operator-=(Vec2& a, const Vec2& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		return a;
+	}
+
+	Vec3& operator-=(Vec3& a, const Vec3& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		a.z -= b.z;
+		return a;
+	}
+
+	Vec4& operator-=(Vec4& a, const Vec4& b) {
+		a.x -= b.x;
+		a.y -= b.y;
+		a.z -= b.z;
+		a.w -= b.w;
+		return a;
+	}
+
+	Ivec2& operator*=(Ivec2& a, int b) {
+		a.x *= b;
+		a.y *= b;
+		return a;
+	}
+
+	Ivec3& operator*=(Ivec3& a, int b) {
+		a.x *= b;
+		a.y *= b;
+		a.z *= b;
+		return a;
+	}
+
+	Ivec4& operator*=(Ivec4& a, int b) {
+		a.x *= b;
+		a.y *= b;
+		a.z *= b;
+		a.w *= b;
+		return a;
+	}
+
+	Vec2& operator*=(Vec2& a, float b) {
+		a.x *= b;
+		a.y *= b;
+		return a;
+	}
+
+	Vec3& operator*=(Vec3& a, float b) {
+		a.x *= b;
+		a.y *= b;
+		a.z *= b;
+		return a;
+	}
+
+	Vec4& operator*=(Vec4& a, float b) {
+		a.x *= b;
+		a.y *= b;
+		a.z *= b;
+		a.w *= b;
+		return a;
+	}
+
+	Ivec2& operator*=(Ivec2& a, const Ivec2& b) {
+		a.x *= b.x;
+		a.y *= b.y;
+		return a;
+	}
+
+	Ivec3& operator*=(Ivec3& a, const Ivec3& b) {
+		a.x *= b.x;
+		a.y *= b.y;
+		a.z *= b.z;
+		return a;
+	}
+
+	Ivec4& operator*=(Ivec4& a, const Ivec4& b) {
+		a.x *= b.x;
+		a.y *= b.y;
+		a.z *= b.z;
+		a.w *= b.w;
+		return a;
+	}
+
+	Vec2& operator*=(Vec2& a, const Vec2& b) {
+		a.x *= b.x;
+		a.y *= b.y;
+		return a;
+	}
+
+	Vec3& operator*=(Vec3& a, const Vec3& b) {
+		a.x *= b.x;
+		a.y *= b.y;
+		a.z *= b.z;
+		return a;
+	}
+
+	Vec4& operator*=(Vec4& a, const Vec4& b) {
+		a.x *= b.x;
+		a.y *= b.y;
+		a.z *= b.z;
+		a.w *= b.w;
+		return a;
+	}
+	
+	Ivec2& operator/=(Ivec2& a, int b) {
+		a.x /= b;
+		a.y /= b;
+		return a;
+	}
+
+	Ivec3& operator/=(Ivec3& a, int b) {
+		a.x /= b;
+		a.y /= b;
+		a.z /= b;
+		return a;
+	}
+
+	Ivec4& operator/=(Ivec4& a, int b) {
+		a.x /= b;
+		a.y /= b;
+		a.z /= b;
+		a.w /= b;
+		return a;
+	}
+
+	Vec2& operator/=(Vec2& a, float b) {
+		a.x /= b;
+		a.y /= b;
+		return a;
+	}
+
+	Vec3& operator/=(Vec3& a, float b) {
+		a.x /= b;
+		a.y /= b;
+		a.z /= b;
+		return a;
+	}
+
+	Vec4& operator/=(Vec4& a, float b) {
+		a.x /= b;
+		a.y /= b;
+		a.z /= b;
+		a.w /= b;
+		return a;
+	}
+
+	Ivec2& operator/=(Ivec2& a, const Ivec2& b) {
+		a.x /= b.x;
+		a.y /= b.y;
+		return a;
+	}
+	
+	Ivec3& operator/=(Ivec3& a, const Ivec3& b) {
+		a.x /= b.x;
+		a.y /= b.y;
+		a.z /= b.z;
+		return a;
+	}
+
+	Ivec4& operator/=(Ivec4& a, const Ivec4& b) {
+		a.x /= b.x;
+		a.y /= b.y;
+		a.z /= b.z;
+		a.w /= b.w;
+		return a;
+	}
+
+	Vec2& operator/=(Vec2& a, const Vec2& b) {
+		a.x /= b.x;
+		a.y /= b.y;
+		return a;
+	}
+
+	Vec3& operator/=(Vec3& a, const Vec3& b) {
+		a.x /= b.x;
+		a.y /= b.y;
+		a.z /= b.z;
+		return a;
+	}
+
+	Vec4& operator/=(Vec4& a, const Vec4& b) {
+		a.x /= b.x;
+		a.y /= b.y;
+		a.z /= b.z;
+		a.w /= b.w;
+		return a;
+	}
+
 	float dot(const Vec2& a, const Vec2& b) {
-		return (a.x * b.x) + (a.y + b.y);
+		return (a.x * b.x) + (a.y * b.y);
 	}
 
 	float dot(const Vec3& a, const Vec3& b) {
-		return (a.x * b.x) + (a.y + b.y) + (a.z + b.z);
+		return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+	}
+
+	float dot(const Vec4& a, const Vec4& b) {
+		return (a.x * b.x) + (a.y * b.y) + (a.z * b.z) + (a.w * b.w);
+	}
+
+	Mat2 outerProduct(const Vec2& a, const Vec2& b) {
+		return Mat2 {
+			a * b.x,
+			a * b.y
+		};
+	}
+
+	Mat3 outerProduct(const Vec3& a, const Vec3& b) {
+		return Mat3 {
+			a * b.x,
+			a * b.y,
+			a * b.z
+		};
+	}
+
+	Mat4 outerProduct(const Vec4& a, const Vec4& b) {
+		return Mat4 {
+			a * b.x,
+			a * b.y,
+			a * b.z,
+			a * b.w
+		};
 	}
 
 	Vec3 cross(const Vec3& a, const Vec3& b) {

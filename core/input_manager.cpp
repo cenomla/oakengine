@@ -109,20 +109,20 @@ namespace oak {
 		actions_[button] = action;
 	}
 
-	glm::vec2 InputManager::getCursorPos() const {
+	oak::Vec2 InputManager::getCursorPos() const {
 		if (!window_) {
 			return { 0, 0 };
 		}
 		double x, y;
 		glfwGetCursorPos(window_, &x, &y);
-		return { x, y };
+		return { static_cast<float>(x), static_cast<float>(y) };
 	}
 
-	glm::ivec2 InputManager::getWindowSize() const {
+	oak::Ivec2 InputManager::getWindowSize() const {
 		if (!window_) {
 			return { 0, 0 };
 		}
-		glm::ivec2 size;
+		oak::Ivec2 size;
 		glfwGetWindowSize(window_, &size.x, &size.y);
 		return size;
 	}

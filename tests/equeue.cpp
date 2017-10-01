@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 	auto& queue = oak::getEventQueue<TEvent>();
 
 	for (size_t i = 0; i < 1024; i++) {
-		oak::emitEvent<TEvent>(i * i * i, i, i % 255);
+		oak::emitEvent<TEvent>(i * i * i, i, static_cast<uint8_t>(i) % 255);
 	}
 
 	printf("size: %lu\n", queue.size);

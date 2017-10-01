@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "math.h"
 #include "buffer_storage.h"
 #include "texture.h"
 #include "batch.h"
@@ -28,8 +28,8 @@ namespace oak::graphics {
 
 	private:
 		struct Particle {
-			glm::vec3 force{ 0.0f };
-			glm::vec3 position{ 32.0f };
+			Vec3 force{ 0.0f };
+			Vec3 position{ 32.0f };
 			int life = 0;
 		};
 

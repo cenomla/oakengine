@@ -1,8 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
 #include "container.h"
+#include "math.h"
 #include "util/puper.h"
 
 namespace oak {
@@ -20,11 +19,11 @@ namespace oak {
 	void pup(Puper& puper, bool& data, const ObjInfo& info);
 	void pup(Puper& puper, void*& data, const ObjInfo& info);
 	void pup(Puper& puper, oak::string& data, const ObjInfo& info);
-	void pup(Puper& puper, glm::vec2& data, const ObjInfo& info);
-	void pup(Puper& puper, glm::vec3& data, const ObjInfo& info);
-	void pup(Puper& puper, glm::vec4& data, const ObjInfo& info);
-	void pup(Puper& puper, glm::mat3& data, const ObjInfo& info);
-	void pup(Puper& puper, glm::mat4& data, const ObjInfo& info);
+	void pup(Puper& puper, Vec2& data, const ObjInfo& info);
+	void pup(Puper& puper, Vec3& data, const ObjInfo& info);
+	void pup(Puper& puper, Vec4& data, const ObjInfo& info);
+	void pup(Puper& puper, Mat3& data, const ObjInfo& info);
+	void pup(Puper& puper, Mat4& data, const ObjInfo& info);
 
 	template<class T>
 	void pup(Puper& puper, oak::vector<T>& data, const ObjInfo& info) {

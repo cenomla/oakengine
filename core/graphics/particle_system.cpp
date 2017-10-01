@@ -50,8 +50,8 @@ namespace oak::graphics {
 			
 			part.life--;
 			if (part.life < 0) {
-				part.position = glm::vec3{ pdist(re_), pdist(re_), pdist(re_) };
-				part.force = glm::normalize(glm::vec3{ fdist(re_), fdist(re_), fdist(re_) });
+				part.position = Vec3{ pdist(re_), pdist(re_), pdist(re_) };
+				part.force = math::normalize(Vec3{ fdist(re_), fdist(re_), fdist(re_) });
 				part.life = ldist(re_);
 			}
 		}
@@ -65,7 +65,7 @@ namespace oak::graphics {
 		batch_.layer = layer_;
 		batch_.instances = 1000;
 		
-		storage_.data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(glm::vec3), nullptr);
+		storage_.data(0, mesh_->vertices.size() * sizeof(Mesh::Vertex) + 1000 * sizeof(Vec3), nullptr);
 		storage_.data(1, mesh_->indices.size() * sizeof(uint32_t), nullptr);
 
 		void *data = storage_.map(0, BufferAccess::WRITE_ONLY);
@@ -85,8 +85,8 @@ namespace oak::graphics {
 
 		//upload rest of data
 		for (int i = 0; i < 1000; i++) {
-			*static_cast<glm::vec3*>(data) = particles_[i].position;
-			data = static_cast<glm::vec3*>(data) + 1;
+			*static_cast<Vec3*>(data) = particles_[i].position;
+			data = static_cast<Vec3*>(data) + 1;
 		}
 
 		storage_.unmap(0);

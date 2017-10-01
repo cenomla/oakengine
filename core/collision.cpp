@@ -1,21 +1,20 @@
 #include "collision.h"
 
 #include <limits>
-#include <glm/gtc/constants.hpp>
 #include "oak_assert.h"
 
 namespace oak {
 
-	static glm::vec2 findSupport(const glm::vec2& dir, const Mesh2d& A, const glm::mat3& tA, const Mesh2d& B, const glm::mat3& tB) {
+	static Vec2 findSupport(const Vec2& dir, const Mesh2d& A, const Mat3& tA, const Mesh2d& B, const Mat3& tB) {
 		float max = -std::numeric_limits<float>::max();
-		glm::vec2 sA = -dir, sB = dir;
+		Vec2 sA = -dir, sB = dir;
 		float d;
 		//find support point in mesh a
 		//furthest point along vector dir
 		for (const auto& v : A.vertices) {
 			//transform point and test against dir
-			const auto& tv = glm::vec2{ tA * glm::vec3{ v.position, 1.0f } };
-			d = glm::dot(tv, dir);
+			const auto& tv = Vec2{ tA * Vec3{ v.position, 1.0f } };
+			d = math::dot(tv, dir);
 			if (d > max) {
 				max = d;
 				sA = tv;
@@ -25,8 +24,8 @@ namespace oak {
 		//find support point in mesh b
 		for (const auto& v : B.vertices) {
 			//transform point and test against -dir
-			const auto& tv = glm::vec2{ tB * glm::vec3{ v.position, 1.0f } };
-			d = glm::dot(tv, -dir);
+			const auto& tv = Vec2{ tB * Vec3{ v.position, 1.0f } };
+			d = math::dot(tv, -dir);
 			if (d > max) {
 				max = d;
 				sB = tv;
@@ -36,36 +35,36 @@ namespace oak {
 		return sA - sB;
 	}
 
-	glm::vec2 tripleProduct(const glm::vec2& A, const glm::vec2& B, const glm::vec2& C) {
-		return B * glm::dot(C, A) - A * glm::dot(C, B);
+	Vec2 tripleProduct(const Vec2& A, const Vec2& B, const Vec2& C) {
+		return B * math::dot(C, A) - A * math::dot(C, B);
 	}
 
-	static bool processSimplexLine(Simplex& splex, glm::vec2& D) {
+	static bool processSimplexLine(Simplex& splex, Vec2& D) {
 		oak_assert(splex.size() == 2);
-		glm::vec2 AB = splex[0] - splex[1]; //vector from B to A
-		glm::vec2 AO = -splex[1]; //vector from a to origin
+		Vec2 AB = splex[0] - splex[1]; //vector from B to A
+		Vec2 AO = -splex[1]; //vector from a to origin
 
 		auto ABN = tripleProduct(AB, AO, AB);
 		D = ABN;
 		return false;
 	}
 
-	static bool processSimplexTriangle(Simplex& splex, glm::vec2& D) {
+	static bool processSimplexTriangle(Simplex& splex, Vec2& D) {
 		oak_assert(splex.size() == 3);
-		glm::vec2 AB = splex[1] - splex[2]; //vector from b to a
-		glm::vec2 AC = splex[0] - splex[2]; //vector from c to a
-		glm::vec2 AO = -splex[2]; //vector from a to origin
+		Vec2 AB = splex[1] - splex[2]; //vector from b to a
+		Vec2 AC = splex[0] - splex[2]; //vector from c to a
+		Vec2 AO = -splex[2]; //vector from a to origin
 
 		auto ABN = tripleProduct(AC, AB, AB);
 		auto ACN = tripleProduct(AB, AC, AC);
 
-		if (glm::dot(ABN, AO) > 0.0f) {
+		if (math::dot(ABN, AO) > 0.0f) {
 			splex[0] = splex[1];
 			splex[1] = splex[2];
 			splex.pop_back();
 			D = ABN;
 		} else {
-			if (glm::dot(ACN, AO) > 0.0f) {
+			if (math::dot(ACN, AO) > 0.0f) {
 				splex[1] = splex[2];
 				splex.pop_back();
 				D = ACN;
@@ -76,26 +75,26 @@ namespace oak {
 		return false;
 	}
 
-	static bool(*simplexTable[])(Simplex&, glm::vec2&) = {
+	static bool(*simplexTable[])(Simplex&, Vec2&) = {
 		nullptr,
 		&processSimplexLine,
 		&processSimplexTriangle
 	};
 
-	bool gjk(const Mesh2d& A, const glm::mat3& tA, const Mesh2d& B, const glm::mat3& tB, Simplex& splex) {
+	bool gjk(const Mesh2d& A, const Mat3& tA, const Mesh2d& B, const Mat3& tB, Simplex& splex) {
 		oak_assert(splex.size() == 0);
-		auto D = glm::vec2{ 1.0f };
+		auto D = Vec2{ 1.0f };
 		splex.push_back(findSupport(D, A, tA, B, tB));
 		D = -D;
 		while (true) {
 			splex.push_back(findSupport(D, A, tA, B, tB));
-			if (glm::dot(D, splex.back()) <= 0.0f) { return false; } //does not intersect
+			if (math::dot(D, splex.back()) <= 0.0f) { return false; } //does not intersect
 			if (simplexTable[splex.size() - 1](splex, D)) { return true; } //intersect
 		}
 	}
 
 	struct SimplexEdge {
-		glm::vec2 normal;
+		Vec2 normal;
 		float distance;
 		int index = 0;
 	};
@@ -113,9 +112,9 @@ namespace oak {
 
 			auto e = b - a;
 
-			auto n = glm::normalize(glm::vec2{ -e.y, e.x });
+			auto n = math::normalize(Vec2{ -e.y, e.x });
 
-			float d = glm::dot(n, a);
+			float d = math::dot(n, a);
 			if (d < edge.distance) {
 				edge.distance = d;
 				edge.normal = n;
@@ -125,14 +124,14 @@ namespace oak {
 
 	}
 
-	void epa(const Mesh2d& A, const glm::mat3& tA, const Mesh2d& B, const glm::mat3& tB, Simplex& splex, glm::vec2& normal, float& depth) {
+	void epa(const Mesh2d& A, const Mat3& tA, const Mesh2d& B, const Mat3& tB, Simplex& splex, Vec2& normal, float& depth) {
 		while (true) {
 			SimplexEdge edge;
 			findEdge(splex, edge);
 
 			auto p = findSupport(edge.normal, A, tA, B, tB);
 
-			float dist = glm::dot(p, edge.normal);
+			float dist = math::dot(p, edge.normal);
 
 			if (dist - edge.distance < 0.00001f) {
 				normal = edge.normal;

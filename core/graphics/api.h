@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "math.h"
 
 namespace oak::graphics {
 
@@ -128,7 +128,7 @@ namespace oak::graphics {
 		BACK
 	};
 
-	using View = glm::ivec4;
+	using View = Ivec4;
 
 	struct MaskState {
 		bool red = true, green = true, blue = true, alpha = true, depth = true, stencil = true;
@@ -138,7 +138,7 @@ namespace oak::graphics {
 	public:
 
 		struct State {
-			glm::vec4 clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
+			Vec4 clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
 			float clearDepth = 1.0f;
 			BoolOp depthOp = BoolOp::NONE;
 			View scissorRect;
