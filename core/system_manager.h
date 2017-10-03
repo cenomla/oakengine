@@ -8,10 +8,6 @@
 
 namespace oak {
 
-	namespace detail {
-		struct BaseSystem {};
-	}
-
 	class SystemManager {
 	private:
 		static SystemManager *instance;
@@ -24,49 +20,16 @@ namespace oak {
 		SystemManager();
 		~SystemManager();
 
-		template<class TSystem>
-		void addSystem(TSystem *system, const oak::string& name) {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
-			if (tid >= systems_.size()) {
-				systems_.resize(tid + 1);
-				names_.resize(tid + 1);
-			}
-			systems_[tid] = system;
-			names_[tid] = name;
-			system->init();
-		}
+		void addSystem(System *system, size_t id);
+		void removeSystem(size_t id);
 
-		template<class TSystem>
-		void removeSystem() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
-			systems_[tid]->terminate();
-			systems_[tid] = nullptr;
-			names_[tid].clear();
-		}
-
-		template<class TSystem>
-		TSystem& getSystem() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
-			return *static_cast<TSystem*>(systems_[tid]);
-		}
-
-		template<class TSystem>
-		oak::string getSystemName() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
-			return names_[tid];
-		}
-
-		template<class TSystem>
-		bool hasSystem() {
-			size_t tid = util::type_id<detail::BaseSystem, TSystem>::id();
-			return (tid < systems_.size() && systems_[tid]);
-		}
+		System* getSystem(size_t id);
+		bool hasSystem(size_t id);
 
 		void clear();
 
 	private:
-		oak::vector<System*> systems_;
-		oak::vector<oak::string> names_;
+		oak::unordered_map<size_t, System*> systems_;
 	};
 
 }

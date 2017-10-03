@@ -3,12 +3,37 @@
 #include <iostream>
 #include <cstring>
 #include <cctype>
+#include <lua/lua.hpp>
 
 #include "util/string_util.h"
+#include "file_manager.h"
+#include "system_manager.h"
+#include "lua_system.h"
 #include "oak_alloc.h"
 #include "log.h"
 
 namespace oak {
+
+	int addSystem(lua_State *L) {
+		if (lua_gettop(L) != 2) { return 0; }
+		const oak::string name{ lua_tostring(L, 2) };
+		lua_pop(L, 1);
+		lua_getfield(L, LUA_REGISTRYINDEX, "_oak_systems_");
+		lua_rotate(L, -2, 1);
+		lua_setfield(L, -2, name.c_str());
+		auto ptr = static_cast<LuaSystem*>(oak_allocator.allocate(sizeof(LuaSystem)));
+		new (ptr) LuaSystem{ L, name };
+		//TODO:: fix leakage
+		SystemManager::inst().addSystem(ptr, std::hash<oak::string>{}(name));
+		return 0;
+	}
+
+	void registerCFunctions(lua_State *L) {
+		lua_newtable(L);
+		lua_pushcfunction(L, addSystem);
+		lua_setfield(L, -2, "add_system");
+		lua_setglobal(L, "oak");
+	}
 
 	lua_State* luah::createState() {
 		log_print_out("creating the lua state");
@@ -35,6 +60,11 @@ namespace oak {
 		end)";
 
 		luaL_dostring(L, luaFun1);
+
+		lua_newtable(L);
+		lua_setfield(L, LUA_REGISTRYINDEX, "_oak_systems_");
+
+		registerCFunctions(L);
 
 		return L;
 	}
@@ -75,7 +105,8 @@ namespace oak {
 
 	void luah::loadScript(lua_State *L, const oak::string& path) {
 		log_print_out("loading script: %s", path.c_str());
-		luaL_loadfile(L, path.c_str());
+		auto resolvedPath = FileManager::inst().resolvePath(path);
+		luaL_loadfile(L, resolvedPath.c_str());
 		int err = lua_pcall(L, 0, LUA_MULTRET, 0);
 
 		if (err != LUA_OK) {

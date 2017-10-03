@@ -17,6 +17,7 @@ oak_sources = [
 	'input_manager.cpp',
 	'log.cpp',
 	'luah.cpp',
+	'lua_manager.cpp',
 	'lua_puper.cpp',
 	'lua_system.cpp',
 	'oak_alloc.cpp',

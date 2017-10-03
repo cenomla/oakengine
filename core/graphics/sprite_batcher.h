@@ -35,9 +35,10 @@ namespace oak::graphics {
 			Mat3 transform;
 
 			inline bool operator<(const SpriteInfo& rhs) const { 
-				return layer == rhs.layer ? 
+				return transform.value[2].z == rhs.transform.value[2].z ? (
+					layer == rhs.layer ? 
 					material < rhs.material : 
-					layer < rhs.layer; 
+					layer < rhs.layer) : transform.value[2].z < rhs.transform.value[2].z; 
 			}
 		};
 

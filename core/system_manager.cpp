@@ -14,15 +14,38 @@ namespace oak {
 		clear();
 	}
 
+	void SystemManager::addSystem(System *system, size_t id) {
+		systems_.insert({ id, system });
+		system->init();
+	}
+
+	void SystemManager::removeSystem(size_t id) {
+		const auto& it = systems_.find(id);
+		if (it != std::end(systems_)) {
+			systems_.erase(it);
+		}	
+	}
+
+	System* SystemManager::getSystem(size_t id) {
+		const auto& it = systems_.find(id);
+		if (it != std::end(systems_)) {
+			return it->second;
+		} else {
+			return nullptr;
+		}
+	}
+
+	bool SystemManager::hasSystem(size_t id) {
+		const auto& it = systems_.find(id);
+		return it != std::end(systems_);
+	}
+
 	void SystemManager::clear() {
 		//terminate systems
 		for (auto system : systems_) {
-			if (system != nullptr) {
-				system->terminate();
-			}
+			system.second->terminate();
 		}
 		systems_.clear();
-		names_.clear();
 	}
 
 }

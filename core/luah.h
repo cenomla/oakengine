@@ -1,8 +1,13 @@
 #pragma once
 
-#include <lua/lua.hpp>
-
 #include "container.h"
+
+struct lua_State;
+extern "C" {
+void* lua_touserdata(lua_State *L, int idx);
+void* lua_newuserdata(lua_State *L, size_t size);
+};
+typedef int (*lua_CFunction)(lua_State *L);
 
 namespace oak {
 

@@ -1,5 +1,7 @@
 #include "lua_puper.h"
 
+#include <lua/lua.hpp>
+
 #include "luah.h"
 
 namespace oak {
