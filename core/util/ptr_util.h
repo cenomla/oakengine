@@ -1,21 +1,24 @@
 #pragma once
 
-#include <cinttypes>
-#include <cstddef>
+#include "types.h"
 
 namespace oak::ptrutil {
 
-	constexpr inline size_t alignSize(size_t size, uint32_t alignment) {
+	constexpr inline size_t align_size(size_t size, uint32_t alignment) {
 		return (size + alignment-1) & (~(alignment-1));
 	}
 
-	constexpr inline uint32_t alignForwardAdjustment(const void *address, uint32_t alignment) {
+	constexpr inline uint32_t align_offset(const void *address, uint32_t alignment) {
 		uint32_t adjustment = (alignment - (reinterpret_cast<uintptr_t>(address) & static_cast<uintptr_t>(alignment - 1)));
 		return adjustment == alignment ? 0 : adjustment;
 	}
 
-	constexpr inline uint32_t alignForwardAdjustmentWithHeader(const void *address, uint32_t alignment, uint32_t headerSize) {
-		uint32_t adjustment = alignForwardAdjustment(address, alignment);
+	constexpr inline void* align_address(const void *address, uint32_t alignment) {
+		return add(address, align_offset(address, alignment));
+	}
+
+	constexpr inline uint32_t align_offset_with_header(const void *address, uint32_t alignment, uint32_t headerSize) {
+		uint32_t adjustment = align_offset(address, alignment);
 
 		uint32_t neededSpace = headerSize;
 

@@ -4,49 +4,14 @@
 
 namespace oak {
 
-	ByteBuffer::ByteBuffer(size_t size, Allocator *allocator) : allocator_{ allocator }, capacity_{ size }, buffer_{ nullptr }, pos_{ 0 }, mark_{ 0 }, owns_{ true } {
-		init();
+	void ByteBuffer::init(size_t size) {
+		storage_.init(capacity_);
 	}
 
-	ByteBuffer::ByteBuffer(void *data, size_t size) : capacity_{ size }, buffer_{ static_cast<char*>(data) }, pos_{ 0 }, mark_{ 0 }, owns_{ false } {
-
-	}
-
-	ByteBuffer::~ByteBuffer() {
-		destroy();
-	}
-
-	ByteBuffer::ByteBuffer(const ByteBuffer& other) {
-		*this = other;
-	}
-
-	void ByteBuffer::operator=(const ByteBuffer& other) {
-		destroy();
-		capacity_ = other.capacity_;
-		buffer_ = static_cast<char*>(allocator_->allocate(capacity_));
-		pos_ = other.pos_;
-		mark_ = other.mark_;
-		owns_ = other.owns_;
-
-		memcpy(buffer_, other.buffer_, capacity_);
-	}
-
-	ByteBuffer::ByteBuffer(ByteBuffer&& other) {
-		*this = std::move(other);
-	}
-
-	void ByteBuffer::operator=(ByteBuffer&& other) {
-		capacity_ = other.capacity_;
-		buffer_ = other.buffer_;
-		pos_ = other.pos_;
-		mark_ = other.mark_;
-		owns_ = other.owns_;
-
-		other.capacity_ = 0;
-		other.buffer_ = nullptr;
-		other.pos_ = 0;
-		other.mark_ = 0;
-		other.owns_ = false;
+	void ByteBuffer::destroy() {
+		storage_.destroy();
+		pos_ = 0;
+		mark_ = 0;
 	}
 
 	void ByteBuffer::set() {
@@ -63,45 +28,21 @@ namespace oak {
 	}
 
 	void ByteBuffer::resize(size_t nsize) {
-		if (owns_ && buffer_ != nullptr) {
-			if (nsize > capacity_) {
-				char *temp = static_cast<char*>(allocator_->allocate(nsize));
-				memcpy(temp, buffer_, capacity_);
-				allocator_->deallocate(buffer_, capacity_);
-				buffer_ = temp;
-				capacity_ = nsize;
-			}
-		}
+		storage_.resize(nsize);
 	}
 
 	void ByteBuffer::checkResize(size_t size) {
-		if (pos_ + size > capacity_) {
-			resize(capacity_ * 2);
-		}
-	}
-
-	void ByteBuffer::init() {
-		if (buffer_ == nullptr) {
-			buffer_ = static_cast<char*>(allocator_->allocate(capacity_));
-		}
-	}
-
-	void ByteBuffer::destroy() {
-		if (buffer_ != nullptr && owns_) {
-			allocator_->deallocate(buffer_, capacity_);
-			buffer_ = nullptr;
-			capacity_ = 0;
-			pos_ = 0;
-			mark_ = 0;
+		if (pos_ + size > storage_.capacity) {
+			resize(storage_.capacity * 2);
 		}
 	}
 
 	size_t ByteBuffer::read(size_t size, void *data) {
-		if (pos_ + size > capacity_) {
-			size = capacity_ - pos_;
+		if (pos_ + size > storage_.capacity) {
+			size = storage_.capacity - pos_;
 		}
 		if (size == 0) { return 0; }
-		memcpy(data, buffer_ + pos_, size);
+		memcpy(data, storage_.data + pos_, size);
 		pos_ += size;
 		return size;
 	}
@@ -109,7 +50,7 @@ namespace oak {
 	size_t ByteBuffer::write(size_t size, const void *data) {
 		if (size == 0) { return 0; }
 		checkResize(size);
-		memcpy(buffer_ + pos_, data, size);
+		memcpy(storage_.data + pos_, data, size);
 		pos_ += size;
 		return size;
 	}

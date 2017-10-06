@@ -1,18 +1,8 @@
 #pragma once
 
-#include <cstddef>
-#include <cinttypes>
-
-#include "memory_literals.h"
+#include "types.h"
 
 namespace oak {
-
-	namespace detail {
-		struct Block {
-			void *next;
-			size_t size;
-		};
-	}
 
 	class Allocator {
 	public:
@@ -40,13 +30,13 @@ namespace oak {
 		void deallocate(void *ptr, size_t size) override;
 
 	private:
-		detail::Block *memList_;
+		MemBlock *memList_;
 		size_t numAllocs_;
 	};
 
 	class LinearAllocator : public Allocator {
 	public:
-		LinearAllocator(Allocator *parent, size_t pageSize = 32_kb, uint32_t alignment = 8);
+		LinearAllocator(Allocator *parent, uint32_t alignment, size_t pageSize);
 		~LinearAllocator();
 
 		void* allocate(size_t size) override;
@@ -65,7 +55,7 @@ namespace oak {
 
 	class FreelistAllocator : public Allocator {
 	public:
-		FreelistAllocator(Allocator *parent, size_t pageSize = 32_mb, uint32_t alignment = 8);
+		FreelistAllocator(Allocator *parent, uint32_t alignment, size_t pageSize);
 		~FreelistAllocator();
 
 		void* allocate(size_t size) override;
@@ -78,14 +68,14 @@ namespace oak {
 
 		size_t pageSize_;
 		void *start_;
-		detail::Block *freeList_;
+		MemBlock *freeList_;
 
-		void grow(detail::Block *lastNode);
+		void grow(MemBlock *lastNode);
 	};
 
 	class PoolAllocator : public Allocator {
 	public:
-		PoolAllocator(Allocator *parent, size_t pageSize, size_t objectSize, uint32_t alignment = 8);
+		PoolAllocator(Allocator *parent, uint32_t alignment, size_t pageSize, size_t objectSize);
 		~PoolAllocator();
 
 		void* allocate(size_t size) override;

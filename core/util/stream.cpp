@@ -1,24 +1,20 @@
 #include "stream.h"
 
+#include "oak_alloc.h"
+
 namespace oak {
 
-	template<> void Stream::write(const char *data) {
-		buffer->write(strlen(data) + 1, data);
+	template<> void Stream::write(String str) {
+		write<size_t>(str.length);
+		buffer->write(str.length, str.data);
 	}
 
-	template<> void Stream::write(oak::string data) {
-		buffer->write(data.size() + 1, data.c_str());
-	}
-
-	template<> oak::string Stream::read() {
-		size_t n;
-		char c;
-		oak::string str;
-		while ((n = buffer->read(1, &c)) > 0) {
-			if (c == 0) { break; }
-			str.push_back(c);
-		}
-		return str;
+	template<> String Stream::read() {
+		size_t size = read<size_t>();
+		Array<char> mem{ &oalloc_freelist };
+		mem.init(size);
+		buffer->read(size, mem.data);
+		return String{ mem.data, size };
 	}
 
 }

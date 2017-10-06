@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cstring>
-#include <climits>
-
-#include "container.h"
+#include "types.h"
+#include "string.h"
 
 namespace oak {
 
@@ -58,8 +56,7 @@ namespace oak {
 		}
 	};
 
-	template<> void Stream::write(oak::string data);
-	template<> void Stream::write(const char* data);
+	template<> void Stream::write(String data);
 
 	template<> oak::string Stream::read();
 
